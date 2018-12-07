@@ -4,11 +4,17 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 // {}
 // []
-namespace AdventOfCode2018.Tests
+namespace AdventOfCode2018.Tests7
 {
+    class Task {
+        public char letter;
+        public int duration;
+        public int left; 
+    }
 
     public class Day7Test
     {
@@ -54,12 +60,71 @@ namespace AdventOfCode2018.Tests
             return string.Concat(r); 
         }
 
-        [TestCase("Day7Sample.txt", "CABDFE")]
-        [TestCase("Day7Input.txt", "BGJCNLQUYIFMOEZTADKSPVXRHW")]
-        public void TestCase1(string file, string er1) {
+        int t2(IEnumerable<string> lines, int deltaDuration, int workers)
+        {
+            var dpl = lines.Select(l => ParseLine(l))
+                .OrderBy(a => string.Concat<char>(new[] { a.Item1, a.Item2 }))
+                .ToList();
+            var set = dpl.Select(a => a.Item1).Concat(dpl.Select(a => a.Item2)).ToHashSet();
+
+            int time = 0;
+
+            var inProgress = new List<Task>();
+
+            while (set.Any())
+            {
+                // all elements without dependency from left ordered by alphabet
+                var set1 = set.Where(e => !dpl.Any(t => t.Item2 == e))
+                    .OrderBy(a => a).ToArray();
+
+                if (inProgress.Count() < workers ) {
+                    // there are empty spaces
+                    // check if we may start a task to run
+                    var candidates = set1.Where(c => !inProgress.Any(ip => ip.letter == c)).ToList();
+                    while (candidates.Any() && inProgress.Count() < workers ) {
+                        var next = candidates.First();
+                        candidates.Remove(next);
+                        var duration = deltaDuration + (next - 'A' + 1);
+                        inProgress.Add(new Task { 
+                            letter = next, 
+                            duration = duration,
+                            left = duration
+                            });
+                    }
+                }
+
+                {
+                    // all workers are occupied
+                    // we only update progress
+                    var finished = new HashSet<char>();
+                    foreach (var task in inProgress)
+                    {
+                        task.left -= 1;
+                        if (task.left == 0)
+                        {
+                            // done
+                            finished.Add(task.letter);
+                            set.Remove(task.letter); // this element not necessary any more
+                            dpl = dpl.Where(a => a.Item1 != task.letter).ToList(); // new dependencies
+                        }
+                    }
+                    inProgress.RemoveAll(t => finished.Contains(t.letter));
+                }
+                
+                time++;
+            }
+
+            return time;
+        }
+
+        [TestCase("Day7Sample.txt", "CABDFE", 0,2, 15)]
+        [TestCase("Day7Input.txt", "BGJCNLQUYIFMOEZTADKSPVXRHW", 60,5, 1017)]
+        public void TestCase1(string file, string er1, int deltaDuration, int workers, int ed) {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
             var r1 = t1(lines);
             Assert.AreEqual(er1,r1, "wrong result 1");
+            var r2 = t2(lines, deltaDuration, workers);
+            Assert.AreEqual(ed, r2, "wrong result 2");
         }
     }
 }
