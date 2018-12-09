@@ -15,22 +15,25 @@ namespace AdventOfCode2018
                 return a != b && Char.ToLower(a) == Char.ToLower(b);
             }
 
-            public string OptimizePolimer(string polimer) 
+            public string OptimizePolimer(string polimer)
             {
-                var list = polimer.ToList();
-                for ( int i = 1; i < list.Count ; i++) {
-                    char b = list[i];
-                    char a = list[i - 1];
+                var list = new LinkedList<char>(polimer);
+                var node = list.First;
+                while ( node.Next != null )
+                {
+                    char b = node.Value;
+                    char a = node.Next.Value;
                     if (IsOpposite(a, b))
                     {
                         // we destroy them
-                        list.RemoveAt(i);
-                        list.RemoveAt(i - 1);
-                    }
+                        var newNode = node.Previous ?? node.Next.Next;
+                        if (newNode == null) return string.Empty;
+                        list.Remove(node.Next); 
+                        list.Remove(node);
+                        node = newNode;
+                    } else node = node.Next;
                 }
-                
-                var shorter = string.Concat(list);
-                return polimer.Length > shorter.Length ? OptimizePolimer(shorter) : polimer;
+                return string.Concat(list);
             }
         }
     }

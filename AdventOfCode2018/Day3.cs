@@ -45,18 +45,22 @@ namespace AdventOfCode2018
             }
         }
           
-        public class Rectangle {
+        public class Rectangle : Tuple <int,int,int,int>{
+
+            public Rectangle(int left, int top, int width, int height ) 
+                : base(left,top,width,height) { }
+
             /// The number of inches between the left edge of the fabric and the left edge of the rectangle.
-            public int Left { get; set; }
+            public int Left => Item1;
 
             /// The number of inches between the top edge of the fabric and the top edge of the rectangle.
-            public int Top { get; set; }
+            public int Top => Item2;
 
             /// The width of the rectangle in inches.
-            public int Width { get; set; }
+            public int Width => Item3;
 
             /// The height of the rectangle in inches.
-            public int Height { get; set; }
+            public int Height => Item4;
 
 			public int Right { get => Left + Width; }
 
@@ -75,22 +79,9 @@ namespace AdventOfCode2018
                 if (x == null) return null; // no intersection by x
                 var y = Intersection(Top, Bottom,other.Top, other.Bottom);
                 if (y == null) return null; // no intersection by y
-                return new Rectangle{ 
-                    Left = x.Item1, Width = (x.Item2-x.Item1), 
-                    Top = y.Item1, Height = (y.Item2-y.Item1) };
+                return new Rectangle( x.Item1, y.Item1, 
+                    x.Item2 - x.Item1, y.Item2 - y.Item1 );
             }
-
-			public override bool Equals(object obj)
-			{
-				var other = obj as Rectangle;
-				if (other!=null)
-				{
-					return Left == other.Left && Top == other.Top
-						&& Width == other.Width && Height == other.Height;
-						                
-				}
-				return base.Equals(obj);
-			}
             
 			public static IEnumerable<Rectangle> UnifiedCoverage(Rectangle a, Rectangle b) 
 			{
@@ -127,6 +118,8 @@ namespace AdventOfCode2018
 
         public class Claim : Rectangle {
             public int Id { get; set; }
+            public Claim(int left, int top, int width, int height) 
+                : base(left,top,width,height) {}
         }
 
         public class Day3 {
@@ -138,12 +131,12 @@ namespace AdventOfCode2018
                 var pattern = @"#([0-9]+)\s@\s([0-9]+),([0-9]+):\s([0-9]+)x([0-9]+)";
                 var matches = Regex.Matches(text, pattern);
                 foreach (Match match in matches) {
-                    return new Claim { 
-                        Id = Convert.ToInt32(match.Groups[1].Value),
-                        Left = Convert.ToInt32(match.Groups[2].Value),
-                        Top = Convert.ToInt32(match.Groups[3].Value),
-                        Width = Convert.ToInt32(match.Groups[4].Value),
-                        Height = Convert.ToInt32(match.Groups[5].Value)
+                    return new Claim(
+                        Convert.ToInt32(match.Groups[2].Value),
+                        Convert.ToInt32(match.Groups[3].Value),
+                        Convert.ToInt32(match.Groups[4].Value),
+                        Convert.ToInt32(match.Groups[5].Value)) { 
+                        Id = Convert.ToInt32(match.Groups[1].Value)
                     };
                 }
                 throw new ArgumentException("Seems format is different from expected", nameof(text));

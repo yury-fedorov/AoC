@@ -105,8 +105,8 @@ namespace AdventOfCode2018.Tests9
         [TestCase(30, 5807, 37305)]
         // 425 players; last marble is worth 70848 points
         [TestCase(425, 70848, 413188)] // reply 1
-        // [TestCase(425, 7084800, 3377272893)] // reply 2 - extremely slow (more then 1 hour?)
-        public void TestCase1(int p, int l, int ws)
+        [TestCase(425, 7084800, 3377272893)] // reply 2 - extremely slow (more then 1 hour?)
+        public void TestCase1(int p, int l, long ws)
         {
             var result = MarbleCircle.Play(p, l);
             Assert.AreEqual(ws, result.Item2, "winning score not match");

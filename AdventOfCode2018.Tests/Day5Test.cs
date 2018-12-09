@@ -8,7 +8,7 @@ namespace AdventOfCode2018.Tests
     {
         private readonly Day5.Day5 day5 = new Day5.Day5();
 
-        [Ignore("takes 25 seconds")]
+        // [Ignore("takes 25 seconds")]
         [TestCase("Day5Input.txt")]
         public void FileTest(string file)
         {
