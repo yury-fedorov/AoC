@@ -3,3 +3,5 @@ AdventOfCode2018.Tests/obj/
 AdventOfCode2018/bin/
 AdventOfCode2018/obj/
 .vs/
+Test/bin/
+Test/obj/
