@@ -16,4 +16,7 @@
     <ProjectReference Include="..\AdventOfCode2018\AdventOfCode2018.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="EmptyCSharpFile.cs" />
+  </ItemGroup>
 </Project>
