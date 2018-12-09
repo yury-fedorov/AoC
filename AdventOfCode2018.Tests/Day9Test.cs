@@ -31,45 +31,34 @@ namespace AdventOfCode2018.Tests9
             currentMarble = sequence.AddLast(0);             
         }
 
-        bool Turn(int player, int marble) { 
+        void Turn(int player, int marble) { 
             if ((marble % special) == 0 ) {
-                long points = 0;
+                long points;
 
                 // special case
                 if ( playerKeptMarbles.ContainsKey(player) ) {
                     points = playerKeptMarbles[player];
                 } else {
-                    playerKeptMarbles.Add(player,0);
+                    playerKeptMarbles.Add(player,points = 0);
                 } 
 
                 points += marble;
-
                 for ( int j = 0; j < 7; j++)
                 {
                     currentMarble = currentMarble.Previous ?? sequence.Last;
                 }
 
-                var element = currentMarble.Value;
+                var nodeToRemove = currentMarble;
                 currentMarble = currentMarble.Next ?? sequence.First;
-                sequence.Remove(element);
+                sequence.Remove(nodeToRemove);
 
-                points += element;
+                points += nodeToRemove.Value;
                 playerKeptMarbles[player] = points;
-                return true;
             }
             else
             {
-                // go 1 ahead and then add later
-                if ( currentMarble.Next != null )
-                {
-                    currentMarble = sequence.AddAfter(currentMarble.Next, marble);
-                } 
-                else
-                {
-                    // next is null
-                    currentMarble = sequence.AddAfter(sequence.First, marble);
-                }
-                return false;
+                var node = currentMarble.Next ?? sequence.First;
+                currentMarble = sequence.AddAfter(node, marble);
             }
         }
 
@@ -88,15 +77,13 @@ namespace AdventOfCode2018.Tests9
         public static Tuple<int, long> Play(int players, int lastMarble)
         {
             var game = new MarbleCircle();
-            int currentMarble = 1;
-            while (true)
+            var player = 1;
+            for (int currentMarble = 1; currentMarble <= lastMarble; currentMarble++ )
             {
-                for (int p = 1; p <= players; p++)
-                {
-                    game.Turn(p, currentMarble++);
-                    if (currentMarble > lastMarble) return game.Winner();
-                }
+                game.Turn(player, currentMarble);
+                player = player < players ? player + 1 : 1;
             }
+            return game.Winner();
         }
     }
 
@@ -118,7 +105,7 @@ namespace AdventOfCode2018.Tests9
         [TestCase(30, 5807, 37305)]
         // 425 players; last marble is worth 70848 points
         [TestCase(425, 70848, 413188)] // reply 1
-        // [TestCase(425, 7084800, 0)] // reply 2 - extremely slow (more then 1 hour?)
+        // [TestCase(425, 7084800, 3377272893)] // reply 2 - extremely slow (more then 1 hour?)
         public void TestCase1(int p, int l, int ws)
         {
             var result = MarbleCircle.Play(p, l);
