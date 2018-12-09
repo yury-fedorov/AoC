@@ -13,7 +13,7 @@ namespace AdventOfCode2018.Tests9
 
     public class MarbleCircle {
         public readonly LinkedList<int> sequence = new LinkedList<int>();
-        public int currentMarbleIndex;
+        public LinkedListNode<int> currentMarble;
         public Dictionary<int, long> playerKeptMarbles = new Dictionary<int, long>();
 
         // First, the current player keeps the marble they would have placed, adding it to their score. 
@@ -28,8 +28,7 @@ namespace AdventOfCode2018.Tests9
             // it is still a circle: the marble is both clockwise from itself 
             // and counter-clockwise from itself. 
             // This marble is designated the current marble.
-            sequence.AddLast(0);
-            currentMarbleIndex = 0;              
+            currentMarble = sequence.AddLast(0);             
         }
 
         bool Turn(int player, int marble) { 
@@ -45,61 +44,33 @@ namespace AdventOfCode2018.Tests9
 
                 points += marble;
 
-                var newIndex = currentMarbleIndex - 7;
-                if ( newIndex < 0 )
+                for ( int j = 0; j < 7; j++)
                 {
-                    newIndex = sequence.Count + newIndex; // -1 -> last element
-                    // Debug.Assert(newIndex < sequence.Count);
+                    currentMarble = currentMarble.Previous ?? sequence.Last;
                 }
-                // Debug.Assert(newIndex >= 0); // to be checked what to do
 
-                // var element = sequence[newIndex];
-                // sequence.RemoveAt(newIndex);
-                var node = GetAt(newIndex);
-                var element = node.Value;
+                var element = currentMarble.Value;
+                currentMarble = currentMarble.Next ?? sequence.First;
                 sequence.Remove(element);
 
-                currentMarbleIndex = newIndex;
-                // check that new index is still valid after removing
-                // Debug.Assert(newIndex < sequence.Count);
                 points += element;
                 playerKeptMarbles[player] = points;
                 return true;
             }
             else
             {
-                if ( currentMarbleIndex < sequence.Count - 1 )
+                // go 1 ahead and then add later
+                if ( currentMarble.Next != null )
                 {
-                    currentMarbleIndex += 2;
+                    currentMarble = sequence.AddAfter(currentMarble.Next, marble);
                 } 
                 else
                 {
-                    currentMarbleIndex = 1;
+                    // next is null
+                    currentMarble = sequence.AddAfter(sequence.First, marble);
                 }
-
-                // sequence.Insert(currentMarbleIndex, marble);
-                if ( currentMarbleIndex < sequence.Count )
-                {
-                    var node = GetAt(currentMarbleIndex);
-                    sequence.AddBefore(node, marble);
-                } 
-                else
-                {
-                    sequence.AddLast(marble);
-                }
-
                 return false;
             }
-        }
-
-        LinkedListNode<int> GetAt(int index)
-        {
-            var node = sequence.First;
-            for (int j = 0; j < index; j++)
-            {
-                node = node.Next;
-            }
-            return node;
         }
 
         public Tuple<int,long> Winner()
@@ -147,7 +118,7 @@ namespace AdventOfCode2018.Tests9
         [TestCase(30, 5807, 37305)]
         // 425 players; last marble is worth 70848 points
         [TestCase(425, 70848, 413188)] // reply 1
-        [TestCase(425, 7084800, 0)] // reply 2 - extremely slow (more then 1 hour?)
+        // [TestCase(425, 7084800, 0)] // reply 2 - extremely slow (more then 1 hour?)
         public void TestCase1(int p, int l, int ws)
         {
             var result = MarbleCircle.Play(p, l);
