@@ -17,8 +17,7 @@ namespace AdventOfCode2018
             Assert.AreEqual(expectedOutput, result, "Wrong result");
         }
 
-		public const string Directory = //"D:\\projects\\leonteq\\AoC18\\AdventOfCode2018.Tests";
-			"/Users/fedoy/projects/AoC18/AdventOfCode2018.Tests";
+		public const string Directory = App.App.Directory;
 		
         [TestCase("Day1-Input.txt")]
         public void Task1(string file) {
