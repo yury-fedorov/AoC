@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -37,84 +37,91 @@ namespace AdventOfCode2018.Day10
     {
         public Point min; // ie topLeft
         public Point max; // ie bottomRight
-        public long Area()
-        { return (max.X - min.X) * (max.Y - min.Y); }
+	    public int Width => max.X - min.X;
+	    public int Height => max.Y - min.Y;
     }
 
     public class Day10
     {
-
         // position=<-2,  2> velocity=< 2,  0>
         static Light ParseLine(string line)
         {
             const string pattern = @"position=<\s*([-0-9]+),\s*([-0-9]+)> velocity=<\s*([-0-9]+),\s*([-0-9]+)>";
-            // var pattern = @"([-0-9]+),\s*([-0-9]+).*([-0-9]+),\s*([-0-9]+)";
-
             var matches = Regex.Matches(line, pattern);
             foreach (Match match in matches)
             {
-                try
-                {
-                    int px = Convert.ToInt32(match.Groups[1].Value);
-                    int py = Convert.ToInt32(match.Groups[2].Value);
-                    int vx = Convert.ToInt32(match.Groups[3].Value);
-                    int vy = Convert.ToInt32(match.Groups[4].Value);
                     return new Light
                     {
                         point0 = new Point
                         {
-                            X = px, 
-                            Y = py
+                            X = Convert.ToInt32(match.Groups[1].Value), 
+                            Y = Convert.ToInt32(match.Groups[2].Value)
                         },
                         velocity = new Velocity {
-                            X= vx,
-                            Y= vy}
+                            X = Convert.ToInt32(match.Groups[3].Value),
+                            Y = Convert.ToInt32(match.Groups[4].Value)
+                        }
                     };
-                } catch (Exception e)
-                {
-                    // throw new Exception( match.Groups[0].Value, e);
-                    throw;
-                }
             }
             throw new ArgumentException(line);
-
         }
 
         static Rectangle Bounds(IEnumerable<Point> points)
         {
-            var min_ = new Point
+            var min = new Point
             {
                 X = points.Select(p => p.X).Min(),
                 Y = points.Select(p => p.Y).Min()
             };
-            var max_ = new Point
+            var max = new Point
             {
                 X = points.Select(p => p.X).Max(),
                 Y = points.Select(p => p.Y).Max()
             };
-            return new Rectangle { min = min_, max = max_ };
+            return new Rectangle { min = min, max = max };
         }
 
 
         [TestCase("Day10Sample.txt",3)]
-        [TestCase("Day10Input.txt", 3)]
+        [TestCase("Day10Input.txt", 10003)]
         public void Test(string file, long et)
         {
             var lines = File.ReadAllLines(Path.Combine(App.App.Directory, file));
             var lights = lines.Select(l => ParseLine(l)).ToArray();
-            var b0 = Bounds(lights.Select(l => l.point0));
-            Assert.True( b0.min.X < b0.max.X && b0.min.Y < b0.max.Y, "expected area" );
-            Assert.True(b0.Area() > 0, "expected > 0");
-            var areaPrev = b0.Area();
-            int t = 1;
-            for (; areaPrev > 0; t++)
+            var b = Bounds(lights.Select(l => l.point0));
+            var yPrev = b.Height;
+            int t = 0;
+            for (; yPrev > 0; t++)
             {
-                var area = Bounds(lights.Select(l => l.AtTime(t))).Area();
-                if (areaPrev <= area) break;
+		        var b1 = Bounds(lights.Select(l => l.AtTime(t+1)));
+                var y = b1.Height;
+                if (yPrev <= y) break;
+		        yPrev = y;
+		        b = b1;
             }
-            Assert.AreEqual(et, t, string.Format("{0}vs{1}",
-                Bounds(lights.Select(l => l.AtTime(t))).Area(),
-                Bounds(lights.Select(l => l.AtTime(t-1))).Area()));
+		    Assert.GreaterOrEqual( 50, b.Height );
+            Assert.GreaterOrEqual( 80, b.Width );
+            Console.WriteLine( $"{b.min.X} , {b.min.Y} - {b.max.X} {b.max.Y}" );
+
+            var ol = lights.Select(l => l.AtTime(t)).ToArray();
+
+            for (var y = b.min.Y; y <= b.max.Y; y++)
+            {
+                var thisLine = ol.Where(p => p.Y == y).OrderBy(p => p.X);
+                var line = new string(' ', b.Width + 1).ToCharArray();
+                foreach (var p in thisLine)
+                {
+                    var x = p.X - b.min.X;
+                    // Assert.GreaterOrEqual(x,0);
+                    // Assert.Less(x, b.Width);
+                    line[x] = '*';
+                }
+                Console.WriteLine(line);
+            }
+            // to write the output on the console (to see what is written)
+            // sample: HI
+            // my input: CZKPNARN
+            // Assert.Fail();
         }
     }
 }
