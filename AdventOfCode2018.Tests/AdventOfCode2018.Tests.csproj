@@ -19,4 +19,7 @@
   <ItemGroup>
     <Compile Remove="EmptyCSharpFile.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="AoC17\" />
+  </ItemGroup>
 </Project>
