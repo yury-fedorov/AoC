@@ -134,6 +134,7 @@ Subtract 5 from the power level. */
             return Tuple.Create(rx, ry, rValue);
         }
 
+        [Ignore("takes too much")]
         // For grid serial number 18, the largest total square (with a total power of 113) is 16x16 
         // and has a top-left corner of 90,269, so its identifier is 90,269,16.
         // For grid serial number 42, the largest total square(with a total power of 119) is 12x12 
