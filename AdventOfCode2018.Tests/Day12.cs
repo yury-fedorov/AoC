@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using System.IO;
 using System.Collections.Generic;
@@ -64,33 +64,35 @@ namespace AdventOfCode2018.Tests
             return Tuple.Create(map, rules);
         }
 
+	public string ToStr(IDictionary<int, char> m) {
+		var potIndex = m.Where(p => p.Value == '#').Select(p=>p.Key);
+		var min = potIndex.Min();
+		var max = potIndex.Max();
+		Console.WriteLine( $"{potIndex.Count()} {min} {max}" );
+		return string.Concat( m.Where( p => p.Key >= min && p.Key <= max ).OrderBy( p => p.Key ).Select( p => p.Value) );
+	}
+
         public int CountPots(IDictionary<int, char> m)
         {
-            var potIndex = m.Where(p => p.Value == '#').Select(p=>p.Key).OrderBy(i=>i).ToArray();
-            if (potIndex.Any())
-            {
-                var min = potIndex.First();
-                var max = potIndex.Last();
-                return max - min + 1;
-            }
-            return 0;
+            return m.Where(p => p.Value == '#').Sum(p=>p.Key);
         }
 
-        [TestCase("Day12Sample.txt")]
-        // [TestCase("Day12Input.txt")]
-        public void Test1(string file)
+	[Ignore("part done for question 2 later solved in excel")]
+        // [TestCase("Day12Sample.txt",325)]
+        [TestCase("Day12Input.txt",0)]
+        public void Test1(string file,int expected)
         {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
             var t = ReadInit(lines);
             var m = t.Item1;
             var rules = t.Item2;
             var initialSize = m.Count;
-            int count = CountPots(m);
-            Console.WriteLine($"0 {count} {count} {string.Concat(m.Keys.OrderBy(a=>a).Select(k=>m[k]))}");
-            for ( int g = 1; g <= 20; g++)
+            // int count = CountPots(m);
+            // Console.WriteLine($"0 {count} {count} {string.Concat(m.Keys.OrderBy(a=>a).Select(k=>m[k]))}");
+            for ( int g = 1; g <= 100; g++)
             {
                 var g1m = new Dictionary<int, char>();
-                for ( int i = -(20); i < initialSize + (20); i++)
+                for ( int i = -(2*g); i < initialSize + (2*g); i++)
                 {
                     g1m.Add(i, '.');
                     foreach( var r in rules)
@@ -102,12 +104,15 @@ namespace AdventOfCode2018.Tests
                     }
                 }
                 m = g1m;
-                int genCount = CountPots(m);
-                count += genCount;
-                Console.WriteLine($"{g} {genCount} {count} {string.Concat(m.Keys.OrderBy(a => a).Select(k => m[k]))}");
-
+                // int genCount = CountPots(m);
+                // count += genCount;
+                // Console.WriteLine($"{g} {genCount} {count} {string.Concat(m.Keys.OrderBy(a => a).Select(k => m[k]))}");
+		Console.WriteLine($"{g} {CountPots(m)} {ToStr(m)}");
             }
-            Assert.AreEqual(0, count);
+            Assert.AreEqual(expected, CountPots(m));
+		// question 2: delta by each generation starting from 100 is 72, 
+		// f(100) =  9222, f(99) = 9150, f(g) = a*g + b where a = 72 and b = (9150-100*72) = 1950
+		// f(50000000000) = 72*50000000000 + 1950 =  3600000002022 
         }
     }
 }
