@@ -77,7 +77,7 @@ namespace AdventOfCode2018.Tests
             return m.Where(p => p.Value == '#').Sum(p=>p.Key);
         }
 
-	[Ignore("part done for question 2 later solved in excel")]
+	    [Ignore("part done for question 2 later solved in excel")]
         // [TestCase("Day12Sample.txt",325)]
         [TestCase("Day12Input.txt",0)]
         public void Test1(string file,int expected)
