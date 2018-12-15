@@ -62,6 +62,40 @@ namespace AdventOfCode2018.Day15
             }
         }
 
+		public Dictionary<Point, int> ExtendPath( Dictionary<Point,int> path, Point point)
+		{
+			var maxStep = path.Any() ? path.Values.Max() : 0;
+			var path1 = new Dictionary<Point, int>(path);
+			path1.Add(point, maxStep + 1);
+			return path1;
+		}
+
+		public int ? PathDistance( Point from, Point to, Dictionary<Point,int> pathBefore)
+		{
+			if ( IsDirectPath(from,to) )
+			{
+				// the same as the air distance
+				return from.Distance(to);
+			}
+			var pointsToGo = Directions(from)
+				.Select(d => from.Go(d))
+				.Where(p=> !pathBefore.ContainsKey(p)) // we do not go back
+				.ToArray();
+			if (pointsToGo.Length == 0) return null; // no way to go
+			var dir = pointsToGo
+				.ToDictionary(p => p, p => PathDistance(p, to, ExtendPath(pathBefore, p)))
+				.Where(p=>p.Value.HasValue);
+			if (!dir.Any()) return null; // not optimal path (with going back)
+			var minPathLength = dir.Min(p => p.Value);
+			return minPathLength + 1; // direct path from nearest
+			/*
+			return dir.Where(p => p.Value == minPathLength)
+				.OrderBy(p => p.Key.ReadingOrder)
+				.First()
+				.Value + 1; // direct path from nearest
+				*/
+		}
+
         public IEnumerable<Tuple<Race, Point>> FindAllMen()
         {
             for (int x = 0; x < Width; x++)
@@ -138,8 +172,6 @@ namespace AdventOfCode2018.Day15
         {
             Map[dead.Position.X, dead.Position.Y] = Path; // empty space
         }
-
-
     }
 
     public class Combat {
@@ -269,9 +301,25 @@ namespace AdventOfCode2018.Day15
             }
             else
             {
-                // more difficult task
-                throw new Exception("longer then by air distance optimization"); 
-            }
+				// more difficult task
+				var zeroPath = new Dictionary<Point, int>();
+				var pointDistance = 
+					inRange.ToDictionary(p => p, p => _map.PathDistance(man.Position, p, zeroPath))
+						.Where(p => p.Value.HasValue)
+						.ToDictionary(p => p.Key, p => p.Value.Value);
+				var minimalDistance = pointDistance.Values.Min();
+				var destinations = pointDistance.Where(p => p.Value == minimalDistance).Select(p => p.Key)
+					.ToArray();
+				// how to choose among these destinations the best move?
+				var optimization = _map.Directions(man.Position)
+					.ToDictionary(d => d, 
+						d => destinations.Select(p1 => _map.PathDistance(man.Position.Go(d), p1, zeroPath))
+								.Where(pd=>pd.HasValue).Min(v=>v.Value) );
+
+				var minPath = optimization.Values.Min();
+				return optimization.Where(p => p.Value == minPath).Select(p => man.Position.Go(p.Key))
+					.OrderBy(p => p.ReadingOrder).First();
+			}
         }
     }
 
@@ -281,6 +329,8 @@ namespace AdventOfCode2018.Day15
         public void Test1(string file) {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat( new MapGuide( lines ) );
+			var result = combat.Go();
+			Assert.AreEqual((0,0), result);
         }
     }
 }
