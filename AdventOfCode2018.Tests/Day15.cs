@@ -238,16 +238,38 @@ namespace AdventOfCode2018.Day15
             int round = 0;
             while ( !IsOver)
             {
-				var alive = Alive;
-                foreach( var m in alive)
-                {
-                    if (!m.IsAlive) continue; // could be killed during this loop of battle
-                    var hitted = ManAction(m);
-                }
+				MakeRound();
                 round++;
             }
             return Tuple.Create(round, _men.Where(m => m.IsAlive).Sum(m => m.HitPoints));
         }
+
+		public List<Man> MakeRound()
+		{
+			var dead = new List<Man>();
+			var alive = Alive;
+			foreach (var m in alive)
+			{
+				if (!m.IsAlive) continue; // could be killed during this loop of battle
+				var hitted = ManAction(m);
+				if (hitted != null && !hitted.IsAlive)
+				{
+					dead.Add(hitted);
+				}
+			}
+			return dead;
+		}
+
+		public List<Man> MakeSomeRounds(int count)
+		{
+			var dead = new List<Man>();
+			while (count-- > 0 )
+			{
+				if (IsOver) throw new Exception("game over!");
+				dead.AddRange(MakeRound());
+			}
+			return dead;
+		}
 
         public Man ManAction(Man man)
         {
@@ -433,5 +455,30 @@ namespace AdventOfCode2018.Day15
 			Assert.AreEqual(new Point(3,1), dest.Item1, "destination of first man");
 			Assert.AreEqual(Direction.Right, dest.Item2, "direction of the first man");
 		}
-    }
+
+		[TestCase("Day15Sample2.txt")]
+		public void TestSample2(string file)
+		{
+			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+			var combat = new Combat(new MapGuide(lines));
+
+			var elfs = combat.MenOfRace(Race.Elf);
+			Assert.AreEqual(1, elfs.Count(), "the only elf is expected");
+			var elf = elfs.Single();
+
+			Assert.IsEmpty( combat.MakeRound(), "no dead after 1st round" );
+			var a = combat.Alive;
+			// after the first round
+			Assert.AreEqual(new Point(2,1), a.First().Position, "first man");
+			Assert.AreEqual(new Point(6,1), a[1].Position, "second man");
+			Assert.AreEqual(new Point(4,3), elf.Position, "elf after round 1");
+
+			Assert.IsEmpty(combat.MakeSomeRounds(2), "no dead after 1+2=3 rounds");
+			a = combat.Alive; // refreshed queue
+			Assert.AreEqual(new Point(4, 3), elf.Position, "elf position");
+			Assert.AreEqual(new Point(3, 2), a[0].Position, "man 1");
+			Assert.AreEqual(new Point(4, 2), a[1].Position, "man 2");
+			Assert.AreEqual(new Point(5, 2), a[2].Position, "man 3");
+		}
+	}
 }
