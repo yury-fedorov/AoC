@@ -40,12 +40,14 @@ namespace AdventOfCode2018.Day15
 
 		readonly Dictionary<Point, int> _cache = new Dictionary<Point, int>();
 		readonly Point _p0;
+		int _lastCompletedLevel;
 
 		public Optimizer(MapGuide map, Point p0)
 		{
 			_map = map;
 			_p0 = p0;
 			_cache.Add(p0, 0);
+			_lastCompletedLevel = 0;
 		}
 
 		private void Add(Point p, int d)
@@ -85,7 +87,7 @@ namespace AdventOfCode2018.Day15
 			return distance;
 			*/
 			var maxSteps = _map.Height * _map.Width; // absolutely pessimistic
-			for (var curDistance = 1; curDistance < maxSteps; curDistance++ )
+			for (var curDistance = _lastCompletedLevel + 1; curDistance < maxSteps; curDistance++, _lastCompletedLevel++ )
 			{
 				var previousLevel = _cache.Where(p => p.Value == curDistance - 1).Select(p=>p.Key).ToHashSet();
 				var nextLevel = previousLevel.SelectMany(p => _map.Directions(p).Select(d=> p.Go(d) ) )
@@ -224,7 +226,9 @@ namespace AdventOfCode2018.Day15
                 .ToList();
         }
 
-        public IEnumerable<Man> MenOfRace(Race race) => _men.Where(m => m.Race == race && m.IsAlive);
+		public Man[] Alive => _men.Where(m => m.IsAlive).OrderBy(m => m.Position.ReadingOrder).ToArray();
+
+		public IEnumerable<Man> MenOfRace(Race race) => Alive.Where(m => m.Race == race);
         public Race Enemy(Race race) => race == Race.Elf ? Race.Goblin : Race.Elf;
         public bool IsOver => !MenOfRace(Race.Elf).Any() || !MenOfRace(Race.Goblin).Any();
 
@@ -234,7 +238,7 @@ namespace AdventOfCode2018.Day15
             int round = 0;
             while ( !IsOver)
             {
-                var alive = _men.Where(m => m.IsAlive).OrderBy(m => m.Position.ReadingOrder).ToArray();
+				var alive = Alive;
                 foreach( var m in alive)
                 {
                     if (!m.IsAlive) continue; // could be killed during this loop of battle
@@ -312,18 +316,23 @@ namespace AdventOfCode2018.Day15
             // positions in range versus enemies
             var inRange = enemies
                 .SelectMany(e => _map.Directions(e.Position).Select(e.Position.Go))
-                .ToHashSet(); // different enemies can have same in range positions
+                .ToHashSet()
+				.ToDictionary( p => p, p => p.Distance(man.Position) )
+				.ToArray()
+				; // different enemies can have same in range positions
 
             // simplest strategy: select path with minimal distance
-            var minDistance = inRange.Select( man.Position.Distance ).Min();
+            var minDistance = inRange.Min(p => p.Value);
 
 			if (minDistance == 0) return null; // no way to go
 
             // not sure they are shortest indeed to be prooved
-            var nearestByAir = inRange.Where(p => man.Position.Distance(p) == minDistance);
+            var nearestByAir = inRange.Where(p => p.Value == minDistance);
 
             var nearestByAirIndeed = 
-                nearestByAir.Where(p => _map.IsDirectPath(p, man.Position)).ToArray();
+                nearestByAir.Where(p => _map.IsDirectPath(p.Key, man.Position))
+				.Select(p=>p.Key)
+				.ToArray();
 
             if (nearestByAirIndeed.Any())
             {
@@ -331,59 +340,98 @@ namespace AdventOfCode2018.Day15
 				var destination = nearestByAirIndeed.OrderBy(p => p.ReadingOrder).First();
 				return Tuple.Create(destination, WhereToMove(man.Position, destination).Value);
             }
-            else
-            {
-				// more difficult task
-				var optimizer = new Optimizer(_map, man.Position);
-				var pointDistance = 
-					inRange.ToDictionary(p => p, p => optimizer.Distance(p))
-						.Where(p => p.Value.HasValue)
-						.ToDictionary(p => p.Key, p => p.Value.Value);
 
-				if (!pointDistance.Any()) return null; // no way to go
+			// more difficult task
+			var optimizer = new Optimizer(_map, man.Position);
 
-				var minimalDistance = pointDistance.Values.Min();
+			// this is too slow
+			/*
+			var pointDistance = 
+				inRange.ToDictionary(p => p, p => optimizer.Distance(p))
+					.Where(p => p.Value.HasValue)
+					.ToDictionary(p => p.Key, p => p.Value.Value);
+			*/
 
-				var destinations = pointDistance.Where(p => p.Value == minimalDistance).Select(p => p.Key)
-					.ToArray();
+			var partialResult = new Dictionary<Point, int>();
+			int? curMinimalDistance = null;
 
-				var options = _map.Directions(man.Position).ToArray();
-
-				var directionDestination = new List<Tuple<Direction,Point>>();
-				foreach (var o in options)
+			foreach ( var inRangePoint in inRange.OrderBy( p => p.Value ) )
+			{
+				// we try from  by air shortest distance
+				if (curMinimalDistance.HasValue)
 				{
-					var p1 = man.Position.Go(o);
-					var optimizer1 = new Optimizer(_map, p1);
-					foreach (var d in destinations)
+					if (curMinimalDistance.Value < inRangePoint.Value)
 					{
-						var dd = optimizer1.Distance(d);
-						if (dd.HasValue)
-						{
-							if (dd.Value < minimalDistance) // we expect here minimal - 1
-							{
-								// this is correct direction
-								directionDestination.Add(Tuple.Create(o,d));
-							}
-						}
+						// the distance already found is less then shortest candidate by air
+						// we may terminate
+						break;
 					}
 				}
-				// now the direction destination is ready
-				if (!directionDestination.Any()) return null;
 
-				var first = directionDestination.OrderBy(dd => dd.Item2.ReadingOrder).First();
-				return Tuple.Create(first.Item2, first.Item1); // todo - just inversion of the tuple
+				var distance = optimizer.Distance(inRangePoint.Key);
+				if (distance.HasValue)
+				{
+					partialResult.Add(inRangePoint.Key, distance.Value);
+					curMinimalDistance = curMinimalDistance.HasValue 
+						? Math.Min(curMinimalDistance.Value, distance.Value) : distance.Value;
+				}
 			}
+
+			if (!curMinimalDistance.HasValue)
+			{
+				// no way to connect two points
+				return null;
+			}
+
+			var destinationList = partialResult.Where(p => p.Value == curMinimalDistance.Value).Select(p => p.Key);
+			var selectedDestination = destinationList.OrderBy(p => p.ReadingOrder).First();
+
+			var optimizer1 = new Optimizer(_map, selectedDestination);
+			var options = _map.Directions(man.Position)
+				.ToDictionary(d=>d, d => man.Position.Go(d))
+				.OrderBy(p=>p.Value.ReadingOrder)
+				.ToArray();
+
+			foreach( var o in options)
+			{
+				var distance = optimizer1.Distance(o.Value); // decreased distance due to the step ahead to the target
+				if ( distance.HasValue )
+				{
+					if ( ( curMinimalDistance.Value - 1 ) == distance.Value )
+					{
+						// this is the correct direction and expected distance
+						return Tuple.Create(selectedDestination, o.Key);
+					}
+				}
+			}
+
+			throw new Exception("unexpected processing of options");
         }
     }
 
     public class Day15
     {
-        [TestCase("Day15Input.txt")]
+        // [TestCase("Day15Input.txt")]
         public void Test1(string file) {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat( new MapGuide( lines ) );
 			var result = combat.Go();
 			Assert.AreEqual((0,0), result);
         }
+
+		[TestCase("Day15Sample1.txt")]
+		public void TestSample1(string file)
+		{
+			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+			var combat = new Combat(new MapGuide(lines));
+			var alive = combat.Alive;
+			Assert.AreEqual(4, alive.Length, "overall men");
+			Assert.AreEqual(1, combat.MenOfRace(Race.Elf).Count(), "overall elfs" );
+			var firstMan = alive.First();
+			Assert.AreEqual(new Point(1,1), firstMan.Position, "position of first to go");
+			var dest = combat.GetDestination(firstMan);
+			Assert.AreEqual(new Point(3,1), dest.Item1, "destination of first man");
+			Assert.AreEqual(Direction.Right, dest.Item2, "direction of the first man");
+		}
     }
 }
