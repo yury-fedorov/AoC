@@ -28,6 +28,7 @@ namespace AdventOfCode2018.Day13
             return new Point(0, 0);
         }
 
+        [Ignore("done")]
         [TestCase("Day13Sample1.txt", 0,3)]
         [TestCase("Day13Sample2.txt", 7,3)]
         [TestCase("Day13Input.txt", -1,-1)]
