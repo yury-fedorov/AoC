@@ -149,6 +149,31 @@ namespace AdventOfCode2018.Day15
         public Race Enemy(Race race) => race == Race.Elf ? Race.Goblin : Race.Elf;
         public bool IsOver => !MenOfRace(Race.Elf).Any() || !MenOfRace(Race.Goblin).Any();
 
+        public Point WhereToMove(Man man)
+        {
+            var destination = GetDestination(man);
+            var dx = destination.X - man.Position.X;
+            if ( dx != 0)
+            {
+                var xp = man.Position.Go( dx > 0 ? Direction.Right : Direction.Left );
+                if ( _map.IsDirectPath(xp,destination))
+                {
+                    return xp;
+                }
+            }
+            var dy = destination.Y - man.Position.Y;
+            if (dy != 0)
+            {
+                var yp = man.Position.Go(dy > 0 ? Direction.Down : Direction.Up);
+                if (_map.IsDirectPath(yp, destination))
+                {
+                    return yp;
+                }
+            }
+            // seems the path is more complicated
+            throw new Exception("more complicated path");
+        }
+
         public Point GetDestination(Man man)
         {
             var enemies = MenOfRace(Enemy(man.Race));
