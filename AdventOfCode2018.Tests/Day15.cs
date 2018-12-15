@@ -132,8 +132,16 @@ namespace AdventOfCode2018.Day15
         public void A(Man man)
         {
             var enemies = MenOfRace(Enemy(man.Race));
+
+            // positions in range versus enemies
+            var inRange = enemies
+                .SelectMany(e => _map.Directions(e.Position).Select(e.Position.Go))
+                .ToArray();
+
             // simplest strategy: select path with minimal distance
-            enemies.SelectMany(e => e.Position)
+            var minDistance = inRange.Select( man.Position.Distance ).Min();
+
+            var nearestByAir = inRange.Where(p => man.Position.Distance(p) == minDistance);
         }
     }
 
