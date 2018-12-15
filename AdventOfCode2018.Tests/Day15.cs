@@ -6,34 +6,106 @@ using NUnit.Framework;
 
 namespace AdventOfCode2018.Day15
 {
-    public class Point : Tuple<int, int>
-    {
-        public Point(int x, int y) : base(x, y) { }
-        public int X => Item1;
-        public int Y => Item2;
+	public class Point : Tuple<int, int>
+	{
+		public Point(int x, int y) : base(x, y) { }
+		public int X => Item1;
+		public int Y => Item2;
 
-        public int Distance(Point other) => Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
+		public int Distance(Point other) => Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
 
-        public Point Go(Direction direction) {
-            var dx = direction == Direction.Left ? -1 : direction == Direction.Right ? 1 : 0;
-            var dy = direction == Direction.Up ? -1 : direction == Direction.Down ? 1 : 0;
-            return new Point(X + dx, Y + dy);
-        }
+		public Point Go(Direction direction) {
+			var dx = direction == Direction.Left ? -1 : direction == Direction.Right ? 1 : 0;
+			var dy = direction == Direction.Up ? -1 : direction == Direction.Down ? 1 : 0;
+			return new Point(X + dx, Y + dy);
+		}
 
-        public int ReadingOrder => ( Y * 1000 ) + X;
-    }
+		public int ReadingOrder => (Y * 1000) + X;
+	}
 
-    public enum Direction { Left, Right, Up, Down }
+	public enum Direction { Left, Right, Up, Down }
 
-    public enum Race { Elf, Goblin }
+	public enum Race { Elf, Goblin }
 
-    public class Man
-    {
-        public Race Race;
-        public int HitPoints; // left hit points
-        public bool IsAlive => HitPoints > 0;
-        public Point Position;
-    }
+	public class Man
+	{
+		public Race Race;
+		public int HitPoints; // left hit points
+		public bool IsAlive => HitPoints > 0;
+		public Point Position;
+	}
+
+	public class Optimizer {
+		readonly MapGuide _map;
+
+		readonly Dictionary<Point, int> _cache = new Dictionary<Point, int>();
+		readonly Point _p0;
+
+		public Optimizer(MapGuide map, Point p0)
+		{
+			_map = map;
+			_p0 = p0;
+			_cache.Add(p0, 0);
+		}
+
+		private void Add(Point p, int d)
+		{
+			int distance;
+			if (_cache.TryGetValue(p, out distance))
+			{
+				Assert.AreEqual(d, distance); 
+			} else
+			{
+				_cache.Add(p, d);
+			}
+		}
+
+		public int ? Distance( Point p1 )
+		{
+			int distance;
+			if ( _cache.TryGetValue(p1, out distance) )
+			{
+				// it is already within cache
+				return distance;
+			}
+			if ( _map.IsDirectPath(_p0,p1))
+			{
+				// air path
+				distance = _p0.Distance(p1);
+				Add(p1, _p0.Distance(p1));
+				return distance;
+			}
+			// this is extremely costly for stack
+			/*
+			var p2 = _map.Directions(p1).Select(d => p1.Go(d));
+			var dic = p2.ToDictionary(p => p, p => Distance(p)).Where(a => a.Value.HasValue).ToArray();
+			if (dic.Length == 0) return null; // no path
+			distance = dic.Min(a => a.Value.Value) + 1;
+			_cache.Add(p1, distance);
+			return distance;
+			*/
+			var maxSteps = _map.Height * _map.Width; // absolutely pessimistic
+			for (var curDistance = 1; curDistance < maxSteps; curDistance++ )
+			{
+				var previousLevel = _cache.Where(p => p.Value == curDistance - 1).Select(p=>p.Key).ToHashSet();
+				var nextLevel = previousLevel.SelectMany(p => _map.Directions(p).Select(d=> p.Go(d) ) )
+					.Where( p => !_cache.ContainsKey(p) ).ToHashSet();
+
+				if (!nextLevel.Any())
+				{
+					// no way to go further
+					return null;
+				}
+
+				foreach ( var p in nextLevel )
+				{
+					if (p == p1) return distance;
+					Add(p, curDistance);
+				}
+			}
+			throw new Exception("something wrong");
+		}
+	}
 
     public class MapGuide
     {
@@ -61,40 +133,6 @@ namespace AdventOfCode2018.Day15
                 }
             }
         }
-
-		public Dictionary<Point, int> ExtendPath( Dictionary<Point,int> path, Point point)
-		{
-			var maxStep = path.Any() ? path.Values.Max() : 0;
-			var path1 = new Dictionary<Point, int>(path);
-			path1.Add(point, maxStep + 1);
-			return path1;
-		}
-
-		public int ? PathDistance( Point from, Point to, Dictionary<Point,int> pathBefore)
-		{
-			if ( IsDirectPath(from,to) )
-			{
-				// the same as the air distance
-				return from.Distance(to);
-			}
-			var pointsToGo = Directions(from)
-				.Select(d => from.Go(d))
-				.Where(p=> !pathBefore.ContainsKey(p)) // we do not go back
-				.ToArray();
-			if (pointsToGo.Length == 0) return null; // no way to go
-			var dir = pointsToGo
-				.ToDictionary(p => p, p => PathDistance(p, to, ExtendPath(pathBefore, p)))
-				.Where(p=>p.Value.HasValue);
-			if (!dir.Any()) return null; // not optimal path (with going back)
-			var minPathLength = dir.Min(p => p.Value);
-			return minPathLength + 1; // direct path from nearest
-			/*
-			return dir.Where(p => p.Value == minPathLength)
-				.OrderBy(p => p.Key.ReadingOrder)
-				.First()
-				.Value + 1; // direct path from nearest
-				*/
-		}
 
         public IEnumerable<Tuple<Race, Point>> FindAllMen()
         {
@@ -210,35 +248,34 @@ namespace AdventOfCode2018.Day15
         public Man ManAction(Man man)
         {
             // assumption - do move and hit immediately
-            var destination = GetDestination(man);
-            if ( destination.Distance(man.Position) > 0)
+            var destinationDirection = GetDestination(man);
+            if (destinationDirection != null && destinationDirection.Item1.Distance(man.Position) > 0)
             {
-                var direction = WhereToMove(man.Position, destination);
-                if (direction.HasValue) _map.Move(man,direction.Value);
+				var direction = destinationDirection.Item2;
+                _map.Move(man,direction);
             }
 
-            if (destination.Distance(man.Position) == 1)
-            {
-                // get enemy and hit him 
-                // with the fewest hit points is selected
-                var adjacentEnemies = MenOfRace(Enemy(man.Race)).Where(m => m.Position.Distance(man.Position) == 1)
-                    .ToArray();
-                var minHitPoints = adjacentEnemies.Min(m => m.HitPoints);
-                var enemyToHit = adjacentEnemies.Where(m => m.HitPoints == minHitPoints)
-                    .OrderBy(m => m.Position.ReadingOrder ) // reading order
-                    .First();
+            // get enemy and hit him 
+            // with the fewest hit points is selected
+            var adjacentEnemies = MenOfRace(Enemy(man.Race)).Where(m => m.Position.Distance(man.Position) == 1)
+                .ToArray();
 
-                // Each unit, either Goblin or Elf, has 3 attack power and starts with 200 hit points.
-                enemyToHit.HitPoints -= 3; 
-                if (!enemyToHit.IsAlive)
-                {
-                    // remove the enemy from map and list
-                    _map.Die(enemyToHit);
-                    _men.Remove(enemyToHit); // check if it working?
-                }
-                return enemyToHit;
+			if (adjacentEnemies.Length == 0) return null; // no enemy to hit
+
+            var minHitPoints = adjacentEnemies.Min(m => m.HitPoints);
+            var enemyToHit = adjacentEnemies.Where(m => m.HitPoints == minHitPoints)
+                .OrderBy(m => m.Position.ReadingOrder ) // reading order
+                .First();
+
+            // Each unit, either Goblin or Elf, has 3 attack power and starts with 200 hit points.
+            enemyToHit.HitPoints -= 3; 
+            if (!enemyToHit.IsAlive)
+            {
+                // remove the enemy from map and list
+                _map.Die(enemyToHit);
+                _men.Remove(enemyToHit); // check if it working?
             }
-            return null; // nobody was hit
+            return enemyToHit;
         }
 
         public Direction ? WhereToMove(Point position, Point destination)
@@ -267,17 +304,20 @@ namespace AdventOfCode2018.Day15
             throw new Exception("more complicated path");
         }
 
-        public Point GetDestination(Man man)
+		// destination with hint in which direction to go
+        public Tuple<Point,Direction> GetDestination(Man man)
         {
             var enemies = MenOfRace(Enemy(man.Race));
 
             // positions in range versus enemies
             var inRange = enemies
                 .SelectMany(e => _map.Directions(e.Position).Select(e.Position.Go))
-                .ToArray();
+                .ToHashSet(); // different enemies can have same in range positions
 
             // simplest strategy: select path with minimal distance
             var minDistance = inRange.Select( man.Position.Distance ).Min();
+
+			if (minDistance == 0) return null; // no way to go
 
             // not sure they are shortest indeed to be prooved
             var nearestByAir = inRange.Where(p => man.Position.Distance(p) == minDistance);
@@ -287,38 +327,51 @@ namespace AdventOfCode2018.Day15
 
             if (nearestByAirIndeed.Any())
             {
-                // check how many
-                if ( nearestByAirIndeed.Length == 1)
-                {
-                    // we have found the destination
-                    return nearestByAirIndeed.Single();
-                }
-                else
-                {
-                    // we need to choose among equal options
-                    throw new Exception("choose among equal");
-                }
+                // we have found the destination
+				var destination = nearestByAirIndeed.OrderBy(p => p.ReadingOrder).First();
+				return Tuple.Create(destination, WhereToMove(man.Position, destination).Value);
             }
             else
             {
 				// more difficult task
-				var zeroPath = new Dictionary<Point, int>();
+				var optimizer = new Optimizer(_map, man.Position);
 				var pointDistance = 
-					inRange.ToDictionary(p => p, p => _map.PathDistance(man.Position, p, zeroPath))
+					inRange.ToDictionary(p => p, p => optimizer.Distance(p))
 						.Where(p => p.Value.HasValue)
 						.ToDictionary(p => p.Key, p => p.Value.Value);
+
+				if (!pointDistance.Any()) return null; // no way to go
+
 				var minimalDistance = pointDistance.Values.Min();
+
 				var destinations = pointDistance.Where(p => p.Value == minimalDistance).Select(p => p.Key)
 					.ToArray();
-				// how to choose among these destinations the best move?
-				var optimization = _map.Directions(man.Position)
-					.ToDictionary(d => d, 
-						d => destinations.Select(p1 => _map.PathDistance(man.Position.Go(d), p1, zeroPath))
-								.Where(pd=>pd.HasValue).Min(v=>v.Value) );
 
-				var minPath = optimization.Values.Min();
-				return optimization.Where(p => p.Value == minPath).Select(p => man.Position.Go(p.Key))
-					.OrderBy(p => p.ReadingOrder).First();
+				var options = _map.Directions(man.Position).ToArray();
+
+				var directionDestination = new List<Tuple<Direction,Point>>();
+				foreach (var o in options)
+				{
+					var p1 = man.Position.Go(o);
+					var optimizer1 = new Optimizer(_map, p1);
+					foreach (var d in destinations)
+					{
+						var dd = optimizer1.Distance(d);
+						if (dd.HasValue)
+						{
+							if (dd.Value < minimalDistance) // we expect here minimal - 1
+							{
+								// this is correct direction
+								directionDestination.Add(Tuple.Create(o,d));
+							}
+						}
+					}
+				}
+				// now the direction destination is ready
+				if (!directionDestination.Any()) return null;
+
+				var first = directionDestination.OrderBy(dd => dd.Item2.ReadingOrder).First();
+				return Tuple.Create(first.Item2, first.Item1); // todo - just inversion of the tuple
 			}
         }
     }
