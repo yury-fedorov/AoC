@@ -19,6 +19,8 @@ namespace AdventOfCode2018.Day15
             var dy = direction == Direction.Up ? -1 : direction == Direction.Down ? 1 : 0;
             return new Point(X + dx, Y + dy);
         }
+
+        public int ReadingOrder => ( Y * 1000 ) + X;
     }
 
     public enum Direction { Left, Right, Up, Down }
@@ -131,6 +133,13 @@ namespace AdventOfCode2018.Day15
             }
             return options.Where(p => At(p) == Path).Any(p => IsDirectPath(p, p1));
         }
+
+        internal void Die(Man dead)
+        {
+            Map[dead.Position.X, dead.Position.Y] = Path; // empty space
+        }
+
+
     }
 
     public class Combat {
@@ -149,25 +158,77 @@ namespace AdventOfCode2018.Day15
         public Race Enemy(Race race) => race == Race.Elf ? Race.Goblin : Race.Elf;
         public bool IsOver => !MenOfRace(Race.Elf).Any() || !MenOfRace(Race.Goblin).Any();
 
-        public Point WhereToMove(Man man)
+        // rounds, hitpoints
+        public Tuple<int, int> Go()
         {
+            int round = 0;
+            while ( !IsOver)
+            {
+                var alive = _men.Where(m => m.IsAlive).OrderBy(m => m.Position.ReadingOrder).ToArray();
+                foreach( var m in alive)
+                {
+                    if (!m.IsAlive) continue; // could be killed during this loop of battle
+                    var hitted = ManAction(m);
+                }
+                round++;
+            }
+            return Tuple.Create(round, _men.Where(m => m.IsAlive).Sum(m => m.HitPoints));
+        }
+
+        public Man ManAction(Man man)
+        {
+            // assumption - do move and hit immediately
             var destination = GetDestination(man);
-            var dx = destination.X - man.Position.X;
+            if ( destination.Distance(man.Position) > 0)
+            {
+                var direction = WhereToMove(man.Position, destination);
+                if (direction.HasValue) _map.Move(man,direction.Value);
+            }
+
+            if (destination.Distance(man.Position) == 1)
+            {
+                // get enemy and hit him 
+                // with the fewest hit points is selected
+                var adjacentEnemies = MenOfRace(Enemy(man.Race)).Where(m => m.Position.Distance(man.Position) == 1)
+                    .ToArray();
+                var minHitPoints = adjacentEnemies.Min(m => m.HitPoints);
+                var enemyToHit = adjacentEnemies.Where(m => m.HitPoints == minHitPoints)
+                    .OrderBy(m => m.Position.ReadingOrder ) // reading order
+                    .First();
+
+                // Each unit, either Goblin or Elf, has 3 attack power and starts with 200 hit points.
+                enemyToHit.HitPoints -= 3; 
+                if (!enemyToHit.IsAlive)
+                {
+                    // remove the enemy from map and list
+                    _map.Die(enemyToHit);
+                    _men.Remove(enemyToHit); // check if it working?
+                }
+                return enemyToHit;
+            }
+            return null; // nobody was hit
+        }
+
+        public Direction ? WhereToMove(Point position, Point destination)
+        {
+            var dx = destination.X - position.X;
             if ( dx != 0)
             {
-                var xp = man.Position.Go( dx > 0 ? Direction.Right : Direction.Left );
+                var xd = dx > 0 ? Direction.Right : Direction.Left;
+                var xp = position.Go( xd );
                 if ( _map.IsDirectPath(xp,destination))
                 {
-                    return xp;
+                    return xd;
                 }
             }
-            var dy = destination.Y - man.Position.Y;
+            var dy = destination.Y - position.Y;
             if (dy != 0)
             {
-                var yp = man.Position.Go(dy > 0 ? Direction.Down : Direction.Up);
+                var yd = dy > 0 ? Direction.Down : Direction.Up;
+                var yp = position.Go(yd);
                 if (_map.IsDirectPath(yp, destination))
                 {
-                    return yp;
+                    return yd;
                 }
             }
             // seems the path is more complicated
