@@ -75,24 +75,17 @@ namespace AdventOfCode2018.Day15
 			{
 				// air path
 				distance = _p0.Distance(p1);
-				Add(p1, _p0.Distance(p1));
+				Add(p1, distance);
 				return distance;
 			}
-			// this is extremely costly for stack
-			/*
-			var p2 = _map.Directions(p1).Select(d => p1.Go(d));
-			var dic = p2.ToDictionary(p => p, p => Distance(p)).Where(a => a.Value.HasValue).ToArray();
-			if (dic.Length == 0) return null; // no path
-			distance = dic.Min(a => a.Value.Value) + 1;
-			_cache.Add(p1, distance);
-			return distance;
-			*/
-			var maxSteps = _map.Height * _map.Width; // absolutely pessimistic
-			for (var curDistance = _lastCompletedLevel + 1; curDistance < maxSteps; curDistance++, _lastCompletedLevel++ )
+			for (var curDistance = _lastCompletedLevel + 1; !_cache.ContainsKey(p1); curDistance++, _lastCompletedLevel++ )
 			{
+				// it is completed
 				var previousLevel = _cache.Where(p => p.Value == curDistance - 1).Select(p=>p.Key).ToHashSet();
 				var nextLevel = previousLevel.SelectMany(p => _map.Directions(p).Select(d=> p.Go(d) ) )
-					.Where( p => !_cache.ContainsKey(p) ).ToHashSet();
+					.Distinct()
+					.Where( p => !_cache.ContainsKey(p) )
+					.ToHashSet();
 
 				if (!nextLevel.Any())
 				{
@@ -102,11 +95,10 @@ namespace AdventOfCode2018.Day15
 
 				foreach ( var p in nextLevel )
 				{
-					if (p == p1) return distance;
 					Add(p, curDistance);
 				}
 			}
-			throw new Exception("something wrong");
+			return _cache[p1];
 		}
 	}
 
@@ -183,15 +175,22 @@ namespace AdventOfCode2018.Day15
 
         public void Move(Man man, Direction direction)
         {
+			Assert.True(man.IsAlive, "only alive can move");
             var newPosition = man.Position.Go(direction);
-            Map[man.Position.X, man.Position.Y] = Path;
+			if ( Path != At(newPosition) )
+			{
+				Assert.AreEqual(Path, At(newPosition), "we go on the empty space");
+			}
+			Map[man.Position.X, man.Position.Y] = Path;
             man.Position = newPosition;
             Map[man.Position.X, man.Position.Y] = man.Race == Race.Elf ? Elf : Goblin;
         }
 
         public bool IsDirectPath(Point p0, Point p1)
         {
-            var distance = p0.Distance(p1);
+			Assert.True(At(p0) != Wall, "p0 == Wall");
+			Assert.True(At(p1) != Wall, "p1 == Wall");
+			var distance = p0.Distance(p1);
             if (distance < 2) return true;
             var dx = p1.X - p0.X;
             var options = new List<Point>();
@@ -248,11 +247,12 @@ namespace AdventOfCode2018.Day15
 
 		public List<Man> MakeRound()
 		{
+			Assert.False(IsOver, "nothing to do anymore");
 			var dead = new List<Man>();
 			var alive = Alive;
 			foreach (var m in alive)
 			{
-				if (!m.IsAlive) continue; // could be killed during this loop of battle
+				if (!m.IsAlive || IsOver) continue; // could be killed during this loop of battle
 				var hitted = ManAction(m);
 				if (hitted != null && !hitted.IsAlive)
 				{
@@ -275,6 +275,9 @@ namespace AdventOfCode2018.Day15
 
         public Man ManAction(Man man)
         {
+			Assert.True(_map.At(man.Position) == (man.Race == Race.Elf ? MapGuide.Elf : MapGuide.Goblin), 
+				"position on map and within man are not aligned" );
+
             // assumption - do move and hit immediately
             var destinationDirection = GetDestination(man);
             if (destinationDirection != null && destinationDirection.Item1.Distance(man.Position) > 0)
@@ -306,32 +309,31 @@ namespace AdventOfCode2018.Day15
             return enemyToHit;
         }
 
+		public static int DirectionOrder(Direction d)
+		{
+			switch(d)
+			{
+				case Direction.Up: return 1;
+				case Direction.Left: return 2;
+				case Direction.Right: return 3;
+				case Direction.Down: return 4;
+			}
+			throw new Exception("unexpected direction");
+		}
+
 		// If multiple squares are in range and tied for being reachable in the fewest steps, 
 		// the square which is first in reading order is chosen.
 		public Direction ? WhereToMove(Point position, Point destination)
         {
-            var dx = destination.X - position.X;
-            if ( dx != 0)
-            {
-                var xd = dx > 0 ? Direction.Right : Direction.Left;
-                var xp = position.Go( xd );
-                if ( _map.IsDirectPath(xp,destination))
-                {
-                    return xd;
-                }
-            }
-            var dy = destination.Y - position.Y;
-            if (dy != 0)
-            {
-                var yd = dy > 0 ? Direction.Down : Direction.Up;
-                var yp = position.Go(yd);
-                if (_map.IsDirectPath(yp, destination))
-                {
-                    return yd;
-                }
-            }
-            // seems the path is more complicated
-            throw new Exception("more complicated path");
+			var directions = _map.Directions(position).ToArray();
+			if (directions.Length == 0) return null; // no way to go
+
+			// this is used only for shortest path algorithm
+			var directionDistance = directions.ToDictionary(d => d, d => position.Go(d).Distance(destination));
+			var minDistance = directionDistance.Min(p => p.Value);
+			return directionDistance.Where(p => p.Value == minDistance)
+				.OrderBy(p => DirectionOrder(p.Key))
+				.First().Key;
         }
 
 		// destination with hint in which direction to go
@@ -441,6 +443,9 @@ namespace AdventOfCode2018.Day15
 						// this is the correct direction and expected distance
 						return Tuple.Create(selectedDestination, o.Key);
 					}
+				} else
+				{
+					// Assert.Fail("why it could happen?");
 				}
 			}
 
