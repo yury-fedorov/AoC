@@ -33,6 +33,7 @@ namespace AdventOfCode2018.Day15
 		public int HitPoints; // left hit points
 		public bool IsAlive => HitPoints > 0;
 		public Point Position;
+		public string Id; // contains the initial position
 	}
 
 	public class Optimizer {
@@ -222,7 +223,8 @@ namespace AdventOfCode2018.Day15
         {
             _map = map;
             _men = map.FindAllMen()
-                .Select(t=> new Man {HitPoints=200, Position=t.Item2, Race = t.Item1 } )
+                .Select(t=> new Man {HitPoints=200, Position=t.Item2, Race = t.Item1,
+					Id = $"{t.Item1}_({t.Item2.X},{t.Item2.Y})" } )
                 .ToList();
         }
 
@@ -304,7 +306,9 @@ namespace AdventOfCode2018.Day15
             return enemyToHit;
         }
 
-        public Direction ? WhereToMove(Point position, Point destination)
+		// If multiple squares are in range and tied for being reachable in the fewest steps, 
+		// the square which is first in reading order is chosen.
+		public Direction ? WhereToMove(Point position, Point destination)
         {
             var dx = destination.X - position.X;
             if ( dx != 0)
@@ -333,7 +337,16 @@ namespace AdventOfCode2018.Day15
 		// destination with hint in which direction to go
         public Tuple<Point,Direction> GetDestination(Man man)
         {
-            var enemies = MenOfRace(Enemy(man.Race));
+            var enemies = MenOfRace(Enemy(man.Race)).ToArray();
+
+			var enimiesDistance = enemies.ToDictionary(e => e, e => e.Position.Distance(man.Position)).ToArray();
+			var minDistanceAsIs = enimiesDistance.Min(p => p.Value);
+			Assert.True( minDistanceAsIs > 0, "never enemies on the same position");
+			if ( minDistanceAsIs == 1 )
+			{
+				// we are in position to attack an enemy, no need to move
+				return null;
+			}
 
             // positions in range versus enemies
             var inRange = enemies
@@ -342,6 +355,10 @@ namespace AdventOfCode2018.Day15
 				.ToDictionary( p => p, p => p.Distance(man.Position) )
 				.ToArray()
 				; // different enemies can have same in range positions
+
+			// it could happen that all enemies (ie the only one) are rounded from all sides
+			// in this way no way to go
+			if (!inRange.Any()) return null;
 
             // simplest strategy: select path with minimal distance
             var minDistance = inRange.Min(p => p.Value);
@@ -433,7 +450,7 @@ namespace AdventOfCode2018.Day15
 
     public class Day15
     {
-        // [TestCase("Day15Input.txt")]
+        [TestCase("Day15Input.txt")]
         public void Test1(string file) {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat( new MapGuide( lines ) );
@@ -469,13 +486,21 @@ namespace AdventOfCode2018.Day15
 			Assert.IsEmpty( combat.MakeRound(), "no dead after 1st round" );
 			var a = combat.Alive;
 			// after the first round
+			var g41 = a.Single(m => m.Id == "Goblin_(4,1)");
+			var pg41r1 = g41.Position;
 			Assert.AreEqual(new Point(2,1), a.First().Position, "first man");
 			Assert.AreEqual(new Point(6,1), a[1].Position, "second man");
-			Assert.AreEqual(new Point(4,3), elf.Position, "elf after round 1");
+			var p43 = new Point(4, 3);
+			Assert.AreEqual(p43, elf.Position, "elf after round 1");
 
-			Assert.IsEmpty(combat.MakeSomeRounds(2), "no dead after 1+2=3 rounds");
+			Assert.IsEmpty(combat.MakeRound(), "no dead after 2st round");
+			a = combat.Alive;
+			Assert.AreEqual(pg41r1,g41.Position, "g41 must remain where he was");
+			Assert.AreEqual(p43, elf.Position, "elf stays on its place");
+
+			Assert.IsEmpty(combat.MakeRound(), "no dead after 13 rounds");
 			a = combat.Alive; // refreshed queue
-			Assert.AreEqual(new Point(4, 3), elf.Position, "elf position");
+			Assert.AreEqual(p43, elf.Position, "elf position is still fixed");
 			Assert.AreEqual(new Point(3, 2), a[0].Position, "man 1");
 			Assert.AreEqual(new Point(4, 2), a[1].Position, "man 2");
 			Assert.AreEqual(new Point(5, 2), a[2].Position, "man 3");
