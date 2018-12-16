@@ -453,15 +453,17 @@ namespace AdventOfCode2018.Day15
         }
     }
 
-    public class Day15
-    {
-        [TestCase("Day15Input.txt")]
-        public void Test1(string file) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
-            var combat = new Combat( new MapGuide( lines ) );
+	public class Day15
+	{
+		// wrong answer 108 * 2670 = 288360
+		[TestCase("Day15Input.txt")]
+		public void Test1(string file)
+		{
+			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+			var combat = new Combat(new MapGuide(lines));
 			var result = combat.Go();
-			Assert.AreEqual((0,0), result);
-        }
+			Assert.AreEqual((0, 0), result);
+		}
 
 		[TestCase("Day15Sample1.txt")]
 		public void TestSample1(string file)
@@ -470,11 +472,11 @@ namespace AdventOfCode2018.Day15
 			var combat = new Combat(new MapGuide(lines));
 			var alive = combat.Alive;
 			Assert.AreEqual(4, alive.Length, "overall men");
-			Assert.AreEqual(1, combat.MenOfRace(Race.Elf).Count(), "overall elfs" );
+			Assert.AreEqual(1, combat.MenOfRace(Race.Elf).Count(), "overall elfs");
 			var firstMan = alive.First();
-			Assert.AreEqual(new Point(1,1), firstMan.Position, "position of first to go");
+			Assert.AreEqual(new Point(1, 1), firstMan.Position, "position of first to go");
 			var dest = combat.GetDestination(firstMan);
-			Assert.AreEqual(new Point(3,1), dest.Item1, "destination of first man");
+			Assert.AreEqual(new Point(3, 1), dest.Item1, "destination of first man");
 			Assert.AreEqual(Direction.Right, dest.Item2, "direction of the first man");
 		}
 
@@ -488,19 +490,19 @@ namespace AdventOfCode2018.Day15
 			Assert.AreEqual(1, elfs.Count(), "the only elf is expected");
 			var elf = elfs.Single();
 
-			Assert.IsEmpty( combat.MakeRound(), "no dead after 1st round" );
+			Assert.IsEmpty(combat.MakeRound(), "no dead after 1st round");
 			var a = combat.Alive;
 			// after the first round
 			var g41 = a.Single(m => m.Id == "Goblin_(4,1)");
 			var pg41r1 = g41.Position;
-			Assert.AreEqual(new Point(2,1), a.First().Position, "first man");
-			Assert.AreEqual(new Point(6,1), a[1].Position, "second man");
+			Assert.AreEqual(new Point(2, 1), a.First().Position, "first man");
+			Assert.AreEqual(new Point(6, 1), a[1].Position, "second man");
 			var p43 = new Point(4, 3);
 			Assert.AreEqual(p43, elf.Position, "elf after round 1");
 
 			Assert.IsEmpty(combat.MakeRound(), "no dead after 2st round");
 			a = combat.Alive;
-			Assert.AreEqual(pg41r1,g41.Position, "g41 must remain where he was");
+			Assert.AreEqual(pg41r1, g41.Position, "g41 must remain where he was");
 			Assert.AreEqual(p43, elf.Position, "elf stays on its place");
 
 			Assert.IsEmpty(combat.MakeRound(), "no dead after 13 rounds");
@@ -509,6 +511,33 @@ namespace AdventOfCode2018.Day15
 			Assert.AreEqual(new Point(3, 2), a[0].Position, "man 1");
 			Assert.AreEqual(new Point(4, 2), a[1].Position, "man 2");
 			Assert.AreEqual(new Point(5, 2), a[2].Position, "man 3");
+		}
+
+		[TestCase("Day15Sample3.txt")]
+		public void TestSample3(string file)
+		{
+			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+			var combat = new Combat(new MapGuide(lines));
+			var firstElf = combat.MenOfRace(Race.Elf).First();
+			combat.MakeRound();
+			Assert.AreEqual(197, firstElf.HitPoints);
+			combat.MakeRound();
+			Assert.AreEqual(188, firstElf.HitPoints);
+			// the second round is over
+			// Assert.IsEmpty( combat.MakeSomeRounds(22) ); ??
+			combat.MakeSomeRounds(22);
+
+			// Assert.True(firstElf.IsAlive); ??
+			// Assert.True( combat.MakeRound().Contains(firstElf) ); ??
+			combat.MakeRound();
+
+			// after 23 rounds
+			Assert.False(firstElf.IsAlive);
+			var a = combat.Alive;
+			Assert.AreEqual(5, a.Length);
+			var lastElf = combat.MenOfRace(Race.Elf).Single();
+			Assert.AreEqual(131, lastElf.HitPoints);
+			Assert.AreEqual(new Point(5,4), lastElf.Position);
 		}
 	}
 }
