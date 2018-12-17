@@ -1,65 +1,58 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode2018.Day16
 {
-	public abstract class Instruction
+    public enum Code { addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtrr, gtir, gtri, eqrr, eqir, eqri }
+
+    public abstract class Instruction
 	{
-		public int[] Registers;
 		public const int A = 1;
 		public const int B = 2;
 		public const int C = 3;
-		public abstract void Execute( int [] instruction );
-		public readonly string Name;
-		protected Instruction(string name) { Name = name; }
+
+	    public readonly Code Name;
+	    public readonly Func<int, int, int> Method;
+	    public readonly Func<int[], int[], int, int> ArgA;
+	    public readonly Func<int[], int[], int, int> ArgB;
+
+	    public static readonly Func<int[], int[], int, int> Value = (i, r, a) => i[a];
+	    public static readonly Func<int[], int[], int, int> Register = (i, r, a) => r[i[a]];
+
+        protected Instruction(Code name, Func<int, int, int> method, Func<int[], int[], int, int> a, Func<int[], int[], int, int> b)
+	    {
+	        Name = name;
+	        Method = method;
+	        ArgA = a;
+	        ArgB = b;
+	    }
+
+        public int Execute(int[] instruction, int[] registers)
+	    {
+	        return registers[instruction[C]] = Method(ArgA(instruction, registers, A), ArgB(instruction, registers, B));
+        }
 	}
 
 	// (add register) stores into register C the result of adding register A and register B.
 	public class OpRegister : Instruction
 	{
-		public readonly Func<int, int, int> _method;
-		public OpRegister(string name, Func<int,int,int> method ) : base(name) {
-			_method = method;
-		}
-
-		public override void Execute(int[] instruction)
-		{
-			Registers[instruction[C]] = _method( Registers[instruction[A]], Registers[instruction[B]] );
-		}
+		public OpRegister(Code name, Func<int,int,int> method ) : base(name, method, Register, Register ) {}
 	}
 
 	public class OpImmediate1 : Instruction
 	{
-		public readonly Func<int, int, int> _method;
-		public OpImmediate1(string name, Func<int, int, int> method) : base(name)
-		{
-			_method = method;
-		}
-
-		public override void Execute(int[] instruction)
-		{
-			Registers[instruction[C]] = _method(instruction[A], Registers[instruction[B]] );
-		}
+		public OpImmediate1(Code name, Func<int, int, int> method) : base(name, method, Value, Register) { }
 	}
 
 	// addi (add immediate) stores into register C the result of adding register A and value B.
 	public class OpImmediate2 : Instruction
 	{
-		public readonly Func<int, int, int> _method;
-		public OpImmediate2(string name, Func<int, int, int> method) : base(name)
-		{
-			_method = method;
-		}
-
-		public override void Execute(int[] instruction)
-		{
-			Registers[instruction[C]] = _method(Registers[instruction[A]], instruction[B]);
-		}
+		public OpImmediate2(Code name, Func<int, int, int> method) : base(name, method, Register, Value) { }
 	}
 
 	public class Sample
@@ -71,33 +64,46 @@ namespace AdventOfCode2018.Day16
 
 	public class Day16
 	{
-		public readonly Instruction [] Instructions = {
+	    public static readonly Func<int, int, int> add = (a, b) => a + b;
+	    public static readonly Func<int, int, int> mul = (a, b) => a * b;
+	    public static readonly Func<int, int, int> ban = (a, b) => a & b;
+	    public static readonly Func<int, int, int> bor = (a, b) => a | b;
+	    public static readonly Func<int, int, int> set = (a, b) => a ;
+	    public static readonly Func<int, int, int> gt  = (a, b) => a > b ? 1 : 0;
+	    public static readonly Func<int, int, int> eq  = (a, b) => a == b ? 1 : 0;
+
+        public static readonly Instruction [] Instructions = {
 			// Addition
-			new OpRegister ("addr", (a,b)=>a+b ),
-			new OpImmediate2("addi", (a,b)=>a+b ),
+			new OpRegister (Code.addr, add ),
+			new OpImmediate2(Code.addi, add ),
 			// Multiplication
-			new OpRegister ("mulr", (a,b)=>a*b ),
-			new OpImmediate2("muli", (a,b)=>a*b ),
+			new OpRegister (Code.mulr, mul ),
+			new OpImmediate2(Code.muli, mul ),
 			// Bitwise AND
-			new OpRegister ("banr", (a,b)=>a&b ),
-			new OpImmediate2("bani", (a,b)=>a&b ),
+			new OpRegister (Code.banr, ban ),
+			new OpImmediate2(Code.bani, ban ),
 			// Bitwise OR
-			new OpRegister ("borr", (a,b)=>a|b ),
-			new OpImmediate2("bori", (a,b)=>a|b ),
+			new OpRegister (Code.borr, bor ),
+			new OpImmediate2(Code.bori, bor ),
 			// Assignment: (set register) copies the contents of register A into register C. (Input B is ignored.)
-			new OpRegister  ("setr", (a,b)=>a ),
-			new OpImmediate2("seti", (a,b)=>a ),
+			new OpRegister  (Code.setr, set ),
+			new OpImmediate1(Code.seti, set ), // seti (set immediate) stores value A into register C. (Input B is ignored.)
 			// Greater-than testing
-			new OpRegister   ("gtrr", (a,b)=>a>b?1:0 ),
-			new OpImmediate1 ("gtir", (a,b)=>a>b?1:0 ),
-			new OpImmediate2 ("gtri", (a,b)=>a>b?1:0 ),
+			new OpRegister   (Code.gtrr, gt ),
+			new OpImmediate1 (Code.gtir, gt ),
+			new OpImmediate2 (Code.gtri, gt ),
 			// Equality testing
-			new OpRegister   ("eqrr", (a,b)=>a==b?1:0 ),
-			new OpImmediate1 ("eqir", (a,b)=>a==b?1:0 ),
-			new OpImmediate2 ("eqri", (a,b)=>a==b?1:0 ),
+			new OpRegister   (Code.eqrr, eq ),
+			new OpImmediate1 (Code.eqir, eq ),
+			new OpImmediate2 (Code.eqri, eq )
 		};
 
-		public int [] ToArray( string line, string pattern )
+	    public static readonly Dictionary<Code, Instruction> MapCodeInstruction = Instructions.ToDictionary(i => i.Name, i => i);
+
+	    public static readonly HashSet<Code> FullSet = MapCodeInstruction.Keys.ToHashSet();
+
+
+        public int [] ToArray( string line, string pattern )
 		{
 			var matches = Regex.Matches(line, pattern);
 			foreach (Match match in matches)
@@ -111,7 +117,23 @@ namespace AdventOfCode2018.Day16
 			throw new Exception("unexpected flow");
 		}
 
-		[TestCase("Day16.txt")]
+	    public static string ToText<T>(IEnumerable<T> a) => string.Join(',', a.Select(e => Convert.ToString(e)).ToArray());
+
+	    public static HashSet<Code> GoodCodes(Sample sample)
+	    {
+	        var set = new HashSet<Code>();
+	        foreach (var op in Instructions)
+	        {
+	            var registers = (int[])sample.Before.Clone();
+	            op.Execute(sample.Operation, registers);
+	            var matching = registers.SequenceEqual(sample.After);
+	            if (matching) set.Add(op.Name);
+	        }
+            Assert.IsNotEmpty(set,"expected at least one alternative for each sample");
+	        return set;
+	    }
+
+        [TestCase("Day16.txt")]
 		public void TestSample3(string file)
 		{
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
@@ -148,127 +170,96 @@ namespace AdventOfCode2018.Day16
 				"we expect that 1 code for one instruction (1 to 1 mapping)" );
 
 			// now checking
-			var mapCodeOperation = new Dictionary<int, Instruction>(); // defined
-			var mapCodeOptions = new Dictionary<int, HashSet<string>>();
+			// var mapCodeOperation = new Dictionary<int, Instruction>(); // defined
+			var mapCodeOptions = new Dictionary<int, HashSet<Code>>();
+
+            Assert.AreEqual(16, FullSet.Count(), "number of known operations");
+		    foreach (var code in samples.Select(s => s.Operation.First()).Distinct())
+		    {
+		        mapCodeOptions.Add(code,FullSet);
+		    }            
+
 			int count = 0;
 			foreach ( var sample in samples )
 			{
-				var set = new HashSet<string>();
-				foreach ( var op in Instructions )
-				{
-					op.Registers = (int [])sample.Before.Clone();
-					op.Execute(sample.Operation);
-					var matching = op.Registers.SequenceEqual(sample.After);
-					if (matching) set.Add(op.Name);
-				}
+			    var set = GoodCodes(sample);
 				count += set.Count() >= 3 ? 1 : 0;
 				var opcode = sample.Operation.First();
-				if (mapCodeOperation.ContainsKey(opcode))
-				{
-					var op = mapCodeOperation[opcode];
-					op.Registers = (int[])sample.Before.Clone();
-					op.Execute(sample.Operation);
-					var matching = op.Registers.SequenceEqual(sample.After);
-					Assert.True(matching, "all samples must match detected operation");
-				}
-				else
-				{ 
-					if (set.Count() == 1)
-					{
-						mapCodeOperation.Add(opcode, Instructions.Single(i => i.Name == set.Single()));
-					}
-					else if ( mapCodeOptions.ContainsKey(opcode) )
-					{
-						var existingSet = mapCodeOptions[opcode];
-						var minusDefined = existingSet.Except(mapCodeOperation.Values.Select(i => i.Name)).ToHashSet();
-						var forIntersection = minusDefined.Any() ? minusDefined : existingSet;
-						var newScope = forIntersection.Intersect(set).ToHashSet();
-						// var newScope = existingSet.Intersect(set).ToHashSet();
-						if ( !newScope.Any())
-						{
-							Assert.True(newScope.Count() > 0, "scope can not be reduced to zero");
-							// mapCodeOperation[opcode] = null;
-							// Console.Error.WriteLine( $"{opcode} is unknown" );
-						}
-							
-						if ( newScope.Count() == 1 )
-						{
-							// we identified the operation!
-							mapCodeOperation.Add(opcode, Instructions.Single(i => i.Name == newScope.Single()));
-						}
-						else
-						{
-							mapCodeOptions[opcode] = newScope.ToHashSet();
-						}
-					}
-					else
-					{
-						// var existingSet = set;
-						var intersect = set.Except(mapCodeOperation.Values.Select(i => i.Name)).ToHashSet();
-						var newScope = intersect.Any() ? intersect : set;
-						if (!newScope.Any())
-						{
-							Assert.True(newScope.Count() > 0, "scope can not be reduced to zero");
-							// mapCodeOperation[opcode] = null;
-							// Console.Error.WriteLine($"{opcode} is unknown");
-						}
-						/*
-						*/
-						if (newScope.Count() == 1)
-						{
-							// we identified the operation!
-							mapCodeOperation.Add(opcode, Instructions.Single(i => i.Name == newScope.Single()));
-						}
-						else
-						{
-							mapCodeOptions.Add( opcode, newScope);
-						}
-					}
-				}				
+			    var intersection = mapCodeOptions[opcode].Intersect(set).ToHashSet();
+                mapCodeOptions[opcode] = intersection;
+                Assert.IsNotEmpty(intersection);
 			}
 
 			Assert.AreEqual(544, count, "answer1");
 
-			// now detect code to operation
+            // now detect code to operation
 
-			// Assert.AreEqual(Instructions.Length, mapCodeOperation.Count, "All has to be mapped");
+            // Assert.AreEqual(Instructions.Length, mapCodeOperation.Count, "All has to be mapped");
 
-			int[] registers = { 0, 0, 0, 0 };
+		    foreach (var co in mapCodeOptions.OrderBy(a=>a.Value.Count))
+		    {
+		        Console.WriteLine($"{co.Key} - [{ToText(co.Value.OrderBy(x => x))}]");
+		    }
+
+
+            var mapCodeOperation = new Dictionary<int, Code>();
+            
+            while ( true )
+            {
+                var newOneOptionCases = mapCodeOptions.Where(a => a.Value.Count() == 1)
+                    .ToDictionary(a => a.Key, a => a.Value.Single()).ToArray();
+
+                if (newOneOptionCases.Length == 0) break;
+
+                // new mappging
+                // and remove all 1 element maps
+                foreach (var detected in newOneOptionCases)
+                {
+                    mapCodeOperation.Add(detected.Key, detected.Value);
+                    mapCodeOptions.Remove(detected.Key);
+                    // remove all known from alternatives
+                    foreach (var a in mapCodeOptions)
+                    {
+                        a.Value.RemoveWhere(s => s == detected.Value);
+                        if (!a.Value.Any())
+                        {                            
+                            var set = FullSet;
+                            foreach (var s in samples.Where(s => s.Operation.First() == a.Key))
+                            {
+                                var variants = GoodCodes(s);
+                                // Console.WriteLine( $"[{ToText(s.Before)}] ({ToText(s.Operation)}) [{ToText(s.After)}] ({ToText(variants.OrderBy(x=>x))})" );
+                                set = set.Intersect(variants).ToHashSet();
+                            }
+                            Console.WriteLine($"({ToText(set.OrderBy(x => x))})");
+                            // Assert.IsNotEmpty(a.Value, "option can not be empty");
+                        }
+                    }
+                }
+            }
+
+		    foreach (var co in mapCodeOperation)
+		    {
+		        Console.WriteLine($"{co.Key} - [{co.Value}]");
+		    }
+		    foreach (var co in mapCodeOptions.OrderBy(a => a.Value.Count))
+		    {
+		        Console.WriteLine($"{co.Key} - [{ToText(co.Value.OrderBy(x => x))}]");
+            }
+
+		    Assert.IsEmpty(mapCodeOptions, "expected full decoding");
+
+            int[] registers = { 0, 0, 0, 0 };
 			for (int i = latestSampleStart + 3; i < lines.Length; i++ )
 			{
 				var line = lines[i];
 				if (string.IsNullOrEmpty(line.Trim())) continue;
 				var operation = ToArray(line, patternOperation);
 				var opcode = operation.First();
-				if ( mapCodeOperation.ContainsKey(opcode) )
-				{
-					var op = mapCodeOperation[opcode];
-					op.Registers = registers;
-					op.Execute(operation);
-					registers = op.Registers;
-				}
-				else
-				{
-					// we have options
-					// we try to execute the first
-					var before = (int[])registers.Clone();
-					int [] after = null;
-					foreach( var opname in mapCodeOptions[opcode] )
-					{
-						var op = Instructions.Single(x => x.Name == mapCodeOptions[opcode].First());
-						op.Registers = registers;
-						op.Execute(operation);
-						if (after == null) after = (int[])op.Registers.Clone();
-						else
-						{
-							var matching = op.Registers.SequenceEqual(after);
-							Assert.True(matching, "ambiguity in data processing");
-						}
-					}
-					registers = after;
-				}
+				var code = mapCodeOperation[opcode];
+			    var op = MapCodeInstruction[code];
+				op.Execute(operation, registers);
 			}
-			Assert.AreEqual(0, registers.First(), "answer 2");
+			Assert.AreEqual(600, registers.First(), "answer 2");
 		}
 	}
 }
