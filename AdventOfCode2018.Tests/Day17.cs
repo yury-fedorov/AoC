@@ -219,12 +219,43 @@ namespace AdventOfCode2018.Day17
 			if (y1 <= y0) return Enumerable.Empty<Point>();
 
 			var fallingBottom = new Point(waterSpring.X, y1);
-			map.DrawLine(new Line { A = new Point(waterSpring.X, y0), B = fallingBottom }, Map.FallingWater);
+			var fallingSpringLine = new Line { A = new Point(waterSpring.X, y0), B = fallingBottom };
+			map.DrawLine(fallingSpringLine, Map.FallingWater);
+
 			// now we at the bottom
 			// now we fill the volume with water
 			var leftRight = map.FindLeftRight(fallingBottom);
 			var prevLeftRight = leftRight;
-			map.DrawLine(new Line { A = new Point(leftRight.Item1, fallingBottom.Y), B = new Point(leftRight.Item2, fallingBottom.Y) }, Map.RestWater);
+			var bottomRestWaterLine = new Line { A = new Point(leftRight.Item1, fallingBottom.Y), B = new Point(leftRight.Item2, fallingBottom.Y) };
+			map.DrawLine(bottomRestWaterLine, Map.RestWater);
+
+			var result = new List<Point>();
+
+			// this bottom can be partial and origin of two new springs, to check
+			// this is important to fill the part below
+			for (var bottomLeft = new Point(waterSpring.X-1,fallingBottom.Y); 
+				bottomLeft.X >= bottomRestWaterLine.A.X; bottomLeft = bottomLeft.Dx(-1) )
+			{
+				if ( map.At(bottomLeft.Dy(1)) != Map.Clay )
+				{
+					// hole on the left
+					result.Add(bottomLeft);
+					break; // found a spring on the left
+				}
+			}
+
+			for (var bottomRight = new Point(waterSpring.X + 1, fallingBottom.Y);
+				bottomRight.X <= bottomRestWaterLine.B.X; bottomRight = bottomRight.Dx(1))
+			{
+				if (map.At(bottomRight.Dy(1)) != Map.Clay)
+				{
+					// hole on the right
+					result.Add(bottomRight);
+					break; // found a spring on the right
+				}
+			}
+
+			// now we are ready to go up
 			var falling = fallingBottom.Dy(-1);
 			for (; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1))
 			{
@@ -237,18 +268,24 @@ namespace AdventOfCode2018.Day17
 			// now it can fall down on both sides
 			var cupLeftInternalPoint = new Point(prevLeftRight.Item1, falling.Y);
 			var cupRightInternalPoint = new Point(prevLeftRight.Item2, falling.Y);
-			var isFallingOnRight = map.At(cupRightInternalPoint.Dx(1)) != Map.Clay;
-			var isFallingOnLeft = map.At(cupLeftInternalPoint.Dx(-1)) != Map.Clay;
+			var isFallingOnRight = map.At(cupRightInternalPoint.Dx(1)) != Map.Clay
+				&& map.At(cupRightInternalPoint.Dx(2).Dy(1)) != Map.Clay;
+			var isFallingOnLeft = map.At(cupLeftInternalPoint.Dx(-1)) != Map.Clay 
+				&& map.At(cupLeftInternalPoint.Dx(-2).Dy(1)) != Map.Clay;
+
 			var line = new Line
 			{
 				A = cupLeftInternalPoint.Dx(isFallingOnLeft ? -2 : 0),
 				B = cupRightInternalPoint.Dx(isFallingOnRight ? 2 : 0)
 			};
 
-			// we detect the sides where it goes down
-			map.DrawLine(line, Map.FallingWater);
+			if ( map.At( new Point( waterSpring.X, falling.Y ) ) != Map.RestWater )
+			{
+				map.DrawLine(line, Map.FallingWater);
+			}
 
-			var result = new List<Point>();
+			// we detect the sides where it goes down
+
 			if (isFallingOnLeft)
 			{
 				result.Add( line.A);
