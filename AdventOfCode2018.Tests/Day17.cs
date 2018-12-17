@@ -125,8 +125,6 @@ namespace AdventOfCode2018.Day17
                 return _map[ai.X, ai.Y];
             }
 
-            public char At(int x, int y) => At(new Point(x, y));
-
             public char Set(Point p, char value)
             {
                 var ai = ToInternalMap(p);
@@ -160,51 +158,20 @@ namespace AdventOfCode2018.Day17
                 return null; // no buttom found
             }
 
-            public bool IsOnSameLine(Point a, Point b)
+            public Tuple<int,int> FindLeftRight(Point fallingBottom)
             {
-                var dx = b.X - a.X;
-                var dy = b.Y - a.Y;
-                if (Math.Abs(dx) + Math.Abs(dy) <= 1) return true; // two points close to each other
-                // we move a versus b
-                if (Math.Abs(dx) > 0)
+                // todo - without checking deepness
+                var left = fallingBottom.Dx(-1);
+                var right = fallingBottom.Dx(1);
+                for (; At(left) != Clay; left = left.Dx(-1))
                 {
-                    var pa1 = a.Dx(Math.Sign(dx));
-                    if (At(pa1) == At(a) && IsOnSameLine(pa1, b)) return true;
+                    if (left.X <= TopLeft.X) return null; // no left bound
                 }
-                if (Math.Abs(dy) > 0)
+                for (; At(right) != Clay; right = right.Dx(1))
                 {
-                    var pa1 = a.Dy(Math.Sign(dy));
-                    if (At(pa1) == At(a) && IsOnSameLine(pa1, b)) return true;
+                    if (right.X >= BottomRight.X) return null; // no right bound
                 }
-                return false;
-            }
-        }
-
-        public bool IsRestWaterZone(Map map, Point p)
-        {
-            // go to the left, find the clay, go to the right find the clay
-            // from left clay to right clay be able to arrive by clain chain
-            
-            var right = p.X;
-            for (; map.At(right, p.Y) != Map.Clay; right++)
-            {
-                if (right == map.BottomRight.X) return false;
-            }
-            var left = p.X;
-            for (; map.At(right, p.Y) != Map.Clay; left--)
-            {
-                if (left == map.TopLeft.X) return false;
-            }
-
-            var py1 = new Point(p.X, p.Y + 1);
-            if (map.At(py1) == Map.Clay)
-            {
-                // immediate bottom
-                return map.IsOnSameLine(py1, new Point(left, p.Y)) && map.IsOnSameLine(py1, new Point(right, p.Y));
-            }
-            else
-            {
-                return IsRestWaterZone(map, py1);
+                return Tuple.Create(left.X + 1, right.X - 1); // clay borders to substract from both sides
             }
         }
 
@@ -234,34 +201,24 @@ namespace AdventOfCode2018.Day17
             int ? y = map.FindBottom(waterSpring);
             var y0 = waterSpring.Y + 1;
             var y1 = y.HasValue ? y.Value - 1 : map.BottomRight.Y;
-            map.DrawLine( new Line{ A = new Point(waterSpring.X,y0), B = new Point(waterSpring.X,y1) }, Map.FallingWater );
+            var fallingBottom = new Point(waterSpring.X, y1);
+            map.DrawLine( new Line{ A = new Point(waterSpring.X,y0), B = fallingBottom }, Map.FallingWater );
             // now we at the bottom
             // now we fill the volume with water
-            var processed = new HashSet<Point>();
-            var toCheck = new Queue<Point>();
-            toCheck.Enqueue(new Point(waterSpring.X, y1));
-            Point notRestPoint;
-            while (toCheck.Any())
+            var leftRight = map.FindLeftRight(fallingBottom);
+            var prevLeftRight = leftRight;
+            map.DrawLine(new Line { A = new Point(leftRight.Item1, fallingBottom.Y), B = new Point(leftRight.Item2, fallingBottom.Y) }, Map.RestWater);
+            var falling = fallingBottom.Dy(-1);
+            for ( ; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1) )
             {
-                var p = toCheck.Dequeue();
-                processed.Add(p);
-                if (IsRestWaterZone(map, p))
-                {
-                    map.Set(p, Map.RestWater);
-                    foreach (var point in new[] { p.Dx(-1), p.Dx(1), p.Dy(-1), p.Dy(1) } )
-                    {
-                        if ( !processed.Contains(point) && ( map.At(point) == Map.Sand || map.At(point) == Map.FallingWater ) )
-                        {
-                            toCheck.Enqueue(point);
-                        }
-                    }
-                }
-                else
-                {
-                    // we reached the top side?
-                    notRestPoint = p;
-                }
+                if (prevLeftRight.Item1 > leftRight.Item1) break; // go outside of the cup from left
+                if (prevLeftRight.Item2 < leftRight.Item2) break; // go outside of the cup from right
+                map.DrawLine(new Line { A = new Point(leftRight.Item1, falling.Y), B = new Point(leftRight.Item2, falling.Y) }, Map.RestWater);
+                prevLeftRight = leftRight; // we remember we have made it more streight
             }
+            // we are at the top of the cup
+            // now it can fall down on both sides
+            // we detect the sides where it goes down
 
             File.WriteAllLines( "d:\\out.txt", map.GetStringList() );
             // Assert.AreEqual(600, registers.First(), "answer 2");
