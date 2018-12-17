@@ -177,51 +177,87 @@ namespace AdventOfCode2018.Day17
 
         [TestCase("Day17.txt")]
         public void TestSample3(string file)
-        {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
-            var realLines = lines.Select(l => ToLine(l)).ToArray();
+		{
+			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+			var realLines = lines.Select(l => ToLine(l)).ToArray();
 
-            var waterSpring = new Point(500,0);
+			var waterSpring = new Point(500, 0);
 
-            var allPoints = realLines.SelectMany(l => new[] {l.A, l.B}).Concat(new []{waterSpring}).ToArray();
-            var minX = allPoints.Min(p => p.X);
-            var minY = allPoints.Min(p => p.Y);
-            var maxX = allPoints.Max(p => p.X);
-            var maxY = allPoints.Max(p => p.Y);
+			var allPoints = realLines.SelectMany(l => new[] { l.A, l.B }).Concat(new[] { waterSpring }).ToArray();
+			var minX = allPoints.Min(p => p.X);
+			var minY = allPoints.Min(p => p.Y);
+			var maxX = allPoints.Max(p => p.X);
+			var maxY = allPoints.Max(p => p.Y);
 
-            var map = new Map( new Point(minX,minY), new Point(maxX,maxY) );
-            map.Set(waterSpring, Map.WaterSpring);
-            foreach (var line in realLines)
-            {
-                map.DrawLine(line, Map.Clay);
-            }
+			var map = new Map(new Point(minX, minY), new Point(maxX, maxY));
+			map.Set(waterSpring, Map.WaterSpring);
+			foreach (var line in realLines)
+			{
+				map.DrawLine(line, Map.Clay);
+			}
 
-            // start to draw 
-            // 1. detect the first bottom
-            int ? y = map.FindBottom(waterSpring);
-            var y0 = waterSpring.Y + 1;
-            var y1 = y.HasValue ? y.Value - 1 : map.BottomRight.Y;
-            var fallingBottom = new Point(waterSpring.X, y1);
-            map.DrawLine( new Line{ A = new Point(waterSpring.X,y0), B = fallingBottom }, Map.FallingWater );
-            // now we at the bottom
-            // now we fill the volume with water
-            var leftRight = map.FindLeftRight(fallingBottom);
-            var prevLeftRight = leftRight;
-            map.DrawLine(new Line { A = new Point(leftRight.Item1, fallingBottom.Y), B = new Point(leftRight.Item2, fallingBottom.Y) }, Map.RestWater);
-            var falling = fallingBottom.Dy(-1);
-            for ( ; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1) )
-            {
-                if (prevLeftRight.Item1 > leftRight.Item1) break; // go outside of the cup from left
-                if (prevLeftRight.Item2 < leftRight.Item2) break; // go outside of the cup from right
-                map.DrawLine(new Line { A = new Point(leftRight.Item1, falling.Y), B = new Point(leftRight.Item2, falling.Y) }, Map.RestWater);
-                prevLeftRight = leftRight; // we remember we have made it more streight
-            }
-            // we are at the top of the cup
-            // now it can fall down on both sides
-            // we detect the sides where it goes down
+			var springs = new List<Point>();
+			springs.Add(waterSpring);
+			while ( springs.Any() )
+			{
+				var spring = springs.First();
+				springs.RemoveAt(0);
+				springs.AddRange( TraceWaterSpring(spring, map) );
+			}
 
-            File.WriteAllLines( "d:\\out.txt", map.GetStringList() );
-            // Assert.AreEqual(600, registers.First(), "answer 2");
-        }
-    }
+			File.WriteAllLines("d:\\out.txt", map.GetStringList());
+			// Assert.AreEqual(600, registers.First(), "answer 2");
+		}
+
+		private static IEnumerable<Point> TraceWaterSpring(Point waterSpring, Map map)
+		{
+			// start to draw 
+			// 1. detect the first bottom
+			int? y = map.FindBottom(waterSpring);
+			var y0 = waterSpring.Y + 1;
+			var y1 = y.HasValue ? y.Value - 1 : map.BottomRight.Y;
+			if (y1 <= y0) return Enumerable.Empty<Point>();
+
+			var fallingBottom = new Point(waterSpring.X, y1);
+			map.DrawLine(new Line { A = new Point(waterSpring.X, y0), B = fallingBottom }, Map.FallingWater);
+			// now we at the bottom
+			// now we fill the volume with water
+			var leftRight = map.FindLeftRight(fallingBottom);
+			var prevLeftRight = leftRight;
+			map.DrawLine(new Line { A = new Point(leftRight.Item1, fallingBottom.Y), B = new Point(leftRight.Item2, fallingBottom.Y) }, Map.RestWater);
+			var falling = fallingBottom.Dy(-1);
+			for (; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1))
+			{
+				if (prevLeftRight.Item1 > leftRight.Item1) break; // go outside of the cup from left
+				if (prevLeftRight.Item2 < leftRight.Item2) break; // go outside of the cup from right
+				map.DrawLine(new Line { A = new Point(leftRight.Item1, falling.Y), B = new Point(leftRight.Item2, falling.Y) }, Map.RestWater);
+				prevLeftRight = leftRight; // we remember we have made it more streight
+			}
+			// we are at the top of the cup
+			// now it can fall down on both sides
+			var cupLeftInternalPoint = new Point(prevLeftRight.Item1, falling.Y);
+			var cupRightInternalPoint = new Point(prevLeftRight.Item2, falling.Y);
+			var isFallingOnRight = map.At(cupRightInternalPoint.Dx(1)) != Map.Clay;
+			var isFallingOnLeft = map.At(cupLeftInternalPoint.Dx(-1)) != Map.Clay;
+			var line = new Line
+			{
+				A = cupLeftInternalPoint.Dx(isFallingOnLeft ? -2 : 0),
+				B = cupRightInternalPoint.Dx(isFallingOnRight ? 2 : 0)
+			};
+
+			// we detect the sides where it goes down
+			map.DrawLine(line, Map.FallingWater);
+
+			var result = new List<Point>();
+			if (isFallingOnLeft)
+			{
+				result.Add( line.A);
+			}
+			if (isFallingOnRight)
+			{
+				result.Add( line.B);
+			}
+			return result;
+		}
+	}
 }

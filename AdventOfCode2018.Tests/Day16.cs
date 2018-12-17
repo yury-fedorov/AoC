@@ -133,6 +133,7 @@ namespace AdventOfCode2018.Day16
 	        return set;
 	    }
 
+		[Ignore("done")]
         [TestCase("Day16.txt")]
 		public void TestSample3(string file)
 		{
