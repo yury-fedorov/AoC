@@ -198,14 +198,14 @@ namespace AdventOfCode2018.Day17
 
 			var springs = new List<Point>();
 			springs.Add(waterSpring);
-			while ( springs.Any() )
+			while ( springs.Any() && springs.Count < 500)
 			{
 				var spring = springs.First();
 				springs.RemoveAt(0);
 				springs.AddRange( TraceWaterSpring(spring, map) );
 			}
 
-			File.WriteAllLines("d:\\out.txt", map.GetStringList());
+			File.WriteAllLines("d:\\AoC18-Day17.txt", map.GetStringList());
 			// Assert.AreEqual(600, registers.First(), "answer 2");
 		}
 
@@ -259,8 +259,16 @@ namespace AdventOfCode2018.Day17
 			var falling = fallingBottom.Dy(-1);
 			for (; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1))
 			{
-				if (prevLeftRight.Item1 > leftRight.Item1) break; // go outside of the cup from left
-				if (prevLeftRight.Item2 < leftRight.Item2) break; // go outside of the cup from right
+				// go outside of the cup from left
+				if ( (prevLeftRight.Item1 > leftRight.Item1) 
+					// && map.At( new Point(leftRight.Item1 -2, falling.Y + 1 ) ) != Map.Clay 
+					) break;
+
+				// go outside of the cup from right
+				if ( (prevLeftRight.Item2 < leftRight.Item2) 
+					// && map.At(new Point(leftRight.Item2 + 2, falling.Y + 1)) != Map.Clay
+					) break; 
+
 				map.DrawLine(new Line { A = new Point(leftRight.Item1, falling.Y), B = new Point(leftRight.Item2, falling.Y) }, Map.RestWater);
 				prevLeftRight = leftRight; // we remember we have made it more streight
 			}
