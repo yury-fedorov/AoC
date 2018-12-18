@@ -14,8 +14,9 @@ namespace AdventOfCode2018.Day18
 		public const char Tree = '|';
 		public const char Lumberyard = '#';
 
-		// [TestCase("Day18.txt",10,0,0)]
+		// [TestCase("Day18.txt",10,894,576)]
 		[TestCase("Day18Sample.txt",10,37,31)]
+		[TestCase("Day18Sample.txt", 1000000000, 0, 0)] // task 2
 		public void Test1(string file, int time, int wood, int lumber)
 		{
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
@@ -48,10 +49,10 @@ namespace AdventOfCode2018.Day18
 						 * if it was adjacent to at least one other lumberyard and at least one acre containing trees. 
 						 * Otherwise, it becomes open.
 						 */
-						var around = Around(map, size, (x, y));
+						var around = Around(map, size, (x, y)).ToArray();
 						var grouped = around.GroupBy(s => s).ToArray();
 						char acre = map[x, y];
-						switch ( map[x,y] )
+						switch ( acre )
 						{
 							case Ground:
 								if ( grouped.Any(g=>g.Key==Tree && g.Count() >= 3) )
@@ -62,7 +63,7 @@ namespace AdventOfCode2018.Day18
 							case Tree:
 								if (grouped.Any(g => g.Key == Lumberyard && g.Count() >= 3))
 								{
-									acre = Tree;
+									acre = Lumberyard;
 								}
 								break;
 							case Lumberyard:
@@ -82,7 +83,7 @@ namespace AdventOfCode2018.Day18
 					}
 				}
 
-				if ( t == 0 )
+				if ( t == -1 )
 				{
 					for ( int y = 0; y < size.Item2; y++ )
 					{
@@ -92,7 +93,7 @@ namespace AdventOfCode2018.Day18
 						Console.WriteLine(s);
 					}
 				}
-
+							   
 				map = map1; // full substition
 			}
 
@@ -110,8 +111,8 @@ namespace AdventOfCode2018.Day18
 					}
 				}
 			}
-			Assert.AreEqual(lumber, lumberCount, "lumber count");
-			Assert.AreEqual(wood, treeCount, "wood count");
+			// Assert.AreEqual(lumber, lumberCount, "lumber count");
+			// Assert.AreEqual(wood, treeCount, "wood count");
 			Assert.AreEqual(lumber*wood, lumberCount * treeCount); // wrong 656366
 		}
 
