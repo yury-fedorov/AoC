@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,10 +14,23 @@ namespace AdventOfCode2018.Day18
 		public const char Tree = '|';
 		public const char Lumberyard = '#';
 
-		// [TestCase("Day18.txt",10,894,576)]
-		[TestCase("Day18Sample.txt",10,37,31)]
-		[TestCase("Day18Sample.txt", 1000000000, 0, 0)] // task 2
-		public void Test1(string file, int time, int wood, int lumber)
+        public string ToHash(char[,]map, (int,int) size)
+        {
+            var s = new StringBuilder();
+            for (int y = 0; y < size.Item2; y++)
+            {
+                for (int x = 0; x < size.Item1; x++)
+                    s.Append(map[x, y]);
+                s.AppendLine();
+            }
+            return s.ToString();
+        }
+
+        [TestCase("Day18.txt",10,894,576)]
+        [TestCase("Day18Sample.txt",10,37,31)]
+		[TestCase("Day18.txt", 1000000000, -1, -1, 193050)] // task 2
+                                                            // Identified loop size: 28 on time: 634
+        public void Test1(string file, long time, int wood, int lumber)
 		{
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
 			var size = (lines[0].Length, lines.Length);
@@ -31,9 +44,36 @@ namespace AdventOfCode2018.Day18
 				}
 			}
 
-			for ( int t = 0; t < time; t++ )
+            // var mapToMap = new Dictionary<int, char[,]>();
+            var mapToT = new Dictionary<string, long>();
+            long? loopSize = null;
+			for ( long t = 0; t < time; t++ )
 			{
-				var map1 = (char[,])map.Clone();
+                if (!loopSize.HasValue)
+                {
+                    // state saving
+                    var hash = ToHash(map, size);
+                    if (mapToT.ContainsKey(hash))
+                    {
+                        // found the repeation
+                        var tPrev = mapToT[hash];
+                        // the full loop is tPrev == t (ie 2 and 4) means only two states: 2, 3
+                        loopSize = t - tPrev;
+                        Console.WriteLine($"Identified loop size: {loopSize} on time: {t}");
+                        // Console.WriteLine(hash);
+                        while (t < (time - loopSize))
+                        {
+                            t += loopSize.Value; // rewind forward
+                        }
+                    }
+                    else
+                    {
+                        mapToT.Add(hash, t);
+                        // mapToMap.Add(hash, map);
+                    }
+                }
+
+                var map1 = (char[,])map.Clone();
 				for (var y = 0; y < size.Item2; y++)
 				{
 					for (var x = 0; x < size.Item1; x++)
@@ -81,19 +121,7 @@ namespace AdventOfCode2018.Day18
 						}
 						map1[x, y] = acre;
 					}
-				}
-
-				if ( t == -1 )
-				{
-					for ( int y = 0; y < size.Item2; y++ )
-					{
-						var s = new StringBuilder();
-						for (int x = 0; x < size.Item1; x++)
-							s.Append(map1[x, y]);
-						Console.WriteLine(s);
-					}
-				}
-							   
+				}			   
 				map = map1; // full substition
 			}
 
@@ -113,7 +141,7 @@ namespace AdventOfCode2018.Day18
 			}
 			// Assert.AreEqual(lumber, lumberCount, "lumber count");
 			// Assert.AreEqual(wood, treeCount, "wood count");
-			Assert.AreEqual(lumber*wood, lumberCount * treeCount); // wrong 656366
+			Assert.AreEqual(lumber*wood, lumberCount * treeCount, "tree count"); // wrong 656366
 		}
 
 		public IEnumerable<char> Around(char[,] map, (int,int) size, (int,int) at )
