@@ -9,6 +9,28 @@ using NUnit.Framework;
 
 namespace AdventOfCode2018.Day19
 {
+	/*
+	 The instruction pointer contains 0, and so the first instruction is executed (seti 5 0 1). 
+	 It updates register 0 to the current instruction pointer value (0), sets register 1 to 5, 
+	 sets the instruction pointer to the value of register 0 (which has no effect, 
+	 as the instruction did not modify register 0), and then adds one to the instruction pointer.
+	*/
+	public class Seti : Instruction
+	{
+		public readonly int _ip;
+		public Seti( int ip ) : base(Code.seti,set, )
+		{
+			_ip = ip;
+		}
+
+		public override int Execute(int[] instruction, int[] registers)
+		{
+			// It updates register 0 to the current instruction pointer value (0),
+
+			return registers[instruction[C]] = Method(ArgA(instruction, registers, A), ArgB(instruction, registers, B));
+		}
+	}
+
 	public class Day19
 	{
 		public int GetIP(string line)
