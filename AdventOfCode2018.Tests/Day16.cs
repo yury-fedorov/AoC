@@ -32,7 +32,7 @@ namespace AdventOfCode2018.Day16
 	        ArgB = b;
 	    }
 
-        public int Execute(int[] instruction, int[] registers)
+        public virtual int Execute(int[] instruction, int[] registers)
 	    {
 	        return registers[instruction[C]] = Method(ArgA(instruction, registers, A), ArgB(instruction, registers, B));
         }
