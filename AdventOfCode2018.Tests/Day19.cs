@@ -14,7 +14,6 @@ namespace AdventOfCode2018.Day19
 	 It updates register 0 to the current instruction pointer value (0), sets register 1 to 5, 
 	 sets the instruction pointer to the value of register 0 (which has no effect, 
 	 as the instruction did not modify register 0), and then adds one to the instruction pointer.
-	*/
 	public class Seti : Instruction
 	{
 		public readonly int _ip;
@@ -30,6 +29,7 @@ namespace AdventOfCode2018.Day19
 			return registers[instruction[C]] = Method(ArgA(instruction, registers, A), ArgB(instruction, registers, B));
 		}
 	}
+	*/
 
 	public class Day19
 	{
@@ -63,24 +63,29 @@ namespace AdventOfCode2018.Day19
 			}
 			throw new Exception("unexpected flow");
 		}
+		
+		public string ToString<T>( T[] a ) 
+			=> string.Join(',', a.Select( o => o.ToString() ).ToArray());
 
-		[TestCase("Day19Sample.txt", -1)]
+		[TestCase("Day19Sample.txt", 6)]
 		[TestCase("Day19.txt", -1)]
 		public void Test1(string file, int reg0halt)
 		{
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
-			int ipRegister = GetIP(lines.First());
+			int ipBinding = GetIP(lines.First());
+			int ip=0;
 			var code = new List<int[]>();
 			for( int i = 1; i < lines.Length; i++)
 			{
 				code.Add( ToArray(lines[i]) );
 			}
 			var registers = new int[6] { 0, 0, 0, 0, 0, 0 };
-			while ( registers[ipRegister] < code.Count() )
+			while ( ip < code.Count() )
 			{
-				var curInstruction = code[registers[ipRegister]];
+				var curInstruction = code[ip];
 				var opcode = (Code)curInstruction[0];
 				var instruction = Day16.Day16.MapCodeInstruction[opcode];
+				Console.WriteLine($"[{ToString(registers)}] {ip} {opcode} {ToString(curInstruction)}");
 				try
 				{
 					instruction.Execute(curInstruction, registers);
@@ -89,8 +94,12 @@ namespace AdventOfCode2018.Day19
 				{
 					Assert.Fail(e.Message);
 				}
-				registers[ipRegister]++;
+				Console.WriteLine($"{ToString(registers)}");
+				ip++;
 			}
+			// correction of increment done out of scope
+			ip--;
+			
 			Assert.AreEqual(reg0halt, registers[0]);
 		}
 	}
