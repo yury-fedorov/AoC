@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AdventOfCode2018\AdventOfCode2018.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="EmptyCSharpFile.cs" />
     <Compile Remove="Day10.cs" />
   </ItemGroup>
