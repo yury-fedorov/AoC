@@ -89,6 +89,7 @@ namespace AdventOfCode2018.Tests9
 
     public class Day9Test
     {
+        [Ignore("2 seconds")]
         [TestCase( 9, 25,32)]
 
         /*

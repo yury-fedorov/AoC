@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
-// {}
-// []
 namespace AdventOfCode2018.Tests
 {
 
@@ -51,6 +49,7 @@ namespace AdventOfCode2018.Tests
 
     public class Day6Test
     {
+        [Ignore("2 seconds")]
         [TestCase("Day6Sample.txt", 17,32,16)]
         [TestCase("Day6Input.txt",3223,10000, 40495)]
         public void TestCase1(string file, int expectedLargestArea, int maxDistance, int maxDistanceArea) {
@@ -109,5 +108,3 @@ namespace AdventOfCode2018.Tests
         }
     }
 }
-// {}
-// []
