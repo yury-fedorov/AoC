@@ -3,7 +3,7 @@
     public class App
     {
         public const string Directory = //
-			"D:\\projects\\leonteq\\AoC18\\AdventOfCode2018.Tests";
+			"D:\\projects\\leonteq\\AoC18\\AdventOfCode2018";
     // "/Users/fedoy/projects/AoC18/AdventOfCode2018.Tests";
     }
 }
