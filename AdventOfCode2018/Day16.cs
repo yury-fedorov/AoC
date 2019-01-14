@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode2018.Day16
@@ -46,18 +45,18 @@ namespace AdventOfCode2018.Day16
 
 	public class OpImmediate1 : Instruction
 	{
-		public OpImmediate1(Code name, Func<int, int, int> method) : base(name, method, Value, Register) { }
+		public OpImmediate1(Code name, Func<int, int, int> method) : base(name, method, Value, Register) {}
 	}
 
 	// addi (add immediate) stores into register C the result of adding register A and value B.
 	public class OpImmediate2 : Instruction
 	{
-		public OpImmediate2(Code name, Func<int, int, int> method) : base(name, method, Register, Value) { }
+		public OpImmediate2(Code name, Func<int, int, int> method) : base(name, method, Register, Value) {}
 	}
 
     public class OpImmediate12 : Instruction
     {
-        public OpImmediate12(Code name, Func<int, int, int> method) : base(name, method, Value, Value) { }
+        public OpImmediate12(Code name, Func<int, int, int> method) : base(name, method, Value, Value) {}
     }
 
 
@@ -92,7 +91,7 @@ namespace AdventOfCode2018.Day16
 			new OpRegister (Code.borr, bor ),
 			new OpImmediate2(Code.bori, bor ),
 			// Assignment: (set register) copies the contents of register A into register C. (Input B is ignored.)
-			new OpRegister  (Code.setr, set ),
+			new OpImmediate2 (Code.setr, set ), // setr (set register) copies the contents of register A into register C. (Input B is ignored.)
 			new OpImmediate12(Code.seti, set ), // seti (set immediate) stores value A into register C. (Input B is ignored.)
 			// Greater-than testing
 			new OpRegister   (Code.gtrr, gt ),
