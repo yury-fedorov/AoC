@@ -55,7 +55,13 @@ namespace AdventOfCode2018.Day16
 		public OpImmediate2(Code name, Func<int, int, int> method) : base(name, method, Register, Value) { }
 	}
 
-	public class Sample
+    public class OpImmediate12 : Instruction
+    {
+        public OpImmediate12(Code name, Func<int, int, int> method) : base(name, method, Value, Value) { }
+    }
+
+
+    public class Sample
 	{
 		public int[] Before;
 		public int[] Operation;
@@ -87,7 +93,7 @@ namespace AdventOfCode2018.Day16
 			new OpImmediate2(Code.bori, bor ),
 			// Assignment: (set register) copies the contents of register A into register C. (Input B is ignored.)
 			new OpRegister  (Code.setr, set ),
-			new OpImmediate1(Code.seti, set ), // seti (set immediate) stores value A into register C. (Input B is ignored.)
+			new OpImmediate12(Code.seti, set ), // seti (set immediate) stores value A into register C. (Input B is ignored.)
 			// Greater-than testing
 			new OpRegister   (Code.gtrr, gt ),
 			new OpImmediate1 (Code.gtir, gt ),
@@ -133,7 +139,6 @@ namespace AdventOfCode2018.Day16
 	        return set;
 	    }
 
-		[Ignore("done")]
         [TestCase("Day16.txt")]
 		public void TestSample3(string file)
 		{

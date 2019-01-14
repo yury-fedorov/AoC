@@ -72,15 +72,23 @@ namespace AdventOfCode2018.Day19
 		public void Test1(string file, int reg0halt)
 		{
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
-			int ipBinding = GetIP(lines.First());
-			int ip=0;
+            // The first line (#ip 0) indicates that the instruction pointer should be bound to register 0 in this program. 
+            // This is not an instruction, and so the value of the instruction pointer 
+            // does not change during the processing of this line.
+            int ipBinding = GetIP(lines.First());
+
+            // The instruction pointer starts at 0.
+            int ip =0;
 			var code = new List<int[]>();
 			for( int i = 1; i < lines.Length; i++)
 			{
 				code.Add( ToArray(lines[i]) );
 			}
 			var registers = new int[6] { 0, 0, 0, 0, 0, 0 };
-			while ( ip < code.Count() )
+
+            // If the instruction pointer ever causes the device to attempt to load an instruction 
+            // outside the instructions defined in the program, the program instead immediately halts.
+            while ( ip < code.Count() )
 			{
 				var curInstruction = code[ip];
 				var opcode = (Code)curInstruction[0];
@@ -88,17 +96,24 @@ namespace AdventOfCode2018.Day19
 				Console.WriteLine($"[{ToString(registers)}] {ip} {opcode} {ToString(curInstruction)}");
 				try
 				{
+                    // When the instruction pointer is bound to a register, its value is written to that register just before each instruction is executed, 
+                    // and the value of that register is written back to the instruction pointer immediately after each instruction finishes execution.
+                    registers[ipBinding] = ip;
 					instruction.Execute(curInstruction, registers);
+                    ip = registers[ipBinding];
 				}
 				catch ( Exception e)
 				{
 					Assert.Fail(e.Message);
 				}
 				Console.WriteLine($"{ToString(registers)}");
-				ip++;
+                // Afterward, move to the next instruction by adding one to the instruction pointer, 
+                // even if the value in the instruction pointer was just updated by an instruction. 
+                // (Because of this, instructions must effectively set the instruction pointer to the 
+                // instruction before the one they want executed next.)
+                ip++;
 			}
 			// correction of increment done out of scope
-			ip--;
 			
 			Assert.AreEqual(reg0halt, registers[0]);
 		}
