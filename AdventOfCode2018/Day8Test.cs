@@ -1,13 +1,10 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
 
-// {}
-// []
 namespace AdventOfCode2018.Tests8
 {
     class Node {
@@ -140,5 +137,3 @@ namespace AdventOfCode2018.Tests8
         }
     }
 }
-// {}
-// []

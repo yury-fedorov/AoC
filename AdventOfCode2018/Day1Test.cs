@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using System.IO;
-using AdventOfCode2018;
 
 namespace AdventOfCode2018
 {

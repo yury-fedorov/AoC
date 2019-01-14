@@ -68,7 +68,6 @@ namespace AdventOfCode2018.Day19
 
 		[TestCase("Day19Sample.txt", 7, 0)]
 		// slow - [TestCase("Day19.txt", 1536, 0)] // question 1
-        [TestCase("Day19.txt", -1, 1)] // question 2
         public void Test1(string file, int reg0halt, int reg0start )
 		{
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
