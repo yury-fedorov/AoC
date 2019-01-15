@@ -231,11 +231,14 @@ namespace AdventOfCode2018.Day15
     }
 
     public class Combat {
+        public const int GoblinHitPower = 3;
         readonly List<Man> _men;
         readonly MapGuide _map;
+        readonly int _elfHitPower;
 
-        public Combat( MapGuide map)
+        public Combat( MapGuide map, int elfHitPower = GoblinHitPower )
         {
+            _elfHitPower = elfHitPower;
             _map = map;
             _men = map.FindAllMen()
                 .Select(t=> new Man {HitPoints=200, Position=t.Item2, Race = t.Item1,
@@ -316,8 +319,9 @@ namespace AdventOfCode2018.Day15
                 .OrderBy(m => m.Position.ReadingOrder ) // reading order
                 .First();
 
-            // Each unit, either Goblin or Elf, has 3 attack power and starts with 200 hit points.
-            enemyToHit.HitPoints -= 3; 
+            // Task 1: Each unit, either Goblin or Elf, has 3 attack power and starts with 200 hit points.
+            // Task 2: elves can have different hit power
+            enemyToHit.HitPoints -= man.Race == Race.Elf ? _elfHitPower : GoblinHitPower; 
             if (!enemyToHit.IsAlive)
             {
                 // remove the enemy from map and list
@@ -493,6 +497,25 @@ namespace AdventOfCode2018.Day15
             var result = combat.Go();
             Assert.AreEqual((0, 0), result);
         }
+
+        // [TestCase("Day15Input.txt")] - same issue as for task 1 (one more round)
+        // correct answer: 24 * 1601 = 38424
+        public void Test2(string file)
+        {
+            if (!IsOn) return;
+            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            Tuple<int,int> result;
+            for ( int elfHitPower = Combat.GoblinHitPower; true; elfHitPower++ )
+            {
+                var combat = new Combat(new MapGuide(lines), elfHitPower);
+                var elves = combat.MenOfRace(Race.Elf).Count();
+                result = combat.Go();
+                if (elves == combat.MenOfRace(Race.Elf).Count())
+                    break;
+            }
+            Assert.AreEqual((0, 0), result);
+        }
+
 
         [TestCase("Day15Sample1.txt")]
         public void TestSample1(string file)
