@@ -483,6 +483,7 @@ namespace AdventOfCode2018.Day15
 
         // wrong answer: 108 * 2670 = 288360
         // wrong answer: 86, 2794 = 86 * 2794 = 240284
+        // correct answer 1: 85 * 2794 = 237490
         [TestCase("Day15Input.txt")]
         public void Test1(string file)
         {
@@ -595,12 +596,15 @@ namespace AdventOfCode2018.Day15
         }
 
         [TestCase("Day15Sample3.txt", 47, 590)]
+        // [TestCase("Day15Sample4.txt", 37, 982)] -- there is a bug in calculating the number of rounds, in this case it adds one round more
         public void TestSample3Go(string file, int rounds, int hitPoints)
         {
             if (!IsOn) return;
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var result = combat.Go();
+            var who = Who(combat);
+            var map = combat.Draw();
             Assert.AreEqual(rounds, result.Item1);
             Assert.AreEqual(hitPoints, result.Item2);
         }
