@@ -10,12 +10,14 @@ namespace AdventOfCode2018
             long r2, r3, r4, r5;
             r2 = r3 = r4 = r5 = 0;
 
+/* dummy logic
             r5 = 123;       // 7B       // 00: seti 123 0 5
        l01: r5 &= 456;      // 1C8      // 01: bani 5 456 5
 		            // 48
             r5 = (r5 == 72) ? 1 : 0;    // 02: eqri 5 72 5
             if (r5 == 0)                // 03: addr 5 1 1                                        
                 goto l01;               // 04: seti 0 0 1            
+*/
             r5 = 0;            		// 05: seti 0 4 5
        l06: r3 = r5 | 65536; // 10000	// 06: bori 5 65536 3            
             r5 = 521363;     // 7F493	// 07: seti 521363 7 5            
