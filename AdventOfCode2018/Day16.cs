@@ -16,14 +16,14 @@ namespace AdventOfCode2018.Day16
 		public const int C = 3;
 
 	    public readonly Code Name;
-	    public readonly Func<int, int, int> Method;
-	    public readonly Func<int[], int[], int, int> ArgA;
-	    public readonly Func<int[], int[], int, int> ArgB;
+	    public readonly Func<long, long, long> Method;
+	    public readonly Func<int[], long[], int, long> ArgA;
+	    public readonly Func<int[], long[], int, long> ArgB;
 
-	    public static readonly Func<int[], int[], int, int> Value = (i, r, a) => i[a];
-	    public static readonly Func<int[], int[], int, int> Register = (i, r, a) => r[i[a]];
+	    public static readonly Func<int[], long[], int, long> Value = (i, r, a) => i[a];
+	    public static readonly Func<int[], long[], int, long> Register = (i, r, a) => r[i[a]];
 
-        protected Instruction(Code name, Func<int, int, int> method, Func<int[], int[], int, int> a, Func<int[], int[], int, int> b)
+        protected Instruction(Code name, Func<long, long, long> method, Func<int[], long[], int, long> a, Func<int[], long[], int, long> b)
 	    {
 	        Name = name;
 	        Method = method;
@@ -31,7 +31,7 @@ namespace AdventOfCode2018.Day16
 	        ArgB = b;
 	    }
 
-        public virtual int Execute(int[] instruction, int[] registers)
+        public virtual long Execute(int[] instruction, long[] registers)
 	    {
 	        return registers[instruction[C]] = Method(ArgA(instruction, registers, A), ArgB(instruction, registers, B));
         }
@@ -40,42 +40,42 @@ namespace AdventOfCode2018.Day16
 	// (add register) stores into register C the result of adding register A and register B.
 	public class OpRegister : Instruction
 	{
-		public OpRegister(Code name, Func<int,int,int> method ) : base(name, method, Register, Register ) {}
+		public OpRegister(Code name, Func<long,long,long> method ) : base(name, method, Register, Register ) {}
 	}
 
 	public class OpImmediate1 : Instruction
 	{
-		public OpImmediate1(Code name, Func<int, int, int> method) : base(name, method, Value, Register) {}
+		public OpImmediate1(Code name, Func<long, long, long> method) : base(name, method, Value, Register) {}
 	}
 
 	// addi (add immediate) stores into register C the result of adding register A and value B.
 	public class OpImmediate2 : Instruction
 	{
-		public OpImmediate2(Code name, Func<int, int, int> method) : base(name, method, Register, Value) {}
+		public OpImmediate2(Code name, Func<long, long, long> method) : base(name, method, Register, Value) {}
 	}
 
     public class OpImmediate12 : Instruction
     {
-        public OpImmediate12(Code name, Func<int, int, int> method) : base(name, method, Value, Value) {}
+        public OpImmediate12(Code name, Func<long, long, long> method) : base(name, method, Value, Value) {}
     }
 
 
     public class Sample
 	{
-		public int[] Before;
+		public long[] Before;
 		public int[] Operation;
-		public int[] After;
+		public long[] After;
 	}
 
 	public class Day16
 	{
-	    public static readonly Func<int, int, int> add = (a, b) => a + b;
-	    public static readonly Func<int, int, int> mul = (a, b) => a * b;
-	    public static readonly Func<int, int, int> ban = (a, b) => a & b;
-	    public static readonly Func<int, int, int> bor = (a, b) => a | b;
-	    public static readonly Func<int, int, int> set = (a, b) => a ;
-	    public static readonly Func<int, int, int> gt  = (a, b) => a > b ? 1 : 0;
-	    public static readonly Func<int, int, int> eq  = (a, b) => a == b ? 1 : 0;
+	    public static readonly Func<long, long, long> add = (a, b) => a + b;
+	    public static readonly Func<long, long, long> mul = (a, b) => a * b;
+	    public static readonly Func<long, long, long> ban = (a, b) => a & b;
+	    public static readonly Func<long, long, long> bor = (a, b) => a | b;
+	    public static readonly Func<long, long, long> set = (a, b) => a ;
+	    public static readonly Func<long, long, long> gt  = (a, b) => a > b ? 1 : 0;
+	    public static readonly Func<long, long, long> eq  = (a, b) => a == b ? 1 : 0;
 
         public static readonly Instruction [] Instructions = {
 			// Addition
@@ -129,7 +129,7 @@ namespace AdventOfCode2018.Day16
 	        var set = new HashSet<Code>();
 	        foreach (var op in Instructions)
 	        {
-	            var registers = (int[])sample.Before.Clone();
+	            var registers = (long[])sample.Before.Clone();
 	            op.Execute(sample.Operation, registers);
 	            var matching = registers.SequenceEqual(sample.After);
 	            if (matching) set.Add(op.Name);
@@ -161,10 +161,10 @@ namespace AdventOfCode2018.Day16
 					 * After:  [2, 3, 4, 2]
 					 */
 					var sample = new Sample();
-					sample.Before = ToArray(line, patternBefore);
+					sample.Before = ToArray(line, patternBefore).Select( Convert.ToInt64 ).ToArray();
 					sample.Operation = ToArray(lines[i + 1], patternOperation);
-					sample.After = ToArray(lines[i + 2], patternAfter);
-					samples.Add(sample);
+					sample.After = ToArray(lines[i + 2], patternAfter).Select(Convert.ToInt64).ToArray();
+                    samples.Add(sample);
 					latestSampleStart = i;
 				}
 			}
@@ -253,7 +253,7 @@ namespace AdventOfCode2018.Day16
 
 		    Assert.IsEmpty(mapCodeOptions, "expected full decoding");
 
-            int[] registers = { 0, 0, 0, 0 };
+            long[] registers = { 0, 0, 0, 0 };
 			for (int i = latestSampleStart + 3; i < lines.Length; i++ )
 			{
 				var line = lines[i];

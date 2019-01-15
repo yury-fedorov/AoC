@@ -67,7 +67,8 @@ namespace AdventOfCode2018.Day19
 			=> string.Join(',', a.Select( o => o.ToString() ).ToArray());
 
 		[TestCase("Day19Sample.txt", 7, 0)]
-		// slow - [TestCase("Day19.txt", 1536, 0)] // question 1
+        // slow - [TestCase("Day19.txt", 1536, 0)] // question 1
+        [TestCase("Day21.txt", -1, 0)] // day 21
         public void Test1(string file, int reg0halt, int reg0start )
 		{
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
@@ -83,7 +84,7 @@ namespace AdventOfCode2018.Day19
 			{
 				code.Add( ToArray(lines[i]) );
 			}
-			var registers = new int[6] { reg0start, 0, 0, 0, 0, 0 };
+			var registers = new long[6] { reg0start, 0, 0, 0, 0, 0 };
 
             int operationsExecuted = 0;
 
@@ -91,7 +92,7 @@ namespace AdventOfCode2018.Day19
             // outside the instructions defined in the program, the program instead immediately halts.
             while ( registers[ipBinding] < code.Count() )
 			{
-				var curInstruction = code[registers[ipBinding]];
+				var curInstruction = code[(int)registers[ipBinding]];
 				var opcode = (Code)curInstruction[0];
 				var instruction = Day16.Day16.MapCodeInstruction[opcode];
 				Console.Write($"[{ToString(registers)}] \t {registers[ipBinding]} \t {opcode} {ToString( new[] { curInstruction[1], curInstruction[2], curInstruction[3] } )} \t ");
@@ -112,7 +113,7 @@ namespace AdventOfCode2018.Day19
                 // instruction before the one they want executed next.)
                 registers[ipBinding] += 1;
 
-                Assert.Less(operationsExecuted++, 1000, "Suspection for a loop");
+                Assert.Less(operationsExecuted++, 100, "Suspection for a loop");
 			}
 			// correction of increment done out of scope			  
 			Assert.AreEqual(reg0halt, registers[0]);
