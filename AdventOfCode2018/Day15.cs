@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
 
 namespace AdventOfCode2018.Day15
@@ -212,6 +213,21 @@ namespace AdventOfCode2018.Day15
         {
             Map[dead.Position.X, dead.Position.Y] = Path; // empty space
         }
+
+        // for debug
+        public string Draw()
+        {
+            var picture = new StringBuilder();
+            for (int y = 0; y < Map.GetLength(1); y++)
+            {
+                for (int x = 0; x < Map.GetLength(0); x++)
+                {
+                    picture.Append(Map[x, y]);
+                }
+                picture.AppendLine();
+            }
+            return picture.ToString();
+        }
     }
 
     public class Combat {
@@ -226,6 +242,8 @@ namespace AdventOfCode2018.Day15
 					Id = $"{t.Item1}_({t.Item2.X},{t.Item2.Y})" } )
                 .ToList();
         }
+
+        public string Draw() => _map.Draw();
 
 		public Man[] Alive => _men.Where(m => m.IsAlive).OrderBy(m => m.Position.ReadingOrder).ToArray();
 
@@ -455,22 +473,24 @@ namespace AdventOfCode2018.Day15
 
 	public class Day15
 	{
+        const bool IsOn = true;
+
 		// wrong answer 108 * 2670 = 288360
-		[Ignore("later")]
-		[TestCase("Day15Input.txt")]
+		// [TestCase("Day15Input.txt")]
 		public void Test1(string file)
 		{
+            if (!IsOn) return;
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
 			var combat = new Combat(new MapGuide(lines));
 			var result = combat.Go();
 			Assert.AreEqual((0, 0), result);
 		}
 
-		[Ignore("later")]
 		[TestCase("Day15Sample1.txt")]
 		public void TestSample1(string file)
 		{
-			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            if (!IsOn) return;
+            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
 			var combat = new Combat(new MapGuide(lines));
 			var alive = combat.Alive;
 			Assert.AreEqual(4, alive.Length, "overall men");
@@ -482,11 +502,11 @@ namespace AdventOfCode2018.Day15
 			Assert.AreEqual(Direction.Right, dest.Item2, "direction of the first man");
 		}
 
-		[Ignore("later")]
 		[TestCase("Day15Sample2.txt")]
 		public void TestSample2(string file)
 		{
-			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            if (!IsOn) return;
+            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
 			var combat = new Combat(new MapGuide(lines));
 
 			var elfs = combat.MenOfRace(Race.Elf);
@@ -516,25 +536,23 @@ namespace AdventOfCode2018.Day15
 			Assert.AreEqual(new Point(5, 2), a[2].Position, "man 3");
 		}
 
-		[Ignore("later")]
+        public string Who(Combat c) =>
+            string.Join('\n', c.Alive.Select(a => $"[{a.Race} ({a.HitPoints}) {a.Position} {a.Id}]").ToArray());            
+
 		[TestCase("Day15Sample3.txt")]
 		public void TestSample3(string file)
 		{
-			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            if (!IsOn) return;
+            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
 			var combat = new Combat(new MapGuide(lines));
 			var firstElf = combat.MenOfRace(Race.Elf).First();
-			combat.MakeRound();
+			combat.MakeRound(); // first round
 			Assert.AreEqual(197, firstElf.HitPoints);
-			combat.MakeRound();
+			combat.MakeRound(); // second round
 			Assert.AreEqual(188, firstElf.HitPoints);
 			// the second round is over
 			// Assert.IsEmpty( combat.MakeSomeRounds(22) ); ??
-			combat.MakeSomeRounds(22);
-
-			// Assert.True(firstElf.IsAlive); ??
-			// Assert.True( combat.MakeRound().Contains(firstElf) ); ??
-			combat.MakeRound();
-
+			combat.MakeSomeRounds(21); // 1 + 1 + 21 = 23
 			// after 23 rounds
 			Assert.False(firstElf.IsAlive);
 			var a = combat.Alive;
@@ -542,6 +560,14 @@ namespace AdventOfCode2018.Day15
 			var lastElf = combat.MenOfRace(Race.Elf).Single();
 			Assert.AreEqual(131, lastElf.HitPoints);
 			Assert.AreEqual(new Point(5,4), lastElf.Position);
-		}
-	}
+            var trace23 = Who(combat);
+            var field23 = combat.Draw();
+
+            combat.MakeRound();
+            // after 24 rounds (here is wrong)
+            var trace = Who(combat);
+            var field = combat.Draw();
+            Assert.Fail("?");
+        }
+    }
 }
