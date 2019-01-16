@@ -1,7 +1,9 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace AdventOfCode2018.Day20
 {
@@ -43,6 +45,30 @@ namespace AdventOfCode2018.Day20
         }
     }
 
+    public interface IPart
+    {
+        int Length();
+    }
+
+    class Door : IPart
+    {
+        public readonly char _door;
+        public Door(char door) { _door = door; }
+        public int Length() => 1;
+    }
+
+    public class Sequence : IPart
+    {
+        public readonly ICollection<IPart> _sequence = new LinkedList<IPart>();
+        public int Length() => _sequence.Sum(p=>p.Length());
+    }
+
+    class Option : IPart
+    {
+        public readonly ICollection<IPart> _alternatives = new List<IPart>();
+        public int Length() => _alternatives.Max(a=>a.Length());
+    }
+
     public class Day20
     {
         public static (int, int) ToDirection(char direction)
@@ -65,9 +91,55 @@ namespace AdventOfCode2018.Day20
             return path.Split('|');
         }
 
-        [TestCase("^ENWWW(NEEE|SSE(EE|N))$")]
-        public void Test(string path)
+        // 4104 -- this number is too high
+        [TestCase("Day20.txt", 4104)] 
+        public void TestFromFile(string file, int expectedLength)
         {
+            var path = File.ReadAllText(Path.Combine(Day1Test.Directory, file));
+            Test(path, expectedLength);
+        }
+
+        [TestCase("^WNE$", 3)]
+        [TestCase("^ENWWW(NEEE|SSE(EE|N))$", 10)]
+        [TestCase("^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$", 18)]
+        [TestCase("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$", 23)]
+        [TestCase("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$", 31)]
+        public void Test(string path, int expectedLength)
+        {
+            var stackSeq = new Stack<Sequence>();
+            var stackOpt = new Stack<Option>();
+            var seq = new Sequence();
+            Option option = null;
+
+            for (var i = 0; i < path.Length; i++)
+            {
+                char ch = path[i];
+                if ("EWNS".Contains(ch))
+                {
+                    seq._sequence.Add( new Door(ch) );
+                }
+                else if (ch == '(')
+                {
+                    // this means that the previous sequence is over
+                    stackSeq.Push(seq);
+                    stackOpt.Push(option);
+                    option = new Option();
+                    seq._sequence.Add(option);
+                    seq = new Sequence();
+                    option._alternatives.Add(seq);
+                }
+                else if (ch == ')')
+                {
+                    seq = stackSeq.Pop();
+                    option = stackOpt.Pop();
+                }
+                else if (ch == '|')
+                {
+                    seq = new Sequence();
+                    option._alternatives.Add(seq);
+                }
+            }
+            /*
             var p = (0, 0);
             var map = new Map();
             var stack = new Stack<(int, int)>();
@@ -97,8 +169,8 @@ namespace AdventOfCode2018.Day20
                 }
             }
             // now all doors are saved
-
-            Assert.Fail("to be implemented");
+            */
+            Assert.AreEqual(expectedLength, seq.Length());
         }
     }
 }
