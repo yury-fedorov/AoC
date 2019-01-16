@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -29,13 +27,6 @@ namespace AdventOfCode2018.Day17
     }
 
     public class Day17 {
-
-        static void Swap(ref int x, ref int y)
-        {
-            var tempswap = x;
-            x = y;
-            y = tempswap;
-        }
 
         public Line ToLine(string line)
         {
@@ -133,7 +124,8 @@ namespace AdventOfCode2018.Day17
                 return prev;
             }
 
-            public IEnumerable<string> GetStringList()
+            // for debug purpose
+            public IEnumerable<string> Draw()
             {
                 for (int y = TopLeft.Y; y <= BottomRight.Y; y++)
                 {
@@ -205,7 +197,7 @@ namespace AdventOfCode2018.Day17
 				springs.AddRange( TraceWaterSpring(spring, map) );
 			}
 
-			File.WriteAllLines("d:\\AoC18-Day17.txt", map.GetStringList());
+			File.WriteAllLines("d:\\AoC18-Day17.txt", map.Draw());
 			// Assert.AreEqual(600, registers.First(), "answer 2");
 		}
 
