@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -35,15 +36,66 @@ namespace AdventOfCode2018
 
         public int Distance(Point3D a, Point3D b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) + Math.Abs(a.Z - b.Z);
 
-        [TestCase("Day23.txt")]
-        public void Test(string file)
+        public int CountPoint(IEnumerable<Nanobot> bots, Point3D point) =>
+            bots.Where(b => Distance(b.P, point) <= b.R).Count();
+
+        // 125302823 -- too high
+        [TestCase("Day23.txt", 420, 1)]
+        public void Test(string file, int eCount, int eDistance)
         {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
             var list = lines.Select(Create).ToArray();
             var maxRadius = list.Max(n => n.R);
             var biggest = list.Single(n => n.R == maxRadius);
             var count = list.Where(b => Distance(b.P, biggest.P) <= maxRadius).Count();
-            Assert.AreEqual(-1, count);
+            Assert.AreEqual(eCount, count);
+
+            var pc = list.ToDictionary(b => b.P, b => CountPoint(list, b.P)); // 870
+            var maxNumber = pc.Values.Max();
+            var p = pc.Single(a => a.Value == maxNumber);
+            var p0 = new Point3D(0, 0, 0);
+            var d0 = Distance(p0, p.Key);
+            var p1 = p.Key;
+
+            var dx = Math.Sign(p1.X);
+            var dy = Math.Sign(p1.Y);
+            var dz = Math.Sign(p1.Z);
+
+            while ( true )
+            {
+                var cp1 = p1; // previous point
+
+                var px = new Point3D(p1.X - dx, p1.Y, p1.Z);
+                var cx = CountPoint(list, px);
+                if (cx >= maxNumber)
+                {
+                    maxNumber = cx;
+                    p1 = px;
+                    Assert.True(Distance(p0, p1) < Distance(p0, cp1));
+                    continue;
+                }
+
+                var py = new Point3D(p1.X, p1.Y - dy, p1.Z);
+                var cy = CountPoint(list, py);
+                if (cy >= maxNumber)
+                {
+                    maxNumber = cy;
+                    p1 = py;
+                    continue;
+                }
+
+                var pz = new Point3D(p1.X, p1.Y, p1.Z - dz);                
+                var cz = CountPoint(list, pz);
+                if (cz >= maxNumber)
+                {
+                    maxNumber = cz;
+                    p1 = pz;
+                    continue;
+                }
+                break;
+            }
+
+            Assert.AreEqual(-1, Distance(p0,p1));
         }
     }
 }
