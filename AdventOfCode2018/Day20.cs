@@ -166,6 +166,7 @@ namespace AdventOfCode2018.Day20
         [TestCase("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$", 31)]
         public void Test(string path, int expectedLength)
         {
+            /*
             var stackSeq = new Stack<Sequence>();
             var stackOpt = new Stack<Option>();
             var seq = new Sequence();
@@ -201,7 +202,7 @@ namespace AdventOfCode2018.Day20
             }
             
             Assert.AreEqual(expectedLength, seq.Length());
-            
+            */
             var p = (0, 0);
             var map = new Map();
             var stack = new Stack<(int, int)>();
@@ -235,28 +236,29 @@ namespace AdventOfCode2018.Day20
             var doors = map.Doors().ToArray();
             var mapDistance = new Dictionary<(int, int), int>();
 
-            var toProcess = new Stack<(int, int, int)>();
-            toProcess.Push( (0,0,0) );
-            mapDistance.Add( (0,0),0);
-            while ( toProcess.Any() )
+            var distance = 0;
+            mapDistance.Add( (0,0),distance);
+            while ( mapDistance.Count() < doors.Length )
             {
-                var (x, y, distance) = toProcess.Pop();
-                var r = (x, y);
-                var list = map.Neigbours(r);
                 var d1 = distance + 1;
-                foreach ( var next in list)
+                foreach ( var prevLevelPoint in mapDistance.Where( a => a.Value == distance ).ToArray() )
                 {
-                    if ( !mapDistance.ContainsKey(next))
+                    var list = map.Neigbours( prevLevelPoint.Key );                    
+                    foreach (var next in list)
                     {
-                        // room was never yet visited
-                        var (x1, y1) = next;
-                        toProcess.Push((x1,y1,d1));
-                        mapDistance.Add((x1, y1), d1);
+                        if (!mapDistance.ContainsKey(next))
+                        {
+                            // room was never yet visited
+                            var (x1, y1) = next;
+                            mapDistance.Add((x1, y1), d1);
+                        }
                     }
                 }
+                distance++;
             }
-            Assert.AreEqual( doors.Length, mapDistance.Count() );
-            Assert.AreEqual(-1, mapDistance.Values.Count(d=>d>1000) );
+            // 8567 - too low
+            // 8568 - right 2nd answer
+            Assert.AreEqual(8568, mapDistance.Values.Count(d=>d>=1000) );
         }
     }
 }
