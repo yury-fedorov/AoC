@@ -48,6 +48,7 @@ namespace AdventOfCode2018.Day20
     public interface IPart
     {
         int Length();
+        IEnumerable<char> Path();
     }
 
     class Door : IPart
@@ -55,22 +56,48 @@ namespace AdventOfCode2018.Day20
         public readonly char _door;
         public Door(char door) { _door = door; }
         public int Length() => 1;
+        public IEnumerable<char> Path() => new[] { _door };
     }
 
     public class Sequence : IPart
     {
         public readonly ICollection<IPart> _sequence = new LinkedList<IPart>();
         public int Length() => _sequence.Sum(p=>p.Length());
+        public IEnumerable<char> Path() => _sequence.SelectMany(p => p.Path());
     }
 
     class Option : IPart
     {
         public readonly ICollection<IPart> _alternatives = new List<IPart>();
-        public int Length() => _alternatives.Max(a=>a.Length());
+        public int Length() => _alternatives.Max(p => Day20.Minimize( p.Path() ).Count() );
+        public IEnumerable<char> Path() 
+            => _alternatives.First( p => Day20.Minimize(p.Path()).Count() == Length() ).Path();
     }
 
     public class Day20
     {
+        public static IEnumerable<char> Minimize(IEnumerable<char> path)
+        {
+            var exPath = new List<(char, (int, int))>();
+            int x = 0;
+            int y = 0;
+            foreach ( char d in path)
+            {
+                var (dx, dy) = ToDirection(d);
+                x += dx;
+                y += dy;
+                var cp = (x, y);
+                var lastToKeep = exPath.FindIndex(z => z.Item2 == cp);
+                if ( lastToKeep >= 0 )
+                {
+                    // a loop found! we have to remove everything in the list till this position
+                    var firstIndexToRemove = lastToKeep + 1;
+                    var count = exPath.Count() - firstIndexToRemove;
+                    exPath.RemoveRange(firstIndexToRemove, count);
+                }
+            }
+            return exPath.Select(z => z.Item1);
+        }
         public static (int, int) ToDirection(char direction)
         {
             int dx = 0;
@@ -170,6 +197,7 @@ namespace AdventOfCode2018.Day20
             }
             // now all doors are saved
             */
+
             Assert.AreEqual(expectedLength, seq.Length());
         }
     }
