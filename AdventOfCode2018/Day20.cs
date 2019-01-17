@@ -19,6 +19,8 @@ namespace AdventOfCode2018.Day20
         readonly IDictionary<(int, int), List<(int, int)>> _roomNeigbours 
             = new Dictionary<(int, int), List<(int, int)>>();
 
+        public IEnumerable<(int, int)> Doors() => _roomNeigbours.Keys;
+
         public void AddDoor( (int,int) a, (int,int) b)
         {
             Neigbours(a).Add(b);
@@ -197,7 +199,9 @@ namespace AdventOfCode2018.Day20
                     option._alternatives.Add(seq);
                 }
             }
-            /*
+            
+            Assert.AreEqual(expectedLength, seq.Length());
+            
             var p = (0, 0);
             var map = new Map();
             var stack = new Stack<(int, int)>();
@@ -227,9 +231,32 @@ namespace AdventOfCode2018.Day20
                 }
             }
             // now all doors are saved
-            */
 
-            Assert.AreEqual(expectedLength, seq.Length());
+            var doors = map.Doors().ToArray();
+            var mapDistance = new Dictionary<(int, int), int>();
+
+            var toProcess = new Stack<(int, int, int)>();
+            toProcess.Push( (0,0,0) );
+            mapDistance.Add( (0,0),0);
+            while ( toProcess.Any() )
+            {
+                var (x, y, distance) = toProcess.Pop();
+                var r = (x, y);
+                var list = map.Neigbours(r);
+                var d1 = distance + 1;
+                foreach ( var next in list)
+                {
+                    if ( !mapDistance.ContainsKey(next))
+                    {
+                        // room was never yet visited
+                        var (x1, y1) = next;
+                        toProcess.Push((x1,y1,d1));
+                        mapDistance.Add((x1, y1), d1);
+                    }
+                }
+            }
+            Assert.AreEqual( doors.Length, mapDistance.Count() );
+            Assert.AreEqual(-1, mapDistance.Values.Count(d=>d>1000) );
         }
     }
 }
