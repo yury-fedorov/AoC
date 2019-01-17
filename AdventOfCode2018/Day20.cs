@@ -78,9 +78,11 @@ namespace AdventOfCode2018.Day20
     {
         public static IEnumerable<char> Minimize(IEnumerable<char> path)
         {
+            // direction and point where you arrive
             var exPath = new List<(char, (int, int))>();
             int x = 0;
             int y = 0;
+            exPath.Add( ('^', (0, 0)) );
             foreach ( char d in path)
             {
                 var (dx, dy) = ToDirection(d);
@@ -94,9 +96,12 @@ namespace AdventOfCode2018.Day20
                     var firstIndexToRemove = lastToKeep + 1;
                     var count = exPath.Count() - firstIndexToRemove;
                     exPath.RemoveRange(firstIndexToRemove, count);
+                } else
+                {
+                    exPath.Add( (d, cp) );
                 }
             }
-            return exPath.Select(z => z.Item1);
+            return exPath.Select(z => z.Item1).Skip(1);
         }
         public static (int, int) ToDirection(char direction)
         {
