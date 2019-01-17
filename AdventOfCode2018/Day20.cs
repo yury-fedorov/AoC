@@ -69,21 +69,44 @@ namespace AdventOfCode2018.Day20
     class Option : IPart
     {
         public readonly ICollection<IPart> _alternatives = new List<IPart>();
-        public int Length() => _alternatives.Max(p => Day20.Minimize( p.Path() ).Count() );
-        public IEnumerable<char> Path() 
-            => _alternatives.First( p => Day20.Minimize(p.Path()).Count() == Length() ).Path();
+        string optimized = null;
+        string Optimize()
+        {
+            if (optimized == null)
+            {
+                var minimized = _alternatives
+                    .Select(p => string.Concat(Day20.Minimize(p.Path()))).ToArray();
+                var maxLength = minimized.Max(x => x.Length);
+                var longest = minimized.First(x => x.Length == maxLength);
+                optimized = longest;
+            }
+            return optimized;
+        }
+
+        public int Length() => Optimize().Length;
+        public IEnumerable<char> Path() => Optimize();
     }
 
     public class Day20
     {
+        static readonly IDictionary<string, string> _optimizations = new Dictionary<string, string>();
+
         public static IEnumerable<char> Minimize(IEnumerable<char> path)
         {
+            var strPath = string.Concat(path);
+            string optimized;
+
+            if ( _optimizations.TryGetValue(strPath, out optimized ) )
+            {
+                return optimized;
+            }
+
             // direction and point where you arrive
             var exPath = new List<(char, (int, int))>();
             int x = 0;
             int y = 0;
             exPath.Add( ('^', (0, 0)) );
-            foreach ( char d in path)
+            foreach ( char d in strPath)
             {
                 var (dx, dy) = ToDirection(d);
                 x += dx;
@@ -101,7 +124,10 @@ namespace AdventOfCode2018.Day20
                     exPath.Add( (d, cp) );
                 }
             }
-            return exPath.Select(z => z.Item1).Skip(1);
+
+            optimized = string.Concat( exPath.Select(z => z.Item1).Skip(1) );
+            _optimizations.Add(strPath, optimized);
+            return optimized;
         }
         public static (int, int) ToDirection(char direction)
         {
@@ -124,7 +150,7 @@ namespace AdventOfCode2018.Day20
         }
 
         // 4104 -- this number is too high
-        [TestCase("Day20.txt", 4104)] 
+        [TestCase("Day20.txt", 4104)] // 3788 ??
         public void TestFromFile(string file, int expectedLength)
         {
             var path = File.ReadAllText(Path.Combine(Day1Test.Directory, file));
