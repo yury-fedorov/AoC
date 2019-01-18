@@ -88,6 +88,11 @@ namespace AdventOfCode2018.Day24
             return Math.Min(maxHit, attacking.PotentialDamage);
         }
 
+        public const int OneM = 1000000;
+
+        public long TargetOrder(int demage, int effectivePower, int initiative)
+            => (demage * OneM * OneM) + (effectivePower * OneM) + initiative;
+
         // The attacking group chooses to target the group in the enemy army to which it would deal the most damage 
         // (after accounting for weaknesses and immunities, but not accounting for whether the defending group 
         // has enough units to actually receive all of that damage).
