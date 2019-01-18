@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,6 +42,8 @@ namespace AdventOfCode2018.Day24
 
         public int EffectivePower => Units * AttackDamage;
 
+        public int PotentialDamage => Units * HitPoints;
+
         // In decreasing order of effective power, groups choose their targets; 
         // in a tie, the group with the higher initiative chooses first.
         public long ChoosingOrder => EffectivePower * 1000 + Initiative;
@@ -70,6 +73,21 @@ namespace AdventOfCode2018.Day24
                 new Group(true,27,24408,1505,Damage.Cold,5,new []{ Damage.Bludgeoning, Damage.Fire }, nill) };
         }
 
+        public IEnumerable<Group> Alive(IEnumerable<Group> groups)
+            => groups.Where(g => g.Units > 0);  
+
+        public IEnumerable<Group> ByType(IEnumerable<Group> groups, bool infection) 
+            => Alive(groups).Where(g => g.Infection == infection);
+
+        public bool IsOver(IEnumerable<Group> groups)
+            => !ByType(groups, false).Any() || !ByType(groups, true).Any();
+
+        public int Demage( Group attacking, Group target)
+        {
+            var maxHit = target.DemageK(attacking.AttackType) * attacking.EffectivePower;
+            return Math.Min(maxHit, attacking.PotentialDamage);
+        }
+
         // The attacking group chooses to target the group in the enemy army to which it would deal the most damage 
         // (after accounting for weaknesses and immunities, but not accounting for whether the defending group 
         // has enough units to actually receive all of that damage).
@@ -91,6 +109,20 @@ namespace AdventOfCode2018.Day24
         [TestCase()]
         public void Test()
         {
+
+            var groups = Input().ToArray();
+            while (!IsOver(groups)) {
+                var choosingOrder = Alive(groups).OrderBy(g => -g.ChoosingOrder).ToArray();
+                var mapAttackTarget = new Dictionary<string, string>();
+                foreach ( var attacking in choosingOrder)
+                {
+                    var enemy = !attacking.Infection;
+                    var allEnimies = ByType(choosingOrder, enemy).ToArray();
+                    var choosable = allEnimies.Where(e => !mapAttackTarget.Values.Contains(e.Id))
+                        .OrderBy(e => . ).ToArray();
+                }
+            }
+
             Assert.Fail("to be implemented");
         }
     }
