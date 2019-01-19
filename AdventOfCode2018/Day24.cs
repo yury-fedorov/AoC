@@ -128,7 +128,7 @@ namespace AdventOfCode2018.Day24
         public int Demage( Group attacking, Group target)
         {
             var maxHit = target.DemageK(attacking.AttackType) * attacking.EffectivePower;
-            return Math.Min(maxHit, attacking.PotentialDamage);
+            return Math.Min(maxHit, target.PotentialDamage);
         }
 
         public const int OneM = 1000000;
@@ -167,22 +167,23 @@ namespace AdventOfCode2018.Day24
                     var enemy = !attacking.Infection;
                     var allEnimies = ByType(choosingOrder, enemy).ToArray();
                     var choosable = allEnimies.Where(e => !mapAttackTarget.Values.Contains(e.Id))
-                        .OrderBy(e => TargetOrder(Demage(attacking,e),e.EffectivePower,e.Initiative) )
+                        .OrderBy(e => -TargetOrder(Demage(attacking,e),e.EffectivePower,e.Initiative) )
                         .ToArray();
                     if (choosable.Any())
                     {
                         mapAttackTarget.Add(attacking.Id, choosable.First().Id);
                     }                    
                 }
+
                 // now every group has chosen its target
-  
                 foreach ( var attacking in choosingOrder
                     .Where(g=> mapAttackTarget.Keys.Contains(g.Id) )
-                    .OrderBy(g=>g.Initiative) )
+                    .OrderBy(g=>-g.Initiative).ToArray() )
                 {
                     if (attacking.Units == 0) continue; // if they were killed in the meanwhile
                     var targetId = mapAttackTarget[attacking.Id];
                     var target = choosingOrder.Single(g => g.Id == targetId);
+                    Assert.AreNotEqual(attacking.Infection, target.Infection); // must be always of different types
                     var demage = Demage(attacking, target);
                     int deadUnits = demage / target.HitPoints;
                     Assert.True(deadUnits <= target.Units);
