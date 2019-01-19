@@ -116,6 +116,28 @@ namespace AdventOfCode2018.Day24
             };
         }
 
+        public IEnumerable<Group> TestInput()
+        {
+            var nill = Enumerable.Empty<Damage>();
+            return new[] {
+                //Immune System:
+                //17 units each with 5390 hit points (weak to radiation, bludgeoning) with
+                // an attack that does 4507 fire damage at initiative 2
+                new Group(false, 17,5390,4507,Damage.Fire,2, new [] { Damage.Radiation, Damage.Bludgeoning }, nill ),
+                //989 units each with 1274 hit points (immune to fire; weak to bludgeoning,
+                // slashing) with an attack that does 25 slashing damage at initiative 3
+                new Group(false, 989,1274,25,Damage.Fire,3, new [] { Damage.Bludgeoning, Damage.Slashing }, new [] { Damage.Fire } ),
+
+                //Infection:
+                //801 units each with 4706 hit points(weak to radiation) with an attack
+                //that does 116 bludgeoning damage at initiative 1
+                new Group(true, 801,4706,116,Damage.Bludgeoning,1, new [] { Damage.Fire }, nill ),
+                //4485 units each with 2961 hit points(immune to radiation; weak to fire,
+                // cold) with an attack that does 12 slashing damage at initiative 4
+                new Group(true, 4485,2961,12,Damage.Slashing,4, new [] { Damage.Fire, Damage.Cold }, new [] { Damage.Radiation } ),
+            };
+        }
+
         public IEnumerable<Group> Alive(IEnumerable<Group> groups)
             => groups.Where(g => g.Units > 0);  
 
