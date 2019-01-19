@@ -150,6 +150,7 @@ namespace AdventOfCode2018.Day24
         public int Demage( Group attacking, Group target)
         {
             var maxHit = target.DemageK(attacking.AttackType) * attacking.EffectivePower;
+            if (maxHit < target.HitPoints) return 0; // if we can not kill even one enemy unit, no demage here
             return Math.Min(maxHit, target.PotentialDamage);
         }
 
@@ -182,15 +183,17 @@ namespace AdventOfCode2018.Day24
 
             var groups = Input().ToArray();
             while (!IsOver(groups)) {
-                var choosingOrder = Alive(groups).OrderBy(g => -g.ChoosingOrder).ToArray();
+                var choosingOrder = Alive(groups).OrderBy(g => -g.ChoosingOrder).ToList();
                 var mapAttackTarget = new Dictionary<int, int>();
                 foreach ( var attacking in choosingOrder)
                 {
                     var enemy = !attacking.Infection;
-                    var allEnimies = ByType(choosingOrder, enemy).ToArray();
-                    var choosable = allEnimies.Where(e => !mapAttackTarget.Values.Contains(e.Id))
+                    var allEnimies = ByType(choosingOrder, enemy).ToList();
+                    var choosable = allEnimies
+                        .Where(e => !mapAttackTarget.Values.Contains(e.Id))
+                        .Where(e => Demage(attacking, e) > 0 ) // no sense in attacking, if no damage is possible
                         .OrderBy(e => -TargetOrder(Demage(attacking,e),e.EffectivePower,e.Initiative) )
-                        .ToArray();
+                        .ToList();
                     if (choosable.Any())
                     {
                         mapAttackTarget.Add(attacking.Id, choosable.First().Id);
@@ -200,14 +203,16 @@ namespace AdventOfCode2018.Day24
                 // now every group has chosen its target
                 foreach ( var attacking in choosingOrder
                     .Where(g=> mapAttackTarget.Keys.Contains(g.Id) )
-                    .OrderBy(g=>-g.Initiative).ToArray() )
+                    .OrderBy(g=>-g.Initiative).ToList() )
                 {
                     if (attacking.Units == 0) continue; // if they were killed in the meanwhile
                     var targetId = mapAttackTarget[attacking.Id];
                     var target = choosingOrder.Single(g => g.Id == targetId);
                     Assert.AreNotEqual(attacking.Infection, target.Infection); // must be always of different types
                     var demage = Demage(attacking, target);
+                    Assert.Greater(demage, 0); // no demage, what sense in an attack?
                     int deadUnits = demage / target.HitPoints;
+                    Assert.Greater(deadUnits, 0); // if no dead unit, what is sense in an attack?
                     Assert.True(deadUnits <= target.Units);
                     target.Units -= deadUnits;
                 }
