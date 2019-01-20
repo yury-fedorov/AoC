@@ -180,8 +180,8 @@ namespace AdventOfCode2018.Day24
         [TestCase()]
         public void Test()
         {
-
-            var groups = Input().ToArray();
+            // var groups = Input().ToArray();
+            var groups = TestInput().ToArray();
             while (!IsOver(groups)) {
                 var choosingOrder = Alive(groups).OrderBy(g => -g.ChoosingOrder).ToList();
                 var mapAttackTarget = new Dictionary<int, int>();
