@@ -182,6 +182,8 @@ namespace AdventOfCode2018.Day24
             foreach (var g in ByType(groups, false))
                 g.AttackDamage += boost;
 
+            int totalPotentialDamage = groups.Sum(g => g.PotentialDamage);
+
             while (!IsOver(groups))
             {
                 var choosingOrder = Alive(groups).OrderByDescending(g => g.ChoosingOrder).ToList();
@@ -219,6 +221,10 @@ namespace AdventOfCode2018.Day24
                     Assert.True(deadUnits <= target.Units);
                     target.Units -= deadUnits;
                 }
+
+                var newTotalPotentialDamage = groups.Sum(g => g.PotentialDamage);
+                if (totalPotentialDamage == newTotalPotentialDamage) return groups; // infinite loop is detected
+                totalPotentialDamage = newTotalPotentialDamage;
             }
             return groups;
         }
@@ -229,15 +235,18 @@ namespace AdventOfCode2018.Day24
         {
             // var groups = Input().ToArray();
             // var groups = TestInput().ToArray();
-            for ( int boost = 0; true; boost++ )
+            for ( int boost = 88; true; boost++ )
             {
                 var groups = Run(file, boost);
-                if ( !Alive(groups).First().Infection )
+                if ( IsOver(groups) )
                 {
-                    // finally the immune system won
-                    var result = Alive(groups).Sum(g => g.Units);
-                    Assert.AreEqual(expected, result);
-                    return;
+                    if (!Alive(groups).First().Infection)
+                    {
+                        // finally the immune system won
+                        var result = Alive(groups).Sum(g => g.Units);
+                        Assert.AreEqual(expected, result);  // the right answer for the task 2: 6149
+                        return;
+                    }
                 }
             }
         }
