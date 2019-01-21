@@ -1,7 +1,9 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode2018.Day24
 {
@@ -158,6 +160,35 @@ namespace AdventOfCode2018.Day24
         public (int,int,int) TargetOrder(int damage, int effectivePower, int initiative)
             => (damage, effectivePower, initiative);
 
+        public (IEnumerable<Damage>, IEnumerable<Damage>) ReadSpecsFromString(string specs)
+        {
+            var weak = new List<Damage>();
+            var immune = new List<Damage>();
+            const string pattern1 = "\\((.*)\\)";
+            var matches = Regex.Matches(specs, pattern1);
+            foreach (Match match1 in matches)
+            {
+                var withoutBrackets = match1.Groups[1].Value;
+                var parts = withoutBrackets.Split("; ");
+                // the possible cases: 1 element or 2 elements
+                Assert.True(parts.Length >= 1 && parts.Length <= 2);
+
+                const string pattern2 = "([a-z]+) to (.*)"; // immune to fire
+                foreach ( var part in parts )
+                {
+                    var matches2 = Regex.Matches(part, pattern2);
+                    foreach (Match match2 in matches2)
+                    {
+                        var type = match2.Groups[1].Value == "immune" ? immune : weak;
+                        var types = match2.Groups[2].Value.Split(", ").Select(a => Enum.Parse<Damage>(a, true));
+                        type.AddRange(types);
+                    }
+                }
+                break;
+            }
+            return (weak, immune);
+        }
+
         // The attacking group chooses to target the group in the enemy army to which it would deal the most damage 
         // (after accounting for weaknesses and immunities, but not accounting for whether the defending group 
         // has enough units to actually receive all of that damage).
@@ -176,11 +207,53 @@ namespace AdventOfCode2018.Day24
         // regardless of whether they are part of the infection or the immune system. 
         // (If a group contains no units, it cannot attack.)
 
-        [TestCase()]
-        public void Test()
+        public Group ReadGroupFromString(bool infection, string line)
         {
-            var groups = Input().ToArray();
+            const string pattern = "([0-9]+) units each with ([0-9]+) hit points (.*)with an attack that does ([0-9]+) (.+) damage at initiative ([0-9]+)";
+            var matches = Regex.Matches(line, pattern);
+            foreach (Match match in matches)
+            {
+                var units = Convert.ToInt32(match.Groups[1].Value);
+                var hitPoints = Convert.ToInt32(match.Groups[2].Value);
+                var specs = match.Groups[3].Value; // weak, immune
+                var attack = Convert.ToInt32(match.Groups[4].Value);
+                var attackType = Enum.Parse<Damage>( match.Groups[5].Value, true );
+                var initiative = Convert.ToInt32(match.Groups[6].Value);
+                var (weaknesses, immunities) = ReadSpecsFromString(specs);
+                return new Group( infection, units, hitPoints, attack, attackType, initiative, weaknesses, immunities );
+            }
+            Assert.False(line.Contains("units")); // double check that parsing was correct
+            return null;
+        }
+
+        public IEnumerable<Group> ReadFromFile( string file )
+        {
+            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToList();
+            var infectionStarts = lines.IndexOf("Infection:");
+            Assert.Greater(infectionStarts, 0); // infection group starts further
+
+            // first immune is going
+            for ( int n = 0; n < infectionStarts; n++ )
+            {
+                var g = ReadGroupFromString(false, lines[n]);
+                if (g != null) yield return g;
+            }
+
+            // then infection is going
+            for ( int n = infectionStarts; n < lines.Count(); n++ )
+            {
+                var g = ReadGroupFromString(true, lines[n]);
+                if (g != null) yield return g;
+            }
+        }
+
+        // [TestCase("Day24Sample.txt", 5216)]
+        [TestCase("Day24.txt", -1)] // 13731 - too low
+        public void Test(string file, int expected)
+        {
+            // var groups = Input().ToArray();
             // var groups = TestInput().ToArray();
+            var groups = ReadFromFile(file).ToArray();
             while (!IsOver(groups)) {
                 var choosingOrder = Alive(groups).OrderByDescending(g => g.ChoosingOrder).ToList();
                 var mapAttackTarget = new Dictionary<string, string>();
@@ -218,9 +291,9 @@ namespace AdventOfCode2018.Day24
                     target.Units -= deadUnits;
                 }
             }
-
-            Assert.AreEqual(-1, Alive(groups).Sum(g=>g.Units));
+            var result = Alive(groups).Sum(g => g.Units);
+            Assert.Greater(result, 13731); // to low
+            Assert.AreEqual(expected, result);
         }
-        // 13731 - too low
     }
 }
