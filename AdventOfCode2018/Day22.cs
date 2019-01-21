@@ -65,10 +65,56 @@ namespace AdventOfCode2018
 
     public class AirMap : Dictionary<(int, int, Tool), int> { }
 
+    public class Optimizer
+    {
+        readonly Map _map;
+        readonly int _x1;
+        readonly int _y1;
+        readonly int _longest;
+        public Optimizer(Map map, int x1, int y1, int longest) {
+            _map = map;
+            _x1 = x1;
+            _y1 = y1;
+            _longest = longest;
+        }
+
+        public readonly IEnumerable<(int, int)> shifts = new[] { (-1,0), (1,0), (0,-1), (0,1) };
+
+        public int Minimize( int x, int y, Tool tool, int depth )
+        {
+            if (depth >= _longest) return _longest; // stop. this sequence is definetely not better
+            if ( x == _x1 && y == _y1 )
+            {
+                // we are already on the region
+                if (tool == Tool.Torch) return 0; // target tool is already in hand
+                return Day22.OtherTool; // we need only to switch the tool to torch
+            }
+
+            var ways = new Dictionary<(int,int,Tool),int>();
+            // we still optimizing, going deeper
+            // in 4 directions (bounds of negative)
+            // switch of tool (in every direction, we can: have 2 tools)
+            foreach ( var (dx,dy) in shifts )
+            {
+                var x1 = x + dx;
+                var y1 = y + dy;
+                if (x1 < 0 || y1 < 0) continue; // negative bounds
+                var material = _map.At((x1, y1));
+                var tools = Day22.Go(material);
+                foreach ( var t in tools )
+                {
+                    var dc = Day22.SameTool + ( tool == t ? 0 : Day22.OtherTool );
+                    ways.Add((x1, y1, t), dc + Minimize(x1, y1, t, depth + 1));
+                }
+            }
+            return ways.Values.Min();
+        }
+    }
+
     public class Day22
     {
         // Tools can only be used in certain regions:
-        public Tool NoGo(Material material)
+        public static Tool NoGo(Material material)
         {
             switch(material)
             {
@@ -87,13 +133,12 @@ namespace AdventOfCode2018
             throw new Exception("not expected material");
         }
         
-        public IEnumerable<Tool> Go(Material material) => OtherTools(NoGo(material));
+        public static IEnumerable<Tool> Go(Material material) => OtherTools(NoGo(material));
 
-        public IEnumerable<Tool> OtherTools(Tool tool) => Enum.GetValues(typeof(Tool)).Cast<Tool>().Where(t => t != tool);
+        public static IEnumerable<Tool> OtherTools(Tool tool) => Enum.GetValues(typeof(Tool)).Cast<Tool>().Where(t => t != tool);
     
-
-        const int SameTool = 1;
-        const int OtherTool = 7;
+        public const int SameTool = 1;
+        public const int OtherTool = 7;
 
         // get the wishing tool, if absent, get 2 other tools and select minimal of them + other tool
         public int CostTill(AirMap map, int x, int y, Tool tool)
@@ -161,7 +206,9 @@ namespace AdventOfCode2018
             var airDistance = mapAirPath[(tx,ty,Tool.Torch)];
             // 1656 - this is the upper bond (simplest algorithm)
             // 774 - this is the lower bond (no change of tool at all)
-            Assert.AreEqual(-1, airDistance);
+            var optimizer = new Optimizer(map, tx, ty, airDistance);
+
+            Assert.AreEqual(-1, optimizer.Minimize(0,0,Tool.Torch,airDistance));
         }
     }
 }
