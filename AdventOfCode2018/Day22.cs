@@ -104,7 +104,8 @@ namespace AdventOfCode2018
                 foreach ( var t in tools )
                 {
                     var dc = Day22.SameTool + ( tool == t ? 0 : Day22.OtherTool );
-                    ways.Add((x1, y1, t), dc + Minimize(x1, y1, t, depth + 1));
+                    var minimized = dc + Minimize(x1, y1, t, depth + dc);
+                    ways.Add((x1, y1, t), minimized );
                 }
             }
             return ways.Values.Min();
@@ -208,7 +209,9 @@ namespace AdventOfCode2018
             // 774 - this is the lower bond (no change of tool at all)
             var optimizer = new Optimizer(map, tx, ty, airDistance);
 
-            Assert.AreEqual(-1, optimizer.Minimize(0,0,Tool.Torch,airDistance));
+            var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0);
+
+            Assert.AreEqual(-1, realMinimum);
         }
     }
 }
