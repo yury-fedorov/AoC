@@ -117,13 +117,15 @@ namespace AdventOfCode2018
                     var dc = Day22.SameTool + ( tool == t ? 0 : Day22.OtherTool );
                     var minimized = dc + Minimize(x1, y1, t, depth + dc);
                     ways.Add((x1, y1, t), minimized );
-                    if (t == Tool.Torch && !_cacheTorch.ContainsKey((x1,y1) ))
-                    {
-                        _cacheTorch.Add( (x1,y1), minimized );
-                    }
                 }
             }
-            return ways.Values.Min();
+            var min = ways.Values.Min();
+            var minWays = ways.Where(w => w.Value == min);
+            foreach ( var w in minWays )
+            {
+                _cacheTorch.Add((w.Key.Item1, w.Key.Item2), min);
+            }
+            return min;
         }
     }
 
