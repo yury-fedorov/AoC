@@ -24,7 +24,7 @@ namespace AdventOfCode2018.Day24
         public readonly List<Damage> Immunities = new List<Damage>();
 
         // for debug
-        public int Id => Initiative;
+        public readonly string Id;
 
         public Group(bool infection, int units, int hitPoints, int attackDamage, Damage attackType, int initiative,
             IEnumerable<Damage> weaknesses, IEnumerable<Damage> immunities)
@@ -37,7 +37,7 @@ namespace AdventOfCode2018.Day24
             Initiative = initiative;
             Weaknesses.AddRange(weaknesses);
             Immunities.AddRange(immunities);
-            // Id = $"{Infection} - {units} * {hitPoints} - {Initiative}"; // for debug
+            Id = $"{Initiative} => {Infection} - {units} * {hitPoints}"; // for debug
         }
 
         public int EffectivePower => Units * AttackDamage;
@@ -46,7 +46,7 @@ namespace AdventOfCode2018.Day24
 
         // In decreasing order of effective power, groups choose their targets; 
         // in a tie, the group with the higher initiative chooses first.
-        public long ChoosingOrder => EffectivePower * 1000 + Initiative;
+        public (int,int) ChoosingOrder => (EffectivePower, Initiative);
 
         // The damage an attacking group deals to a defending group depends on the attacking group's attack type 
         // and the defending group's immunities and weaknesses.
@@ -55,7 +55,7 @@ namespace AdventOfCode2018.Day24
         // the defending group instead takes no damage; 
         // if the defending group is weak to the attacking group's attack type, 
         // the defending group instead takes double damage.
-        public int DemageK(Damage type)
+        public int DamageK(Damage type)
         {
             if (Weaknesses.Contains(type)) return 2;
             if (Immunities.Contains(type)) return 0;
@@ -126,12 +126,12 @@ namespace AdventOfCode2018.Day24
                 new Group(false, 17,5390,4507,Damage.Fire,2, new [] { Damage.Radiation, Damage.Bludgeoning }, nill ),
                 //989 units each with 1274 hit points (immune to fire; weak to bludgeoning,
                 // slashing) with an attack that does 25 slashing damage at initiative 3
-                new Group(false, 989,1274,25,Damage.Fire,3, new [] { Damage.Bludgeoning, Damage.Slashing }, new [] { Damage.Fire } ),
+                new Group(false, 989,1274,25,Damage.Slashing,3, new [] { Damage.Bludgeoning, Damage.Slashing }, new [] { Damage.Fire } ),
 
                 //Infection:
                 //801 units each with 4706 hit points(weak to radiation) with an attack
                 //that does 116 bludgeoning damage at initiative 1
-                new Group(true, 801,4706,116,Damage.Bludgeoning,1, new [] { Damage.Fire }, nill ),
+                new Group(true, 801,4706,116,Damage.Bludgeoning,1, new [] { Damage.Radiation }, nill ),
                 //4485 units each with 2961 hit points(immune to radiation; weak to fire,
                 // cold) with an attack that does 12 slashing damage at initiative 4
                 new Group(true, 4485,2961,12,Damage.Slashing,4, new [] { Damage.Fire, Damage.Cold }, new [] { Damage.Radiation } ),
@@ -147,17 +147,16 @@ namespace AdventOfCode2018.Day24
         public bool IsOver(IEnumerable<Group> groups)
             => !ByType(groups, false).Any() || !ByType(groups, true).Any();
 
-        public int Demage( Group attacking, Group target)
+        // but not accounting for whether the defending group has enough units to actually receive all of that damage
+        public int EstimateDamage(Group attacking, Group target, bool selection)
         {
-            var maxHit = target.DemageK(attacking.AttackType) * attacking.EffectivePower;
+            var maxHit = target.DamageK(attacking.AttackType) * attacking.EffectivePower;
             if (maxHit < target.HitPoints) return 0; // if we can not kill even one enemy unit, no demage here
-            return Math.Min(maxHit, target.PotentialDamage);
+            return selection ? maxHit : Math.Min(maxHit, target.PotentialDamage);
         }
 
-        public const int OneM = 1000000;
-
-        public long TargetOrder(int demage, int effectivePower, int initiative)
-            => (demage * OneM * OneM) + (effectivePower * OneM) + initiative;
+        public (int,int,int) TargetOrder(int damage, int effectivePower, int initiative)
+            => (damage, effectivePower, initiative);
 
         // The attacking group chooses to target the group in the enemy army to which it would deal the most damage 
         // (after accounting for weaknesses and immunities, but not accounting for whether the defending group 
@@ -180,39 +179,41 @@ namespace AdventOfCode2018.Day24
         [TestCase()]
         public void Test()
         {
-            // var groups = Input().ToArray();
-            var groups = TestInput().ToArray();
+            var groups = Input().ToArray();
+            // var groups = TestInput().ToArray();
             while (!IsOver(groups)) {
-                var choosingOrder = Alive(groups).OrderBy(g => -g.ChoosingOrder).ToList();
-                var mapAttackTarget = new Dictionary<int, int>();
+                var choosingOrder = Alive(groups).OrderByDescending(g => g.ChoosingOrder).ToList();
+                var mapAttackTarget = new Dictionary<string, string>();
                 foreach ( var attacking in choosingOrder)
                 {
                     var enemy = !attacking.Infection;
                     var allEnimies = ByType(choosingOrder, enemy).ToList();
-                    var choosable = allEnimies
-                        .Where(e => !mapAttackTarget.Values.Contains(e.Id))
-                        .Where(e => Demage(attacking, e) > 0 ) // no sense in attacking, if no damage is possible
-                        .OrderBy(e => -TargetOrder(Demage(attacking,e),e.EffectivePower,e.Initiative) )
+                    var attackableEnimies = allEnimies.Where(e => !mapAttackTarget.Values.Contains(e.Id)).ToList();
+                    var potentialDamage = attackableEnimies.ToDictionary(e => e, e => EstimateDamage(attacking, e, true));
+                    var choosable = potentialDamage
+                        .OrderByDescending(e => TargetOrder(e.Value,e.Key.EffectivePower,e.Key.Initiative) )
                         .ToList();
-                    if (choosable.Any())
+                    if (choosable.Any(e => e.Value > 0 ))
                     {
-                        mapAttackTarget.Add(attacking.Id, choosable.First().Id);
+                        mapAttackTarget.Add(attacking.Id, choosable.First().Key.Id);
                     }                    
                 }
 
                 // now every group has chosen its target
                 foreach ( var attacking in choosingOrder
                     .Where(g=> mapAttackTarget.Keys.Contains(g.Id) )
-                    .OrderBy(g=>-g.Initiative).ToList() )
+                    .OrderByDescending(g=>g.Initiative).ToList() )
                 {
                     if (attacking.Units == 0) continue; // if they were killed in the meanwhile
                     var targetId = mapAttackTarget[attacking.Id];
                     var target = choosingOrder.Single(g => g.Id == targetId);
                     Assert.AreNotEqual(attacking.Infection, target.Infection); // must be always of different types
-                    var demage = Demage(attacking, target);
-                    Assert.Greater(demage, 0); // no demage, what sense in an attack?
+                    var demage = EstimateDamage(attacking, target, false);
+                    // could be a case
+                    // Assert.Greater(demage, 0); // no demage, what sense in an attack?
                     int deadUnits = demage / target.HitPoints;
-                    Assert.Greater(deadUnits, 0); // if no dead unit, what is sense in an attack?
+                    // could be a case
+                    // Assert.Greater(deadUnits, 0); // if no dead unit, what is sense in an attack?
                     Assert.True(deadUnits <= target.Units);
                     target.Units -= deadUnits;
                 }
@@ -220,5 +221,6 @@ namespace AdventOfCode2018.Day24
 
             Assert.AreEqual(-1, Alive(groups).Sum(g=>g.Units));
         }
+        // 13731 - too low
     }
 }
