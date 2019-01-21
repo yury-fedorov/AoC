@@ -174,35 +174,37 @@ namespace AdventOfCode2018.Day24
             }
         }
 
-        [TestCase("Day24Sample.txt", 5216)]
-        [TestCase("Day24.txt", 14000)]
-        public void Test(string file, int expected)
+        public Group[] Run(string file, int boost)
         {
-            // var groups = Input().ToArray();
-            // var groups = TestInput().ToArray();
             var groups = ReadFromFile(file).ToArray();
-            while (!IsOver(groups)) {
+
+            // boosting every immune system group
+            foreach (var g in ByType(groups, false))
+                g.AttackDamage += boost;
+
+            while (!IsOver(groups))
+            {
                 var choosingOrder = Alive(groups).OrderByDescending(g => g.ChoosingOrder).ToList();
                 var mapAttackTarget = new Dictionary<string, string>();
-                foreach ( var attacking in choosingOrder)
+                foreach (var attacking in choosingOrder)
                 {
                     var enemy = !attacking.Infection;
                     var allEnimies = ByType(choosingOrder, enemy).ToList();
                     var attackableEnimies = allEnimies.Where(e => !mapAttackTarget.Values.Contains(e.Id)).ToList();
                     var potentialDamage = attackableEnimies.ToDictionary(e => e, e => EstimateDamage(attacking, e, true));
                     var choosable = potentialDamage
-                        .OrderByDescending(e => TargetOrder(e.Value,e.Key.EffectivePower,e.Key.Initiative) )
+                        .OrderByDescending(e => TargetOrder(e.Value, e.Key.EffectivePower, e.Key.Initiative))
                         .ToList();
-                    if (choosable.Any(e => e.Value > 0 ))
+                    if (choosable.Any(e => e.Value > 0))
                     {
                         mapAttackTarget.Add(attacking.Id, choosable.First().Key.Id);
-                    }                    
+                    }
                 }
 
                 // now every group has chosen its target
-                foreach ( var attacking in choosingOrder
-                    .Where(g=> mapAttackTarget.Keys.Contains(g.Id) )
-                    .OrderByDescending(g=>g.Initiative).ToList() )
+                foreach (var attacking in choosingOrder
+                    .Where(g => mapAttackTarget.Keys.Contains(g.Id))
+                    .OrderByDescending(g => g.Initiative).ToList())
                 {
                     if (attacking.Units == 0) continue; // if they were killed in the meanwhile
                     var targetId = mapAttackTarget[attacking.Id];
@@ -218,8 +220,26 @@ namespace AdventOfCode2018.Day24
                     target.Units -= deadUnits;
                 }
             }
-            var result = Alive(groups).Sum(g => g.Units);
-            Assert.AreEqual(expected, result);
+            return groups;
+        }
+
+        // [TestCase("Day24Sample.txt", 5216)]
+        [TestCase("Day24.txt", 14000)]
+        public void Test(string file, int expected)
+        {
+            // var groups = Input().ToArray();
+            // var groups = TestInput().ToArray();
+            for ( int boost = 0; true; boost++ )
+            {
+                var groups = Run(file, boost);
+                if ( !Alive(groups).First().Infection )
+                {
+                    // finally the immune system won
+                    var result = Alive(groups).Sum(g => g.Units);
+                    Assert.AreEqual(expected, result);
+                    return;
+                }
+            }
         }
     }
 }
