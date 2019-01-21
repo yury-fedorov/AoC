@@ -71,6 +71,9 @@ namespace AdventOfCode2018
         readonly int _x1;
         readonly int _y1;
         readonly int _longest;
+
+        readonly IDictionary<(int, int), int> _cacheTorch = new Dictionary<(int, int), int>();
+
         public Optimizer(Map map, int x1, int y1, int longest) {
             _map = map;
             _x1 = x1;
@@ -82,6 +85,14 @@ namespace AdventOfCode2018
 
         public int Minimize( int x, int y, Tool tool, int depth )
         {
+            if ( tool == Tool.Torch )
+            {
+                int cachedCost;
+                if ( _cacheTorch.TryGetValue( (x,y), out cachedCost ) )
+                {
+                    return cachedCost;
+                }
+            }
             if (depth >= _longest) return _longest; // stop. this sequence is definetely not better
             if ( x == _x1 && y == _y1 )
             {
@@ -106,6 +117,10 @@ namespace AdventOfCode2018
                     var dc = Day22.SameTool + ( tool == t ? 0 : Day22.OtherTool );
                     var minimized = dc + Minimize(x1, y1, t, depth + dc);
                     ways.Add((x1, y1, t), minimized );
+                    if (t == Tool.Torch && !_cacheTorch.ContainsKey((x1,y1) ))
+                    {
+                        _cacheTorch.Add( (x1,y1), minimized );
+                    }
                 }
             }
             return ways.Values.Min();
@@ -185,32 +200,34 @@ namespace AdventOfCode2018
 
             Assert.AreEqual(Material.Rocky, map.At((tx, ty)));
 
-            var maxAirPath = tx + ty;
-            for ( var diagonal = 1; diagonal <= maxAirPath; diagonal++ )
+            int airDistance;
             {
-                for ( var x = 0; x <= diagonal; x++ )
+                var maxAirPath = tx + ty;
+                for (var diagonal = 1; diagonal <= maxAirPath; diagonal++)
                 {
-                    var y = diagonal - x;
-                    var material = map.At((x, y));
-                    var tools = Go(material); // this tools can be used in this region
-                    foreach ( var tool in tools )
+                    for (var x = 0; x <= diagonal; x++)
                     {
-                        var cost = MinimalCost(mapAirPath, x, y, tool);
-                        Assert.GreaterOrEqual(cost, x + y);
-                        mapAirPath.Add( (x,y,tool), cost );
+                        var y = diagonal - x;
+                        var material = map.At((x, y));
+                        var tools = Go(material); // this tools can be used in this region
+                        foreach (var tool in tools)
+                        {
+                            var cost = MinimalCost(mapAirPath, x, y, tool);
+                            Assert.GreaterOrEqual(cost, x + y);
+                            mapAirPath.Add((x, y, tool), cost);
+                        }
                     }
                 }
+                // Finally, once you reach the target, you need the torch equipped before you can find him in the dark. 
+                // The target is always in a rocky region, so if you arrive there with climbing gear equipped, 
+                // you will need to spend seven minutes switching to your torch.
+                airDistance = mapAirPath[(tx, ty, Tool.Torch)];
             }
-            // Finally, once you reach the target, you need the torch equipped before you can find him in the dark. 
-            // The target is always in a rocky region, so if you arrive there with climbing gear equipped, 
-            // you will need to spend seven minutes switching to your torch.
-            var airDistance = mapAirPath[(tx,ty,Tool.Torch)];
+
             // 1656 - this is the upper bond (simplest algorithm)
             // 774 - this is the lower bond (no change of tool at all)
             var optimizer = new Optimizer(map, tx, ty, airDistance);
-
             var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0);
-
             Assert.AreEqual(-1, realMinimum);
         }
     }
