@@ -97,7 +97,7 @@ namespace AdventOfCode2018
                 // suboptimization says how many steps it is necessary to arrive here
                 if ( path > boundedCost )
                 {
-                    return path; // we exit this path immediately, it is not to go
+                    return _longest; // we exit this path immediately, it is not to go
                 }
             }
 
