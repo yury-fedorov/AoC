@@ -11,22 +11,26 @@ namespace AdventOfCode2018
 
     public enum Tool { Neither, Torch, ClimbingGear }
 
-    public class Map
+    public interface IMap {
+        Material At(int x, int y);
+    }
+
+    public class Map : IMap
     {
         readonly int _depth;
         readonly (int, int) _target;
-        readonly IDictionary<(int, int), BigInteger> _pointIndexMap = new Dictionary<(int, int), BigInteger>();
+        readonly IDictionary<(int, int), long> _pointIndexMap = new Dictionary<(int, int), long>();
         public Map(int depth, (int,int) target)
         {
             _depth = depth;
             _target = target;
         }
 
-        public int ToErosionLevel(BigInteger geologicalIndex) => (int)((geologicalIndex + _depth) % 20183);
+        public int ToErosionLevel(long geologicalIndex) => (int)((geologicalIndex + _depth) % 20183);
 
-        public BigInteger GeologicalIndex( (int,int) point )
+        public long GeologicalIndex( (int,int) point )
         {
-            BigInteger value;
+            long value;
             if (_pointIndexMap.TryGetValue(point, out value)) return value;
 
             var (x, y) = point;
@@ -39,9 +43,9 @@ namespace AdventOfCode2018
             return value;
         }
 
-        public Material ToMaterial(BigInteger geologicalIndex) => (Material)( ToErosionLevel(geologicalIndex) % 3 );
+        public Material ToMaterial(long geologicalIndex) => (Material)( ToErosionLevel(geologicalIndex) % 3 );
 
-        public Material At((int, int) point) => ToMaterial(GeologicalIndex(point));
+        public Material At(int x, int y) => ToMaterial(GeologicalIndex((x,y)));
 
         public string Draw()
         {
@@ -53,7 +57,7 @@ namespace AdventOfCode2018
             {
                 for (var x = 0; x <= tx; x++)
                 {
-                    var material = At((x, y));
+                    var material = At(x, y);
                     char ch = mapping[(int)material];
                     map.Append(ch);
                 }
@@ -63,11 +67,33 @@ namespace AdventOfCode2018
         }
     }
 
+    // all 4 sides are bounded
+    public class BoundedMap : IMap
+    {
+        readonly IMap _original; // easily can adopt to calculate also out of cached bounds
+        readonly Material[][] _cache;
+        public BoundedMap( IMap map, int maxX, int maxY )
+        {
+            _original = map;
+            _cache = new Material[maxX][];
+            for ( int x = 0; x < maxX; x++)
+            {
+                _cache[x] = new Material[maxY];
+                for ( int y = 0; y < maxY; y++)
+                {
+                    _cache[x][y] = _original.At(x, y);
+                }
+            }
+        }
+        public Material At(int x, int y) => _cache[x][y];
+        
+    }
+
     public class AirMap : Dictionary<(int, int, Tool), int> { }
 
     public class Optimizer
     {
-        readonly Map _map;
+        readonly IMap _map;
         readonly AirMap _bounds;
         readonly int _longest;
         readonly int _x1;
@@ -76,7 +102,7 @@ namespace AdventOfCode2018
 
         // readonly IDictionary<(int, int), int> _cacheTorch = new Dictionary<(int, int), int>();
 
-        public Optimizer(Map map, int x1, int y1, Tool tool, AirMap bounds) {
+        public Optimizer(IMap map, int x1, int y1, Tool tool, AirMap bounds) {
             _map = map;
             _x1 = x1;
             _y1 = y1;
@@ -117,7 +143,7 @@ namespace AdventOfCode2018
                 var x1 = x + dx;
                 var y1 = y + dy;
                 if (x1 < 0 || y1 < 0) continue; // negative bounds
-                var material = _map.At((x1, y1));
+                var material = _map.At(x1, y1);
                 var tools = Day22.Go(material);
                 foreach ( var t in tools )
                 {
@@ -184,13 +210,13 @@ namespace AdventOfCode2018
         public void Test(int depth, int tx, int ty, int eRiskLevel)
         {
             var map = new Map(depth, (tx,ty) );
-            var a =  map.At((1, 1));
+            var a =  map.At(1, 1);
             int riskLevel = 0;
             for (var x = 0; x <= tx; x++ )
             {
                 for (var y = 0; y <= ty; y++)
                 {
-                    var material = map.At((x, y));
+                    var material = map.At(x, y);
                     riskLevel += (int)material;
                 }
             }
@@ -201,7 +227,7 @@ namespace AdventOfCode2018
             // You start at 0,0 (the mouth of the cave) with the torch equipped
             mapAirPath.Add((0, 0, Tool.Torch), 0);
 
-            Assert.AreEqual(Material.Rocky, map.At((tx, ty)));
+            Assert.AreEqual(Material.Rocky, map.At(tx, ty));
 
             var maxAirPath = tx + ty;
             for (var diagonal = 1; diagonal <= maxAirPath; diagonal++)
@@ -209,7 +235,7 @@ namespace AdventOfCode2018
                 for (var x = 0; x <= diagonal; x++)
                 {
                     var y = diagonal - x;
-                    var material = map.At((x, y));
+                    var material = map.At(x, y);
                     var tools = Go(material); // this tools can be used in this region
                     foreach (var tool in tools)
                     {
@@ -223,10 +249,13 @@ namespace AdventOfCode2018
             // The target is always in a rocky region, so if you arrive there with climbing gear equipped, 
             // you will need to spend seven minutes switching to your torch.
             var airDistance = mapAirPath[(tx, ty, Tool.Torch)];
+            var dManhattan = airDistance - maxAirPath;
+            var absoluteDelta = (int)Math.Ceiling( dManhattan / 2.0 );
+            var fastMap = new BoundedMap(map, tx + dManhattan, ty + dManhattan);
 
             // 1656 - this is the upper bond (simplest algorithm)
             // 774 - this is the lower bond (no change of tool at all)
-            var optimizer = new Optimizer(map, tx, ty, Tool.Torch, mapAirPath);
+            var optimizer = new Optimizer(fastMap, tx, ty, Tool.Torch, mapAirPath);
             var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0);
             Assert.AreEqual(-1, realMinimum);
         }
