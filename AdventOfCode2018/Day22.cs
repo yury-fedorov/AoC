@@ -68,36 +68,43 @@ namespace AdventOfCode2018
     public class Optimizer
     {
         readonly Map _map;
+        readonly AirMap _bounds;
+        readonly int _longest;
         readonly int _x1;
         readonly int _y1;
-        readonly int _longest;
+        readonly Tool _tool;
 
-        readonly IDictionary<(int, int), int> _cacheTorch = new Dictionary<(int, int), int>();
+        // readonly IDictionary<(int, int), int> _cacheTorch = new Dictionary<(int, int), int>();
 
-        public Optimizer(Map map, int x1, int y1, int longest) {
+        public Optimizer(Map map, int x1, int y1, Tool tool, AirMap bounds) {
             _map = map;
             _x1 = x1;
             _y1 = y1;
-            _longest = longest;
+            _tool = tool;
+            _bounds = bounds;
+            _longest = bounds[(x1,y1,tool)];
         }
 
         public readonly IEnumerable<(int, int)> shifts = new[] { (-1,0), (1,0), (0,-1), (0,1) };
 
-        public int Minimize( int x, int y, Tool tool, int depth )
+        public int Minimize( int x, int y, Tool tool, int path )
         {
-            if ( tool == Tool.Torch )
+            if (path >= _longest) return path;
+
+            int boundedCost;
+            if ( _bounds.TryGetValue( (x,y,tool), out boundedCost ) )
             {
-                int cachedCost;
-                if ( _cacheTorch.TryGetValue( (x,y), out cachedCost ) )
+                // suboptimization says how many steps it is necessary to arrive here
+                if ( path > boundedCost )
                 {
-                    return cachedCost;
+                    return path; // we exit this path immediately, it is not to go
                 }
             }
-            if (depth >= _longest) return _longest; // stop. this sequence is definetely not better
+
             if ( x == _x1 && y == _y1 )
             {
                 // we are already on the region
-                if (tool == Tool.Torch) return 0; // target tool is already in hand
+                if (tool == _tool) return 0; // target tool is already in hand
                 return Day22.OtherTool; // we need only to switch the tool to torch
             }
 
@@ -115,17 +122,11 @@ namespace AdventOfCode2018
                 foreach ( var t in tools )
                 {
                     var dc = Day22.SameTool + ( tool == t ? 0 : Day22.OtherTool );
-                    var minimized = dc + Minimize(x1, y1, t, depth + dc);
+                    var minimized = dc + Minimize(x1, y1, t, path + dc);
                     ways.Add((x1, y1, t), minimized );
                 }
             }
-            var min = ways.Values.Min();
-            var minWays = ways.Where(w => w.Value == min);
-            foreach ( var w in minWays )
-            {
-                _cacheTorch.Add((w.Key.Item1, w.Key.Item2), min);
-            }
-            return min;
+            return ways.Values.Min();
         }
     }
 
@@ -202,33 +203,30 @@ namespace AdventOfCode2018
 
             Assert.AreEqual(Material.Rocky, map.At((tx, ty)));
 
-            int airDistance;
+            var maxAirPath = tx + ty;
+            for (var diagonal = 1; diagonal <= maxAirPath; diagonal++)
             {
-                var maxAirPath = tx + ty;
-                for (var diagonal = 1; diagonal <= maxAirPath; diagonal++)
+                for (var x = 0; x <= diagonal; x++)
                 {
-                    for (var x = 0; x <= diagonal; x++)
+                    var y = diagonal - x;
+                    var material = map.At((x, y));
+                    var tools = Go(material); // this tools can be used in this region
+                    foreach (var tool in tools)
                     {
-                        var y = diagonal - x;
-                        var material = map.At((x, y));
-                        var tools = Go(material); // this tools can be used in this region
-                        foreach (var tool in tools)
-                        {
-                            var cost = MinimalCost(mapAirPath, x, y, tool);
-                            Assert.GreaterOrEqual(cost, x + y);
-                            mapAirPath.Add((x, y, tool), cost);
-                        }
+                        var cost = MinimalCost(mapAirPath, x, y, tool);
+                        Assert.GreaterOrEqual(cost, x + y);
+                        mapAirPath.Add((x, y, tool), cost);
                     }
                 }
-                // Finally, once you reach the target, you need the torch equipped before you can find him in the dark. 
-                // The target is always in a rocky region, so if you arrive there with climbing gear equipped, 
-                // you will need to spend seven minutes switching to your torch.
-                airDistance = mapAirPath[(tx, ty, Tool.Torch)];
             }
+            // Finally, once you reach the target, you need the torch equipped before you can find him in the dark. 
+            // The target is always in a rocky region, so if you arrive there with climbing gear equipped, 
+            // you will need to spend seven minutes switching to your torch.
+            var airDistance = mapAirPath[(tx, ty, Tool.Torch)];
 
             // 1656 - this is the upper bond (simplest algorithm)
             // 774 - this is the lower bond (no change of tool at all)
-            var optimizer = new Optimizer(map, tx, ty, airDistance);
+            var optimizer = new Optimizer(map, tx, ty, Tool.Torch, mapAirPath);
             var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0);
             Assert.AreEqual(-1, realMinimum);
         }
