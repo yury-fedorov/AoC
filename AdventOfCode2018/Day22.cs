@@ -106,10 +106,11 @@ namespace AdventOfCode2018
         readonly int _x1;
         readonly int _y1;
         readonly Tool _tool;
+        readonly int _switchCount;
 
         // readonly IDictionary<(int, int), int> _cacheTorch = new Dictionary<(int, int), int>();
 
-        public Optimizer(IMap map, int x1, int y1, Tool tool, AirMap bounds)
+        public Optimizer(IMap map, int x1, int y1, Tool tool, AirMap bounds, int switchCount)
         {
             _map = map;
             _x1 = x1;
@@ -117,13 +118,14 @@ namespace AdventOfCode2018
             _tool = tool;
             _bounds = bounds;
             _longest = bounds[(x1, y1, tool)];
+            _switchCount = switchCount;
         }
 
         public readonly IEnumerable<(int, int)> shifts = new[] { (-1, 0), (1, 0), (0, -1), (0, 1) };
 
-        public int Minimize(int x, int y, Tool tool, int path)
+        public int Minimize(int x, int y, Tool tool, int path, int switchCount)
         {
-            if (path >= _longest) return path;
+            if ( path >= _longest || switchCount >= _switchCount ) return int.MaxValue;
 
             int boundedCost;
             if (_bounds.TryGetValue((x, y, tool), out boundedCost))
@@ -131,7 +133,13 @@ namespace AdventOfCode2018
                 // suboptimization says how many steps it is necessary to arrive here
                 if (path > boundedCost)
                 {
-                    return _longest; // we exit this path immediately, it is not to go
+                    return int.MaxValue; // we exit this path immediately, it is not to go
+                }
+                else if (path < boundedCost )
+                {
+                    // this is extreamily good, we have just found a shorter path to the point
+                    // we need to update the bounds immediately
+                    _bounds[(x, y, tool)] = path;
                 }
             }
 
@@ -150,13 +158,13 @@ namespace AdventOfCode2018
             {
                 var x1 = x + dx;
                 var y1 = y + dy;
-                if (x1 < 0 || y1 < 0) continue; // negative bounds
                 var material = _map.At(x1, y1);
-                var tools = Day22.Go(material);
+                var tools = ToolUtil.Go(material);
                 foreach (var t in tools)
                 {
-                    var dc = Day22.SameTool + (tool == t ? 0 : Day22.OtherTool);
-                    var minimized = dc + Minimize(x1, y1, t, path + dc);
+                    var isSwitch = tool != t;
+                    var dc = Day22.SameTool + (isSwitch ? Day22.OtherTool : 0);
+                    var minimized = dc + Minimize(x1, y1, t, path + dc, switchCount + (isSwitch ? 1 : 0) );
                     ways.Add((x1, y1, t), minimized);
                 }
             }
@@ -164,7 +172,7 @@ namespace AdventOfCode2018
         }
     }
 
-    public class Day22
+    public class ToolUtil
     {
         static readonly Tool[] ToolsInSolidRock = new Tool[] { };
 
@@ -181,14 +189,17 @@ namespace AdventOfCode2018
         static readonly Tool[] ToolsInWet = new[] { Tool.ClimbingGear, Tool.Neither };
 
         // public enum Material { Rocky, Wet, Narrow, SolidRock }
-        static readonly Tool[][] ToolsIn = new Tool [] [] { ToolsInRocky, ToolsInWet, ToolsInNarow, ToolsInSolidRock };
+        static readonly Tool[][] ToolsIn = new Tool[][] { ToolsInRocky, ToolsInWet, ToolsInNarow, ToolsInSolidRock };
 
         public static Tool[] Go(Material material) => ToolsIn[(int)material];
 
         public static Tool[] ToolsAll = Enum.GetValues(typeof(Tool)).Cast<Tool>().ToArray();
 
         public static IEnumerable<Tool> OtherTools(Tool tool) => ToolsAll.Where(t => t != tool);
+    }
 
+    public class Day22
+    {
         public const int SameTool = 1;
         public const int OtherTool = 7;
 
@@ -200,7 +211,7 @@ namespace AdventOfCode2018
             if (!map.TryGetValue((x, y, tool), out cost))
             {
                 // this tool is no go on the region
-                var others = OtherTools(tool).Where(t => map.ContainsKey((x, y, t)));
+                var others = ToolUtil.OtherTools(tool).Where(t => map.ContainsKey((x, y, t)));
                 cost = others.Select(t => map[(x, y, t)]).Min() + OtherTool;
             }
             return cost;
@@ -226,17 +237,15 @@ namespace AdventOfCode2018
                     riskLevel += (int)material;
                 }
             }
-            var image = map.Draw();
-            Assert.AreEqual(eRiskLevel, riskLevel);
+            // var image = map.Draw();
+            Assert.AreEqual(eRiskLevel, riskLevel); // task 1
 
             var mapAirPath = new AirMap();
             // You start at 0,0 (the mouth of the cave) with the torch equipped
             mapAirPath.Add((0, 0, Tool.Torch), 0);
 
             Assert.AreEqual(Material.Rocky, map.At(tx, ty));
-
-            
-
+          
             var maxAirPath = tx + ty;
             for (var diagonal = 1; diagonal <= maxAirPath; diagonal++)
             {
@@ -244,7 +253,7 @@ namespace AdventOfCode2018
                 {
                     var y = diagonal - x;
                     var material = map.At(x, y);
-                    var tools = Go(material); // this tools can be used in this region
+                    var tools = ToolUtil.Go(material); // this tools can be used in this region
                     foreach (var tool in tools)
                     {
                         var cost = MinimalCost(mapAirPath, x, y, tool);
@@ -259,12 +268,13 @@ namespace AdventOfCode2018
             var airDistance = mapAirPath[(tx, ty, Tool.Torch)];
             var dManhattan = airDistance - maxAirPath;
             var absoluteDelta = 1 + dManhattan >> 1; // divide by 2
+            var switchCount = dManhattan / OtherTool; // max number of switches
             var fastMap = new BoundedMap(map, tx + absoluteDelta, ty + absoluteDelta);
 
             // 1656 - this is the upper bond (simplest algorithm)
             // 774 - this is the lower bond (no change of tool at all)
-            var optimizer = new Optimizer(fastMap, tx, ty, Tool.Torch, mapAirPath);
-            var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0);
+            var optimizer = new Optimizer(fastMap, tx, ty, Tool.Torch, mapAirPath, switchCount);
+            var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0, 0);
             Assert.AreEqual(-1, realMinimum);
         }
     }
