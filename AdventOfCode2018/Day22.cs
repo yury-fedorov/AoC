@@ -123,9 +123,11 @@ namespace AdventOfCode2018
 
         public readonly IEnumerable<(int, int)> shifts = new[] { (-1, 0), (1, 0), (0, -1), (0, 1) };
 
+        const int LongerPath = int.MaxValue >> 1;
+
         public int Minimize(int x, int y, Tool tool, int path, int switchCount)
         {
-            if ( path >= _longest || switchCount >= _switchCount ) return int.MaxValue;
+            if ( path >= _longest || switchCount >= _switchCount ) return LongerPath;
 
             int boundedCost;
             if (_bounds.TryGetValue((x, y, tool), out boundedCost))
@@ -133,7 +135,7 @@ namespace AdventOfCode2018
                 // suboptimization says how many steps it is necessary to arrive here
                 if (path > boundedCost)
                 {
-                    return int.MaxValue; // we exit this path immediately, it is not to go
+                    return LongerPath; // we exit this path immediately, it is not to go
                 }
                 else if (path < boundedCost )
                 {
@@ -165,7 +167,11 @@ namespace AdventOfCode2018
                     var isSwitch = tool != t;
                     var dc = Day22.SameTool + (isSwitch ? Day22.OtherTool : 0);
                     var minimized = dc + Minimize(x1, y1, t, path + dc, switchCount + (isSwitch ? 1 : 0) );
-                    ways.Add((x1, y1, t), minimized);
+                    if ( minimized < LongerPath )
+                    {
+                        Assert.True(minimized <= _longest);
+                        ways.Add((x1, y1, t), minimized);
+                    }
                 }
             }
             return ways.Values.Min();
