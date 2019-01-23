@@ -2,12 +2,12 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 
 namespace AdventOfCode2018
 {
-    public enum Material { Rocky, Wet, Narrow }
+    // solid rock cannot be traversed.
+    public enum Material { Rocky, Wet, Narrow, SolidRock }
 
     public enum Tool { Neither, Torch, ClimbingGear }
 
@@ -45,7 +45,7 @@ namespace AdventOfCode2018
 
         public Material ToMaterial(long geologicalIndex) => (Material)( ToErosionLevel(geologicalIndex) % 3 );
 
-        public Material At(int x, int y) => ToMaterial(GeologicalIndex((x,y)));
+        public Material At(int x, int y) => x >= 0 && y >= 0 ? ToMaterial(GeologicalIndex((x,y))) : Material.SolidRock;
 
         public string Draw()
         {
@@ -72,20 +72,26 @@ namespace AdventOfCode2018
     {
         readonly IMap _original; // easily can adopt to calculate also out of cached bounds
         readonly Material[][] _cache;
-        public BoundedMap( IMap map, int maxX, int maxY )
+        readonly int _sizeX;
+        readonly int _sizeY;
+        public BoundedMap( IMap map, int sizeX, int sizeY )
         {
             _original = map;
-            _cache = new Material[maxX][];
-            for ( int x = 0; x < maxX; x++)
+            _sizeX = sizeX;
+            _sizeY = sizeY;
+            _cache = new Material[sizeX][];
+            for ( int x = 0; x < sizeX; x++)
             {
-                _cache[x] = new Material[maxY];
-                for ( int y = 0; y < maxY; y++)
+                _cache[x] = new Material[sizeY];
+                for ( int y = 0; y < sizeY; y++)
                 {
                     _cache[x][y] = _original.At(x, y);
                 }
             }
         }
-        public Material At(int x, int y) => _cache[x][y];
+        public Material At(int x, int y) 
+            => x >= 0 && x < _sizeX && y >= 0 && y < _sizeY 
+             ? _cache[x][y] : Material.SolidRock;
         
     }
 
@@ -177,10 +183,14 @@ namespace AdventOfCode2018
             }
             throw new Exception("not expected material");
         }
-        
-        public static IEnumerable<Tool> Go(Material material) => OtherTools(NoGo(material));
 
-        public static IEnumerable<Tool> OtherTools(Tool tool) => Enum.GetValues(typeof(Tool)).Cast<Tool>().Where(t => t != tool);
+        public static readonly IEnumerable<Tool> NoTool = Enumerable.Empty<Tool>();
+        
+        public static IEnumerable<Tool> Go(Material material) 
+            => material != Material.SolidRock ? OtherTools(NoGo(material)) : NoTool;
+
+        public static IEnumerable<Tool> OtherTools(Tool tool) 
+            => Enum.GetValues(typeof(Tool)).Cast<Tool>().Where(t => t != tool);
     
         public const int SameTool = 1;
         public const int OtherTool = 7;
@@ -210,7 +220,6 @@ namespace AdventOfCode2018
         public void Test(int depth, int tx, int ty, int eRiskLevel)
         {
             var map = new Map(depth, (tx,ty) );
-            var a =  map.At(1, 1);
             int riskLevel = 0;
             for (var x = 0; x <= tx; x++ )
             {
@@ -228,6 +237,8 @@ namespace AdventOfCode2018
             mapAirPath.Add((0, 0, Tool.Torch), 0);
 
             Assert.AreEqual(Material.Rocky, map.At(tx, ty));
+
+            return;
 
             var maxAirPath = tx + ty;
             for (var diagonal = 1; diagonal <= maxAirPath; diagonal++)
