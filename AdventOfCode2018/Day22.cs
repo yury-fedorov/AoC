@@ -166,33 +166,28 @@ namespace AdventOfCode2018
 
     public class Day22
     {
-        // Tools can only be used in certain regions:
-        public static Tool NoGo(Material material)
-        {
-            switch (material)
-            {
-                // In narrow regions, you can use the torch or neither tool. 
-                // You cannot use the climbing gear (it's too bulky to fit).
-                case Material.Narrow: return Tool.ClimbingGear;
+        static readonly Tool[] ToolsInSolidRock = new Tool[] { };
 
-                // In rocky regions, you can use the climbing gear or the torch.
-                // You cannot use neither(you'll likely slip and fall).
-                case Material.Rocky: return Tool.Neither;
+        // In narrow regions, you can use the torch or neither tool. 
+        // You cannot use the climbing gear (it's too bulky to fit).
+        static readonly Tool[] ToolsInNarow = new[] { Tool.Torch, Tool.Neither };
 
-                // In wet regions, you can use the climbing gear or neither tool.
-                // You cannot use the torch (if it gets wet, you won't have a light source).
-                case Material.Wet: return Tool.Torch;
-            }
-            throw new Exception("not expected material");
-        }
+        // In rocky regions, you can use the climbing gear or the torch.
+        // You cannot use neither(you'll likely slip and fall).
+        static readonly Tool[] ToolsInRocky = new[] { Tool.ClimbingGear, Tool.Torch };
 
-        public static readonly IEnumerable<Tool> NoTool = Enumerable.Empty<Tool>();
+        // In wet regions, you can use the climbing gear or neither tool.
+        // You cannot use the torch (if it gets wet, you won't have a light source).
+        static readonly Tool[] ToolsInWet = new[] { Tool.ClimbingGear, Tool.Neither };
 
-        public static IEnumerable<Tool> Go(Material material)
-            => material != Material.SolidRock ? OtherTools(NoGo(material)) : NoTool;
+        // public enum Material { Rocky, Wet, Narrow, SolidRock }
+        static readonly Tool[][] ToolsIn = new Tool [] [] { ToolsInRocky, ToolsInWet, ToolsInNarow, ToolsInSolidRock };
 
-        public static IEnumerable<Tool> OtherTools(Tool tool)
-            => Enum.GetValues(typeof(Tool)).Cast<Tool>().Where(t => t != tool);
+        public static Tool[] Go(Material material) => ToolsIn[(int)material];
+
+        public static Tool[] ToolsAll = Enum.GetValues(typeof(Tool)).Cast<Tool>().ToArray();
+
+        public static IEnumerable<Tool> OtherTools(Tool tool) => ToolsAll.Where(t => t != tool);
 
         public const int SameTool = 1;
         public const int OtherTool = 7;
