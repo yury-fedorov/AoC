@@ -174,7 +174,7 @@ namespace AdventOfCode2018
                     }
                 }
             }
-            return ways.Values.Min();
+            return ways.Any() ? ways.Values.Min() : LongerPath;
         }
     }
 
