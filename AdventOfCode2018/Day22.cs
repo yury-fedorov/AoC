@@ -2,7 +2,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace AdventOfCode2018
@@ -97,10 +96,10 @@ namespace AdventOfCode2018
 
     }
 
-    public class AirMap
+    public class CostMap
     {
         public const int ND = -1;
-        readonly int[,,] _at;
+        readonly int[,,] _at; // how much it costs to arrive here
         private readonly int _sx;
         private readonly int _sy;
 
@@ -109,7 +108,7 @@ namespace AdventOfCode2018
 
         public bool ValidIndex(int x, int y) => x >= 0 && y >= 0 && x < _sx && y < _sy;
 
-        public AirMap(int sx, int sy)
+        public CostMap( int sx, int sy, CostMap src = null )
         {
             _sx = sx;
             _sy = sy;
@@ -117,30 +116,51 @@ namespace AdventOfCode2018
             for (int t = 0; t < ToolUtil.ToolsAll.Length; t++)
                 for (int x = 0; x < sx; x++ )
                     for (int y = 0; y < sy; y++)
-                        _at[x, y, t] = ND;
+                    {
+                        _at[x, y, t] = (src == null || !src.ValidIndex(x, y)) 
+                                     ? ND : src._at[x,y,t];
+                    }
         }
+
+        public const int SameTool = 1;
+        public const int OtherTool = 7;
+
+        // get the wishing tool, if absent, get 2 other tools and select minimal of them + other tool
+        public int CostTill(int x, int y, Tool tool)
+        {
+            if (!ValidIndex(x, y)) return (int.MaxValue >> 1);
+            int cost;
+            if ((cost = At(x, y, tool)) == ND)
+            {
+                // this tool is no go on the region
+                var others = ToolUtil.OtherTools(tool).Where(t => At(x, y, t) != ND); // same point but other tools
+                cost = others.Select(t => At(x, y, t)).Min() + OtherTool;
+            }
+            return cost;
+        }
+
+        public int MinimalCost(int x, int y, Tool tool)
+            => Math.Min(CostTill( x - 1, y, tool), CostTill( x, y - 1, tool)) + SameTool;
     }
 
     public class Optimizer
     {
         readonly IMap _map;
-        readonly AirMap _bounds;
+        readonly CostMap _costMap;
         readonly int _longest;
         readonly int _x1;
         readonly int _y1;
         readonly Tool _tool;
         readonly int _switchCount;
 
-        // readonly IDictionary<(int, int), int> _cacheTorch = new Dictionary<(int, int), int>();
-
-        public Optimizer(IMap map, int x1, int y1, Tool tool, AirMap bounds, int switchCount)
+        public Optimizer(IMap map, int x1, int y1, Tool tool, CostMap costMap, int switchCount)
         {
             _map = map;
             _x1 = x1;
             _y1 = y1;
             _tool = tool;
-            _bounds = bounds;
-            _longest = bounds.At(x1, y1, tool);
+            _costMap = costMap;
+            _longest = costMap.At(x1, y1, tool);
             _switchCount = switchCount;
         }
 
@@ -153,7 +173,7 @@ namespace AdventOfCode2018
             if (path >= _longest || switchCount >= _switchCount) return LongerPath;
 
             int boundedCost;
-            if ( (boundedCost = _bounds.At(x, y, tool) ) != AirMap.ND )
+            if ( (boundedCost = _costMap.At(x, y, tool) ) != CostMap.ND )
             {
                 // suboptimization says how many steps it is necessary to arrive here
                 if (path > boundedCost)
@@ -164,7 +184,7 @@ namespace AdventOfCode2018
                 {
                     // this is extreamily good, we have just found a shorter path to the point
                     // we need to update the bounds immediately
-                    _bounds.Set( x, y, tool, path );
+                    _costMap.Set( x, y, tool, path );
                 }
             }
 
@@ -172,7 +192,7 @@ namespace AdventOfCode2018
             {
                 // we are already on the region
                 if (tool == _tool) return 0; // target tool is already in hand
-                return Day22.OtherTool; // we need only to switch the tool to torch
+                return CostMap.OtherTool; // we need only to switch the tool to torch
             }
 
             var material0 = _map.At(x, y);
@@ -191,7 +211,7 @@ namespace AdventOfCode2018
                 if (canGo)
                 {
                     // we can go without change of the tool further
-                    minimized = Day22.SameTool + Minimize(x1, y1, tool, path + Day22.SameTool, switchCount );
+                    minimized = CostMap.SameTool + Minimize(x1, y1, tool, path + CostMap.SameTool, switchCount );
                     if (minimized < LongerPath)
                     {
                         Assert.True(minimized <= _longest);
@@ -206,7 +226,7 @@ namespace AdventOfCode2018
                         canGo = ToolUtil.Go(material0, material, t);
                         if (canGo)
                         {
-                            minimized = Day22.OtherTool + Minimize(x1, y1, t, path + Day22.OtherTool, switchCount + 1);
+                            minimized = CostMap.OtherTool + Minimize(x1, y1, t, path + CostMap.OtherTool, switchCount + 1);
                             if (minimized < LongerPath)
                             {
                                 Assert.True(minimized <= _longest);
@@ -265,26 +285,6 @@ namespace AdventOfCode2018
 
     public class Day22
     {
-        public const int SameTool = 1;
-        public const int OtherTool = 7;
-
-        // get the wishing tool, if absent, get 2 other tools and select minimal of them + other tool
-        public int CostTill(AirMap map, int x, int y, Tool tool)
-        {
-            if ( !map.ValidIndex(x,y) ) return ( int.MaxValue >> 1 );
-            int cost;
-            if ( ( cost = map.At( x, y, tool ) ) == AirMap.ND )
-            {
-                // this tool is no go on the region
-                var others = ToolUtil.OtherTools(tool).Where(t => map.At( x, y, t ) != AirMap.ND ); // same point but other tools
-                cost = others.Select(t => map.At( x, y, t )).Min() + OtherTool;
-            }
-            return cost;
-        }
-
-        public int MinimalCost(AirMap map, int x, int y, Tool tool)
-            => Math.Min(CostTill(map, x - 1, y, tool), CostTill(map, x, y - 1, tool)) + SameTool;
-
         // Puzzle input
         // depth: 7863
         // target: 14,760
@@ -303,16 +303,16 @@ namespace AdventOfCode2018
                 }
             }
             // var image = map.Draw();
-            Assert.AreEqual(eRiskLevel, riskLevel); // task 1
+            Assert.AreEqual(eRiskLevel, riskLevel, "rsik level"); // task 1
 
-            var mapAirPath = new AirMap(tx+1, ty+1);
+            var smallCostMap = new CostMap(tx+1, ty+1);
             // You start at 0,0 (the mouth of the cave) with the torch equipped
-            mapAirPath.Set( 0, 0, Tool.Torch, 0 );
+            smallCostMap.Set( 0, 0, Tool.Torch, 0 );
 
-            Assert.AreEqual(Material.Rocky, map.At(tx, ty));
+            Assert.AreEqual(Material.Rocky, map.At(tx, ty), "rocky target");
 
-            var maxAirPath = tx + ty;
-            for (var diagonal = 1; diagonal <= maxAirPath; diagonal++)
+            var manhattanPath = tx + ty;
+            for (var diagonal = 1; diagonal <= manhattanPath; diagonal++)
             {
                 for (var x = 0; x <= diagonal; x++)
                 {
@@ -321,26 +321,59 @@ namespace AdventOfCode2018
                     var tools = ToolUtil.UsableTools(material); // this tools can be used in this region
                     foreach (var tool in tools)
                     {
-                        var cost = MinimalCost(mapAirPath, x, y, tool);
-                        Assert.GreaterOrEqual(cost, x + y);
-                        mapAirPath.Set( x, y, tool, cost);
+                        var cost = smallCostMap.MinimalCost(x, y, tool);
+                        Assert.GreaterOrEqual(cost, x + y, "cost more or equal manhattan" );
+                        smallCostMap.Set( x, y, tool, cost);
                     }
                 }
             }
             // Finally, once you reach the target, you need the torch equipped before you can find him in the dark. 
             // The target is always in a rocky region, so if you arrive there with climbing gear equipped, 
             // you will need to spend seven minutes switching to your torch.
-            var airDistance = mapAirPath.At( tx, ty, Tool.Torch);
-            var dManhattan = airDistance - maxAirPath;
+            var airDistance = smallCostMap.At( tx, ty, Tool.Torch);
+            var dManhattan = airDistance - manhattanPath;
             var absoluteDelta = 1 + dManhattan >> 1; // divide by 2
-            var switchCount = dManhattan / OtherTool; // max number of switches
+            var switchCount = dManhattan / CostMap.OtherTool; // max number of switches
             var fastMap = new BoundedMap(map, tx + absoluteDelta, ty + absoluteDelta);
+
+            // for the next phase we need a bigger cost map
+            var costMap = new CostMap(tx + absoluteDelta, ty + absoluteDelta, smallCostMap);
+
+            // now let us play with partial optimizations
+            for (var diagonal = 1; diagonal <= manhattanPath; diagonal++)
+            {
+                for (var x = 0; x <= diagonal; x++)
+                {
+                    var y = diagonal - x;
+                    var material = map.At(x, y);
+                    var tools = ToolUtil.UsableTools(material); // this tools can be used in this region
+                    foreach (var tool in tools)
+                    {
+                        var prevCost = costMap.At(x, y, tool);
+                        if ( prevCost == CostMap.ND) // we never done any estimation for this point
+                        {
+                            var oneStepCost = costMap.MinimalCost(x, y, tool);
+                            prevCost = oneStepCost;
+                        }
+                        Assert.GreaterOrEqual(prevCost, x + y, "prev cost vs manhattan");
+                        var manhattan1 = x + y;
+                        var dManhattan1 = prevCost - manhattan1;
+                        int switchCount1 = dManhattan1 / CostMap.OtherTool;
+                        var optimizer1 = new Optimizer(fastMap, x , ty, tool, costMap, switchCount1);
+                        var bestCost = optimizer1.Minimize(0, 0, Tool.Torch, 0, 0);
+                        Assert.GreaterOrEqual(prevCost, bestCost, "prev cost vs best cost" );
+                        costMap.Set(x, y, tool, bestCost);
+                    }
+                }
+            }
 
             // 1656 - this is the upper bond (simplest algorithm)
             // 774 - this is the lower bond (no change of tool at all)
-            var optimizer = new Optimizer(fastMap, tx, ty, Tool.Torch, mapAirPath, switchCount);
-            var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0, 0);
-            Assert.AreEqual(-1, realMinimum);
+            // var optimizer = new Optimizer(fastMap, tx, ty, Tool.Torch, costMap, switchCount);
+            // var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0, 0);
+
+            var realMinimum = costMap.At(tx, ty, Tool.Torch);
+            Assert.AreEqual(-1, realMinimum, "task 2 response");
         }
     }
 }
