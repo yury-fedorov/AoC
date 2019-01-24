@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace AdventOfCode2018
@@ -96,8 +97,29 @@ namespace AdventOfCode2018
 
     }
 
-    // TODO rewrite as a 2D of 1D array
-    public class AirMap : Dictionary<(int, int, Tool), int> { }
+    public class AirMap
+    {
+        public const int ND = -1;
+        readonly int[,,] _at;
+        private readonly int _sx;
+        private readonly int _sy;
+
+        public int At(int x, int y, Tool tool) => ValidIndex(x,y) ? _at[x,y,(int)tool] : ND;
+        public void Set(int x, int y, Tool tool, int value) { if (ValidIndex(x, y)) _at[x, y, (int)tool] = value; } 
+
+        public bool ValidIndex(int x, int y) => x >= 0 && y >= 0 && x < _sx && y < _sy;
+
+        public AirMap(int sx, int sy)
+        {
+            _sx = sx;
+            _sy = sy;
+            _at = new int[sx,sy,ToolUtil.ToolsAll.Length];
+            for (int t = 0; t < ToolUtil.ToolsAll.Length; t++)
+                for (int x = 0; x < sx; x++ )
+                    for (int y = 0; y < sy; y++)
+                        _at[x, y, t] = ND;
+        }
+    }
 
     public class Optimizer
     {
@@ -118,7 +140,7 @@ namespace AdventOfCode2018
             _y1 = y1;
             _tool = tool;
             _bounds = bounds;
-            _longest = bounds[(x1, y1, tool)];
+            _longest = bounds.At(x1, y1, tool);
             _switchCount = switchCount;
         }
 
@@ -131,7 +153,7 @@ namespace AdventOfCode2018
             if (path >= _longest || switchCount >= _switchCount) return LongerPath;
 
             int boundedCost;
-            if (_bounds.TryGetValue((x, y, tool), out boundedCost))
+            if ( (boundedCost = _bounds.At(x, y, tool) ) != AirMap.ND )
             {
                 // suboptimization says how many steps it is necessary to arrive here
                 if (path > boundedCost)
@@ -142,7 +164,7 @@ namespace AdventOfCode2018
                 {
                     // this is extreamily good, we have just found a shorter path to the point
                     // we need to update the bounds immediately
-                    _bounds[(x, y, tool)] = path;
+                    _bounds.Set( x, y, tool, path );
                 }
             }
 
@@ -198,6 +220,8 @@ namespace AdventOfCode2018
         }
     }
 
+    // public enum Tool { Neither, Torch, ClimbingGear }
+
     public class ToolUtil
     {
         static readonly Tool[] ToolsInSolidRock = { };
@@ -219,8 +243,19 @@ namespace AdventOfCode2018
 
         public static Tool[] UsableTools(Material material) => ToolsIn[(int) material];
 
+        // public enum Material { Rocky, Wet, Narrow, SolidRock }
+        // access by material (so 4 elements)
+        private const int Neither = 1;
+        private const int Torch   = 2;
+        private const int ClimbingGear = 4;
+
+        static readonly int[] FastUsableTools = { ClimbingGear | Torch, ClimbingGear | Neither, Torch | Neither, 0}; // no tool is usable
+
+        // public enum Tool { Neither, Torch, ClimbingGear
+        private static readonly int[] ToolToCode = { Neither, Torch, ClimbingGear };
+
         public static bool Go(Material a, Material b, Tool tool) 
-            => a == b || (UsableTools(a).Contains(tool) && UsableTools(b).Contains(tool));
+            => a == b || ( FastUsableTools[(int)a] & FastUsableTools[(int)b] & ToolToCode[(int)tool] ) != 0;
 
         public static Tool[] ToolsAll = Enum.GetValues(typeof(Tool)).Cast<Tool>().ToArray();
 
@@ -236,13 +271,13 @@ namespace AdventOfCode2018
         // get the wishing tool, if absent, get 2 other tools and select minimal of them + other tool
         public int CostTill(AirMap map, int x, int y, Tool tool)
         {
-            if (x < 0 || y < 0) return int.MaxValue;
+            if ( !map.ValidIndex(x,y) ) return ( int.MaxValue >> 1 );
             int cost;
-            if (!map.TryGetValue((x, y, tool), out cost))
+            if ( ( cost = map.At( x, y, tool ) ) == AirMap.ND )
             {
                 // this tool is no go on the region
-                var others = ToolUtil.OtherTools(tool).Where(t => map.ContainsKey((x, y, t))); // same point but other tools
-                cost = others.Select(t => map[(x, y, t)]).Min() + OtherTool;
+                var others = ToolUtil.OtherTools(tool).Where(t => map.At( x, y, t ) != AirMap.ND ); // same point but other tools
+                cost = others.Select(t => map.At( x, y, t )).Min() + OtherTool;
             }
             return cost;
         }
@@ -270,9 +305,9 @@ namespace AdventOfCode2018
             // var image = map.Draw();
             Assert.AreEqual(eRiskLevel, riskLevel); // task 1
 
-            var mapAirPath = new AirMap();
+            var mapAirPath = new AirMap(tx+1, ty+1);
             // You start at 0,0 (the mouth of the cave) with the torch equipped
-            mapAirPath.Add((0, 0, Tool.Torch), 0);
+            mapAirPath.Set( 0, 0, Tool.Torch, 0 );
 
             Assert.AreEqual(Material.Rocky, map.At(tx, ty));
 
@@ -288,14 +323,14 @@ namespace AdventOfCode2018
                     {
                         var cost = MinimalCost(mapAirPath, x, y, tool);
                         Assert.GreaterOrEqual(cost, x + y);
-                        mapAirPath.Add((x, y, tool), cost);
+                        mapAirPath.Set( x, y, tool, cost);
                     }
                 }
             }
             // Finally, once you reach the target, you need the torch equipped before you can find him in the dark. 
             // The target is always in a rocky region, so if you arrive there with climbing gear equipped, 
             // you will need to spend seven minutes switching to your torch.
-            var airDistance = mapAirPath[(tx, ty, Tool.Torch)];
+            var airDistance = mapAirPath.At( tx, ty, Tool.Torch);
             var dManhattan = airDistance - maxAirPath;
             var absoluteDelta = 1 + dManhattan >> 1; // divide by 2
             var switchCount = dManhattan / OtherTool; // max number of switches
