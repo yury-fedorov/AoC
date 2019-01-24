@@ -96,6 +96,7 @@ namespace AdventOfCode2018
 
     }
 
+    // TODO rewrite as a 2D of 1D array
     public class AirMap : Dictionary<(int, int, Tool), int> { }
 
     public class Optimizer
@@ -121,7 +122,7 @@ namespace AdventOfCode2018
             _switchCount = switchCount;
         }
 
-        public readonly (int, int) [] shifts = new[] { (-1, 0), (1, 0), (0, -1), (0, 1) };
+        public readonly (int, int) [] shifts = { (-1, 0), (1, 0), (0, -1), (0, 1) };
 
         const int LongerPath = int.MaxValue >> 1;
 
@@ -137,7 +138,7 @@ namespace AdventOfCode2018
                 {
                     return LongerPath; // we exit this path immediately, it is not to go
                 }
-                else if (path < boundedCost )
+                if (path < boundedCost )
                 {
                     // this is extreamily good, we have just found a shorter path to the point
                     // we need to update the bounds immediately
@@ -180,28 +181,29 @@ namespace AdventOfCode2018
 
     public class ToolUtil
     {
-        static readonly Tool[] ToolsInSolidRock = new Tool[] { };
+        static readonly Tool[] ToolsInSolidRock = { };
 
         // In narrow regions, you can use the torch or neither tool. 
         // You cannot use the climbing gear (it's too bulky to fit).
-        static readonly Tool[] ToolsInNarow = new[] { Tool.Torch, Tool.Neither };
+        static readonly Tool[] ToolsInNarow = { Tool.Torch, Tool.Neither };
 
         // In rocky regions, you can use the climbing gear or the torch.
         // You cannot use neither(you'll likely slip and fall).
-        static readonly Tool[] ToolsInRocky = new[] { Tool.ClimbingGear, Tool.Torch };
+        static readonly Tool[] ToolsInRocky = { Tool.ClimbingGear, Tool.Torch };
 
         // In wet regions, you can use the climbing gear or neither tool.
         // You cannot use the torch (if it gets wet, you won't have a light source).
-        static readonly Tool[] ToolsInWet = new[] { Tool.ClimbingGear, Tool.Neither };
+        static readonly Tool[] ToolsInWet = { Tool.ClimbingGear, Tool.Neither };
 
         // public enum Material { Rocky, Wet, Narrow, SolidRock }
-        static readonly Tool[][] ToolsIn = new Tool[][] { ToolsInRocky, ToolsInWet, ToolsInNarow, ToolsInSolidRock };
+        static readonly Tool[][] ToolsIn = { ToolsInRocky, ToolsInWet, ToolsInNarow, ToolsInSolidRock };
 
         public static Tool[] Go(Material material) => ToolsIn[(int)material];
 
         public static Tool[] ToolsAll = Enum.GetValues(typeof(Tool)).Cast<Tool>().ToArray();
 
         public static IEnumerable<Tool> OtherTools(Tool tool) => ToolsAll.Where(t => t != tool);
+
     }
 
     public class Day22
