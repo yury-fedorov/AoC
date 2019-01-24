@@ -121,7 +121,7 @@ namespace AdventOfCode2018
             _switchCount = switchCount;
         }
 
-        public readonly IEnumerable<(int, int)> shifts = new[] { (-1, 0), (1, 0), (0, -1), (0, 1) };
+        public readonly (int, int) [] shifts = new[] { (-1, 0), (1, 0), (0, -1), (0, 1) };
 
         const int LongerPath = int.MaxValue >> 1;
 
