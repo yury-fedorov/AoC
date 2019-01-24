@@ -122,13 +122,13 @@ namespace AdventOfCode2018
             _switchCount = switchCount;
         }
 
-        public readonly (int, int) [] shifts = { (-1, 0), (1, 0), (0, -1), (0, 1) };
+        public readonly (int, int)[] shifts = { (-1, 0), (1, 0), (0, -1), (0, 1) };
 
         const int LongerPath = int.MaxValue >> 1;
 
         public int Minimize(int x, int y, Tool tool, int path, int switchCount)
         {
-            if ( path >= _longest || switchCount >= _switchCount ) return LongerPath;
+            if (path >= _longest || switchCount >= _switchCount) return LongerPath;
 
             int boundedCost;
             if (_bounds.TryGetValue((x, y, tool), out boundedCost))
@@ -138,7 +138,7 @@ namespace AdventOfCode2018
                 {
                     return LongerPath; // we exit this path immediately, it is not to go
                 }
-                if (path < boundedCost )
+                if (path < boundedCost)
                 {
                     // this is extreamily good, we have just found a shorter path to the point
                     // we need to update the bounds immediately
@@ -153,6 +153,8 @@ namespace AdventOfCode2018
                 return Day22.OtherTool; // we need only to switch the tool to torch
             }
 
+            var material0 = _map.At(x, y);
+
             var ways = new Dictionary<(int, int, Tool), int>();
             // we still optimizing, going deeper
             // in 4 directions (bounds of negative)
@@ -162,16 +164,33 @@ namespace AdventOfCode2018
                 var x1 = x + dx;
                 var y1 = y + dy;
                 var material = _map.At(x1, y1);
-                var tools = ToolUtil.Go(material);
-                foreach (var t in tools)
+                var canGo = ToolUtil.Go(material0, material, tool);
+                int minimized;
+                if (canGo)
                 {
-                    var isSwitch = tool != t;
-                    var dc = Day22.SameTool + (isSwitch ? Day22.OtherTool : 0);
-                    var minimized = dc + Minimize(x1, y1, t, path + dc, switchCount + (isSwitch ? 1 : 0) );
-                    if ( minimized < LongerPath )
+                    // we can go without change of the tool further
+                    minimized = Day22.SameTool + Minimize(x1, y1, tool, path + Day22.SameTool, switchCount );
+                    if (minimized < LongerPath)
                     {
                         Assert.True(minimized <= _longest);
-                        ways.Add((x1, y1, t), minimized);
+                        ways.Add((x1, y1, tool), minimized);
+                    }
+                }
+                else
+                {
+                    // we have to change the tool
+                    foreach(var t in ToolUtil.OtherTools(tool))
+                    {
+                        canGo = ToolUtil.Go(material0, material, t);
+                        if (canGo)
+                        {
+                            minimized = Day22.OtherTool + Minimize(x1, y1, t, path + Day22.OtherTool, switchCount + 1);
+                            if (minimized < LongerPath)
+                            {
+                                Assert.True(minimized <= _longest);
+                                ways.Add((x1, y1, t), minimized);
+                            }
+                        }
                     }
                 }
             }
@@ -198,7 +217,10 @@ namespace AdventOfCode2018
         // public enum Material { Rocky, Wet, Narrow, SolidRock }
         static readonly Tool[][] ToolsIn = { ToolsInRocky, ToolsInWet, ToolsInNarow, ToolsInSolidRock };
 
-        public static Tool[] Go(Material material) => ToolsIn[(int)material];
+        public static Tool[] UsableTools(Material material) => ToolsIn[(int) material];
+
+        public static bool Go(Material a, Material b, Tool tool) 
+            => a == b || (UsableTools(a).Contains(tool) && UsableTools(b).Contains(tool));
 
         public static Tool[] ToolsAll = Enum.GetValues(typeof(Tool)).Cast<Tool>().ToArray();
 
@@ -219,7 +241,7 @@ namespace AdventOfCode2018
             if (!map.TryGetValue((x, y, tool), out cost))
             {
                 // this tool is no go on the region
-                var others = ToolUtil.OtherTools(tool).Where(t => map.ContainsKey((x, y, t)));
+                var others = ToolUtil.OtherTools(tool).Where(t => map.ContainsKey((x, y, t))); // same point but other tools
                 cost = others.Select(t => map[(x, y, t)]).Min() + OtherTool;
             }
             return cost;
@@ -253,7 +275,7 @@ namespace AdventOfCode2018
             mapAirPath.Add((0, 0, Tool.Torch), 0);
 
             Assert.AreEqual(Material.Rocky, map.At(tx, ty));
-          
+
             var maxAirPath = tx + ty;
             for (var diagonal = 1; diagonal <= maxAirPath; diagonal++)
             {
@@ -261,7 +283,7 @@ namespace AdventOfCode2018
                 {
                     var y = diagonal - x;
                     var material = map.At(x, y);
-                    var tools = ToolUtil.Go(material); // this tools can be used in this region
+                    var tools = ToolUtil.UsableTools(material); // this tools can be used in this region
                     foreach (var tool in tools)
                     {
                         var cost = MinimalCost(mapAirPath, x, y, tool);
