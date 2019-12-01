@@ -124,12 +124,11 @@ namespace AdventOfCode2018
 
         public const int SameTool = 1;
         public const int OtherTool = 7;
-        public const int LongerPath = 10000;
 
         // get the wishing tool, if absent, get 2 other tools and select minimal of them + other tool
         public int CostTill(int x, int y, Tool tool)
         {
-            if (!ValidIndex(x, y)) return LongerPath;
+            if (!ValidIndex(x, y)) return (int.MaxValue >> 1);
             int cost;
             if ((cost = At(x, y, tool)) == ND)
             {
@@ -154,7 +153,7 @@ namespace AdventOfCode2018
         readonly Tool _tool;
         readonly int _switchCount;
 
-        public Optimizer(IMap map, int x1, int y1, Tool tool, CostMap costMap)
+        public Optimizer(IMap map, int x1, int y1, Tool tool, CostMap costMap, int switchCount)
         {
             _map = map;
             _x1 = x1;
@@ -162,17 +161,16 @@ namespace AdventOfCode2018
             _tool = tool;
             _costMap = costMap;
             _longest = costMap.At(x1, y1, tool);
-
-            var manhattan = x1 + y1;
-            var dManhattan = _longest - manhattan;
-            _switchCount = dManhattan / CostMap.OtherTool;
+            _switchCount = switchCount;
         }
 
-        public static readonly (int, int)[] shifts = { (-1, 0), (1, 0), (0, -1), (0, 1) };
+        public readonly (int, int)[] shifts = { (-1, 0), (1, 0), (0, -1), (0, 1) };
+
+        const int LongerPath = int.MaxValue >> 1;
 
         public int Minimize(int x, int y, Tool tool, int path, int switchCount)
         {
-            if (path > _longest || switchCount > _switchCount) return CostMap.LongerPath;
+            if (path >= _longest || switchCount >= _switchCount) return LongerPath;
 
             int boundedCost;
             if ( (boundedCost = _costMap.At(x, y, tool) ) != CostMap.ND )
@@ -180,7 +178,7 @@ namespace AdventOfCode2018
                 // suboptimization says how many steps it is necessary to arrive here
                 if (path > boundedCost)
                 {
-                    return CostMap.LongerPath; // we exit this path immediately, it is not to go
+                    return LongerPath; // we exit this path immediately, it is not to go
                 }
                 if (path < boundedCost)
                 {
@@ -214,9 +212,9 @@ namespace AdventOfCode2018
                 {
                     // we can go without change of the tool further
                     minimized = CostMap.SameTool + Minimize(x1, y1, tool, path + CostMap.SameTool, switchCount );
-                    if (minimized < CostMap.LongerPath)
+                    if (minimized < LongerPath)
                     {
-                        // Assert.True(minimized <= _longest);
+                        Assert.True(minimized <= _longest);
                         ways.Add((x1, y1, tool), minimized);
                     }
                 }
@@ -228,18 +226,17 @@ namespace AdventOfCode2018
                         canGo = ToolUtil.Go(material0, material, t);
                         if (canGo)
                         {
-                            var stepCost = CostMap.OtherTool + CostMap.SameTool;
-                            minimized = stepCost + Minimize(x1, y1, t, path + stepCost, switchCount + 1);
-                            if (minimized < CostMap.LongerPath)
+                            minimized = CostMap.OtherTool + Minimize(x1, y1, t, path + CostMap.OtherTool, switchCount + 1);
+                            if (minimized < LongerPath)
                             {
-                                // Assert.True(minimized <= _longest);
+                                Assert.True(minimized <= _longest);
                                 ways.Add((x1, y1, t), minimized);
                             }
                         }
                     }
                 }
             }
-            return ways.Any() ? ways.Values.Min() : CostMap.LongerPath;
+            return ways.Any() ? ways.Values.Min() : LongerPath;
         }
     }
 
@@ -315,7 +312,6 @@ namespace AdventOfCode2018
             Assert.AreEqual(Material.Rocky, map.At(tx, ty), "rocky target");
 
             var manhattanPath = tx + ty;
-            Assert.Greater(CostMap.LongerPath, manhattanPath * (CostMap.OtherTool + CostMap.SameTool), "constant is big enough" );
             for (var diagonal = 1; diagonal <= manhattanPath; diagonal++)
             {
                 for (var x = 0; x <= diagonal; x++)
@@ -360,11 +356,13 @@ namespace AdventOfCode2018
                             prevCost = oneStepCost;
                         }
                         Assert.GreaterOrEqual(prevCost, x + y, "prev cost vs manhattan");
-                        var optimizer = new Optimizer(fastMap, x , y, tool, costMap);
-                        var bestCost = optimizer.Minimize(0, 0, Tool.Torch, 0, 0);
+                        var manhattan1 = x + y;
+                        var dManhattan1 = prevCost - manhattan1;
+                        int switchCount1 = dManhattan1 / CostMap.OtherTool;
+                        var optimizer1 = new Optimizer(fastMap, x , ty, tool, costMap, switchCount1);
+                        var bestCost = optimizer1.Minimize(0, 0, Tool.Torch, 0, 0);
                         Assert.GreaterOrEqual(prevCost, bestCost, "prev cost vs best cost" );
-                        if ( bestCost < prevCost)
-                            costMap.Set(x, y, tool, bestCost);
+                        costMap.Set(x, y, tool, bestCost);
                     }
                 }
             }
