@@ -1,7 +1,7 @@
-AdventOfCode2018.Tests/bin/
-AdventOfCode2018.Tests/obj/
-AdventOfCode2018/bin/
-AdventOfCode2018/obj/
+bin/
+obj/
 .vs/
-Test/bin/
-Test/obj/
+AoC17/cs/bin/
+AoC17/cs/obj/
+AoC17/fs/bin/
+AoC17/fs/obj/
