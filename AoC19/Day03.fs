@@ -55,4 +55,20 @@ let TestWire1Has x y =
     let e = Seq.tryFind (fun p -> tp = p ) ( TracePath Point0 (ToDirectionSeq Test1Wire1) )
     Assert.True( e.IsSome )
 
+let Manhattan (a: Point) (b:Point) = abs(a.X-b.X) + abs(a.Y-b.Y)
 
+[<Theory>]
+[<InlineData(0,0)>]
+let Question1 x y =
+    let lines = File.ReadAllLines("../../../Day03.txt")
+    let path1 = TracePath Point0 (ToDirectionSeq lines.[0]) |> Seq.toArray
+    let path2 = TracePath Point0 (ToDirectionSeq lines.[1]) |> Seq.toArray
+    let both = Array.filter ( fun x -> Array.contains x path1 ) path2
+    let dist = both |> Array.map (fun p -> Manhattan Point0 p)
+    let minDist : int = Array.min dist
+    Assert.True( minDist > 0 )
+    let z = Array.zip both dist
+    let (p,d) = Array.find ( fun (_,d) -> d = minDist ) z
+    Assert.Equal( x, p.X )
+    Assert.Equal( y, p.Y )
+    
