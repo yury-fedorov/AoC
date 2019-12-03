@@ -13,6 +13,8 @@
     <PackageReference Include="coverlet.collector" Version="1.0.1" />
     <Compile Include="Day02.fs" />
     <None Include="Day02.txt" />
+    <Compile Include="Day03.fs" />
+    <None Include="Day03.txt" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
