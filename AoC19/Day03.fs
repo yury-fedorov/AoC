@@ -1,4 +1,4 @@
-﻿module Day03
+module Day03
 
 open System.IO
 open Xunit
@@ -55,20 +55,22 @@ let TestWire1Has x y =
     let e = Seq.tryFind (fun p -> tp = p ) ( TracePath Point0 (ToDirectionSeq Test1Wire1) )
     Assert.True( e.IsSome )
 
-let Manhattan (a: Point) (b:Point) = abs(a.X-b.X) + abs(a.Y-b.Y)
+let Manhattan (p: Point)  = abs(p.X)+abs(p.Y)
+
+let Test1Wire2 = "U7,R6,D4,L4"
+
+let Answer1 (p1:string) (p2:string) : int =
+    let path1 = TracePath Point0 (ToDirectionSeq p1) |> Set.ofSeq
+    let path2 = TracePath Point0 (ToDirectionSeq p2) |> Set.ofSeq
+    let both = Set.intersect path1 path2
+    both |> Seq.map Manhattan |> Seq.min
 
 [<Theory>]
-[<InlineData(0,0)>]
-let Question1 x y =
+[<InlineData(1674)>]
+let Part1 em =
     let lines = File.ReadAllLines("../../../Day03.txt")
-    let path1 = TracePath Point0 (ToDirectionSeq lines.[0]) |> Seq.toArray
-    let path2 = TracePath Point0 (ToDirectionSeq lines.[1]) |> Seq.toArray
-    let both = Array.filter ( fun x -> Array.contains x path1 ) path2
-    let dist = both |> Array.map (fun p -> Manhattan Point0 p)
-    let minDist : int = Array.min dist
-    Assert.True( minDist > 0 )
-    let z = Array.zip both dist
-    let (p,d) = Array.find ( fun (_,d) -> d = minDist ) z
-    Assert.Equal( x, p.X )
-    Assert.Equal( y, p.Y )
+    let a = lines.[0]
+    let b = lines.[1]
+    let m = Answer1 a b
+    Assert.Equal( em, m )
     
