@@ -57,20 +57,39 @@ let TestWire1Has x y =
 
 let Manhattan (p: Point)  = abs(p.X)+abs(p.Y)
 
+let PathAsList (s:string) : list<Point> = ( TracePath Point0 (ToDirectionSeq s) ) |> Seq.toList
+
+let Intersections (a:list<Point>) (b:list<Point>) : Set<Point> = Set.intersect (Set.ofSeq a) (Set.ofSeq b)
+
+let Answer1 (i:Set<Point>) : int = i |> Seq.map Manhattan |> Seq.min
+
+let PathToPoint (path:list<Point>) (point:Point) : int = ( List.findIndex (fun p -> p = point) path ) + 1
+
+let CombinedPath (a:list<Point>) (b:list<Point>) (p:Point) = ( PathToPoint a p ) + ( PathToPoint b p )
+
+let Answer2 (p1:list<Point>) (p2:list<Point>) (i:Set<Point>) : int = i |> Set.toSeq |> Seq.map (fun p -> ( CombinedPath p1 p2 p ) ) |> Seq.min
+
 let Test1Wire2 = "U7,R6,D4,L4"
 
-let Answer1 (p1:string) (p2:string) : int =
-    let path1 = TracePath Point0 (ToDirectionSeq p1) |> Set.ofSeq
-    let path2 = TracePath Point0 (ToDirectionSeq p2) |> Set.ofSeq
-    let both = Set.intersect path1 path2
-    both |> Seq.map Manhattan |> Seq.min
 
 [<Theory>]
-[<InlineData(1674)>]
-let Part1 em =
+[<InlineData(30)>]
+let TestPart2 ed = 
+    let a = (PathAsList Test1Wire1);
+    let b = (PathAsList Test1Wire2);
+    let i = (Intersections a b);
+    let a2 = Answer2 a b i;
+    Assert.Equal( ed, a2 );        
+
+// answer 2 - 14010 - too low
+[<Theory>]
+[<InlineData(1674, 14012)>]
+let Part12 ea1 ea2 =
     let lines = File.ReadAllLines("../../../Day03.txt")
-    let a = lines.[0]
-    let b = lines.[1]
-    let m = Answer1 a b
-    Assert.Equal( em, m )
-    
+    let a = (PathAsList lines.[0])
+    let b = (PathAsList lines.[1])
+    let i = (Intersections a b)
+    let m = Answer1 i
+    Assert.Equal( ea1, m )
+    let a2 = Answer2 a b i
+    Assert.Equal( ea2, a2 )
