@@ -56,12 +56,9 @@ namespace AdventOfCode2018.Day15
 		{
 			int distance;
 			if (_cache.TryGetValue(p, out distance))
-			{
 				Assert.AreEqual(d, distance); 
-			} else
-			{
+            else
 				_cache.Add(p, d);
-			}
 		}
 
 		public int ? Distance( Point p1 )
@@ -343,23 +340,6 @@ namespace AdventOfCode2018.Day15
 			throw new Exception("unexpected direction");
 		}
 
-        /* XXX - bug
-		// If multiple squares are in range and tied for being reachable in the fewest steps, 
-		// the square which is first in reading order is chosen.
-		public Direction ? WhereToMove(Point position, Point destination)
-        {
-			var directions = _map.Directions(position).ToArray();
-			if (directions.Length == 0) return null; // no way to go
-
-			// this is used only for shortest path algorithm
-			var directionDistance = directions.ToDictionary(d => d, d => position.Go(d).Distance(destination));
-			var minDistance = directionDistance.Min(p => p.Value);
-			return directionDistance.Where(p => p.Value == minDistance)
-				.OrderBy(p => DirectionOrder(p.Key))
-				.First().Key;
-        }
-        */
-
 		// destination with hint in which direction to go
         public Tuple<Point,Direction> GetDestination(Man man)
         {
@@ -393,33 +373,8 @@ namespace AdventOfCode2018.Day15
 
 			if (minDistance == 0) return null; // no way to go
 
-            /* XXX - subcase, can be avoided
-            // not sure they are shortest indeed to be prooved
-            var nearestByAir = inRange.Where(p => p.Value == minDistance);
-
-            var nearestByAirIndeed = 
-                nearestByAir.Where(p => _map.IsDirectPath(p.Key, man.Position))
-				.Select(p=>p.Key)
-				.ToArray();
-
-            if (nearestByAirIndeed.Any())
-            {
-                // we have found the destination
-				var destination = nearestByAirIndeed.OrderBy(p => p.ReadingOrder).First();
-				return Tuple.Create(destination, WhereToMove(man.Position, destination).Value);
-            }
-            */
-
 			// more difficult task
 			var optimizer = new Optimizer(_map, man.Position);
-
-			// this is too slow
-			/*
-			var pointDistance = 
-				inRange.ToDictionary(p => p, p => optimizer.Distance(p))
-					.Where(p => p.Value.HasValue)
-					.ToDictionary(p => p.Key, p => p.Value.Value);
-			*/
 
 			var partialResult = new Dictionary<Point, int>();
 			int? curMinimalDistance = null;
@@ -471,12 +426,8 @@ namespace AdventOfCode2018.Day15
 						// this is the correct direction and expected distance
 						return Tuple.Create(selectedDestination, o.Key);
 					}
-				} else
-				{
-					// Assert.Fail("why it could happen?");
 				}
 			}
-
 			throw new Exception("unexpected processing of options");
         }
     }

@@ -107,7 +107,7 @@ namespace AdventOfCode2018.Tests
                 // int genCount = CountPots(m);
                 // count += genCount;
                 // Console.WriteLine($"{g} {genCount} {count} {string.Concat(m.Keys.OrderBy(a => a).Select(k => m[k]))}");
-		Console.WriteLine($"{g} {CountPots(m)} {ToStr(m)}");
+		        Console.WriteLine($"{g} {CountPots(m)} {ToStr(m)}");
             }
             Assert.AreEqual(expected, CountPots(m));
 		// question 2: delta by each generation starting from 100 is 72, 

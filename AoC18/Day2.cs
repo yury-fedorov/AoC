@@ -13,9 +13,8 @@ namespace AdventOfCode2018
                      .ToDictionary(grp => grp.Key, grp => grp.Count());
         }
 
-        public int CountOccurancies(IDictionary<char,int> letterToCount, int filter) {
-            return letterToCount.Where(a => a.Value == filter).Count();
-        }
+        public int CountOccurancies(IDictionary<char,int> letterToCount, int filter)
+            => letterToCount.Where(a => a.Value == filter).Count();
 
         public Tuple<int,int> CalculateRudimentaryChecksum(string boxId) {
             var dictionary = GroupLetters(boxId);            

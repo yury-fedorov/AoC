@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -161,5 +160,5 @@ namespace AdventOfCode2018.Day14
         {
             Assert.AreEqual(expected, SearchSequence(sequence));
         }
-}
+    }
 }

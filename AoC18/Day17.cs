@@ -92,7 +92,6 @@ namespace AdventOfCode2018.Day17
                 }
             }
 
-
             public void DrawLine(Line line, char symbol)
             {
                 var d0  = line.Horizontal ? line.A.Y : line.A.X;
@@ -105,10 +104,7 @@ namespace AdventOfCode2018.Day17
                 }
             }
 
-            public Point ToInternalMap(Point p)
-            {
-                return new Point( p.X - TopLeft.X, p.Y - TopLeft.Y );
-            }
+            public Point ToInternalMap(Point p) => new Point( p.X - TopLeft.X, p.Y - TopLeft.Y );
 
             public char At(Point p)
             {

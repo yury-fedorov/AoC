@@ -1,12 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using System;
+﻿using System;
 using NUnit.Framework;
-
-//  || {} []
 
 namespace AdventOfCode2018.Tests.Day11
 {
@@ -54,8 +47,6 @@ namespace AdventOfCode2018.Tests.Day11
 
     public class Day11
     {
-
-
         public static int PowerAt(int x, int y, int input) {
             /* Find the fuel cell's rack ID, which is its X coordinate plus 10.
 Begin with a power level of the rack ID times the Y coordinate.
@@ -82,9 +73,7 @@ Subtract 5 from the power level. */
         // Fuel cell at 101,153, grid serial number 71: power level  4.
         [TestCase(101, 153, 71, 4)]
         public void Test0(int x, int y, int input, int expectedPower)
-        {
-            Assert.AreEqual(expectedPower, PowerAt(x, y, input));
-        }
+            => Assert.AreEqual(expectedPower, PowerAt(x, y, input));
 
         // For grid serial number 18, the largest total 3x3 square has a top-left corner of 33,45 (with a total power of 29);
         [TestCase(3, 18, 33,45)]
@@ -96,8 +85,6 @@ Subtract 5 from the power level. */
             var t = Test1(side, input);            
             Assert.AreEqual( Tuple.Create(ex,ey), Tuple.Create(t.Item1,t.Item2) );
         }
-
-
 
         public Tuple<int,int,int> Test1(int side, int input) {
             var map = new int[300,300];
@@ -156,6 +143,5 @@ Subtract 5 from the power level. */
             }
             Assert.AreEqual( Tuple.Create(ex,ey,side), Tuple.Create(r.Item1,r.Item2,os) );
         }
-        //  || {} []
     }
 }

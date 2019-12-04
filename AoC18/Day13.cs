@@ -37,10 +37,7 @@ namespace AdventOfCode2018.Day13
     {
         public const string carDirections = "<^>v"; // order is important
 
-        public Direction CharToDirection(char ch)
-        {
-            return (Direction)carDirections.IndexOf(ch);
-        }
+        public Direction CharToDirection(char ch) => (Direction)carDirections.IndexOf(ch);
 
         public int ToShift(Turn turn)
         {
@@ -199,12 +196,6 @@ namespace AdventOfCode2018.Day13
                 var runningCars = cars.Where(c => c.isRunning).ToArray();
                 if (runningCars.Length == 1)
                 {
-                    /*
-                    if (isLastCarAloneTick == false)
-                    {
-                        isLastCarAloneTick = true;
-                    }
-                    else*/
                     return runningCars.Single().point;
                 }
                     
