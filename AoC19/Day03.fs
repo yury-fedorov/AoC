@@ -75,20 +75,20 @@ let Test1Wire2 = "U7,R6,D4,L4"
 [<Theory>]
 [<InlineData(30)>]
 let TestPart2 ed = 
-    let a = (PathAsList Test1Wire1);
-    let b = (PathAsList Test1Wire2);
-    let i = (Intersections a b);
-    let a2 = Answer2 a b i;
-    Assert.Equal( ed, a2 );        
+    let a = PathAsList Test1Wire1
+    let b = PathAsList Test1Wire2
+    let i = Intersections a b
+    let a2 = Answer2 a b i
+    Assert.Equal( ed, a2 )        
 
 // answer 2 - 14010 - too low
 [<Theory>]
 [<InlineData(1674, 14012)>]
 let Part12 ea1 ea2 =
     let lines = File.ReadAllLines("../../../Day03.txt")
-    let a = (PathAsList lines.[0])
-    let b = (PathAsList lines.[1])
-    let i = (Intersections a b)
+    let a = PathAsList lines.[0]
+    let b = PathAsList lines.[1]
+    let i = Intersections a b
     let m = Answer1 i
     Assert.Equal( ea1, m )
     let a2 = Answer2 a b i
