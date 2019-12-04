@@ -5,9 +5,10 @@ open Xunit
 let IsValid ( pwd : int ) = 
     let c = pwd.ToString().ToCharArray()
     let z = Seq.take 5 (Seq.zip c (Seq.tail c)) |> Seq.toList 
-    let isNotDecreasing = not ( z |> Seq.map (fun (a,b) -> a <= b ) |> Seq.contains false )
-    let isWithPair = z |> Seq.map (fun (a,b) -> a = b ) |> Seq.contains true
+    let isNotDecreasing = not ( z |> Seq.exists (fun (a,b) -> a > b ) )
+    let isWithPair = z |> Seq.exists (fun (a,b) -> a = b )
     isNotDecreasing && isWithPair
+
 
 [<Theory>]
 [<InlineData(122345, true)>]
@@ -55,22 +56,30 @@ let TestGroupCount pwd eg =
 
 let IsValid2 ( pwd : int ) = 
     let c = pwd.ToString().ToCharArray()
-    let cc = CountSeq c |> Seq.toList
-    let isGood = cc |> Seq.forall ( fun (_,n) -> (n <> 3 && n <> 5) )
+    let isGood = CountSeq c |> Seq.exists ( fun (_,n) -> n = 2 )
     isGood && ( IsValid pwd )
 
 [<Theory>]
 [<InlineData(112233, true)>]
 [<InlineData(123444, false)>]
 [<InlineData(111122, true)>]
-[<InlineData(123333, true)>]
-[<InlineData(111111, true)>]
+[<InlineData(123333, false)>] // no 2 digits long group
+[<InlineData(111111, false)>] // no 2 digits long group
 [<InlineData(110011, false)>]
+[<InlineData(117777, true)>]
+[<InlineData(129999, false)>] // no 2 digits long group
+[<InlineData(122223, false)>] // no 2 digits long group
+[<InlineData(122455, true)>]
+[<InlineData(111124, false)>] // no 2 digits long group
+[<InlineData(111114, false)>]
 let IsValidTest2 pwd exp = Assert.Equal( exp, ( IsValid2 pwd ) )
 
 let Question2 from till = CountPredicate from till IsValid2
 
 [<Theory>]
-[<InlineData(136760,595730, -1)>] // 1115 - too low
-let Question2Test from till exp = Assert.Equal( exp, (Question2 from till) )
-
+[<InlineData(136760,595730, 1264)>] // 1115 - too low
+let Question2Test from till exp = 
+    let r = Question2 from till
+    Assert.True( r > 1115, "too low" )
+    Assert.True( r < 1751, "too high" )
+    Assert.Equal( exp, r )
