@@ -29,16 +29,48 @@ let Question1 from till = CountPredicate from till IsValid
 [<InlineData(136760,595730, 1873)>] // 458971 - too high
 let Question1Test from till exp = Assert.Equal( (Question1 from till), exp )
 
-let IsValid2 ( pwd : int ) = IsValid pwd
+let CountSeq ( s : array<char> ) = 
+    let mutable cur = '?'
+    let mutable count = 0
+    seq { 
+        for c in s do
+            if ( cur = c ) then count <- count + 1
+            else
+                if ( count > 0 ) then yield (cur,count)
+                count <- 1
+                cur <- c
+
+        yield (cur,count)
+    }
+
+[<Theory>]
+[<InlineData(112233, 3)>]
+[<InlineData(123444, 4)>]
+[<InlineData(123333, 3)>]
+[<InlineData(111111, 1)>]
+[<InlineData(110011, 3)>]
+let TestGroupCount pwd eg =
+    let p = pwd.ToString().ToCharArray()
+    Assert.Equal( ( CountSeq p ) |> Seq.length, eg )
+
+let IsValid2 ( pwd : int ) = 
+    let c = pwd.ToString().ToCharArray()
+    let cc = CountSeq c |> Seq.toList
+    let isGood = cc |> Seq.forall ( fun (_,n) -> (n <> 3 && n <> 5) )
+    isGood && ( IsValid pwd )
 
 [<Theory>]
 [<InlineData(112233, true)>]
 [<InlineData(123444, false)>]
 [<InlineData(111122, true)>]
-let IsValidTest2 pwd exp = Assert.Equal( ( IsValid pwd ), exp )
+[<InlineData(123333, true)>]
+[<InlineData(111111, true)>]
+[<InlineData(110011, false)>]
+let IsValidTest2 pwd exp = Assert.Equal( exp, ( IsValid2 pwd ) )
 
 let Question2 from till = CountPredicate from till IsValid2
 
 [<Theory>]
-[<InlineData(136760,595730, -1)>]
-let Question2Test from till exp = Assert.Equal( (Question2 from till), exp )
+[<InlineData(136760,595730, -1)>] // 1115 - too low
+let Question2Test from till exp = Assert.Equal( exp, (Question2 from till) )
+
