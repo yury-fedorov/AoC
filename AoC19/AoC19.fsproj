@@ -15,6 +15,7 @@
     <None Include="Day02.txt" />
     <Compile Include="Day03.fs" />
     <None Include="Day03.txt" />
+    <Compile Include="Day04.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
