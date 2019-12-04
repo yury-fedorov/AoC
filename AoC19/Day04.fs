@@ -6,14 +6,10 @@ let IsValid ( pwd : int ) =
     let c = pwd.ToString().ToCharArray()
     if (Array.length c <> 6 ) then false
     else
-        let shifted = Seq.tail c
-        // sure tail is necessary? first vs last not to compare?
-        let z = Seq.take 5 (Seq.zip c shifted |> Seq.toArray ) |> Seq.toList 
-        let isNotDecreasing = z |> Seq.map (fun (a,b) -> a <= b ) |> (Seq.contains false) <> true
+        let z = Seq.take 5 (Seq.zip c (Seq.tail c)) |> Seq.toList 
+        let isNotDecreasing = not ( z |> Seq.map (fun (a,b) -> a <= b ) |> Seq.contains false )
         let isWithPair = z |> Seq.map (fun (a,b) -> a = b ) |> Seq.contains true
         isNotDecreasing && isWithPair
-
-// let Normalize ( pwd : int ) = pwd.ToString().ToCharArray() |>
 
 [<Theory>]
 [<InlineData(122345, true)>]
@@ -31,7 +27,4 @@ let Question1 from till = seq { from .. till } |> Seq.filter (fun n -> IsValid n
 [<Theory>]
 [<InlineData(111111,111113, 3)>]
 [<InlineData(136760,595730, 1873)>] // 458971 - too high
-let Question1Test from till exp =
-    Assert.Equal( (Question1 from till), exp )
-
-
+let Question1Test from till exp = Assert.Equal( (Question1 from till), exp )
