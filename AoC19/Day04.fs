@@ -26,11 +26,11 @@ let IsValid ( pwd : int ) =
 [<InlineData(595730, false)>] // till
 let IsValidTest pwd exp = Assert.Equal( ( IsValid pwd ), exp )
 
-let Question1 from till = seq { from .. till } |> Seq.length
+let Question1 from till = seq { from .. till } |> Seq.filter (fun n -> IsValid n) |> Seq.length
 
 [<Theory>]
 [<InlineData(111111,111113, 3)>]
-[<InlineData(136760,595730, -1)>] // 458971 - too high
+[<InlineData(136760,595730, 1873)>] // 458971 - too high
 let Question1Test from till exp =
     Assert.Equal( (Question1 from till), exp )
 
