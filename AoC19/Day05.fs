@@ -28,21 +28,42 @@ type Operation =
     | In of a: int
     | Out of a: int
 
-let OperationLength (o:Operation) =
-    match o with 
-    | End -> 1
-    | Add (_,_,_) -> 4
-    | Mul (_,_,_) -> 4
-    | In _ -> 2
-    | Out _-> 2
+let OperationLength (opcode:int) =
+    match opcode with 
+    | CodeEnd -> 1
+    | CodeAdd -> 4
+    | CodeMul -> 4
+    | CodeIn  -> 2
+    | CodeOut -> 2
 
-let GetArgsCount (o:Operation) =
-    let rawCount = ( OperationLength o ) - 2 // codop and result
-    max 0 rawCount // for End rawCount is negative
+let GetParametersCount (opcode:int) = ( OperationLength opcode ) - 1 // minus first position that is opcode and modes
+
+type ParameterMode =
+    | PositionMode
+    | ImmediateMode
+
+let GetMode (digit:char) = 
+    match digit with
+    | '0' -> PositionMode
+    | '1' -> ImmediateMode
+
+let GetModes (instruction:int) = 
+    let modes = instruction / 100
+    let s = seq { yield! modes.ToString().ToCharArray() |> Array.rev; '0'; '0'; '0' }
+    s |> Seq.map (fun digit -> GetMode (digit) )        
+
+let GetValue (m:ParameterMode) (parameter:int) (code:array<int>) =
+    match m with 
+    | PositionMode -> code.[parameter]
+    | ImmediateMode -> parameter
 
 let ReadOp pos (code: array<int>) : Operation = 
     let instruction = code.[pos]
     let opcode = GetOpCode instruction
+    let modes = GetModes instruction |> Seq.take (GetParametersCount opcode ) |> Seq.toArray
     match opcode with
     | CodeEnd -> End
-    | CodeAdd -> Add( code.[pos+1], code.[pos+2], code.[pos+3] )
+    | CodeAdd -> Add(code.[pos+1], code.[pos+2], code.[pos+3])
+    | CodeMul -> Mul(code.[pos+1], code.[pos+2], code.[pos+3])
+    | CodeIn -> In(code.[pos+1])
+    | CodeOut -> Out(code.[pos+1])
