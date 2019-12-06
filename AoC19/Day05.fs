@@ -49,7 +49,7 @@ let GetMode (digit:char) =
 
 let GetModes (instruction:int) = 
     let modes = instruction / 100
-    let s = seq { yield! modes.ToString().ToCharArray() |> Array.rev; '0'; '0'; '0' }
+    let s = seq { yield! modes.ToString().ToCharArray() |> Array.rev; yield! ['0'; '0'; '0'] }
     s |> Seq.map (fun digit -> GetMode (digit) )        
 
 let GetValue (m:ParameterMode) (parameter:int) (code:array<int>) =
@@ -61,9 +61,18 @@ let ReadOp pos (code: array<int>) : Operation =
     let instruction = code.[pos]
     let opcode = GetOpCode instruction
     let modes = GetModes instruction |> Seq.take (GetParametersCount opcode ) |> Seq.toArray
+    let GetParam index = GetValue modes.[index] (pos + index) code // function adapter - curling?
     match opcode with
     | CodeEnd -> End
-    | CodeAdd -> Add(code.[pos+1], code.[pos+2], code.[pos+3])
-    | CodeMul -> Mul(code.[pos+1], code.[pos+2], code.[pos+3])
-    | CodeIn -> In(code.[pos+1])
-    | CodeOut -> Out(code.[pos+1])
+    | CodeAdd -> Add(GetParam 1, GetParam 2, GetParam 3)
+    | CodeMul -> Mul(GetParam 1, GetParam 2, GetParam 3)
+    | CodeIn -> In(GetParam 1)
+    | CodeOut -> Out(GetParam 1)
+
+// Integers can be negative: 1101,100,-1,4,0 is a valid program (find 100 + -1, store the result in position 4).
+let Sample2 = [| 1101; 100; -1; 4; 0 |]
+
+let A = 
+    let o = ReadOp 0 Sample2 
+    match o with
+    | Add (a,b,r) -> Assert.Equal( 100, a ); Assert.Equal(-1, b );
