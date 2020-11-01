@@ -11,7 +11,7 @@ int main() {
     long paper = 0;
     long ribbon = 0;
     string line;
-    while (std::getline(f, line)) {
+    while (getline(f, line)) {
         stringstream ss(line); // line in format lxwxh
         int l, w, h;
         char d; // delemiter x
