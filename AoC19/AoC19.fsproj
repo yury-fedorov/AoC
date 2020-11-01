@@ -21,5 +21,6 @@
     <Compile Include="Day06.fs" />
     <None Include="Day06.txt" />
     <Compile Include="Program.fs" />
+    <None Include="MotivationNotes.txt" />
   </ItemGroup>
 </Project>

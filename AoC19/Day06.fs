@@ -16,6 +16,7 @@ let RootName = "COM"
 
 let RootNode = Node(Name = RootName, Parent = None) 
 
+(*
 let rec Init (lines:seq<array<string>>) (map:Map<string,Node>) (parent:Node)  =
     // could be more than one
     let mutable localMap = map
@@ -41,7 +42,7 @@ let Init file =
     let node = Node(Value=small, Parent = parent)
     map <- map.Add( small, node )
     // how we remove a line from the array or list?
-    
 
+    *)
 
 
