@@ -3,10 +3,9 @@
 #include <map>
 #include <fstream>
 #include <sstream>
-#include <boost/regex.hpp>
+#include <regex>
 
 using namespace std;
-using namespace boost;
 
 regex re3("(.+) (\\w+) (.+)");
 regex re2("NOT (.+)");
@@ -20,7 +19,7 @@ uint16_t eval( const string & e ) {
     if ( cache != valMap.end() ) return cache->second;
 
     smatch what;
-    if( regex_match( e, what, re3, match_extra )) {
+    if( regex_match( e, what, re3 )) {
         // a op b
         const auto a = eval(what[1] );
         const auto b = eval(what[3] );
@@ -32,13 +31,13 @@ uint16_t eval( const string & e ) {
         cerr << "Unknown expression: " << e << endl;
         return 0;
     } 
-    if ( regex_match( e, what, re2, match_extra )) {
+    if ( regex_match( e, what, re2 )) {
         // not a
         const auto a = eval(what[1] );
         return ~a; // betwise not
     }
     // is a number or variable?
-    const bool isNumber = regex_match( e, what, red, match_extra );
+    const bool isNumber = regex_match( e, what, red );
     const auto result = isNumber ? stoi(e) : eval( varExp[e] );
     valMap[e] = result; // put in cache
     return result;
@@ -55,14 +54,15 @@ int main() {
 
     string line;
     while (getline(f, line)) {
-        if( regex_match( line, what, re, match_extra )) {
+        if( regex_match( line, what, re )) {
             varExp[what[2]] = what[1];
         } else {
             cerr << "Failed to parse line: " << line;
         }
     }
 
-    varExp["b"] = "16076"; // answer 1
+    if ( !isFirstAnswer )
+        varExp["b"] = "16076"; // answer 1
 
     const auto a = eval( varExp["a"] );
 
