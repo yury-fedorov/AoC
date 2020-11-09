@@ -47,9 +47,7 @@ string fromMemory(string_view line) {
     v.push_back('\"');
     while (!c.empty()) {
         const auto next = pop(c);
-        if ( next == '\\' ) {
-            v.push_back( '\\' );
-        } else if ( next == '"' ) {
+        if ( next == '\\' || next == '"' ) {
             v.push_back( '\\' );
         }
         v.push_back(next);
