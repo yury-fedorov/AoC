@@ -50,8 +50,10 @@ int main() {
     do {
         long distance = 0;
         auto a = siteList[route[0]];
+        cout << a;
         for ( int i = 1; i < siteCount; i++ ) {
             const string & b = siteList[route[i]];
+            cout << " -> " << b;
             assert( a != b );
             const auto ab = routes.find( make_pair(a, b) );
             if ( ab != noRoute ) {
@@ -66,6 +68,7 @@ int main() {
             }
             a = b;
         }
+        cout << " distance = " << distance << endl;
         minDistance = min(minDistance, distance);
         maxDistance = max(maxDistance, distance);
     } while ( std::next_permutation(route.begin(),route.end()) );    
