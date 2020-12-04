@@ -4,25 +4,19 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
-#include <sstream>
 #include <regex>
-#include <numeric>
-#include <assert.h>
-#include <climits>
 
 using namespace std;
 
-const string CID = "cid";
-const set<string> OBLIGATORY_FIELDS = { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
 typedef map<string,string> Passport;
 
 bool isValid( const Passport & passport ) {
     const auto n = passport.size();
+    static const set<string> OBLIGATORY_FIELDS = { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
     if ( n < OBLIGATORY_FIELDS.size() ) return false; // just because not enough fields
 
     for ( const string & field : OBLIGATORY_FIELDS ) {
         if ( passport.find(field) == passport.end() ) {
-            cerr << "Missing " << field << endl;
             return false;
         }
     }
@@ -54,7 +48,6 @@ bool isValidValues( const Passport & passport ) {
     const static regex RE_HEIGHT("^(\\d+)(\\w{2})$");
     const auto & hgt = passport.at("hgt");
     if( !regex_match( hgt, what, RE_HEIGHT )) {
-        cerr << "Unexpected height: " << hgt << endl;
         return false;
     } else {
         const int height = stoi(what[1]);    
@@ -72,7 +65,6 @@ bool isValidValues( const Passport & passport ) {
     const auto & hcl = passport.at("hcl");
     const static regex RE_COLOR("^#[0-9a-f]{6}$");
     if( !regex_match( hcl, what, RE_COLOR )) {
-        cerr << "Unexpected hair color: " << hcl << endl;
         return false;
     }
 
@@ -80,7 +72,6 @@ bool isValidValues( const Passport & passport ) {
     const static set<string> EYE_COLORS = { "amb", "blu", "brn", "gry", "grn", "hzl", "oth" };
     const auto & ecl = passport.at("ecl");
     if ( EYE_COLORS.find( ecl ) == EYE_COLORS.end() ) {
-        cerr << "Unexpected eye color: " << ecl << endl;
         return false;
     }
 
@@ -88,7 +79,6 @@ bool isValidValues( const Passport & passport ) {
     const static regex RE_PASS_ID("^[0-9]{9}$");
     const auto & pid = passport.at("pid");
     if( !regex_match( pid, what, RE_PASS_ID )) {
-        cerr << "Unexpected Passport ID: " << pid << endl;
         return false;
     }
 
@@ -97,15 +87,11 @@ bool isValidValues( const Passport & passport ) {
 
 int main() {
 
-    const bool isFirstAnswer = false;
-
     vector<Passport> passports;
     Passport curPassport; // due to multiline case
 
     ifstream f("input.txt");
-
     regex re("(\\w+):([^\\s]+)");
-
     string line;
     while (getline(f, line)) {
 
@@ -129,13 +115,11 @@ int main() {
         passports.push_back( curPassport );
     }
 
-    cout << passports.size() << endl;
+    const int validCount = count_if( passports.cbegin(), passports.cend(), isValid );
+    cout << "Answer 1: " << validCount << endl; 
 
-    const int validCount = count_if( passports.cbegin(), passports.cend(), [](const Passport & p) { return isValid(p); } );
-    cout << "Answer 1: " << validCount << endl; // 25 not correct
-
-    const int validCount2 = count_if( passports.cbegin(), passports.cend(), [](const Passport & p) { return isValidValues(p); } );
-    cout << "Answer 2: " << validCount2 << endl; // 158 too high
+    const int validCount2 = count_if( passports.cbegin(), passports.cend(), isValidValues );
+    cout << "Answer 2: " << validCount2 << endl;
 
     return 0;
 }
