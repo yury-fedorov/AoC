@@ -34,8 +34,9 @@ bool isValidValues( const Passport & passport ) {
     if ( !isValid(passport) ) return false;
 
     // byr (Birth Year) - four digits; at least 1920 and at most 2002.
-    const auto & byr = stoi(passport.at("byr"));
-    if ( byr < 1920 || byr > 2002 ) return false;
+    const auto & byr = passport.at("byr");
+    const auto byrNumber = stoi(byr);
+    if ( byrNumber < 1920 || byrNumber > 2002 || byr.length() != 4 ) return false;
 
     // iyr (Issue Year) - four digits; at least 2010 and at most 2020.
     const auto & iyr = stoi(passport.at("iyr"));
@@ -45,16 +46,31 @@ bool isValidValues( const Passport & passport ) {
     const auto & eyr = stoi(passport.at("eyr"));
     if ( eyr < 2020 || eyr > 2030 ) return false;
 
+    smatch what;
+
     // hgt (Height) - a number followed by either cm or in:
         // If cm, the number must be at least 150 and at most 193.
         // If in, the number must be at least 59 and at most 76.
-    const auto & hgt = stoi(passport.at("hgt"));
-    if ( ( hgt > 100 ) ? ( hgt < 150 || hgt > 193 ) : ( hgt < 59 || hgt > 76 ) ) return false;
+    const static regex RE_HEIGHT("^(\\d+)(\\w{2})$");
+    const auto & hgt = passport.at("hgt");
+    if( !regex_match( hgt, what, RE_HEIGHT )) {
+        cerr << "Unexpected height: " << hgt << endl;
+        return false;
+    } else {
+        const int height = stoi(what[1]);    
+        const string measure = what[2];
+        if ( measure == "cm" ) {
+            if ( height < 150 || height > 193 ) return false;
+        } else if ( measure == "in" ) {
+            if ( height < 59 || height > 76 ) return false;
+        } else {
+            return false; // wrong measure
+        }
+    }
 
     // hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
     const auto & hcl = passport.at("hcl");
     const static regex RE_COLOR("^#[0-9a-f]{6}$");
-    smatch what;
     if( !regex_match( hcl, what, RE_COLOR )) {
         cerr << "Unexpected hair color: " << hcl << endl;
         return false;
