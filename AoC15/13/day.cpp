@@ -13,9 +13,23 @@
 using namespace std;
 
 typedef tuple<string,bool,int,string> Fact;
+typedef pair<int,int> Pair;
+typedef map<Pair,int> FactMap;
 
-int countHappiness(  ) {
-    return 0;
+Pair makePair( int a, int b ) {
+    return make_pair( min(a,b), max(a,b) );
+}
+
+int countHappiness( const FactMap & facts, const vector<int> & positions ) {
+    auto happiness = 0;
+    const auto n = positions.size();
+    for ( auto i = 0; i < n; ) {
+        const auto j = ++i % n;
+        const auto & h = facts.find( makePair( i, j ) );
+        assert( h != facts.end() );
+        happiness += h->second;
+    }
+    return happiness;
 }
 
 int main() {
@@ -47,7 +61,7 @@ int main() {
     cout << personCount << endl;
 
     // now we optimize 
-    map<pair<int,int>,int> factsMap;
+    FactMap factsMap;
     for ( auto i = 0; i < personCount; i++ ) {
         for ( auto j = i + 1; j < personCount; j++ ) {
             // get names by indexes
@@ -69,14 +83,17 @@ int main() {
     // 1 2 ... 8 -> is ok
     // 1 8 ... 2 -> is filtered out
     const auto lastPositionIndex = personCount - 1;
+    auto maxHappiness = INT_MIN;
     do {
         const auto right = positions[1];
         const auto left = positions[lastPositionIndex];
-        if ( right < left )
-            cout << positions[0] << ", " << positions[1] << "..." << positions[lastPositionIndex] << endl;
+        if ( right < left ) {
+            const auto curHappiness = countHappiness(factsMap, positions);
+            maxHappiness = max(maxHappiness, curHappiness);
+        }
     } while ( next_permutation( secondPosition, positions.end() ) );
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
+    cout << "Answer " << maxHappiness << endl;
 
     return 0;
 }
