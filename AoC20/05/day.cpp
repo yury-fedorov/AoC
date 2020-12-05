@@ -1,37 +1,73 @@
 #include <iostream>
-#include <map>
 #include <set>
-#include <vector>
 #include <algorithm>
 #include <fstream>
-#include <sstream>
 #include <regex>
 #include <numeric>
 #include <assert.h>
 #include <climits>
+#include <string_view>
 
 using namespace std;
 
+int codeToNumber( const string_view code, const char one, const char zero ) {
+    int number = 0;
+    int position = code.length() - 1;
+    for ( char chPos : code ) {
+        if ( chPos == one ) {
+            number |= ( 1 << position );
+        } else {
+            assert( chPos == zero );
+        }
+        position--;
+    }
+    return number;
+}
+
+int makeSeatId( const string_view rowCode, const string_view columnCode ) {
+    const auto row = codeToNumber(rowCode, 'B', 'F');
+    assert ( row <= 127 && row >= 0 );
+    const auto column = codeToNumber(columnCode, 'R', 'L');
+    assert ( column <= 7 and column >= 0 );
+    return ( ( row * 8 ) + column );
+}
+
 int main() {
 
-    const bool isFirstAnswer = false;
+    // cout << codeToNumber("FBFBBFF", 'B', 'F') << endl;
+    // cout << codeToNumber("RLR", 'R', 'L') << endl;
 
     ifstream f("input.txt");
 
+    auto maxSeatId = INT_MIN;
+    auto minSeatId = INT_MAX;
+    set<int> seats;
+
     string line;
+    regex re("([BF]{7})([RL]{3})");
+    smatch what;
     while (getline(f, line)) {
-        /* regex draft
-        regex re("(\\d+)-(\\d+) ([a-z]): ([a-z]+)");
-        smatch what;
         if( regex_match( line, what, re )) {
-            const auto & a = what[1];
+            const string rowCode = what[1];
+            const string columnCode = what[2];
+            const auto seatId = makeSeatId( rowCode, columnCode );
+            // cout << "row = " << rowCode << " column = " << columnCode << " seat ID = " << seatId << endl; 
+            maxSeatId = max(maxSeatId, seatId);
+            minSeatId = min(minSeatId, seatId);
+            seats.insert(seatId);
         } else {
             cerr << "Unexpected line: " << line << endl;
         }
-        */
     }
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
+    cout << "Answer 1: " <<  maxSeatId << endl;
+
+    cout << "Answer 2: " << endl;
+    for ( int id = minSeatId; id < maxSeatId; id++ ) {
+        if ( seats.find( id ) == seats.end() ) {
+            cout << id << endl;
+        }
+    }
 
     return 0;
 }
