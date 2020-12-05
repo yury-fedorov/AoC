@@ -23,10 +23,15 @@ Pair makePair( int a, int b ) {
 int countHappiness( const FactMap & facts, const vector<int> & positions ) {
     auto happiness = 0;
     const auto n = positions.size();
-    for ( auto i = 0; i < n; ) {
-        const auto j = ++i % n;
-        const auto & h = facts.find( makePair( i, j ) );
-        assert( h != facts.end() );
+    for ( auto i = 0; i < n; i++ ) {
+        const auto j = (i + 1) % n;
+        const auto a = positions[i];
+        const auto b = positions[j];
+        const auto h = facts.find( makePair( a, b ) );
+        if ( h == facts.end() ) {
+            cerr << a << " " << b << endl;
+            assert(false);
+        }
         happiness += h->second;
     }
     return happiness;
@@ -65,10 +70,20 @@ int main() {
     for ( auto i = 0; i < personCount; i++ ) {
         for ( auto j = i + 1; j < personCount; j++ ) {
             // get names by indexes
+            const string & nameA = *next(persons.cbegin(), i);
+            const string & nameB = *next(persons.cbegin(), j);
             // find both facts in vector
+            auto ab = find_if( facts.cbegin(), facts.cend(), 
+                [nameA, nameB] (const Fact & f) { return get<0>(f) == nameA && get<3>(f) == nameB; } );
+            auto ba = find_if( facts.cbegin(), facts.cend(), 
+                [nameA, nameB] (const Fact & f) { return get<0>(f) == nameB && get<3>(f) == nameA; } );
+
             // sum the happiness
-            // XXX to do
-            factsMap.insert( make_pair( make_pair(i,j), 0 ) );
+            auto fh = []( const Fact & f ) { return ( get<1>(f) ? 1 : -1 ) * get<2>(f); };
+            const int happiness = fh(*ab) + fh(*ba);
+            // cout << nameA << " & " << nameB << " " << fh(*ab) << " + " << fh(*ba) << " = " << happiness << endl;
+            
+            factsMap.insert( make_pair( makePair(i,j), happiness ) );
         }
     }
 
@@ -89,6 +104,7 @@ int main() {
         const auto left = positions[lastPositionIndex];
         if ( right < left ) {
             const auto curHappiness = countHappiness(factsMap, positions);
+            // cout << curHappiness << " " << right << " " << left << endl;
             maxHappiness = max(maxHappiness, curHappiness);
         }
     } while ( next_permutation( secondPosition, positions.end() ) );
