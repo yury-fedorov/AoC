@@ -39,7 +39,7 @@ int countHappiness( const FactMap & facts, const vector<int> & positions ) {
 
 int main() {
 
-    const bool isFirstAnswer = false;
+    const bool isFirstAnswer = true;
 
     ifstream f("input.txt");
 
@@ -62,6 +62,11 @@ int main() {
     for ( const auto & f : facts ) {
         persons.insert(get<0>(f));
     }
+
+    if (!isFirstAnswer) {
+        persons.insert("me"); // for the part 2
+    }
+
     const auto personCount = persons.size();
     cout << personCount << endl;
 
@@ -109,7 +114,7 @@ int main() {
         }
     } while ( next_permutation( secondPosition, positions.end() ) );
 
-    cout << "Answer " << maxHappiness << endl;
+    cout << "Answer " << (isFirstAnswer ? 1 : 2 ) << ": " << maxHappiness << endl;
 
     return 0;
 }
