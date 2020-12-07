@@ -16,7 +16,7 @@ namespace AdventOfCode2018
             Assert.AreEqual(expectedOutput, result, "Wrong result");
         }
 
-		public const string Directory = App.App.Directory;
+		public static string Directory => App.App.Directory;
 		
         [TestCase("Day1-Input.txt")]
         public void Task1(string file) {

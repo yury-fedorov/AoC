@@ -2,8 +2,17 @@
 {
     public class App
     {
-        public const string Directory = //
-			"D:\\projects\\leonteq\\AoC18\\AdventOfCode2018";
-    // "/Users/fedoy/projects/AoC18/AdventOfCode2018.Tests";
+        public static string Directory {
+            get
+            {
+                var cd = System.IO.Directory.GetCurrentDirectory();
+                while (!cd.EndsWith("AoC18"))
+                {
+                    var pd = System.IO.Directory.GetParent(cd);
+                    cd = pd.FullName;
+                }
+                return cd;
+            }
+        }
     }
 }
