@@ -1,37 +1,59 @@
 #include <iostream>
-#include <map>
-#include <set>
 #include <vector>
-#include <algorithm>
 #include <fstream>
-#include <sstream>
-#include <regex>
-#include <numeric>
-#include <assert.h>
-#include <climits>
 
 using namespace std;
 
+typedef int Score;
+typedef vector<int> Composition;
+
+enum Property {
+    Capacity, Durability, Flavor, Texture, Calories
+};
+
+inline int score( const vector<Composition> & properties, const vector<int> & qty, Property prop ) {
+    int result = 0;
+    for (int i = qty.size(); i-- >0; ) {
+        result += qty[i] * properties[i][prop];
+    }
+    return max( result, 0 );
+}
+
 int main() {
 
-    const bool isFirstAnswer = false;
+    const bool isFirstAnswer = true;
 
-    ifstream f("input.txt");
+    Score maxScore = 0;
 
-    string line;
-    while (getline(f, line)) {
-        /* regex draft
-        regex re("(\\d+)-(\\d+) ([a-z]): ([a-z]+)");
-        smatch what;
-        if( regex_match( line, what, re )) {
-            const auto & a = what[1];
-        } else {
-            cerr << "Unexpected line: " << line << endl;
+    vector<Composition> properties;
+    properties.push_back({ 2, 0, -2, 0, 3 });
+    properties.push_back({ 0, 5, -3, 0, 3 });
+    properties.push_back({ 0, 0, 5, -1, 8 });
+    properties.push_back({ 0, -1, 0, 5, 8 });
+
+    vector<Property> propList { Capacity, Durability, Texture, Flavor };
+
+    for (int q0 = 0; q0 <= 100; q0++) {
+        for (int q1 = 0; q0 + q1 <= 100; q1++) {
+            const auto sum2 = q0 + q1;
+            for (int q2 = 0; q2 + sum2 <= 100; q2++) {
+                const auto q3 = 100 - (q2 + sum2);
+                const vector<int> q { q0, q1, q2, q3 };
+                if (!isFirstAnswer) {
+                    const auto calories = score(properties, q, Calories);
+                    if (calories != 500) continue;
+                }
+                Score totalScore = 1;
+                for (auto p : propList) {
+                    totalScore *= score(properties, q, p);
+                    if (!totalScore) break;
+                }
+                maxScore = max(maxScore, totalScore);
+            }
         }
-        */
     }
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
+    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << maxScore << endl; // 21,367,368 - right answer 1; 1,766,400 - right answer 2
 
     return 0;
 }
