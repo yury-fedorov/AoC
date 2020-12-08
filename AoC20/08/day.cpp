@@ -1,20 +1,37 @@
 #include <iostream>
-#include <map>
 #include <set>
 #include <vector>
 #include <algorithm>
 #include <fstream>
-#include <sstream>
 #include <regex>
-#include <numeric>
 #include <assert.h>
-#include <climits>
 
 using namespace std;
 
 const vector<string> operations { "nop", "acc", "jmp" };
 enum Operation { NOP, ACC, JMP };
 typedef pair<Operation, int> Instruction;
+
+pair<bool,int> run( const vector<Instruction> & code ) {
+    int accumulator {0};
+    int next {0};
+    set<int> executed;
+
+    while ( executed.find( next ) == executed.end() ) {
+        executed.insert(next);
+        const Instruction & i = code[next];
+        switch( i.first ) {
+            case NOP: next++; break;
+            case ACC: accumulator += i.second; next++; break;
+            case JMP: next += i.second; break;
+            default: 
+                cerr << next << ": " << i.first << " " << i.second << endl;
+                assert(false);
+        }
+        if ( next == code.size() ) return make_pair(true, accumulator); // proper termination
+    }
+    return make_pair(false,accumulator);
+}
 
 int main() {
     ifstream f("input.txt");
@@ -34,26 +51,23 @@ int main() {
         }
     }
 
-    int accumulator {0};
-    int next = 0;
-    set<int> executed;
+    const auto r = run(code);
+    cout << "Answer 1: " << r.second << endl;
 
-    while ( executed.find( next ) == executed.end() ) {
-        executed.insert(next);
-        const Instruction & i = code[next];
-        switch( i.first ) {
-            case NOP: next++; break;
-            case ACC: accumulator += i.second; next++; break;
-            case JMP: next += i.second; break;
-            default: 
-                cerr << next << ": " << i.first << " " << i.second << endl;
-                assert(false);
+    for ( auto & i : code ) {
+        const Operation originalOp = i.first;
+        typedef optional<Operation> OptOp;
+        const auto newOp = ( originalOp == NOP ) ? OptOp(JMP) : ( originalOp == JMP ) ? OptOp(NOP) : OptOp();
+        if ( newOp.has_value() ) {
+            i.first = newOp.value();
+            const auto r2 = run(code);
+            if (r2.first) {
+                cout << "Answer 2: " << r2.second << endl;
+                break;
+            }
+            i.first = originalOp;
         }
     }
-     cout << accumulator << endl;
-
-    const bool isFirstAnswer = true;
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
 
     return 0;
 }
