@@ -34,9 +34,23 @@ int main() {
         }
     }
 
-    for ( auto e : code ) {
-        cout << e.first << " " << e.second << endl;
+    int accumulator {0};
+    int next = 0;
+    set<int> executed;
+
+    while ( executed.find( next ) == executed.end() ) {
+        executed.insert(next);
+        const Instruction & i = code[next];
+        switch( i.first ) {
+            case NOP: next++; break;
+            case ACC: accumulator += i.second; next++; break;
+            case JMP: next += i.second; break;
+            default: 
+                cerr << next << ": " << i.first << " " << i.second << endl;
+                assert(false);
+        }
     }
+     cout << accumulator << endl;
 
     const bool isFirstAnswer = true;
     cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
