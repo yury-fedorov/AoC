@@ -3,22 +3,32 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <climits>
 
 using namespace std;
 
-int sum( const vector<int> & v, int b ) {
+typedef pair<int,int> CountMin;
+typedef map<int,CountMin> CountMinMap;
+
+CountMin sum( const vector<int> & v, int b ) {
     auto result = 0;
+    auto totalOn = 0;
     for ( auto i = 0; b; i++ ) {
-        result += ( b & 1 ) ? v[i] : 0;
+        const bool on = b & 1;
+        result += on ? v[i] : 0;
+        totalOn += on;
         b >>= 1;
     }
-    return result;
+    return { result, totalOn };
 }
 
-void init( const vector<int> & v, int b, map<int,int> & m ) {
+void init( const vector<int> & v, int b, CountMinMap & m ) {
     for ( ; b >= 0; b-- ) {
-        const auto n = sum( v, b );
-        m[n] += 1;
+        const CountMin r = sum( v, b );
+        const auto n = r.first;
+        CountMin prev = m[n];
+        if ( prev.first == 0 ) prev.second = r.second;
+        m[n] = make_pair( prev.first + 1, min( prev.second, r.second ) );
     }
 }
 
@@ -40,11 +50,7 @@ auto split( const vector<int> & containers, const int target ) {
 }
 
 int main() {
-    const bool isFirstAnswer = true;
-
     vector<int> containers;
-    /* {20, 15, 10, 5, 5};
-    const int TARGET = 25; */
     
     ifstream f("input.txt");
     string line;
@@ -59,23 +65,31 @@ int main() {
     const auto h = sp.first - containers.cbegin();
     const auto firstHigh = *sp.first;
 
-    map<int, int> lowMap;
+    CountMinMap lowMap;
     vector<int> lowCo(containers.cbegin(), sp.first);
     init( lowCo, maxCounter(h), lowMap );
 
-    map<int, int> highMap;
+    CountMinMap highMap;
     const vector<int> highCo( sp.first, containers.end() );
     init( highCo, maxCounter( highCo.size() ), highMap );
 
+    int minSum = INT_MAX;
     long long answer1 = 0;
     for ( auto cl : lowMap ) {
         const auto ch = highMap.find( TARGET - cl.first );
         if ( ch != highMap.end() ) {
-            // cout << cl.first << " + " << ch->first << " -> " << cl.second << " * " << ch->second << " = " << (cl.second * ch->second) << endl;
-            answer1 += ( cl.second * ch->second );
+            minSum = min(minSum, cl.second.second + ch->second.second);
+            answer1 += ( cl.second.first * ch->second.first );
         }
     }
-    cout << "Answer 1" << answer1 << endl; // 4372 - right
+    cout << "Answer 1: " << answer1 << endl; // 4372 - right
+
+    auto answer2 = 0;
+    for ( auto c = maxCounter(containers.size()); c > 0; c-- ) {
+        const auto p = sum(containers, c);
+        answer2 += ( p.first == TARGET && p.second == minSum );
+    }
+    cout << "Answer 2: " << answer2 << endl; // 4 - right
 
     return 0;
 }
