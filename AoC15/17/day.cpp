@@ -22,6 +22,11 @@ CountMin sum( const vector<int> & v, int b ) {
     return { result, totalOn };
 }
 
+int maxCounter( int n ) {
+    return ( 1 << n ) - 1; // sets all valid bits to 1
+}
+
+/* commented code is at least 2 times faster to solve the task and is more scalable
 void init( const vector<int> & v, int b, CountMinMap & m ) {
     for ( ; b >= 0; b-- ) {
         const CountMin r = sum( v, b );
@@ -30,10 +35,6 @@ void init( const vector<int> & v, int b, CountMinMap & m ) {
         if ( prev.first == 0 ) prev.second = r.second;
         m[n] = make_pair( prev.first + 1, min( prev.second, r.second ) );
     }
-}
-
-int maxCounter( int n ) {
-    return ( 1 << n ) - 1; // sets all valid bits to 1
 }
 
 auto split( const vector<int> & containers, const int target ) {
@@ -48,6 +49,7 @@ auto split( const vector<int> & containers, const int target ) {
     }
     return make_pair( it, low );
 }
+*/
 
 int main() {
     vector<int> containers;
@@ -58,7 +60,7 @@ int main() {
         containers.push_back( stoi(line) );
     }
     const int TARGET = 150;
-    
+    /*
     sort( containers.begin(), containers.end() );
 
     const auto sp = split(containers, TARGET);
@@ -80,6 +82,17 @@ int main() {
         if ( ch != highMap.end() ) {
             minSum = min(minSum, cl.second.second + ch->second.second);
             answer1 += ( cl.second.first * ch->second.first );
+        }
+    }
+    */
+
+    auto answer1 = 0;
+    int minSum = INT_MAX;
+    for ( auto c = maxCounter(containers.size()); c > 0; c-- ) {
+        const auto p = sum(containers, c);
+        if ( p.first == TARGET ) {
+            answer1++;
+            minSum = min(minSum, p.second);
         }
     }
     cout << "Answer 1: " << answer1 << endl; // 4372 - right
