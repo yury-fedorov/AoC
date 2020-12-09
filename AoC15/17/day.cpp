@@ -8,16 +8,16 @@ using namespace std;
 
 int sum( const vector<int> & v, int b ) {
     auto result = 0;
-    for ( auto i = 0; b; b >>= 1, i++ ) {
+    for ( auto i = 0; b; i++ ) {
         result += ( b & 1 ) ? v[i] : 0;
+        b >>= 1;
     }
     return result;
 }
 
 void init( const vector<int> & v, int b, map<int,int> & m ) {
-    for ( ; b > 0; b-- ) {
+    for ( ; b >= 0; b-- ) {
         const auto n = sum( v, b );
-        if ( n == 120 ) cout << b << endl;
         m[n] += 1;
     }
 }
@@ -58,7 +58,6 @@ int main() {
     const auto sp = split(containers, TARGET);
     const auto h = sp.first - containers.cbegin();
     const auto firstHigh = *sp.first;
-    // cout << sp.second << " " << h << " " << firstHigh << endl;
 
     map<int, int> lowMap;
     vector<int> lowCo(containers.cbegin(), sp.first);
@@ -68,17 +67,15 @@ int main() {
     const vector<int> highCo( sp.first, containers.end() );
     init( highCo, maxCounter( highCo.size() ), highMap );
 
-    long long counter = 0;
+    long long answer1 = 0;
     for ( auto cl : lowMap ) {
         const auto ch = highMap.find( TARGET - cl.first );
         if ( ch != highMap.end() ) {
-            cout << cl.first << " + " << ch->first << " -> " << cl.second << " * " << ch->second << " = " << (cl.second * ch->second) << endl;
-            counter += ( cl.second * ch->second );
+            // cout << cl.first << " + " << ch->first << " -> " << cl.second << " * " << ch->second << " = " << (cl.second * ch->second) << endl;
+            answer1 += ( cl.second * ch->second );
         }
     }
-    // 6732 - too high
-    // 4369 - is not the right
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? counter : 2 ) << endl;
+    cout << "Answer 1" << answer1 << endl; // 4372 - right
 
     return 0;
 }
