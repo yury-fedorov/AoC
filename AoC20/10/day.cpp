@@ -10,10 +10,11 @@ using namespace std;
 // 3 1 3 - no alternative
 // 3 1 1 3 - and 3 2 3 (2)
 // 3 1 1 1 3 - and 3 3 3, 3 2 1 3, 3 1 2 3 (4) 
-// 3 1 1 1 1 3 - 3 3 1 3, 3 1 3 3, 3 2 2 3, 3 1 2 1 3, 3 2 1 1 3, 3 1 1 2 3 (7)
+// 3 1 1 1 1 3 - and 3 3 1 3, 3 1 3 3, 3 2 2 3, 3 1 2 1 3, 3 2 1 1 3, 3 1 1 2 3 (7)
 int options( int digit, int length ) {
-    assert( digit == 1 );
     assert( length > 0 );
+    if ( digit == 3 ) return 1;
+    assert( digit == 1 );
     switch ( length ) {
         case 1: return 1;
         case 2: return 2;
@@ -47,7 +48,7 @@ int main() {
         differences[diff]++;
         seq.push_back(diff);
     }
-    cout << "Answer 1: " << differences[1] * differences[3] << endl;
+    cout << "Answer 1: " << differences[1] * differences[3] << endl; // 1914
 
     vector<pair<int,int>> grseq;
     int prev = 0;
@@ -67,7 +68,7 @@ int main() {
 
     long long combinations = 1;
     for ( const auto p : grseq ) {
-        combinations *= p.first == 3 ? 1 : options( p.first, p.second );
+        combinations *= options( p.first, p.second );
     }
 
     cout << "Answer 2: " << combinations << endl; // right - 9256148959232
