@@ -48,14 +48,8 @@ int main() {
             sum -= numbers[j];
             if ( sum == 0 && ( i < j ) ) { // at least 2 numbers
                 // found
-                lint mi = numbers[i];
-                lint ma = numbers[j]; // XXX - minmax and even max for some reason did not work well
-                for ( auto k = i + 1; k <= j; k++ ) {
-                    const auto a = numbers[k];
-                    mi = a < mi ? a : mi;
-                    ma = a > ma ? a : ma;
-                }
-                cout << "Answer 2: " << ( mi + ma ) << endl;
+                const auto [mi,ma] = minmax_element( numbers.begin() + i, numbers.begin() + j + 1 );
+                cout << "Answer 2: " << ( *mi + *ma ) << endl; // 4389369 - right
             } else if ( sum < 0 ) break;
         }
     }
