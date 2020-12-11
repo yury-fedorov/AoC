@@ -11,9 +11,13 @@ pair<int,int> getSize( const Field & f ) {
     return make_pair( f[0].size(), f.size() );
 }
 
-Place get( const Field & f, int x, int y ) {
+bool isIn( const Field & f, int x, int y ) {
     const auto [xn, yn] = getSize(f);
-    return ( x >= 0 && y >= 0 && x < xn && y < yn ) ? ( (Place)f[y][x] ) : Floor;   
+    return ( x >= 0 && y >= 0 && x < xn && y < yn );
+}
+
+Place get( const Field & f, int x, int y ) {
+    return isIn( f, x, y ) ? ( (Place)f[y][x] ) : Floor;   
 }
 
 inline void set( Field & f, int x, int y, Place value ) {
@@ -33,6 +37,25 @@ int countOccupied( const Field & f, int x, int y ) {
     return count;
 }
 
+int countOccupied2( const Field & f, int x, int y ) {
+    auto count = 0;
+    for ( int dx = -1; dx <= 1; dx++ ) {
+        for ( int dy = -1; dy <= 1; dy++ ) {
+            if ( dx == 0 && dy == 0 ) continue;
+            for ( auto k = 1; true; k++ ) {
+                const auto x1 = x + ( k * dx );
+                const auto y1 = y + ( k * dy );
+                if ( !isIn( f, x1, y1 ) ) break;
+                const auto seat = get(f, x1, y1);
+                if ( seat == Floor ) continue;
+                count += seat == OccupiedSeat;
+                break;
+            }
+        }
+    }
+    return count;
+}
+
 int totalOccupied(const Field & f) {
     const auto [xn, yn] = getSize(f);
     auto count = 0;
@@ -46,11 +69,7 @@ int totalOccupied(const Field & f) {
 }
 
 bool isSame(const Field & a, const Field & b ) {
-    const auto [xn, yn] = getSize(a);
-    for ( int x = 0; x < xn; x++ ) {
-        if ( a[x] != b[x] ) return false;
-    }
-    return true;    
+    return a == b; 
 }
 
 void print( const Field & f ) {
@@ -62,44 +81,39 @@ void print( const Field & f ) {
 
 int main() {
 
-    const bool isFirstAnswer = false;
+    const bool isFirstAnswer = true;
 
     Field field;
-
+    
     ifstream f("input.txt");
-    // ifstream f("test.txt");
-
     string line;
     while (getline(f, line)) {
         field.push_back(line);
     }
 
+    const int maxOccupied = isFirstAnswer ? 4 : 5;
     auto prevTotal = totalOccupied(field);
     const auto [xn, yn] = getSize(field);
-    for ( int i = 0; i < 10000; i++ ) {
-        print(field);
+    for ( int i = 0; true; i++ ) {
         Field newField (field) ;
         for ( int x = 0; x < xn; x++ ) {
             for ( int y = 0; y < yn; y++ ) {
                 auto seat = get( field, x, y );
-                const auto occupied = countOccupied( field, x, y );
+                const auto occupied = isFirstAnswer ? countOccupied( field, x, y ) : countOccupied2( field, x, y );
                 if ( seat == EmptySeat && ( occupied == 0 ) ) {
                     seat = OccupiedSeat;
-                } else if ( seat == OccupiedSeat && ( occupied >= 4 ) ) {
+                } else if ( seat == OccupiedSeat && ( occupied >= maxOccupied ) ) {
                     seat = EmptySeat;
                 }
                 set( newField, x, y, seat );
             }
-        }
-        const auto newTotal = totalOccupied(newField);
-        cout << "Iteration: " << i << " prev: " << prevTotal << " now: " << newTotal << endl; 
-        if ( /* prevTotal == newTotal && */ isSame(field, newField) ) break;
-        prevTotal = newTotal;
+        } 
+        if ( isSame(field, newField) ) break;
+        prevTotal = totalOccupied(newField);
         swap( field, newField );
     }
-    print(field);
 
-    cout << "Answer 1: " << prevTotal << endl; // 2250 - not right
+    cout << "Answer " << (isFirstAnswer ? 1 : 2 ) << ": " << prevTotal << endl; // answer 1: 2344, answer 2: 2076
 
     return 0;
 }
