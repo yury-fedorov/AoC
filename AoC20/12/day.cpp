@@ -1,14 +1,7 @@
 #include <iostream>
-#include <map>
-#include <set>
-#include <vector>
-#include <algorithm>
 #include <fstream>
-#include <sstream>
 #include <regex>
-#include <numeric>
 #include <assert.h>
-#include <climits>
 
 using namespace std;
 
@@ -34,15 +27,12 @@ Direction rotate( bool toLeft, int value, Direction previousDirection ) {
 }
 
 int main() {
-
-    assert( rotate( true, 90, dNorth ) == dWest );
-    assert( rotate( false, 90, dEast ) == dSouth );
-    assert( rotate( false, 180, dEast ) == dWest );
-    assert( rotate( true, 180, dEast ) == dWest );
-
-    const bool isFirstAnswer = false;
+    const bool isFirstAnswer = true;
 
     Direction direction = dEast;
+    int wpEast = 10;
+    int wpNorth = 1;
+
     int east = 0;
     int north = 0;
 
@@ -54,34 +44,78 @@ int main() {
         if( regex_match( line, what, re )) {
             const string cmd = what[1];
             const int value = stoi(what[2]);
+            const char command = cmd[0];
             assert(cmd.length() == 1);
-            cout << cmd << " " << value << endl;
-            switch ( cmd[0] ) {
-                case North: north += value; break;
-                case South: north -= value; break;
-                case East: east += value; break;
-                case West: east -= value; break;
 
-                case Forward: {
-                    int & dir = direction == dEast || direction == dWest ? east : north;
-                    const bool isPlus = direction == dEast || direction == dNorth;
-                    dir += ( isPlus ? 1 : -1 ) * value;
-                    break;
+            if ( isFirstAnswer ) {
+                switch (command) {
+                    case North: north += value; break;
+                    case South: north -= value; break;
+                    case East: east += value; break;
+                    case West: east -= value; break;
+
+                    case Forward: {
+                        int & dir = direction == dEast || direction == dWest ? east : north;
+                        const bool isPlus = direction == dEast || direction == dNorth;
+                        dir += ( isPlus ? 1 : -1 ) * value;
+                        break;
+                    }
+                        
+                    case Left:  direction = rotate( true,  value, direction ); break;
+                    case Right: direction = rotate( false, value, direction ); break;
+                    default: assert(false);
                 }
-                    
-                case Left:  direction = rotate( true,  value, direction ); break;
-                case Right: direction = rotate( false, value, direction ); break;
-                default: assert(false);
+            } else {
+                switch (command) {
+                    case North: wpNorth += value; break;
+                    case South: wpNorth -= value; break;
+                    case East: wpEast += value; break;
+                    case West: wpEast -= value; break;
+
+                    case Forward: 
+                    {
+                        east += ( value * wpEast );
+                        north += ( value * wpNorth );
+                        break;
+                    }
+                        
+                    case Left:  
+                    case Right:
+                    {
+                        if ( value == 180 ) {
+                            // just changing sign
+                            wpEast *= -1;
+                            wpNorth *= -1;
+                        } else if ( value == 90 || value == 270 ) {
+                            bool isLeft = command == Left;
+                            if ( value == 270 ) {
+                                // now we rotate only to 90 degrees
+                                isLeft = !isLeft;
+                            }
+                            // we were going to east ( if now left -> nord (positive), right - south (negative) )
+                            // we were going to north (positive) ( if now left -> west (negative), right -> east (positive) )
+                            const int ke = isLeft ? -1 : 1;
+                            const int kn = isLeft ? 1 : -1;
+
+                            // hand made swap
+                            const auto tmp = wpEast;
+                            wpEast = wpNorth;
+                            wpNorth = tmp;
+
+                            wpEast *= ke;
+                            wpNorth *= kn;
+                        } else assert( false );
+                        break;
+                    }
+                    default: assert(false);
+                }                
             }
-            cout << direction << " " << east << " " << north << endl;
         } else {
             cerr << "Unexpected line: " << line << endl;
         }
     }
 
-    cout << east << " " << north << " = " << ( abs(east) + abs(north) ) << endl;
-
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
+    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( abs(east) + abs(north) ) << endl; // part 1 - 923; part 2 - 24769
 
     return 0;
 }
