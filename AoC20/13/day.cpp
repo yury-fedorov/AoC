@@ -40,19 +40,53 @@ BusPosList readBusPosList( const Input & buses, bool toPrint = false ) {
         list.emplace_back( id, i );
     }
     // bus with highest numbers are at the beginning
-    sort( list.begin(), list.end(), []( const BusPos & a, const BusPos & b ) { return b.first < a.first; } ); 
-    for ( const auto [b,p] : list ) {
-        if ( toPrint ) cout << "Bus " << b << " wait: " << p << endl;
+    sort( list.begin(), list.end(), []( const BusPos & a, const BusPos & b ) { return b.first < a.first; } );
+    if ( toPrint ) {
+        for ( const auto [b,p] : list ) {
+            cout << "Bus " << b << " wait: " << p << endl;
+        }
     }
     return list;
 }
 
-Int slowPart2() {
-    return 0;
+Int ta( const BusPosList & bp ) {
+    Int r = 1;
+    for ( const auto [b,p] : bp ) {
+        r *= b;
+    }
+    return r;
+}
+ 
+const auto tmin = 100'000'000'000'000;
+const Int tmin1 = tmin / 100;
+
+Int part2( const BusPosList & bp, Int t = 0 ) {
+    const auto [ maxBus, maxBusShift ] = bp[0];
+    for ( ; true; t += maxBus ) {
+        bool isOk = true;
+        for ( const auto [b,p] : bp ) {
+            if ( b == maxBus ) continue;
+            const long long tb = t + ( p - maxBusShift );
+            if ( tb % b != 0 ) {
+                isOk = false;
+                break;
+            }
+        }
+        if ( isOk ) {
+            const auto answer2 = t - maxBusShift;
+            const auto a = ta( bp );
+            cout << "A2: " << answer2 << " " << a << " " << ( answer2 / double(a) ) << endl;
+            return answer2;
+        }
+        if ( t % tmin1 == 0 ) {
+            cout << "t = " << t << endl;
+        }
+    }
 }
 
-auto aPlus1( Int n, Int m, Int b = 1 ) {
-    return div( b * (m + 1), n );
+Int part2( const string & line, Int t = 0 ) {
+    const auto && bp = readBusPosList( readBuses( line ), true );
+    return part2( bp, t );
 }
 
 int main() {
@@ -79,28 +113,26 @@ int main() {
     assert( answer1 == 296 ); // 296 - answer 1
 
     // Part 2
-    const BusPosList && busPos = readBusPosList( buses, true );
+    if ( part2("17,x,13,19") != 3'417 ) assert(false);
+    if ( part2("67,7,59,61" ) != 754'018 ) assert(false);
+    if ( part2("67,x,7,59,61" ) != 779'210 ) assert(false);
+    if ( part2("67,7,x,59,61" ) != 1'261'476 ) assert(false);
+    if ( part2("1789,37,47,1889" ) != 1'202'161'486 ) assert(false);
 
+    const BusPosList && busPos = readBusPosList( buses, true );
+                    // 3'048'743'993'142'809
     const auto tmin = 100'000'000'000'000;
+    const Int r = ta( busPos );
+    const Int ts = r / 10;
+    cout << r << " " << ts << endl;
+
+    const auto a2 = part2(busPos, ts );
+    cout << "Answer 2: " << a2 << endl;
+
     return 0;
 
 /*
-    for ( Int t = 0; true; t += maxBus ) {
-        // this is ok
-        bool isOk = true;
-        for ( const auto [b,p] : busPos ) {
-            if ( b == maxBus ) continue;
-            const long long tb = t + ( p - maxBusShift );
-            if ( tb % b != 0 ) {
-                isOk = false;
-                break;
-            }
-        }
-        if ( isOk ) {
-            cout << "A2: " << t << endl;
-            break;
-        }
-    }
+
 
     const Int b0 = div( t0, maxBus ).quot + 1;
     Int t = b0 * maxBus;
