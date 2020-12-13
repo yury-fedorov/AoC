@@ -1,10 +1,7 @@
 #include <iostream>
-#include <map>
-#include <set>
 #include <vector>
 #include <algorithm>
 #include <fstream>
-#include <sstream>
 #include <regex>
 #include <numeric>
 #include <assert.h>
@@ -49,54 +46,6 @@ BusPosList readBusPosList( const Input & buses, bool toPrint = false ) {
     return list;
 }
 
-Int ta( const BusPosList & bp ) {
-    Int r = 1;
-    for ( const auto [b,p] : bp ) {
-        r *= b;
-    }
-    return r;
-}
- 
-const auto tmin = 100'000'000'000'000;
-const Int tmin1 = tmin / 1000;
-
-// XXX - bug in managing starting position
-Int part2_( const BusPosList & bp, Int t = 0 ) {
-    const auto [ maxBus, maxBusShift ] = bp[0];
-    for ( ; true; t += maxBus ) {
-        bool isOk = true;
-        for ( const auto [b,p] : bp ) {
-            if ( b == maxBus ) continue;
-            const Int tb = t + ( p - maxBusShift );
-            if ( tb % b != 0 ) {
-                isOk = false;
-                break;
-            }
-        }
-        if ( isOk ) {
-            const auto answer2 = t - maxBusShift;
-            const auto a = ta( bp );
-            cout << "A2: " << answer2 << " " << a << " " << ( answer2 / double(a) ) << endl;
-            return answer2;
-        }
-        if ( t % tmin1 == 0 ) {
-            cout << "t = " << t << endl;
-        }
-    }
-}
-
-bool part2check( const BusPosList & bp, Int t ) {
-    for ( const auto [b,p] : bp ) {
-        const Int tb = t + p;
-        if ( tb % b != 0 ) {
-            // cerr << "Bus not in expected time: " << b << endl;
-            // isOk = false;
-            return false;
-        }
-    }
-    return true;
-}
-
 pair<int,Int> part2check2( const BusPosList & bp, Int t ) {
     int index = -1;
     Int step = 1;
@@ -119,24 +68,19 @@ Int part2( const BusPosList & bp, Int t = 0 ) {
         // if ( part2check( bp, t ) ) {
         const auto [i, s] = part2check2(bp, t );
         if ( i >= targetIndex ) {
-            const auto answer2 = t;
-            const auto a = ta( bp );
-            cout << "A2: " << answer2 << " " << a << " " << ( answer2 / double(a) ) << endl;
-            return answer2;
-        } else if ( step < s ) {
+            return t;
+        }
+        if ( step < s ) {
             cout << "Current step: " << step << " new step: " << s << endl;
             step = s;
         } else if ( step > s ) {
             assert(false); // never expected we loose step
         }
-        if ( t % tmin1 == 0 ) {
-            cout << "t = " << t << endl;
-        }
     }
 }
 
 Int part2( const string & line, Int t = 0 ) {
-    const auto && bp = readBusPosList( readBuses( line ), true );
+    const auto && bp = readBusPosList( readBuses( line ), false );
     return part2( bp, t );
 }
 
@@ -160,8 +104,8 @@ int main() {
         }
     }
     const auto answer1 = bestBus * bestTime;
-    cout << bestBus << ',' << bestTime << '=' << answer1 << endl; 
-    assert( answer1 == 296 ); // 296 - answer 1
+    cout << "Answer 1: " << answer1 << endl; 
+    assert( answer1 == 296 );
 
     // Part 2
     if ( part2("17,x,13,19") != 3'417 ) assert(false);
@@ -171,38 +115,10 @@ int main() {
     if ( part2("1789,37,47,1889" ) != 1'202'161'486 ) assert(false);
 
     const BusPosList && busPos = readBusPosList( buses, true );
-                    // 3'048'743'993'142'809
-    // const auto tmin = 100'000'000'000'000;
-    const auto tmin    = 321'790'421'787'038;
-    const auto last    = 322'100'000'000'000;
-    /*
-    const Int r = ta( busPos );
-    const Int ts = r / 10;
-    cout << r << " " << ts << endl;
-    */
-    const auto isOk = part2check( busPos, last );
-    assert(isOk);
+    const auto answer2 = part2(busPos, 0 );
+    cout << "Answer 2: " << answer2 << endl;
+    assert( answer2 >= 100'000'000'000'000 );
+    assert( answer2 == 535296695251210 );
 
-    const auto a2 = part2(busPos, tmin );
-    cout << "Answer 2: " << a2 << endl;
-
-    return 0;
-
-/*
-
-
-    const Int b0 = div( t0, maxBus ).quot + 1;
-    Int t = b0 * maxBus;
-    for ( auto b = b0; true; b++, t+= maxBus ) {
-        for ( const auto [bus,p] : busPos ) {
-            if ( bus == maxBus ) continue;
-            const long long tb = t + ( p - maxBusShift );
-            if ( tb % bus != 0 ) {
-                isOk = false;
-                break;
-            }
-        }
-    }
-*/
     return 0;
 }
