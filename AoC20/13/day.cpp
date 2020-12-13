@@ -14,6 +14,8 @@ using namespace std;
 
 typedef long long Int;
 typedef vector<string> Input;
+typedef pair<int,int> BusPos;
+typedef vector<BusPos> BusPosList;
 
 Input readBuses( const string & line ) {
     Input buses;
@@ -27,6 +29,26 @@ Input readBuses( const string & line ) {
         searchStart = res.suffix().first;
     }
     return buses;
+}
+
+BusPosList readBusPosList( const Input & buses, bool toPrint = false ) {
+    BusPosList list;
+    for ( int i = 0; i < buses.size(); i++ ) {
+        const string & b = buses.at(i);
+        if ( b == "x" ) continue;
+        const int id = stoi(b);
+        list.emplace_back( id, i );
+    }
+    // bus with highest numbers are at the beginning
+    sort( list.begin(), list.end(), []( const BusPos & a, const BusPos & b ) { return b.first < a.first; } ); 
+    for ( const auto [b,p] : list ) {
+        if ( toPrint ) cout << "Bus " << b << " wait: " << p << endl;
+    }
+    return list;
+}
+
+Int slowPart2() {
+    return 0;
 }
 
 auto aPlus1( Int n, Int m, Int b = 1 ) {
@@ -57,19 +79,7 @@ int main() {
     assert( answer1 == 296 ); // 296 - answer 1
 
     // Part 2
-    typedef pair<int,int> BusPos;
-    vector<BusPos> busPos;
-    for ( int i = 0; i < buses.size(); i++ ) {
-        const string & b = buses[i];
-        if ( b == "x" ) continue;
-        const int id = stoi(b);
-        busPos.emplace_back( id, i );
-    }
-    // bus with highest numbers are at the beginning
-    sort( busPos.begin(), busPos.end(), []( const BusPos & a, const BusPos & b ) { return b.first < a.first; } ); 
-    for ( const auto [b,p] : busPos ) {
-        cout << "Bus " << b << " wait: " << p << endl;
-    }
+    const BusPosList && busPos = readBusPosList( buses, true );
 
     const auto tmin = 100'000'000'000'000;
     return 0;
