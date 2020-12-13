@@ -58,15 +58,16 @@ Int ta( const BusPosList & bp ) {
 }
  
 const auto tmin = 100'000'000'000'000;
-const Int tmin1 = tmin / 100;
+const Int tmin1 = tmin / 1000;
 
-Int part2( const BusPosList & bp, Int t = 0 ) {
+// XXX - bug in managing starting position
+Int part2_( const BusPosList & bp, Int t = 0 ) {
     const auto [ maxBus, maxBusShift ] = bp[0];
     for ( ; true; t += maxBus ) {
         bool isOk = true;
         for ( const auto [b,p] : bp ) {
             if ( b == maxBus ) continue;
-            const long long tb = t + ( p - maxBusShift );
+            const Int tb = t + ( p - maxBusShift );
             if ( tb % b != 0 ) {
                 isOk = false;
                 break;
@@ -77,6 +78,56 @@ Int part2( const BusPosList & bp, Int t = 0 ) {
             const auto a = ta( bp );
             cout << "A2: " << answer2 << " " << a << " " << ( answer2 / double(a) ) << endl;
             return answer2;
+        }
+        if ( t % tmin1 == 0 ) {
+            cout << "t = " << t << endl;
+        }
+    }
+}
+
+bool part2check( const BusPosList & bp, Int t ) {
+    for ( const auto [b,p] : bp ) {
+        const Int tb = t + p;
+        if ( tb % b != 0 ) {
+            // cerr << "Bus not in expected time: " << b << endl;
+            // isOk = false;
+            return false;
+        }
+    }
+    return true;
+}
+
+pair<int,Int> part2check2( const BusPosList & bp, Int t ) {
+    int index = -1;
+    Int step = 1;
+    for ( const auto [b,p] : bp ) {
+        const Int tb = t + p;
+        if ( tb % b != 0 ) {
+            break;
+        }
+        index++;
+        step *= b;
+    }
+    return make_pair( index, step );;
+}
+
+Int part2( const BusPosList & bp, Int t = 0 ) {
+    Int step = 1;
+    const int n = bp.size();
+    const int targetIndex = n - 1;
+    for ( ; true; t += step ) {
+        // if ( part2check( bp, t ) ) {
+        const auto [i, s] = part2check2(bp, t );
+        if ( i >= targetIndex ) {
+            const auto answer2 = t;
+            const auto a = ta( bp );
+            cout << "A2: " << answer2 << " " << a << " " << ( answer2 / double(a) ) << endl;
+            return answer2;
+        } else if ( step < s ) {
+            cout << "Current step: " << step << " new step: " << s << endl;
+            step = s;
+        } else if ( step > s ) {
+            assert(false); // never expected we loose step
         }
         if ( t % tmin1 == 0 ) {
             cout << "t = " << t << endl;
@@ -121,12 +172,18 @@ int main() {
 
     const BusPosList && busPos = readBusPosList( buses, true );
                     // 3'048'743'993'142'809
-    const auto tmin = 100'000'000'000'000;
+    // const auto tmin = 100'000'000'000'000;
+    const auto tmin    = 321'790'421'787'038;
+    const auto last    = 322'100'000'000'000;
+    /*
     const Int r = ta( busPos );
     const Int ts = r / 10;
     cout << r << " " << ts << endl;
+    */
+    const auto isOk = part2check( busPos, last );
+    assert(isOk);
 
-    const auto a2 = part2(busPos, ts );
+    const auto a2 = part2(busPos, tmin );
     cout << "Answer 2: " << a2 << endl;
 
     return 0;
