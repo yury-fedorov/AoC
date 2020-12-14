@@ -44,6 +44,16 @@ Int presents1( const Int house) {
     return count;
 }
 
+// slow algorithm used for answer 1 (takes many minutes)
+Int presents2( const Int house) {
+    const auto dt = max( house / 50, (Int)1 );
+    Int count = 0;
+    for ( Int i = dt; i <= house; i++ ) {
+        count += ( house % i == 0 ) ? i : 0;
+    }
+    return count;
+}
+
 // draft of faster version
 Int presents( Int house, const vector<int> & primes ) {
     if ( house == 1 ) return 1;
@@ -76,7 +86,7 @@ Int presents( Int house, const vector<int> & primes ) {
 
 int main() {
     const bool isFirstPart = false;
-
+/*
     const int n = 200;
     vector<int> c { 0 };
     for ( int i = 0; i < n; i++ ) c.push_back(0);
@@ -95,7 +105,7 @@ int main() {
     }
 
     for ( int h = 1; h < n; h++ ) {
-        const auto p = presents1( h ) * ( isFirstPart ? 10 : 11 );
+        const auto p = ( isFirstPart ? presents1( h ) : presents2( h ) ) * ( isFirstPart ? 10 : 11 );
         const auto p1 = c[h];
         if ( p != p1 ) {
             cerr << h << " " << p << " " << p1 << " " << p1 - p << endl;
@@ -103,6 +113,8 @@ int main() {
         }
     }
     return 0;
+
+*/
     const int TARGET { 34'000'000 };
     const int TARGET1 { TARGET / 10 };
 
@@ -113,20 +125,21 @@ int main() {
         }
     }
     */
-    
+    /*
     vector<int> primes;
     ifstream f("prime.txt");
     string line;
     while (getline(f, line)) {
         primes.push_back( stoi(line) );
-    }
+    }$*/
     
     {
-        for ( int i = 1; i < 6'799'994; i++ ) {
-            const auto p = presents1( i );
+        const auto f = isFirstPart ? presents1 : presents2;
+        for ( int i = 1; i > 0; i++ ) {
+            const auto p = f( i );
             if ( p >= TARGET1 ) {
                 cout << "A1: " << i << " -> " << p << endl;
-                assert( i == 786240 ); // A1: 786240 -> 3413760 -- RIGHT ANSWER
+                assert( i == isFirstPart ? 786240 : -1 ); // A1: 786240 -> 3413760 -- RIGHT ANSWER
                 break;
             }
             if ( i % 100'000 == 0 ) {
