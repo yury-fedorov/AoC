@@ -85,7 +85,7 @@ Int presents( Int house, const vector<int> & primes ) {
 }
 
 int main() {
-    const bool isFirstPart = false;
+    const bool isFirstAnswer= false;
 /*
     const int n = 200;
     vector<int> c { 0 };
@@ -134,16 +134,19 @@ int main() {
     }$*/
     
     {
-        const auto f = isFirstPart ? presents1 : presents2;
+        const auto f = isFirstAnswer ? presents1 : ( [](const Int h ) { return 11 * presents2(h); } );
+        const auto target = isFirstAnswer ? TARGET1 : TARGET;
+        Int m = 0;
         for ( int i = 1; i > 0; i++ ) {
             const auto p = f( i );
-            if ( p >= TARGET1 ) {
-                cout << "A1: " << i << " -> " << p << endl;
-                assert( i == isFirstPart ? 786240 : -1 ); // A1: 786240 -> 3413760 -- RIGHT ANSWER
+            m = max(m, p);
+            if ( p >= target ) {
+                cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << i << endl;
+                assert( i == isFirstPart ? 786240 : 831600 );
                 break;
             }
             if ( i % 100'000 == 0 ) {
-                cout << i << " " << p << endl;
+                cout << i << " " << p << " " << m << endl;
             }
         }
     }
