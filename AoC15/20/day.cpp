@@ -35,6 +35,7 @@ bool isPrime( const int n ) {
     return true;
 }
 
+// slow algorithm used for answer 1 (takes many minutes)
 Int presents1( const Int house) {
     Int count = ( house > 1 ) ? ( house + 1 ) : 1;
     for ( Int i = 2; i < house; i++ ) {
@@ -43,6 +44,7 @@ Int presents1( const Int house) {
     return count;
 }
 
+// draft of faster version
 Int presents( Int house, const vector<int> & primes ) {
     if ( house == 1 ) return 1;
     if ( binary_search( primes.cbegin(), primes.cend(), house ) ) return 1 + house;
@@ -64,31 +66,43 @@ Int presents( Int house, const vector<int> & primes ) {
     // 8 = 1 + 2 + 4 + 8   1 2 2 2 8
     // 9 = 1 + 3 + 9
     Int count = 1;
+    /* FIXME
     for ( const auto [ k, c ] : primeCount ) {
         count += sum( k, c );
     }
+    */
     return count;
 }
 
 int main() {
-    const int n = 100;
+    const bool isFirstPart = false;
+
+    const int n = 200;
     vector<int> c { 0 };
     for ( int i = 0; i < n; i++ ) c.push_back(0);
     for ( int i = 1; i < n; i++ ) {
-        for ( int j = i; j < n; j += i ) {
-            c[j] += i * 10;
+        if ( isFirstPart ) {
+            for ( int j = i; j < n; j += i ) {
+                c[j] += i * 10;
+            }
+        } else {
+            int m = 50;
+            for ( int j = i; j < n; j += i ) {
+                c[j] += i * 11;
+                if ( --m <= 0 ) break;
+            }
         }
     }
 
     for ( int h = 1; h < n; h++ ) {
-        const auto p = presents1( h ) * 10;
+        const auto p = presents1( h ) * ( isFirstPart ? 10 : 11 );
         const auto p1 = c[h];
         if ( p != p1 ) {
             cerr << h << " " << p << " " << p1 << " " << p1 - p << endl;
             assert( false );
         }
     }
-
+    return 0;
     const int TARGET { 34'000'000 };
     const int TARGET1 { TARGET / 10 };
 
@@ -106,9 +120,7 @@ int main() {
     while (getline(f, line)) {
         primes.push_back( stoi(line) );
     }
-
-    // 2^11 - too much
-    const int tooHigh = 2'097'152;
+    
     {
         for ( int i = 1; i < 6'799'994; i++ ) {
             const auto p = presents1( i );
