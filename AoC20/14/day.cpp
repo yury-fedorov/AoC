@@ -19,11 +19,9 @@ typedef map<Int,Int> Memory;
 const int Bits = 36;
 
 Int applyValue( const string & mask, Int v ) {
-    const int n = mask.size();
-    assert( n == Bits );
     bitset<Bits> result( v );
-    for ( int i = 1; i <= n; i++ ) {
-        const char mv = mask[n - i];
+    for ( int i = 1; i <= Bits; i++ ) {
+        const char mv = mask[Bits - i];
         if ( mv != 'X') {
             result.set( i - 1, mv == '1' );
         }
@@ -32,27 +30,18 @@ Int applyValue( const string & mask, Int v ) {
 }
 
 vector<Int> getAddresses( const string & mask, const Int a ) {
-    const int n = mask.size();
-    assert( n == Bits );
     string na(mask);
-    for ( int i = 0; i < n; i++ ) {
-        cout << "tr " << na << endl;
-        const int j = n - i - 1;
+    for ( int i = 0; i < Bits; i++ ) {
+        const int j = Bits - i - 1;
         if ( mask[j] == '0' ) {
             const Int bit = ( 1l << i );
             const char value = ( ( a & bit ) ? '1' : '0' );
-            cout << i << " " << bit << " " << value << endl;
             na[j] = value;
         }
     }
-/*
-    cout << "mask: " << mask << endl;
-    cout << "addr: " << bitset<Bits>(a).to_string() << endl;
-    cout << "nadd: " << na << endl;
-    cout << endl;
-*/
+
     vector<int> xPos;
-    for ( int i = 0; i < n; i++ ) {
+    for ( int i = 0; i < Bits; i++ ) {
         if ( na[i] == 'X' ) xPos.push_back(i);
     }
     
@@ -61,7 +50,6 @@ vector<Int> getAddresses( const string & mask, const Int a ) {
     if ( xCount == 0 ) {
         list.push_back( stoull( na, 0, 2 ) );
     } else {
-        int count = 0;
         for ( int c = ( 1 << xCount ) - 1; c >= 0; c-- ) {
             string mc(na);
             int cc = c;
@@ -70,14 +58,10 @@ vector<Int> getAddresses( const string & mask, const Int a ) {
                 cc >>= 1;
             }
             assert( mc.find( 'X' ) == string::npos ); // no X before parsing
-            // cout << mc << endl;
             const auto nac = stoull( mc, 0, 2 );
             list.push_back( nac );
-            count++;
         }
-        assert( count == (int)pow( 2.0, xCount ) );
     }
-    // cout << endl;
     return list;
 }
 
@@ -88,17 +72,10 @@ void setMemory( Memory & mem, const string & mask, const Int a, const Int v ) {
 }
 
 int main() {
-    /*
-    vector<Int> exp { 26, 27, 58, 59 };
-    for ( const auto nac : getAddresses( "000000000000000000000000000000X1001X", 42) ) {
-        cout << nac << endl;
-    }
-    */
-    // return 0;
+    const bool isFirstAnswer = true;
+
     string mask;
     Memory mem;
-
-    const bool isFirstAnswer = false;
 
     ifstream f("input.txt");
 
@@ -140,9 +117,7 @@ int main() {
     }
 
     cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << sum << endl;
-    assert( sum == ( isFirstAnswer ? 13105044880745 : 0 ) );
-    // 3505392154485
-    // 3530622174725 - answer2 - That's not the right answer; your answer is too high.
+    assert( sum == ( isFirstAnswer ? 13105044880745 : 3505392154485 ) );
 
     return 0;
 }
