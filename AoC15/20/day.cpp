@@ -14,16 +14,6 @@ using namespace std;
 
 typedef long long Int;
 
-Int sum( int n, int c ) {
-    Int last = 1;
-    Int result = 0;
-    for ( auto i = 0; i < c; i++ ) {
-        last *= n;
-        result += last;
-    }
-    return result;
-}
-
 vector<int> PRIME = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
 
 bool isPrime( const int n ) {
@@ -45,41 +35,34 @@ bool isPrime( const int n ) {
     return true;
 }
 
-Int presents( Int house, bool toPrint = false ) {
-    map<int,int> primeCount;
-    for ( Int k = 2; k <= house; k++ ) {
-        while ( house >= k ) {
-            const auto dt = div( house, k );
-            if ( dt.rem == 0 ) {
-                house = dt.quot;
-                ++primeCount[k];
-            } else {
-                break;
-            }
-        }
-    }
-    Int count = 1;
-    for ( const auto [ k, c ] : primeCount ) {
-        if ( toPrint ) cout << k << " * " << c << endl;
-        count += sum( k, c );
+Int presents1( const Int house) {
+    Int count = ( house > 1 ) ? ( house + 1 ) : 1;
+    for ( Int i = 2; i < house; i++ ) {
+        count += ( house % i == 0 ) ? i : 0;
     }
     return count;
 }
 
 Int presents( Int house, const vector<int> & primes ) {
-    map<int,int> primeCount;
+    if ( house == 1 ) return 1;
+    if ( binary_search( primes.cbegin(), primes.cend(), house ) ) return 1 + house;
+
+    vector<Int> primeCount { 1, house };
     for ( Int k : primes ) {
-        if (  k > house ) break;
+        if (  k >= house ) break;
         while ( house >= k ) {
             const auto dt = div( house, k );
             if ( dt.rem == 0 ) {
                 house = dt.quot;
-                ++primeCount[k];
+                primeCount.push_back( k );
                 continue;
             }
             break;
         }
     }
+    // 6 = 1 + 2 + 3 + 6   1 2 3 6
+    // 8 = 1 + 2 + 4 + 8   1 2 2 2 8
+    // 9 = 1 + 3 + 9
     Int count = 1;
     for ( const auto [ k, c ] : primeCount ) {
         count += sum( k, c );
@@ -88,21 +71,26 @@ Int presents( Int house, const vector<int> & primes ) {
 }
 
 int main() {
-    const auto r = presents( 2097152, true );
-    cout << r << endl;
-    return 0;
+    const int n = 100;
+    vector<int> c { 0 };
+    for ( int i = 0; i < n; i++ ) c.push_back(0);
+    for ( int i = 1; i < n; i++ ) {
+        for ( int j = i; j < n; j += i ) {
+            c[j] += i * 10;
+        }
+    }
 
-    const bool isFirstAnswer = false;
+    for ( int h = 1; h < n; h++ ) {
+        const auto p = presents1( h ) * 10;
+        const auto p1 = c[h];
+        if ( p != p1 ) {
+            cerr << h << " " << p << " " << p1 << " " << p1 - p << endl;
+            assert( false );
+        }
+    }
 
     const int TARGET { 34'000'000 };
     const int TARGET1 { TARGET / 10 };
-    
-    // cout << presents(181613, true) << endl;
-
-    /*
-    cout << presents( 59 ) << endl;
-    cout << presents( 60, true ) << endl;
-    */
 
     /* generation of primes
     for ( int i = 1; i <= TARGET1; i += 2 ) {
@@ -111,6 +99,7 @@ int main() {
         }
     }
     */
+    
     vector<int> primes;
     ifstream f("prime.txt");
     string line;
@@ -121,17 +110,22 @@ int main() {
     // 2^11 - too much
     const int tooHigh = 2'097'152;
     {
-        for ( int i = tooHigh; i < 6'799'994; i++ ) {
-            const auto p = presents( i, primes );
+        for ( int i = 1; i < 6'799'994; i++ ) {
+            const auto p = presents1( i );
             if ( p >= TARGET1 ) {
                 cout << "A1: " << i << " -> " << p << endl;
+                assert( i == 786240 ); // A1: 786240 -> 3413760 -- RIGHT ANSWER
                 break;
+            }
+            if ( i % 100'000 == 0 ) {
+                cout << i << " " << p << endl;
             }
         }
     }
 
     return 0;
     
+    /*
 
     int minDiff = TARGET1;
     int m = 0;
@@ -196,16 +190,16 @@ int main() {
     }
 
     cout << "A1: " << *min_element( options.cbegin(), options.cend() ) << endl;
-
+    */
 /*
 
     for ( int n = 2; n < TARGET1; n++ ) {
         auto rest = TARGET1 - 1;
         for ( )
     }
-*/
+    */
     return 0;
-
+    /*
     for ( int i : PRIME ) {
         const auto a = TARGET1 - 1 - i;
         if ( isPrime(a) ) {
@@ -230,6 +224,7 @@ int main() {
     for ( int i = 1; i <= 10; i++ ) {
         cout << i << " " << presents(i) << endl;
     };
+    */
     /*
     int minDiff = TARGET1;
     int m = 0;
