@@ -29,8 +29,6 @@ bool battle( int bossHitPoints, int bossHit, int playerHitPoints, int playerHit 
 
 int main() {
 
-    const bool isFirstAnswer = false;
-
     const int bossStartHitPoints = 109;
     const int bossDamage = 8;
     const int bossArmor = 2;
@@ -41,14 +39,23 @@ int main() {
     cout << approxDiff << endl;
     */
 
-
     const int playerDemage = 7;
     const int playerArmor = 4;
-    // 40 + 31 + 40 = 111 (right)
+    // 40 + 31 + 40 = 111 (right answer 1)
 
-    cout << battle( bossStartHitPoints, bossDamage - playerArmor, playerStartHitPoints, playerDemage - bossArmor ) << endl;
+    cout << "Win? " << battle( bossStartHitPoints, bossDamage - playerArmor, playerStartHitPoints, playerDemage - bossArmor ) << endl;
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
+    for ( int pd = 4; pd <= 11; pd++ ) {
+        for ( int pa = 8; pa >= 0; pa-- ) {
+            if ( !battle( bossStartHitPoints, bossDamage - pa, playerStartHitPoints, pd - bossArmor ) ) {
+                cout << "pd = " << pd << " pa = " << pa << endl;
+                break; // no sense go below in armor for this demage
+            }
+        }
+    }
+    // the run of combinations confirms that the only things that matters is the sum
+    // of player's damage and armor that must be 10 to loose
+    // 188 (right answer 2) - 8 cheapest weapon, 100 for damage ring +3, 80 for defence ring +3
 
     return 0;
 }
