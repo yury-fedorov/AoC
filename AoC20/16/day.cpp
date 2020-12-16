@@ -41,7 +41,7 @@ vector<int> parseList( const string & line, const regex & re ) {
 } 
 
 int main() {
-    const bool isFirstAnswer = false;
+    const bool isFirstAnswer = true;
 
     Rules rules;
 
@@ -66,12 +66,31 @@ int main() {
     getline(f, line);
     assert( line == "nearby tickets:" );
     Tickets tickets;
-    while (getline(f, line) && !line.empty() ) {
-        Ticket && ticket = parseList(line, reTicket);
+    while (getline(f, line) ) {
+        const Ticket && ticket = parseList(line, reTicket);
         tickets.push_back( ticket );
     }
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
+    long ticketScanningErrorRate {0};
+    for ( const auto & t : tickets ) {
+        for ( const auto & f : t ) {
+            bool isGoodField = false;
+            for ( const auto [name,ranges] : rules ) {
+                for ( const auto & r : ranges ) {
+                    if ( f >= r.first && f <= r.second ) {
+                        isGoodField = true;
+                        break;
+                    }
+                }
+                if ( isGoodField ) break;
+            }
+            if ( !isGoodField ) {
+                ticketScanningErrorRate += f;
+            }
+        }
+    }
 
+    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? ticketScanningErrorRate : 2 ) << endl;
+    assert(ticketScanningErrorRate == 24980);
     return 0;
 }
