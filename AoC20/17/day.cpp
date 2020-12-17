@@ -78,12 +78,7 @@ int main() {
                         const Point p { x, y, z, w };
                         const int count = countOn( configOn, p );
                         bool on = isOn( configOn, p );
-                        // if ( on ) cout << gx(p) << ',' << gy(p) << ',' << gz(p) << " -> " << count << endl;
-                        if ( on ) {
-                            on = count == 2 || count == 3;
-                        } else {
-                            on = count == 3;
-                        }
+                        on = on ? ( count == 2 || count == 3 ) : ( count == 3 );
                         if ( on ) newConfig.insert(p);
                     }
                 }
