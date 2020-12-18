@@ -1,61 +1,115 @@
 #include <iostream>
 #include <map>
-#include <set>
 #include <vector>
-#include <algorithm>
 #include <fstream>
-#include <sstream>
-#include <regex>
-#include <numeric>
-#include <assert.h>
+#include <algorithm>
 #include <climits>
+#include <assert.h>
 
 using namespace std;
 
 enum Actor { PLAYER, BOSS };
+enum Spell { MAGIC_MISSILE, DRAIN, SHIELD, POISON, RECHARGE };
+
+typedef map<Spell, int> Spells;
+typedef vector<int> HitPoints;
+
+const map < Spell, tuple<int,int> > SPELL_ATTR = {
+    { MAGIC_MISSILE, { 53, 1 } }, 
+    { DRAIN, { 73, 1 } },
+    { SHIELD, { 113, 6 } },
+    { POISON, { 173, 6 } },
+    { RECHARGE, { 229, 5 } } 
+};
+
+const vector<Spell> SPELLS = { MAGIC_MISSILE, DRAIN, SHIELD, POISON, RECHARGE };
 
 inline Actor other( Actor actor ) { return actor == PLAYER ? BOSS : PLAYER; }
 
-bool battle( int bossHitPoints, int bossHit, int playerHitPoints, int playerHit ) {
-    vector< pair< int, int > > pointsHit 
-        = { {  playerHitPoints, playerHit }, { bossHitPoints, bossHit } };
-    for ( Actor actor = PLAYER; true; ) {
-        const Actor enemy = other(actor);
-        pointsHit[enemy].first -= pointsHit[actor].second;
-        if ( pointsHit[enemy].first <= 0 ) return actor == PLAYER;
-        actor = enemy;
+inline int mana( Spell s ) { return get<0>( SPELL_ATTR.at(s) ); }
+inline int duration( Spell s ) { return get<1>( SPELL_ATTR.at(s) ); }
+
+bool canSpell( Spell s, const Spells & spells, int playerMana ) {
+    if ( mana(s) > playerMana ) return false;
+    const auto & i = spells.find( s );
+    return i == spells.end() || i->second < 0;
+}
+
+void actionSpells( Spells & spells, HitPoints & hitPoints, int & playerMana ) {
+    for ( auto & si : spells ) {
+        if ( si.second < 0 ) continue;
+        switch( si.first ) {
+            case SHIELD: break;
+            case POISON: hitPoints[BOSS] -= 3; break;
+            case RECHARGE: playerMana += 101; break;
+            default: assert(false);
+        }
+        si.second -= 1;
+    }
+}
+
+void actionSpell( Spell s, Spells & spells, HitPoints & hitPoints, int & playerMana, int & spentMana ) {
+    const int spellManaCost = mana(s);
+    playerMana -= spellManaCost;
+    spentMana += spellManaCost;
+    const auto d = duration(s);
+    if ( d > 1 ) { spells.emplace( s, d ); }
+    else if ( s == DRAIN ) {  
+        hitPoints[PLAYER] += 2;
+        hitPoints[BOSS] -= 2;
+    } else if ( s == MAGIC_MISSILE ) {
+        hitPoints[BOSS] -= 4;
+    } else assert(false);
+}
+
+int playerArmor( const Spells & spells ) {
+    auto i = spells.find( SHIELD );
+    return i == spells.end() ? 0 : ( i->second > 0 ) ? 7 : 0;
+}
+
+int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMana, Spells spells, Actor first ) {
+    int spentMana = 0;
+    auto actor = first;
+    auto enemy = other(actor);
+    for ( ; true; swap( actor, enemy ) ) {
+        actionSpells( spells, hitPoints, playerMana );
+        if ( hitPoints[BOSS] <= 0 ) return spentMana;
+
+        if ( actor == BOSS ) {
+            hitPoints[PLAYER] -= bossDamage - playerArmor( spells );
+        } else {
+            // simulations
+            map<Spell, int> options;
+            for ( const Spell s : SPELLS ) {
+                if ( canSpell( s, spells, playerMana ) ) {
+                    HitPoints hitPoints1 { hitPoints };
+                    Spells spells1 { spells };
+                    int playerMana1 { playerMana };
+                    int spentMana1 { spentMana };
+                    actionSpell( s, spells1, hitPoints1, playerMana1, spentMana1 );
+                    const int m = minManaToWinPlayer( hitPoints1, bossDamage, playerMana, spells1, BOSS );
+                    options.emplace( s, m );
+                }
+            }
+            // selection of the best option
+            const auto best = min_element( options.cbegin(), options.cend(), 
+                []( const pair<Spell,int> & a, const pair<Spell,int> & b ) {
+                    return a.second < b.second;
+                } );
+            actionSpell( best->first, spells, hitPoints, playerMana, spentMana );
+        }
+        if ( hitPoints[enemy] <= 0 ) return actor == PLAYER ? spentMana : INT_MAX;
     }
 }
 
 int main() {
-
-    const int bossStartHitPoints = 109;
-    const int bossDamage = 8;
-    const int bossArmor = 2;
-    const int playerStartHitPoints = 100;
-
-    /*
-    const int approxDiff = (bossDamage - bossArmor) * bossStartHitPoints / playerStartHitPoints;
-    cout << approxDiff << endl;
-    */
-
-    const int playerDemage = 7;
-    const int playerArmor = 4;
-    // 40 + 31 + 40 = 111 (right answer 1)
-
-    cout << "Win? " << battle( bossStartHitPoints, bossDamage - playerArmor, playerStartHitPoints, playerDemage - bossArmor ) << endl;
-
-    for ( int pd = 4; pd <= 11; pd++ ) {
-        for ( int pa = 8; pa >= 0; pa-- ) {
-            if ( !battle( bossStartHitPoints, bossDamage - pa, playerStartHitPoints, pd - bossArmor ) ) {
-                cout << "pd = " << pd << " pa = " << pa << endl;
-                break; // no sense go below in armor for this demage
-            }
-        }
-    }
-    // the run of combinations confirms that the only things that matters is the sum
-    // of player's damage and armor that must be 10 to loose
-    // 188 (right answer 2) - 8 cheapest weapon, 100 for damage ring +3, 80 for defence ring +3
-
+    // cout << minManaToWinPlayer( {10, 13}, 8, 250, Spells(), PLAYER ) << endl;
+    
+    const int bossStartHitPoints = 58;
+    const int playerStartHitPoints = 50;
+    const int mana = 500;
+    const int bossDamage = 9;
+    HitPoints hitPoints { playerStartHitPoints , bossStartHitPoints };
+    cout << minManaToWinPlayer( hitPoints, bossDamage, mana, Spells(), PLAYER ) << endl;
     return 0;
 }
