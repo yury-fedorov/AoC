@@ -29,17 +29,22 @@ auto sum( const Combination & c ) {
 }
 
 Combinations combinations( const Input & input, const int n, const int target ) {
+    const auto in1 = input.size() - 1; 
     Combinations result;
     if ( target > 0 ) {
         for ( const int e : input ) {
             if ( n > 1 ) {
-                Input copy { input };
-                copy.erase( find( copy.begin(), copy.end(),  e ) );
-                const auto && c1 = combinations( copy, n - 1, target - e );
-                for ( const auto & c1i : c1 ) {
-                    Combination c2 { c1i };
-                    c2.insert( e );
-                    if ( target == sum(c2) ) {
+                const auto target1 = target - e;
+                if ( target1 > 0 ) {
+                    Input copy( in1 ); // to reduce number of combinations we take only smaller elements
+                    for ( const int e1 : input ) {
+                        if ( e1 < e ) copy.push_back(e1);
+                        else break; 
+                    }
+                    const auto && c1 = combinations( copy, n - 1, target1 );
+                    for ( const auto & c1i : c1 ) {
+                        Combination c2 { c1i };
+                        c2.insert( e );
                         result.insert( c2 );
                     }
                 }
@@ -73,6 +78,8 @@ int main() {
         minCount++;
     }
 
+    cout << target << " " << n << " " << minCount << endl;
+
     for ( int s = minCount; s < n; s++ ) {
         cout << "Attempt with elements: " << s << endl;
         const auto && c = combinations(input, n, target);
@@ -87,10 +94,10 @@ int main() {
                 }
                 cout << "QE: " << mi << endl;
             }
+            break;
         }
     }
 
-    cout << target << " " << n << " " << minCount << endl;
     cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? dt.quot : 2 ) << endl;
 
     return 0;
