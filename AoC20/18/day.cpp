@@ -15,6 +15,8 @@ using namespace std;
 
 typedef unsigned long long Int;
 
+const bool isFirstAnswer = false;
+
 Int evaluate( const string & e ) {
     stack<string> s;
     string level;
@@ -33,10 +35,10 @@ Int evaluate( const string & e ) {
     }
     assert(s.empty());
     // qui level is flat: no parantesis
-    cout << level << endl;
     static const regex re("([^ ]+)");
     smatch res;
     string::const_iterator searchStart( level.cbegin() );
+    vector<Int> prod;
     while ( regex_search( searchStart, level.cend(), res, re ) )
     {
         const string term = res[1];
@@ -45,39 +47,39 @@ Int evaluate( const string & e ) {
             s.push(term); // +1
         } else {
             // neither operator, nor first argument, we can calculate
-            const auto arg2 = stoull(term); 
             const bool isSum = s.top() == "+";
-            s.pop();
-            const auto arg1 = stoull(s.top());
-            s.pop();
-            const auto r = isSum ? ( arg1 + arg2 ) : ( arg1 * arg2 );
-            s.push( to_string(r) ); // -1
+            if ( isFirstAnswer || isSum ) {
+                s.pop();
+                const auto arg1 = stoull(s.top());
+                s.pop();
+                const auto arg2 = stoull(term); 
+                const auto r = isSum ? ( arg1 + arg2 ) : ( arg1 * arg2 );
+                s.push( to_string(r) );
+            } else {
+                // it is product
+                s.pop(); // throug away product operator
+                prod.push_back( stoull( s.top() ) ); // product arg
+                s.pop();
+                s.push( term ); // now the time for eventual further sum
+            }
         }
         searchStart = res.suffix().first;
     }
     assert( s.size() == 1 );
-    const string & result = s.top();
-    cout << result << endl;
-    return stoull(result);
+    Int num = stoull(s.top());
+    for ( const auto a : prod ) { num *= a; }
+    return num;
 }
 
 int main() {
-
-    const bool isFirstAnswer = true;
-
     Int sum {0};
-
     ifstream f("input");
-
     string line;
     while (getline(f, line)) {
-        cout << line << endl;
         const auto r = evaluate(line);
         sum += r;
-        cout << r << endl;
     }
-
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? sum : 2 ) << endl;
-
+    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << sum << endl;
+    assert( sum == ( isFirstAnswer ? 3885386961962 : 112899558798666 ) );
     return 0;
 }
