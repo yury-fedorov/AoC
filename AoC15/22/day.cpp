@@ -96,6 +96,7 @@ int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMan
                 []( const pair<Spell,int> & a, const pair<Spell,int> & b ) {
                     return a.second < b.second;
                 } );
+            if ( best->second == INT_MAX ) return INT_MAX; // loose anyway
             actionSpell( best->first, spells, hitPoints, playerMana, spentMana );
         }
         if ( hitPoints[enemy] <= 0 ) return actor == PLAYER ? spentMana : INT_MAX;
