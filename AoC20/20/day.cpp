@@ -26,7 +26,7 @@ Border reverse( const Border & b ) {
     return result;
 }
 
-auto minmax( const Border & b ) { return minmax(b, reverse(b)); } 
+pair<Border,Border> minmax( const Border & b ) { return minmax(b, reverse(b)); } 
 
 Borders borders( const Tile & tile ) {
     Borders result { tile[0], "", reverse( *tile.rbegin() ), "" };
@@ -41,7 +41,7 @@ Borders borders( const Tile & tile ) {
 }
 
 int main() {
-    const bool isFirstAnswer = false;
+    const bool isFirstAnswer = true;
 
     Tiles tiles;
 
@@ -66,25 +66,36 @@ int main() {
 
     cout << tiles.size() << endl;
 
-    TileBordersMap borderMap;
-    set<Border> allBoarders;
+    // TileBordersMap borderMap;
+    map< Border, set<int> > borderIdsMap;
     for ( const auto [ id, tile ] : tiles ) {
         const Borders && bs = borders( tile );
-        borderMap.emplace( id, bs );
         cout << id << endl;
         for ( const auto & b : bs ) {
-            /*
-            allBoarders.emplace( b );
-            allBoarders.emplace( reverse(b));
-            */
-           // allBoarders.emplace( minmax(b).first );
-           cout << b << endl;
+            cout << b << " " << reverse(b) << endl;
+            borderIdsMap[minmax(b).first].insert( id );
         }
     }
-    cout << allBoarders.size() << endl;
+    cout << borderIdsMap.size() << endl;
 
+    map<int, int> idCount;
+    for ( const auto [ b, ids ] : borderIdsMap ) {
+        if ( ids.size() == 1 ) { 
+            const int id = *ids.cbegin();
+            cout << b << " " << id << endl;
+            idCount[id] += 1;
+        }
+    }
+    unsigned long long answer = 1;
+    for ( const auto [ id, count ] : idCount ) {
+        if ( count == 2 ) {
+            cout << "Corner found: " << id << endl;
+            answer *= id;
+        }
+    }
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
+    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? answer : 2 ) << endl;
+    assert( answer == 8581320593371 ); // 1
 
     return 0;
 }
