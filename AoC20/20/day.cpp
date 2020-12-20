@@ -12,24 +12,34 @@
 
 using namespace std;
 
-int main() {
+typedef vector<string> Tile;
+typedef map<int, Tile> Tiles;
 
+int main() {
     const bool isFirstAnswer = false;
 
-    ifstream f("input.txt");
+    Tiles tiles;
 
+    ifstream f("input.txt");
+    regex re("^Tile (\\d+):$");
     string line;
-    while (getline(f, line)) {
-        /* regex draft
-        regex re("(\\d+)-(\\d+) ([a-z]): ([a-z]+)");
+    while (getline(f, line)) {        
         smatch what;
         if( regex_match( line, what, re )) {
-            const auto & a = what[1];
+            const int id = stoi( what[1] );
+            assert( id > 0 && id >= 1000 );
+            
+            Tile tile;
+            while ( getline(f, line) && !line.empty() ) {
+                tile.push_back( line );
+            }
+            tiles.emplace( id, tile );
         } else {
             cerr << "Unexpected line: " << line << endl;
         }
-        */
     }
+
+    cout << tiles.size() << endl;
 
     cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
 
