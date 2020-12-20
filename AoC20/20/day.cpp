@@ -26,6 +26,8 @@ Border reverse( const Border & b ) {
     return result;
 }
 
+inline Direction opposite( Direction d ) { return (Direction)( ( d + 2 ) % 4 ); }
+
 pair<Border,Border> minmax( const Border & b ) { return minmax(b, reverse(b)); } 
 
 Borders borders( const Tile & tile ) {
@@ -40,8 +42,33 @@ Borders borders( const Tile & tile ) {
     return result;
 }
 
+optional< pair<Border,Border> > connection( const Tiles & tiles, int tile1, int tile2 ) {
+    const Tile & t1 = tiles.at(tile1);
+    const Tile & t2 = tiles.at(tile2);
+    const Borders && b1 = borders(t1);
+    const Borders && b2 = borders(t2);
+    for ( const Border & b1i : b1 ) {
+        for ( const Border & b2i : b2 ) {
+            if ( b1i == reverse(b2i) ) {
+                return make_pair(b1i, b2i);
+            }
+        }
+    }
+    return {};
+}
+
+Direction where( const Tiles & tiles, int id, const Border & b ) {
+    const Tile & t = tiles.at(id);
+    const Borders && bs = borders(t);
+    const auto i = find( bs.cbegin(), bs.cend(), b );
+    return (Direction)( i - bs.cbegin() );
+}
+
+inline Border border( const Tiles & tiles, int id, Direction d ) {
+    return borders( tiles.at(id) ).at(d);
+}
+
 int main() {
-    const bool isFirstAnswer = true;
 
     Tiles tiles;
 
@@ -86,16 +113,40 @@ int main() {
             idCount[id] += 1;
         }
     }
-    unsigned long long answer = 1;
+    unsigned long long answer1 = 1;
+    vector<int> corners;
+    vector<int> sides;
     for ( const auto [ id, count ] : idCount ) {
-        if ( count == 2 ) {
+        if ( count == 1 ) { sides.push_back(id); }
+        else if ( count == 2 ) {
             cout << "Corner found: " << id << endl;
-            answer *= id;
-        }
+            answer1 *= id;
+            corners.push_back(id);
+        } else assert(false);
     }
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? answer : 2 ) << endl;
-    assert( answer == 8581320593371 ); // 1
+    cout << "Answer 1: " << answer1 << endl;
+    assert( answer1 == 8581320593371 );
+
+    assert( idCount.size() == 44 ); // 4 corners and 40 borders
+    assert( corners.size() == 4 );
+    assert( sides.size() == 40 );
+
+    const int SIDE = 10; // assumption that it is a square
+
+    const int firstCorner = corners[0];
+    for ( const int sideId : sides ) {
+        const auto & op = connection(tiles, firstCorner, sideId );
+        if ( op.has_value() ) {
+            const auto [ b1, b2 ] = op.value();
+            const auto d2 = where( tiles, sideId, b2 );
+            const auto d2o = opposite(d2);
+            const auto b2o = border( tiles, sideId, d2o );
+            cout << b1 << " " << firstCorner << " " << sideId << " " 
+                << where( tiles, firstCorner, b1 ) << " " 
+                << d2 << " " << d2o << " " << b2o << endl;
+        }
+    }
 
     return 0;
 }
