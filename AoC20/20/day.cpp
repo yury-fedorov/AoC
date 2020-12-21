@@ -14,7 +14,7 @@ using namespace std;
 
 enum Direction { UP, RIGHT, DOWN, LEFT }; // clockwise rotation 
 
-const int SIDE = 10; // assumption that it is a square
+const int SIDE = 10;
 
 typedef vector<string> Tile;
 typedef map<int, Tile> Tiles;
@@ -118,9 +118,9 @@ vector< pair<int,Border> > next( const Tiles & tiles, int tile, const vector<int
     return result;
 }
 
-void initSide( Point p, int & value(Point & p), const Tiles & tiles, const vector<int> & scope,
+void initSide( Point p, int & value(Point & p), const int maxValue, const Tiles & tiles, const vector<int> & scope,
         Image & image ) {
-    for ( ; value(p) <= SIDE; ) {
+    for ( ; value(p) <= maxValue; ) {
         const int t1 = image.at( p );
         Point p0(p);
         value(p0) -= 1;
@@ -144,12 +144,12 @@ void initSide( Point p, int & value(Point & p), const Tiles & tiles, const vecto
 int & x( Point & p ) { return p.first; }
 int & y( Point & p ) { return p.second; }
 
-vector<int> tilesCloseToCorner( const Tiles & tiles, const int cornerId, const vector<int> & sides ) {
+vector<int> tilesClose( const Tiles & tiles, const int tileId, const vector<int> & scope ) {
     vector<int> result;
-    const auto && corner0borders = borders( tiles.at(cornerId) );
+    const auto && corner0borders = borders( tiles.at(tileId) );
     for ( const auto & b : corner0borders ) {
-        auto && close = next( tiles, cornerId, sides, b );
-        if ( close.empty() ) close = next( tiles, cornerId, sides, reverse(b) );
+        auto && close = next( tiles, tileId, scope, b );
+        if ( close.empty() ) close = next( tiles, tileId, scope, reverse(b) );
         if ( close.size() == 1 ) {
             const int sideId = close.cbegin()->first;
             cout << sideId << " " << b << endl;
@@ -208,37 +208,61 @@ int main() {
     Image image;
     const int corner0 = corners[0];
     image.emplace( Point{0,0}, corner0 );
-    const auto && corner0Tiles = tilesCloseToCorner( tiles, corner0, sides );
+    const auto && corner0Tiles = tilesClose( tiles, corner0, sides );
     for ( const int sideId : corner0Tiles ) {
         if ( image.size() == 1 ) image.emplace( Point{1,0}, sideId );
         else image.emplace( Point{0,1}, sideId );
     }
 
-    initSide( Point {1,0}, x, tiles, sidesAndCorners, image );
-    initSide( Point {0,1}, y, tiles, sidesAndCorners, image );
-    // till now we defined: first corner and its neighbour sides
+    initSide( Point {1,0}, x, SIDE, tiles, sidesAndCorners, image );
+    initSide( Point {0,1}, y, SIDE, tiles, sidesAndCorners, image );
+    // till now we defined the first corner and its neighbour sides
     {
         const int cornerX0 = image.at( Point{11,0} );
         const int side0X0 = image.at( Point{10,0} );
-        const auto && cornerX0Tiles = tilesCloseToCorner( tiles, cornerX0, sides );
+        const auto && cornerX0Tiles = tilesClose( tiles, cornerX0, sides );
         for ( const int sideId : cornerX0Tiles ) {
             cout << sideId << endl;
             if ( sideId != side0X0 ) image.emplace( Point{11,1}, sideId );
         }
-        initSide( Point{11,1}, y, tiles, sidesAndCorners, image );
+        initSide( Point{11,1}, y, SIDE, tiles, sidesAndCorners, image );
     }
 
     {
         const int corner0X = image.at( Point{0, 11} );
         const int side00X = image.at( Point{0, 10} );
-        const auto && corner0XTiles = tilesCloseToCorner( tiles, corner0X, sides );
+        const auto && corner0XTiles = tilesClose( tiles, corner0X, sides );
         for ( const int sideId : corner0XTiles ) {
             cout << sideId << endl;
             if ( sideId != side00X ) image.emplace( Point{1, 11}, sideId );
         }
-        initSide( Point{1,11}, x, tiles, sidesAndCorners, image );
+        initSide( Point{1,11}, x, SIDE - 1, tiles, sidesAndCorners, image );
     }
     // till now all borders and corners are done
+    vector<int> center;
+    for ( const auto & [ id, tile ] : tiles ) {
+        if ( find( sidesAndCorners.cbegin(), sidesAndCorners.cend(), id ) == sidesAndCorners.cend() ) {
+            center.push_back(id);
+        } 
+    }
+    assert( center.size() == 100 );
+
+    const int t10 = image.at( Point{1,0} );
+    const auto && t10center = tilesClose( tiles, t10, center );
+    assert( t10center.size() == 1 );
+    image.emplace( Point{1,1}, t10center[0] ); // first center tile placed
+
+    initSide( Point{1,1}, y, SIDE - 1, tiles, center, image ); // first center column placed
+    for ( int i = 1; i <= 10; i++ ) { // now we may put all center rows
+        initSide( Point{1,i}, x, SIDE - 1, tiles, center, image );
+    }
+    // all image is ready now
+    for ( int y = 0; y <= 11; y++ ) {
+        for ( int x = 0; x <= 11; x++ ) {
+            cout << image.at( Point{ x, y } ) << "\t ";
+        }
+        cout << endl;       
+    }
 
     return 0;
 }
