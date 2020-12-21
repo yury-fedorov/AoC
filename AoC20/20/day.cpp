@@ -256,13 +256,28 @@ int main() {
     for ( int i = 1; i <= 10; i++ ) { // now we may put all center rows
         initSide( Point{1,i}, x, SIDE - 1, tiles, center, image );
     }
+
     // all image is ready now
+    set<int> integrityCheck;
     for ( int y = 0; y <= 11; y++ ) {
         for ( int x = 0; x <= 11; x++ ) {
-            cout << image.at( Point{ x, y } ) << "\t ";
+            const int id = image.at( Point{ x, y } );
+            cout << id << '\t';
+            integrityCheck.insert(id);
         }
         cout << endl;       
     }
+    assert( integrityCheck.size() == 144 ); // all image is valid (every tile is used once)
+
+    // TODO 
+    // 1. we need to rotate every tile to align parts close each other
+    //      a. we need algorithm for rotation
+    //      b. we need algorithm for fliping
+    //      c. we start from corners (sure orientation is easy to detect)
+    //      d. we continue with sides (where out border is easy to detect)
+    // 2. the borders of each tile are not part of the actual image; we need to remove them
+    // 3. search for monsters
+    // 4. How many # are not part of a sea monster?
 
     return 0;
 }
