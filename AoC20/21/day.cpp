@@ -1,15 +1,11 @@
 #include <iostream>
+#include <fstream>
 #include <map>
 #include <set>
 #include <vector>
 #include <algorithm>
-#include <fstream>
-#include <sstream>
 #include <regex>
-#include <numeric>
 #include <assert.h>
-#include <climits>
-#include <iterator>
 
 using namespace std;
 
@@ -68,11 +64,8 @@ int main() {
         addAll( allFoods, foods );
     }
 
-    cout << list.size() << " "<< allFoods.size() << " " << allAllergens.size() << endl; // 45 facts
-
     map<Allergen,Foods> allergenOptions;
     for ( const auto & a : allAllergens ) {
-        cout << a << endl;
         Foods & optFoods = allergenOptions[a];
         addAll( optFoods, allFoods );
         for ( const auto [ foods, allergens ] : list ) {
@@ -81,12 +74,10 @@ int main() {
                 optFoods = intersect( optFoods, foods );
                 if ( optFoods.size() == 1 ) {
                     const string & f = *optFoods.cbegin();
-                    cout << "Found " << a << " -> " << f << endl;
                     break;
                 }
             }
         }
-        cout << allergenOptions[a].size() << endl;
     }
 
     // now we need to clean from found options
@@ -94,7 +85,6 @@ int main() {
         bool toRepeat = false;
         for ( const auto & [ allergen, foods ] : allergenOptions ) {
             if ( foods.size() == 1 ) {
-                // found found
                 const Food & f = *foods.cbegin();
                 for ( auto & [ allergen1, foods1 ] : allergenOptions ) {
                     if ( allergen != allergen1 ) { 
@@ -106,15 +96,13 @@ int main() {
         }
         if ( !toRepeat ) break;
     }
+
     typedef pair<Food, Allergen> FoodAllergen;
     vector<FoodAllergen> foodAllergenList;
     Foods foodsWithoutAllergens { allFoods };
-    Foods foodsWithAllergens;
     for ( const auto & [ allergen, foods ] : allergenOptions ) {
         const auto & f = *foods.cbegin();
-        cout << allergen << " -> " << f << " " << foods.size() << endl;
         foodAllergenList.emplace_back( f, allergen );
-        foodsWithAllergens.insert(f);
         foodsWithoutAllergens.erase(f);
     }
 
@@ -124,8 +112,8 @@ int main() {
         answer1 += f.size();
     }
     cout << "Answer 1: " << answer1 << endl;
-    // 2569
-    
+    assert( answer1 == 2569 );
+
     sort( foodAllergenList.begin(), foodAllergenList.end(), 
         []( const FoodAllergen & a, const FoodAllergen & b ) { return a.second < b.second; } );
     
@@ -133,8 +121,9 @@ int main() {
     for ( const auto & [ f, a ] : foodAllergenList ) {
         answer2 += f + ",";
     }
+    answer2.pop_back();
     cout << "Answer 2: " << answer2 << endl;
-    // vmhqr,qxfzc,khpdjv,gnrpml,xrmxxvn,rfmvh,rdfr,jxh
+    assert( answer2 == "vmhqr,qxfzc,khpdjv,gnrpml,xrmxxvn,rfmvh,rdfr,jxh");
 
     return 0;
 }
