@@ -159,6 +159,12 @@ vector<int> tilesClose( const Tiles & tiles, const int tileId, const vector<int>
     return result;
 }
 
+void print(const Tile & t ) {
+    for ( const auto & l : t ) {
+        cout << l << endl;
+    }
+}
+
 int main() {
     Tiles && tiles = init();
     cout << tiles.size() << endl;
@@ -279,5 +285,15 @@ int main() {
     // 3. search for monsters
     // 4. How many # are not part of a sea monster?
 
+    const int t00id = image.at( Point{0,0} );
+    const auto & t00 = tiles.at( t00id );
+    print(t00);
+    const int t01id = image.at( Point{0,1} );
+    const auto & t01 = tiles.at( t01id );
+    cout << endl;
+    print(t01);
+    cout << endl;
+    const auto o = connection(tiles, t00id, t01id );
+    cout << o.value().first << endl;
     return 0;
 }
