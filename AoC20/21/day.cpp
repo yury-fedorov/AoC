@@ -46,8 +46,6 @@ set<string> intersect( const set<string> & a, const set<string> & b ) {
 int main() {
     FoodAllergenList list;
 
-    const bool isFirstAnswer = true;
-
     ifstream f("input.txt");
     const regex re("^([\\w ]+) \\(contains (.+)\\)$");
     const regex reItem("([\\w]+)");
@@ -108,12 +106,14 @@ int main() {
         }
         if ( !toRepeat ) break;
     }
-
+    typedef pair<Food, Allergen> FoodAllergen;
+    vector<FoodAllergen> foodAllergenList;
     Foods foodsWithoutAllergens { allFoods };
     Foods foodsWithAllergens;
     for ( const auto & [ allergen, foods ] : allergenOptions ) {
         const auto & f = *foods.cbegin();
         cout << allergen << " -> " << f << " " << foods.size() << endl;
+        foodAllergenList.emplace_back( f, allergen );
         foodsWithAllergens.insert(f);
         foodsWithoutAllergens.erase(f);
     }
@@ -123,8 +123,18 @@ int main() {
         const auto && f = intersect( foods, foodsWithoutAllergens );
         answer1 += f.size();
     }
-
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? answer1 : 2 ) << endl;
+    cout << "Answer 1: " << answer1 << endl;
+    // 2569
+    
+    sort( foodAllergenList.begin(), foodAllergenList.end(), 
+        []( const FoodAllergen & a, const FoodAllergen & b ) { return a.second < b.second; } );
+    
+    string answer2;
+    for ( const auto & [ f, a ] : foodAllergenList ) {
+        answer2 += f + ",";
+    }
+    cout << "Answer 2: " << answer2 << endl;
+    // vmhqr,qxfzc,khpdjv,gnrpml,xrmxxvn,rfmvh,rdfr,jxh
 
     return 0;
 }
