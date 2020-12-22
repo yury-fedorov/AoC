@@ -19,10 +19,9 @@ Card next( Deck & d ) { const Card c = d.front(); d.pop_front(); return c; }
 
 void put( Deck & d, Card c1, Card c2 ) { d.push_back( c1 ); d.push_back( c2 ); }
 
-const bool isPrintOn = false;
+const bool isPrintOn = true;
 
 void print( const Deck & d ) {
-    if (!isPrintOn) return;
     cout << "Deck: ";
     for ( const Card c : d ) {
         cout << c << " ";
@@ -30,25 +29,28 @@ void print( const Deck & d ) {
     cout << endl;
 }
 
-Player recursiveCombat( Decks & decks ) {
+Player recursiveCombat( Decks & decks, int depth ) {
     History history;
-
+    const bool toPrint = depth == 0;
     Deck & d1 = decks[FIRST];
     Deck & d2 = decks[SECOND];
 
-    while ( !d1.empty() && !d2.empty() ) {
-        if (isPrintOn) cout << endl;
-        print( d1 );
-        print( d2 );
+    for ( int game = 0; !d1.empty() && !d2.empty(); game++ ) {
+        if (toPrint) { 
+            cout << "Game: " << game << endl;
+            print( d1 );
+            print( d2 );
+        }
 
         const auto [pos, isNew] = history.insert( decks );
         if ( !isNew ) { 
-            if (isPrintOn) cout << "Repeated position" << endl;
+            if (toPrint) cout << "Repeated position" << endl;
             return FIRST; 
         }
+        
         Card c1 = next( d1 );
         Card c2 = next( d2 );
-        if (isPrintOn) cout << "c1: " << c1 << " c2: " << c2 << endl;
+        if (toPrint) cout << "c1: " << c1 << " c2: " << c2 << endl;
         
         const bool d1l = d1.size() >= c1;
         const bool d2l = d2.size() >= c2;
@@ -56,11 +58,11 @@ Player recursiveCombat( Decks & decks ) {
         Player winner; 
         if ( d1l && d2l ) {
             Decks copy { decks };
-            winner = recursiveCombat( copy );
-            if (isPrintOn) cout << "Recursive combat: " << winner << endl;
+            winner = recursiveCombat( copy, depth + 1 );
+            if (toPrint) cout << "Recursive combat: " << winner << endl;
         } else {
             winner = ( c1 > c2 ? FIRST : SECOND );
-            if (isPrintOn) cout << "Classical more or less: " << winner << endl;
+            if (toPrint) cout << "Classical more or less: " << winner << endl;
         }
         if ( winner == SECOND ) swap( c1, c2 ); // first card of the winner
         put( winner == FIRST ? d1 : d2, c1, c2 );
@@ -114,7 +116,7 @@ int main() {
         }
         d = d2.empty() ? &d1 : &d2;
     } else {
-        d = recursiveCombat(decks) == FIRST ? &d1 : &d2;
+        d = recursiveCombat(decks, 0) == FIRST ? &d1 : &d2;
     }
     assert( d != nullptr );
 
