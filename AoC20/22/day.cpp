@@ -19,16 +19,6 @@ Card next( Deck & d ) { const Card c = d.front(); d.pop_front(); return c; }
 
 void put( Deck & d, Card c1, Card c2 ) { d.push_back( c1 ); d.push_back( c2 ); }
 
-const bool isPrintOn = true;
-
-void print( const Deck & d ) {
-    cout << "Deck: ";
-    for ( const Card c : d ) {
-        cout << c << " ";
-    }
-    cout << endl;
-}
-
 void resize( Deck & d, int n ) {
     assert( n > 0 && n <= d.size() );
     if ( n == d.size() ) return;
@@ -36,28 +26,17 @@ void resize( Deck & d, int n ) {
     d = list<int>(d.begin(), end);
 }
 
-Player recursiveCombat( Decks & decks, int depth ) {
+Player recursiveCombat( Decks & decks ) {
     History history;
-    const bool toPrint = depth == 0;
     Deck & d1 = decks[FIRST];
     Deck & d2 = decks[SECOND];
 
     for ( int game = 0; !d1.empty() && !d2.empty(); game++ ) {
-        if (toPrint) { 
-            cout << "Game: " << game << endl;
-            print( d1 );
-            print( d2 );
-        }
-
         const auto [pos, isNew] = history.insert( decks );
-        if ( !isNew ) { 
-            if (toPrint) cout << "Repeated position" << endl;
-            return FIRST; 
-        }
+        if ( !isNew ) return FIRST; 
         
         Card c1 = next( d1 );
         Card c2 = next( d2 );
-        if (toPrint) cout << "c1: " << c1 << " c2: " << c2 << endl;
         
         const bool d1l = d1.size() >= c1;
         const bool d2l = d2.size() >= c2;
@@ -67,11 +46,9 @@ Player recursiveCombat( Decks & decks, int depth ) {
             Decks copy { decks };
             resize( copy[FIRST], c1 );
             resize( copy[SECOND], c2 );
-            winner = recursiveCombat( copy, depth + 1 );
-            if (toPrint) cout << "Recursive combat: " << winner << endl;
+            winner = recursiveCombat( copy );
         } else {
             winner = ( c1 > c2 ? FIRST : SECOND );
-            if (toPrint) cout << "Classical more or less: " << winner << endl;
         }
         if ( winner == SECOND ) swap( c1, c2 ); // first card of the winner
         put( winner == FIRST ? d1 : d2, c1, c2 );
@@ -90,7 +67,7 @@ long answer( const Deck & d ) {
 
 int main() {
     Decks decks;
-    const bool isFirstAnswer = false;
+    const bool isFirstAnswer = true;
 
     ifstream f("input.txt");
     const regex rePlayer("^Player (\\d+):$");
@@ -125,7 +102,7 @@ int main() {
         }
         d = d2.empty() ? &d1 : &d2;
     } else {
-        d = recursiveCombat(decks, 0) == FIRST ? &d1 : &d2;
+        d = recursiveCombat(decks) == FIRST ? &d1 : &d2;
     }
     assert( d != nullptr );
 
