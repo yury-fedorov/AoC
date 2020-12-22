@@ -1,15 +1,11 @@
 #include <iostream>
-#include <map>
 #include <set>
 #include <vector>
 #include <list>
 #include <algorithm>
 #include <fstream>
-#include <sstream>
 #include <regex>
-#include <numeric>
 #include <assert.h>
-#include <climits>
 
 using namespace std;
 
@@ -121,8 +117,8 @@ int main() {
         d = recursiveCombat(decks) == FIRST ? &d1 : &d2;
     }
     assert( d != nullptr );
-    const auto a = answer(*d);
 
+    const auto a = answer(*d);
     cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << a << endl;
     assert( a == ( isFirstAnswer ? 30138 : 0 ) );
     return 0;
