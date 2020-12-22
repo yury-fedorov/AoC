@@ -29,6 +29,13 @@ void print( const Deck & d ) {
     cout << endl;
 }
 
+void resize( Deck & d, int n ) {
+    assert( n > 0 && n <= d.size() );
+    if ( n == d.size() ) return;
+    auto end = next(d.begin(), n);
+    d = list<int>(d.begin(), end);
+}
+
 Player recursiveCombat( Decks & decks, int depth ) {
     History history;
     const bool toPrint = depth == 0;
@@ -58,6 +65,8 @@ Player recursiveCombat( Decks & decks, int depth ) {
         Player winner; 
         if ( d1l && d2l ) {
             Decks copy { decks };
+            resize( copy[FIRST], c1 );
+            resize( copy[SECOND], c2 );
             winner = recursiveCombat( copy, depth + 1 );
             if (toPrint) cout << "Recursive combat: " << winner << endl;
         } else {
@@ -122,6 +131,6 @@ int main() {
 
     const auto a = answer(*d);
     cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << a << endl;
-    assert( a == ( isFirstAnswer ? 30138 : 0 ) );
+    assert( a == ( isFirstAnswer ? 30138 : 31587 ) );
     return 0;
 }
