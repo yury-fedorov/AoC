@@ -1,15 +1,7 @@
 #include <iostream>
-#include <map>
-#include <set>
-#include <vector>
 #include <list>
 #include <algorithm>
-#include <fstream>
-#include <sstream>
-#include <regex>
-#include <numeric>
 #include <assert.h>
-#include <climits>
 
 using namespace std;
 
@@ -32,7 +24,7 @@ string answer( const Cups & cups ) {
 }
 
 void play( Cups & cups, int n ) {
-    const bool isPrintOn = false;
+    const bool isPrintOn = n <= 100;
     auto cur = cups.begin();
     for ( int i = 1; i <= n; i++ ) {
         if ( i % 100'000 == 0 ) cout << i << endl;
@@ -66,19 +58,21 @@ void play( Cups & cups, int n ) {
 
 int main() {
 
-    const bool isFirstAnswer = false;
+    const bool isFirstAnswer = true;
 
-    // 
-    const string input = "463528179";
+    // const string input = "463528179";
     // const string input = "32415"; // test
     // const string input = "389125467"; // test1
+
+    const string input = "123456789";
+
     Cups cups;
     for ( const char ch : input ) {
         cups.push_back( ch - '0' );
     }
     
     if ( isFirstAnswer ) {
-        play( cups, 100 );
+        play( cups, 10 );
         const auto answer1 = answer(cups) ;
         cout << "Answer 1: " << answer1 << endl;
         assert( answer1 == "52937846" );
