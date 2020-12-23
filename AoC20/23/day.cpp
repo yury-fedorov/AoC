@@ -31,9 +31,11 @@ string answer( const Cups & cups ) {
     return result;
 }
 
-void play( Cups & cups, int n, bool isPrintOn = false ) {
+void play( Cups & cups, int n ) {
+    const bool isPrintOn = false;
     auto cur = cups.begin();
     for ( int i = 1; i <= n; i++ ) {
+        if ( i % 100'000 == 0 ) cout << i << endl;
         if ( isPrintOn ) {
             cout << endl << "Move: " << i << endl;
             cout << "Cups: "; print(cups);
@@ -64,7 +66,7 @@ void play( Cups & cups, int n, bool isPrintOn = false ) {
 
 int main() {
 
-    const bool isFirstAnswer = true;
+    const bool isFirstAnswer = false;
 
     // 
     const string input = "463528179";
@@ -77,11 +79,22 @@ int main() {
     
     if ( isFirstAnswer ) {
         play( cups, 100 );
+        const auto answer1 = answer(cups) ;
+        cout << "Answer 1: " << answer1 << endl;
+        assert( answer1 == "52937846" );
+    } else {
+        int i = *max_element( cups.cbegin(), cups.cend() ) + 1;
+        const int n = 1'000'000;
+        for ( ; i <= n; i++ ) { cups.push_back(i); }
+        assert( cups.size() == n );
+        play( cups, 10'000'000 );
+        auto j = find( cups.cbegin(), cups.cend(), 1 );
+        if ( ++j == cups.cend() ) j = cups.cbegin();
+        const unsigned long long a = *j;
+        if ( ++j == cups.cend() ) j = cups.cbegin();
+        const unsigned long long b = *j;
+        const unsigned long long answer2 = a * b;
+        cout << "Answer 2: " << answer2 << endl;
     }
-
-    const auto answer1 = answer(cups) ;
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( answer1  ) << endl;
-    assert( answer1 == "52937846" );
-
     return 0;
 }
