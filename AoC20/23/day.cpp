@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include <list>
 #include <algorithm>
 #include <assert.h>
@@ -7,6 +8,8 @@ using namespace std;
 
 typedef int Cup;
 typedef list<Cup> Cups;
+typedef list<Cup>::iterator CupIter;
+typedef map<Cup, CupIter> CupIterMap;
 
 void print( const Cups & cups ) {
     for ( const auto c : cups ) cout << c << " ";
@@ -23,8 +26,9 @@ string answer( const Cups & cups ) {
     return result;
 }
 
-void play( Cups & cups, int n ) {
-    const bool isPrintOn = n <= 100;
+void play( Cups & cups, CupIterMap & map, int n ) {
+    const int maxElement = *max_element( cups.cbegin(), cups.cend() );
+    const bool isPrintOn = false;
     auto cur = cups.begin();
     for ( int i = 1; i <= n; i++ ) {
         if ( i % 100'000 == 0 ) cout << i << endl;
@@ -42,12 +46,17 @@ void play( Cups & cups, int n ) {
         }
         if ( isPrintOn ) { cout << "Pick up: "; print(pickUp); }
         for ( int prev = *cur - 1; true; prev-- ) {
-            if ( prev < 1 ) prev = *max_element( cups.cbegin(), cups.cend() );
-            auto i = find( cups.begin(), cups.end(), prev );
+            if ( prev < 1 ) { 
+                for ( prev = maxElement; find( pickUp.begin(), pickUp.end(), prev ) != pickUp.end(); prev-- ) {}
+            } else if ( find( pickUp.begin(), pickUp.end(), prev ) != pickUp.end() ) continue;
+            auto i = map.at(prev);
             if ( i != cups.end() ) {
                 auto j = next(i);
                 if ( isPrintOn ) cout << "Destination: " << prev << endl;
-                cups.insert( j, pickUp.begin(), pickUp.end() );
+                auto ri = cups.insert( j, pickUp.begin(), pickUp.end() );
+                for ( const auto pue : pickUp ) {
+                    map[pue] = ri++;
+                }
                 break;
             }
         }
@@ -58,30 +67,34 @@ void play( Cups & cups, int n ) {
 
 int main() {
 
-    const bool isFirstAnswer = true;
+    const bool isFirstAnswer = false;
 
-    // const string input = "463528179";
+    const string input = "463528179";
     // const string input = "32415"; // test
     // const string input = "389125467"; // test1
-
-    const string input = "123456789";
+    // const string input = "123456789";
 
     Cups cups;
+    CupIterMap map;
     for ( const char ch : input ) {
-        cups.push_back( ch - '0' );
+        const int e = ch - '0';
+        map.emplace( e, cups.insert( cups.end(), e ) );
     }
     
     if ( isFirstAnswer ) {
-        play( cups, 10 );
+        play( cups, map, 100 );
         const auto answer1 = answer(cups) ;
         cout << "Answer 1: " << answer1 << endl;
         assert( answer1 == "52937846" );
     } else {
         int i = *max_element( cups.cbegin(), cups.cend() ) + 1;
         const int n = 1'000'000;
-        for ( ; i <= n; i++ ) { cups.push_back(i); }
+        for ( ; i <= n; i++ ) {
+            map.emplace( i, cups.insert( cups.end(), i ) );
+        }
         assert( cups.size() == n );
-        play( cups, 10'000'000 );
+        assert( map.size() == n );
+        play( cups, map, 10'000'000 );
         auto j = find( cups.cbegin(), cups.cend(), 1 );
         if ( ++j == cups.cend() ) j = cups.cbegin();
         const unsigned long long a = *j;
