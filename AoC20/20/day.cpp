@@ -13,17 +13,36 @@
 using namespace std;
 
 enum Direction { UP, RIGHT, DOWN, LEFT }; // clockwise rotation 
+const vector<Direction> Directions { UP, RIGHT, DOWN, LEFT };
 
 const int SIDE = 10;
+
+typedef pair<int,int> Point;
+
+inline int inverse( const int v, const int n ) { return n - v - 1; };
+Point original ( const Point & p, const int n ) { return p; };
+Point rotate90 ( const Point & p, const int n ) { return { inverse( p.second, n ), p.first }; }
+Point rotate180( const Point & p, const int n ) { return { inverse( p.first,  n ), inverse( p.second, n ) }; }
+Point rotate270( const Point & p, const int n ) { return { p.second,               inverse( p.first,  n ) }; }
+Point horFlip  ( const Point & p, const int n ) { return { p.first,                inverse( p.second, n ) }; }
+Point verFlip  ( const Point & p, const int n ) { return { inverse( p.first,  n ), p.second }; }
+
+typedef Point (*Transformer)( const Point &, const int );
+enum TransformationType { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP };
+const vector<TransformationType> TxTypes = { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP };
+const vector<Transformer> Transformers = { original, rotate90, rotate180, rotate270, horFlip, verFlip };
+
 
 typedef vector<string> Tile;
 typedef map<int, Tile> Tiles;
 typedef string Border;
 typedef vector<Border> Borders;
 typedef map<int, Borders> TileBordersMap;
-typedef pair<int,int> Point;
 typedef pair<Border,Border> TwoBorders;
 typedef map<Point,int> Image;
+typedef map<Border,int> OutBorderTileMap;
+typedef map<Direction,Border> DirBorders;  
+typedef set<TransformationType> TxOptions;
 
 Border reverse( const Border & b ) {
     Border result(b);
@@ -33,7 +52,9 @@ Border reverse( const Border & b ) {
 
 inline Direction opposite( Direction d ) { return (Direction)( ( d + 2 ) % 4 ); }
 
-TwoBorders minmax( const Border & b ) { return minmax(b, reverse(b)); } 
+inline TwoBorders minmax( const Border & b ) { return minmax(b, reverse(b)); } 
+
+inline Border normalize( const Border & b ) { return minmax(b).first; };
 
 Border border( const Tile & tile, Direction d ) {
     switch (d) {
@@ -141,8 +162,8 @@ void initSide( Point p, int & value(Point & p), const int maxValue, const Tiles 
     }
 }
 
-int & x( Point & p ) { return p.first; }
-int & y( Point & p ) { return p.second; }
+int & fx( Point & p ) { return p.first; }
+int & fy( Point & p ) { return p.second; }
 
 vector<int> tilesClose( const Tiles & tiles, const int tileId, const vector<int> & scope ) {
     vector<int> result;
@@ -165,24 +186,50 @@ void print(const Tile & t ) {
     }
 }
 
-Point original ( const Point & p, const int n ) { return p; };
-Point rotate90 ( const Point & p, const int n ) { return { n - p.second, p.first }; }
-Point rotate180( const Point & p, const int n ) { return { n - p.first, n - p.second }; }
-Point rotate270( const Point & p, const int n ) { return { p.second, n - p.first }; }
-Point horFlip  ( const Point & p, const int n ) { return { p.first, n - p.second }; }
-Point verFlip  ( const Point & p, const int n ) { return { n - p.first, p.second }; }
-
-enum TransformationType { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP };
-
-auto get( TransformationType t ) {
-    switch( t ) {
-        case ORIGINAL: return original;
-        case ROTATE_90: return rotate90;
-        case ROTATE_180: return rotate180;
-        case ROTATE_270: return rotate270;
-        case HOR_FLIP: return horFlip;
-        case VER_FLIP: return verFlip;
+Tile transform( const Tile & t, Transformer tx ) {
+    Tile result( t );
+    const auto n = t.size();
+    for ( auto x = 0; x < n; x++ ) {
+        for ( auto y = 0; y < n; y++ ) {
+            auto && p = tx( {x, y}, n );
+            result[x][y] = t[fx(p)][fy(p)];
+        }
     }
+    return result;
+}
+
+DirBorders txBorders ( const Tile & t, Transformer tx, const OutBorderTileMap & out ) {
+    const Tile && t1 = transform(t, tx);
+    const auto && bl = borders( t1 );
+    assert( bl.size() == 4 );
+    DirBorders result;
+    for ( const auto d : Directions ) {
+        const auto & b = bl[d];
+        const auto norm = normalize( b );
+        const auto i = out.find( norm );
+        if ( i == out.end() ) result.emplace( d, b );
+    }
+    assert( result.size() >= 2 );
+    return result;
+}
+
+TxOptions options( const Tile & t, const DirBorders & facts, const OutBorderTileMap & out ) {
+    TxOptions result;
+    for ( const auto tx : TxTypes ) {
+        const auto ft = Transformers[tx];
+        const auto && t1 = transform( t, ft );
+        const auto && t1b = txBorders( t1, ft, out );
+        if ( facts.size() != t1b.size() ) continue;
+        bool isMatching = true;
+        for ( const auto & [direction, border] : facts ) {
+            auto i = t1b.find( direction );
+            if ( i == t1b.end() ) { isMatching = false; break; };
+            if ( border != i->second ) { isMatching = false; break; }
+        }
+        if ( isMatching ) result.insert( tx );
+    }
+    assert( !result.empty() );
+    return result;
 }
 
 int main() {
@@ -196,14 +243,14 @@ int main() {
         cout << id << endl;
         for ( const auto & b : bs ) {
             cout << b << " " << reverse(b) << endl;
-            borderIdsMap[minmax(b).first].insert( id );
+            borderIdsMap[normalize(b)].insert( id );
         }
     }
     cout << borderIdsMap.size() << endl;
 
     // unique tile ID for border (sign of outer side)
     map<int, int> idCount;
-    map<Border, int> outBorderTileId;
+    OutBorderTileMap outBorderTileId;
     for ( const auto [ b, ids ] : borderIdsMap ) {
         if ( ids.size() == 1 ) { 
             const int id = *ids.cbegin();
@@ -238,12 +285,12 @@ int main() {
     image.emplace( Point{0,0}, corner0 );
     const auto && corner0Tiles = tilesClose( tiles, corner0, sides );
     for ( const int sideId : corner0Tiles ) {
-        if ( image.size() == 1 ) image.emplace( Point{1,0}, sideId );
-        else image.emplace( Point{0,1}, sideId );
+        if ( image.size() == 1 ) image.emplace( Point{0,1}, sideId );
+        else image.emplace( Point{1,0}, sideId );
     }
 
-    initSide( Point {1,0}, x, SIDE, tiles, sidesAndCorners, image );
-    initSide( Point {0,1}, y, SIDE, tiles, sidesAndCorners, image );
+    initSide( Point {1,0}, fx, SIDE, tiles, sidesAndCorners, image );
+    initSide( Point {0,1}, fy, SIDE, tiles, sidesAndCorners, image );
     // till now we defined the first corner and its neighbour sides
     {
         const int cornerX0 = image.at( Point{11,0} );
@@ -253,7 +300,7 @@ int main() {
             cout << sideId << endl;
             if ( sideId != side0X0 ) image.emplace( Point{11,1}, sideId );
         }
-        initSide( Point{11,1}, y, SIDE, tiles, sidesAndCorners, image );
+        initSide( Point{11,1}, fy, SIDE, tiles, sidesAndCorners, image );
     }
 
     {
@@ -264,7 +311,7 @@ int main() {
             cout << sideId << endl;
             if ( sideId != side00X ) image.emplace( Point{1, 11}, sideId );
         }
-        initSide( Point{1,11}, x, SIDE - 1, tiles, sidesAndCorners, image );
+        initSide( Point{1,11}, fx, SIDE - 1, tiles, sidesAndCorners, image );
     }
     // till now all borders and corners are done
     vector<int> center;
@@ -280,9 +327,9 @@ int main() {
     assert( t10center.size() == 1 );
     image.emplace( Point{1,1}, t10center[0] ); // first center tile placed
 
-    initSide( Point{1,1}, y, SIDE - 1, tiles, center, image ); // first center column placed
+    initSide( Point{1,1}, fy, SIDE - 1, tiles, center, image ); // first center column placed
     for ( int i = 1; i <= 10; i++ ) { // now we may put all center rows
-        initSide( Point{1,i}, x, SIDE - 1, tiles, center, image );
+        initSide( Point{1,i}, fx, SIDE - 1, tiles, center, image );
     }
 
     // all image is ready now
@@ -306,22 +353,44 @@ int main() {
     // 2. the borders of each tile are not part of the actual image; we need to remove them
     // 3. search for monsters
     // 4. How many # are not part of a sea monster?
+    {
+        const int t00id = image.at( Point{0,0} );
+        const auto & t00 = tiles.at( t00id );
+        print(t00);
+        const int t01id = image.at( Point{0,1} );
+        const Tile & t01 = tiles.at( t01id );
+        cout << "T(0,1)" << endl;
+        print(t01);
+        const int t10id = image.at( Point{1,0} );
+        const Tile & t10 = tiles.at( t10id );
+        cout << "T(1,0)" << endl;
+        print(t10);
+        cout << endl;
+        const auto o01 = connection(tiles, t00id, t01id ).value().first;
+        const auto o10 = connection(tiles, t00id, t10id ).value().first;
+        cout << o01 << endl;
+        cout << o10 << endl;
 
-    const int t00id = image.at( Point{0,0} );
-    const auto & t00 = tiles.at( t00id );
-    print(t00);
-    const int t01id = image.at( Point{0,1} );
-    const auto & t01 = tiles.at( t01id );
-    cout << endl;
-    print(t01);
-    cout << endl;
-    const auto o = connection(tiles, t00id, t01id );
-    cout << o.value().first << endl;
+        assert( outBorderTileId.size() == ( 4 * (SIDE + 2) ) );
 
-    auto f = get( ORIGINAL );
-    auto pr = f( Point{1,2}, 10 );
+        for ( const auto tx : TxTypes ) {
+            cout << tx << endl;
+            const auto f = Transformers[tx];
+            const auto && tr = transform(t00, f );
+            // print( tr );
+            // cout << endl;
+            const auto && bs = txBorders( tr, f, outBorderTileId );
+            for ( const auto & [d, b] : bs ) {
+                cout << "Dir -> " << d << " border -> " << b << endl;
+            }
+        }
 
-    outBorderTileId;
+        const auto && ts00 = options( t00, { { RIGHT, o10 }, { DOWN, o01 } }, outBorderTileId );
+
+
+
+    }
+
 
     return 0;
 }
