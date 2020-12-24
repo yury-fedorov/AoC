@@ -165,6 +165,26 @@ void print(const Tile & t ) {
     }
 }
 
+Point original ( const Point & p, const int n ) { return p; };
+Point rotate90 ( const Point & p, const int n ) { return { n - p.second, p.first }; }
+Point rotate180( const Point & p, const int n ) { return { n - p.first, n - p.second }; }
+Point rotate270( const Point & p, const int n ) { return { p.second, n - p.first }; }
+Point horFlip  ( const Point & p, const int n ) { return { p.first, n - p.second }; }
+Point verFlip  ( const Point & p, const int n ) { return { n - p.first, p.second }; }
+
+enum TransformationType { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP };
+
+auto get( TransformationType t ) {
+    switch( t ) {
+        case ORIGINAL: return original;
+        case ROTATE_90: return rotate90;
+        case ROTATE_180: return rotate180;
+        case ROTATE_270: return rotate270;
+        case HOR_FLIP: return horFlip;
+        case VER_FLIP: return verFlip;
+    }
+}
+
 int main() {
     Tiles && tiles = init();
     cout << tiles.size() << endl;
@@ -295,5 +315,9 @@ int main() {
     cout << endl;
     const auto o = connection(tiles, t00id, t01id );
     cout << o.value().first << endl;
+
+    auto f = get( ORIGINAL );
+    auto pr = f( Point{1,2}, 10 );
+
     return 0;
 }
