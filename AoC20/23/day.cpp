@@ -102,6 +102,7 @@ int main() {
         const unsigned long long b = *j;
         const unsigned long long answer2 = a * b;
         cout << "Answer 2: " << answer2 << endl;
+        assert( answer2 == 8456532414 );
     }
     return 0;
 }
