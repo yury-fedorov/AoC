@@ -43,6 +43,7 @@ typedef map<Point,int> Image;
 typedef map<Border,int> OutBorderTileMap;
 typedef map<Direction,Border> DirBorders;  
 typedef set<TransformationType> TxOptions;
+typedef map<Point,TransformationType> ImageTx;
 
 Border reverse( const Border & b ) {
     Border result(b);
@@ -83,7 +84,7 @@ optional< TwoBorders > connection( const Tiles & tiles, int tile1, int tile2 ) {
     const Borders && b2 = borders(t2);
     for ( const Border & b1i : b1 ) {
         for ( const Border & b2i : b2 ) {
-            if ( b1i == b2i || b1i == reverse(b2i) ) {
+            if ( normalize(b1i) == normalize(b2i) ) {
                 return TwoBorders { b1i, b2i };
             }
         }
@@ -164,6 +165,8 @@ void initSide( Point p, int & value(Point & p), const int maxValue, const Tiles 
 
 int & fx( Point & p ) { return p.first; }
 int & fy( Point & p ) { return p.second; }
+int fx( const Point & p ) { return p.first; }
+int fy( const Point & p ) { return p.second; }
 
 vector<int> tilesClose( const Tiles & tiles, const int tileId, const vector<int> & scope ) {
     vector<int> result;
@@ -186,13 +189,21 @@ void print(const Tile & t ) {
     }
 }
 
+void print( const DirBorders & db ) { 
+    for ( const auto & [d,b] : db ) cout << "Dir: " << d << " b: " << b << endl;
+}
+
+char & at( Tile & t, const Point & p ) { return t[p.second][p.first]; }
+char at( const Tile & t, const Point & p ) { return t[p.second][p.first]; }
+
 Tile transform( const Tile & t, Transformer tx ) {
     Tile result( t );
     const auto n = t.size();
     for ( auto x = 0; x < n; x++ ) {
         for ( auto y = 0; y < n; y++ ) {
-            auto && p = tx( {x, y}, n );
-            result[x][y] = t[fx(p)][fy(p)];
+            const auto && p0 = tx( {x, y}, n );
+            const Point p1 { x, y };
+            at( result, p1 ) = at( t, p0 );
         }
     }
     return result;
@@ -213,23 +224,74 @@ DirBorders txBorders ( const Tile & t, Transformer tx, const OutBorderTileMap & 
     return result;
 }
 
+const Border OUT_BORDER { "__________" };
+
+bool isMatching( const DirBorders & facts, const DirBorders & t1b ) {
+    for ( const auto & [direction, border] : facts ) {
+        if ( border == OUT_BORDER ) continue; // we do not match out borders
+        auto i = t1b.find( direction );
+        if ( i == t1b.end() ) { cerr << "No direction: " << direction << endl; return false; }
+        if ( border != i->second ) { cerr << "Does not match: " << border << " vs " << i->second << endl; return false; }
+    }
+    return true;
+}
+
 TxOptions options( const Tile & t, const DirBorders & facts, const OutBorderTileMap & out ) {
     TxOptions result;
+    cout << "Facts: " << endl;
+    print(facts);
+
     for ( const auto tx : TxTypes ) {
+        cout << "Tx: " << tx << endl;
         const auto ft = Transformers[tx];
         const auto && t1 = transform( t, ft );
+        print(t1);
         const auto && t1b = txBorders( t1, ft, out );
-        if ( facts.size() != t1b.size() ) continue;
-        bool isMatching = true;
-        for ( const auto & [direction, border] : facts ) {
-            auto i = t1b.find( direction );
-            if ( i == t1b.end() ) { isMatching = false; break; };
-            if ( border != i->second ) { isMatching = false; break; }
-        }
-        if ( isMatching ) result.insert( tx );
+        print(t1b);
+        if ( isMatching( facts, t1b ) ) { cout << "Match" << endl; result.insert( tx ); }
     }
-    assert( !result.empty() );
     return result;
+}
+
+const int LAST_LINE = SIDE + 1; // 11
+
+TransformationType detectTx( const Point & p, ImageTx & imageTx, const Tiles & tiles, const Image & image, const OutBorderTileMap & out ) {
+    // up to 4 borders in around can be known
+    DirBorders facts;
+    // set empty borders
+    const auto x = fx(p);
+    const auto y = fy(p);
+    if      ( x == 0         ) facts.emplace( LEFT,  OUT_BORDER );
+    else if ( x == LAST_LINE ) facts.emplace( RIGHT, OUT_BORDER );
+    if      ( y == 0         ) facts.emplace( UP,    OUT_BORDER );
+    else if ( y == LAST_LINE ) facts.emplace( DOWN,  OUT_BORDER );
+
+    set<Direction> ds { Directions.cbegin(), Directions.cend() };
+    for ( const auto & [ d, b ] : facts ) ds.erase( d );
+
+    const int tileId = image.at(p);
+    for ( const auto d : ds ) {
+        const auto dx = d == LEFT ? -1 : d == RIGHT ? 1 : 0;
+        const auto dy = d == UP   ? -1 : d == DOWN  ? 1 : 0;
+        const Point p1 { x + dx, y + dy };
+        auto i = image.find( p1 );
+        if ( i != image.end() ) {
+            const auto o = connection(tiles, tileId, image.at(p1) );
+            assert( o.has_value() );
+            facts.emplace( d, o.value().first );
+        } else assert( false );
+    }
+
+    const auto & t = tiles.at(tileId);
+    const auto && ts = options( t, facts, out );
+    if ( ts.empty() ) {
+        cout << endl;
+        print(t);
+        print(facts);
+        cerr << " No tx for: " << p.first << " " << p.second <<  endl;
+        assert( false );
+    }
+    return *ts.cbegin();
 }
 
 int main() {
@@ -354,41 +416,37 @@ int main() {
     // 3. search for monsters
     // 4. How many # are not part of a sea monster?
     {
-        const int t00id = image.at( Point{0,0} );
-        const auto & t00 = tiles.at( t00id );
-        print(t00);
-        const int t01id = image.at( Point{0,1} );
-        const Tile & t01 = tiles.at( t01id );
-        cout << "T(0,1)" << endl;
-        print(t01);
-        const int t10id = image.at( Point{1,0} );
-        const Tile & t10 = tiles.at( t10id );
-        cout << "T(1,0)" << endl;
-        print(t10);
-        cout << endl;
-        const auto o01 = connection(tiles, t00id, t01id ).value().first;
-        const auto o10 = connection(tiles, t00id, t10id ).value().first;
-        cout << o01 << endl;
-        cout << o10 << endl;
-
         assert( outBorderTileId.size() == ( 4 * (SIDE + 2) ) );
+
+        ImageTx imageTx;
+
+        const Point p {0,1};
+        const int tileId = image.at( p );
+        cout << "Tile ID: " << tileId << endl;
+        const auto & t = tiles.at( tileId );
+        print( t );
 
         for ( const auto tx : TxTypes ) {
             cout << tx << endl;
-            const auto f = Transformers[tx];
-            const auto && tr = transform(t00, f );
-            // print( tr );
-            // cout << endl;
-            const auto && bs = txBorders( tr, f, outBorderTileId );
-            for ( const auto & [d, b] : bs ) {
-                cout << "Dir -> " << d << " border -> " << b << endl;
-            }
+            auto ft = Transformers.at( ROTATE_90 );
+            print( transform( t, ft ) );
+            const auto && tb = txBorders( t, ft, outBorderTileId );
+            print(tb);
         }
 
-        const auto && ts00 = options( t00, { { RIGHT, o10 }, { DOWN, o01 } }, outBorderTileId );
-
-
-
+/*        DirBorders facts = { { UP, "#..#.#...#" }, { RIGHT, "##....##.." }, { DOWN, ".###..##.." }, { LEFT, OUT_BORDER } };
+        cout << isMatching( facts, tb );
+        const auto && o = options( t, facts, outBorderTileId );
+        assert( !o.empty() );
+        for ( const auto & oi : o ) cout << oi << endl;
+*/
+        for ( auto x = 0; x <= LAST_LINE; x++ ) {
+            for ( auto y = 0; y <= LAST_LINE; y++ ) {
+                const Point p { x, y };
+                const auto tx = detectTx( p, imageTx, tiles, image, outBorderTileId );
+                imageTx.emplace( p, tx );
+            }
+        }
     }
 
 
