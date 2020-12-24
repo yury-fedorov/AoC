@@ -203,11 +203,13 @@ int main() {
 
     // unique tile ID for border (sign of outer side)
     map<int, int> idCount;
+    map<Border, int> outBorderTileId;
     for ( const auto [ b, ids ] : borderIdsMap ) {
         if ( ids.size() == 1 ) { 
             const int id = *ids.cbegin();
             cout << b << " " << id << endl;
             idCount[id] += 1;
+            outBorderTileId.emplace( b, id );
         }
     }
     unsigned long long answer1 = 1;
@@ -318,6 +320,8 @@ int main() {
 
     auto f = get( ORIGINAL );
     auto pr = f( Point{1,2}, 10 );
+
+    outBorderTileId;
 
     return 0;
 }
