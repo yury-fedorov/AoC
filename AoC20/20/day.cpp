@@ -7,6 +7,7 @@
 #include <sstream>
 #include <regex>
 #include <assert.h>
+#include <cmath>
 
 using namespace std;
 
@@ -369,11 +370,16 @@ int main() {
     }
 
     cout << "Answer 1: " << answer1 << endl;
-    assert( answer1 == 8581320593371 );
+    // assert( answer1 == 8581320593371 );
 
-    assert( idCount.size() == 44 ); // 4 corners and 40 borders
+    const int tilesCount = tiles.size();
+    const int tilesSideCount = sqrt( tilesCount );
+    const int internalTilesSideCount = tilesSideCount - 2;
+    const int maxSideValue = tilesSideCount - 1;
+
+    assert( idCount.size() == ( corners.size() + sides.size() ) ); // 4 corners and 40 borders
     assert( corners.size() == 4 );
-    assert( sides.size() == 40 );
+    assert( sides.size() == ( 4 * internalTilesSideCount ) );
 
     Image image;
     const int corner0 = corners[0];
@@ -383,30 +389,30 @@ int main() {
         if ( image.size() == 1 ) image.emplace( Point{0,1}, sideId );
         else image.emplace( Point{1,0}, sideId );
     }
-
-    initSide( Point {1,0}, fx, SIDE, tiles, sidesAndCorners, image );
-    initSide( Point {0,1}, fy, SIDE, tiles, sidesAndCorners, image );
+    const int side = internalTilesSideCount;
+    initSide( Point {1,0}, fx, side, tiles, sidesAndCorners, image );
+    initSide( Point {0,1}, fy, side, tiles, sidesAndCorners, image );
     // till now we defined the first corner and its neighbour sides
     {
-        const int cornerX0 = image.at( Point{11,0} );
-        const int side0X0 = image.at( Point{10,0} );
+        const int cornerX0 = image.at( Point{maxSideValue,0} );
+        const int side0X0 = image.at( Point{maxSideValue - 1,0} );
         const auto && cornerX0Tiles = tilesClose( tiles, cornerX0, sides );
         for ( const int sideId : cornerX0Tiles ) {
             cout << sideId << endl;
-            if ( sideId != side0X0 ) image.emplace( Point{11,1}, sideId );
+            if ( sideId != side0X0 ) image.emplace( Point{maxSideValue,1}, sideId );
         }
-        initSide( Point{11,1}, fy, SIDE, tiles, sidesAndCorners, image );
+        initSide( Point{maxSideValue,1}, fy, side, tiles, sidesAndCorners, image );
     }
 
     {
-        const int corner0X = image.at( Point{0, 11} );
-        const int side00X = image.at( Point{0, 10} );
+        const int corner0X = image.at( Point{0, maxSideValue} );
+        const int side00X = image.at( Point{0, maxSideValue - 1} );
         const auto && corner0XTiles = tilesClose( tiles, corner0X, sides );
         for ( const int sideId : corner0XTiles ) {
             cout << sideId << endl;
-            if ( sideId != side00X ) image.emplace( Point{1, 11}, sideId );
+            if ( sideId != side00X ) image.emplace( Point{1, maxSideValue}, sideId );
         }
-        initSide( Point{1,11}, fx, SIDE - 1, tiles, sidesAndCorners, image );
+        initSide( Point{1,maxSideValue}, fx, side - 1, tiles, sidesAndCorners, image );
     }
     // till now all borders and corners are done
     vector<int> center;
@@ -415,36 +421,36 @@ int main() {
             center.push_back(id);
         } 
     }
-    assert( center.size() == 100 );
+    assert( center.size() == ( internalTilesSideCount * internalTilesSideCount ) );
 
     const int t10 = image.at( Point{1,0} );
     const auto && t10center = tilesClose( tiles, t10, center );
     assert( t10center.size() == 1 );
     image.emplace( Point{1,1}, t10center[0] ); // first center tile placed
 
-    initSide( Point{1,1}, fy, SIDE - 1, tiles, center, image ); // first center column placed
-    for ( int i = 1; i <= 10; i++ ) { // now we may put all center rows
-        initSide( Point{1,i}, fx, SIDE - 1, tiles, center, image );
+    initSide( Point{1,1}, fy, side - 1, tiles, center, image ); // first center column placed
+    for ( int i = 1; i <= side; i++ ) { // now we may put all center rows
+        initSide( Point{1,i}, fx, side - 1, tiles, center, image );
     }
 
     // all image is ready now
     set<int> integrityCheck;
-    for ( int y = 0; y <= 11; y++ ) {
-        for ( int x = 0; x <= 11; x++ ) {
+    for ( int y = 0; y <= maxSideValue; y++ ) {
+        for ( int x = 0; x <= maxSideValue; x++ ) {
             const int id = image.at( Point{ x, y } );
             cout << id << '\t';
             integrityCheck.insert(id);
         }
         cout << endl;       
     }
-    assert( integrityCheck.size() == 144 ); // all image is valid (every tile is used once)
+    assert( integrityCheck.size() == ( tilesSideCount * tilesSideCount ) ); // all image is valid (every tile is used once)
 
     // 1. we need to rotate every tile to align parts close each other
-    assert( outBorderTileId.size() == ( 4 * (SIDE + 2) ) );
+    assert( outBorderTileId.size() == ( 4 * (side + 2) ) );
 
     ImageTx imageTx;
-    for ( auto x = 0; x <= LAST_LINE; x++ ) {
-        for ( auto y = 0; y <= LAST_LINE; y++ ) {
+    for ( auto x = 0; x <= maxSideValue; x++ ) {
+        for ( auto y = 0; y <= maxSideValue; y++ ) {
             const Point p { x, y };
             const auto && txs = detectTx( p, imageTx, tiles, image, outBorderTileId );
             const auto & tx0 = *txs.cbegin();
@@ -457,7 +463,7 @@ int main() {
     }
 
     // 2. the borders of each tile are not part of the actual image; we need to remove them
-    const size_t smallTileSide = SIDE - 2;
+    const size_t smallTileSide = 10 - 2;
     const size_t bigImageSide = (SIDE + 2) * smallTileSide;
     const string line( bigImageSide, '?' );
     Tile bigImage( bigImageSide, line );
@@ -478,6 +484,7 @@ int main() {
     print(bigImage);
 
     // 3. search for monsters
+
     // 4. How many # are not part of a sea monster?
 
     return 0;
