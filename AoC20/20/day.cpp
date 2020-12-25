@@ -328,25 +328,78 @@ set<Tile> detectTx( const Point & p, ImageTx & imageTx, const Tiles & tiles, con
     return ts;
 }
 
-int countMonsters( const Tile & image ) {
-    int count = 0; 
-    regex re1("..................#" );
-    regex re2("#....##....##....###");
-    regex re3(".#..#..#..#..#..#"   );
-    smatch what;
-    smatch what1;
-    smatch what3; 
-    for ( int li = 1; li < ( image.size() - 1 ); li++ ) {
-        const auto & line = image[li];
-        string::const_iterator searchStart( line.cbegin() );
-        while ( regex_search( searchStart, line.cend(), what, re2 ) ) {
-            searchStart = what.suffix().first;
-            const int x = searchStart - line.cbegin();
-            const bool isFound = regex_match( image[li-1], what1, re1 ) && regex_match( image[li+1], what3, re3 ) ;
-            count += isFound;
+const vector<string> Monster = {
+    "..................#.",
+    "#....##....##....###",
+    ".#..#..#..#..#..#..."
+};
+
+void putMonster( Tile & image, int y1, int rightShift ) {
+    const auto ill = image[0].length();
+    for ( int l = 0; l < Monster.size(); l++ ) {
+        const string & monsterLine = Monster[l];
+        const auto mll = monsterLine.length();
+        const auto x0 = ill - mll - rightShift;
+        for ( int x = 0; x < mll; x++ ) {
+            if ( monsterLine[x] == '#' ) {
+                const int ix = x0 + x;
+                const int iy = y1 + l - 1;
+                const auto && p = fxy( ix, iy );
+                assert( at(image, p) == '#' );
+                at(image, p) = 'O';
+            }
         }
     }
+}
+
+int countMonsters( Tile & image ) {
+    int count = 0; 
+    const regex re1( Monster[1] );
+    smatch what;
+    bool toPrint = false;
+    for ( int li = 1; li < ( image.size() - 1 ); li++ ) {
+        const auto & line = image[li];
+        const auto ll = line.length();
+        string::const_iterator searchStart( line.cbegin() );
+        while ( regex_search( searchStart, line.cend(), what, re1 ) ) {
+            searchStart = what.suffix().first;
+            const int x = searchStart - line.cbegin();
+
+            smatch what1;
+            smatch what3; 
+            
+            // const bool isFound = true;
+            const int shiftRightBorder = ( ll - x );
+            const string shift( shiftRightBorder, '.' );
+
+            /*
+            cout << "-1 -> " << image[li - 1] << endl;
+            cout << " 0 -> " << line << endl;
+            cout << "+1 -> " << image[li + 1] << endl;
+            */
+
+            const regex re0( Monster[0] + shift + "$" );
+            const regex re2( Monster[2] + shift + "$" );
+
+            const bool isFound = regex_search( image[li-1], what1, re0 ) && regex_search( image[li+1], what3, re2 ) ;
+            // cout << x << " " << li << " " << shift << " " << isFound << endl;
+            count += isFound;
+            if ( isFound ) {
+                putMonster( image, li, shiftRightBorder );
+            }
+            // toPrint = true;
+        }
+    }
+    // if (toPrint ) print(image);
     return count;
+}
+
+int count( const Tile & image, const char symbol ) {
+    int totalCount = 0;
+    for ( const auto & l : image ) {
+        totalCount += count_if( l.cbegin(), l.cend(), [symbol]( char ch ){ return ch == symbol; } );
+    }
+    return totalCount;
 }
 
 int main() {
@@ -502,25 +555,44 @@ int main() {
             }
         }
     }
+    if (false) { // test
+        bigImage.clear();
+        ifstream f("big-image-test.txt");
+        string l;
+        while (getline(f, l)) {
+            bigImage.push_back(l);
+        }  
+    }
+
     print(bigImage);
+    cout << "total count: " << count(bigImage, '#') << endl;
 
-    for ( auto tf : Rotations ) {
-        // 3. search for monsters
-        const auto && tbi = transform(bigImage, tf);
-        const int mc = countMonsters(tbi);
-        cout << "monsters: " << mc << endl;
+    for ( auto tf : Rotations ) 
+    {
+       const auto && rbi = transform(bigImage, tf);
+        for ( auto ff : Flips ) 
+        {
+            cout << endl;
+            // 3. search for monsters
+            auto && tbi = transform(rbi, ff);
+            // const auto & tbi = bigImage;
+            // auto tbi = rbi;
+            const int mc = countMonsters(tbi);
+            if ( mc < 1 ) continue;
+            print(tbi);
+            cout << "monsters: " << mc << endl;
 
-        // 4. How many # are not part of a sea monster?
-        int totalCount = 0;
-        for ( const auto & l : bigImage ) {
-            totalCount += count_if( l.cbegin(), l.cend(), []( char ch ){ return ch == '#'; } );
+            // 4. How many # are not part of a sea monster?
+            
+            const auto answer2 = count(tbi, '#');
+            cout << "Answer 2: " << answer2 << endl;
+            assert( answer2 == 2031 );
         }
-        cout << "total count: " << totalCount << endl;
-
-        cout << "answer 2: " << ( totalCount - ( 15 * mc ) ) << endl;
     }
     // 2676 - too high
-
+    // 2046 - too high
+    // 2031 - right 
+    // 1416 - too low
 
     return 0;
 }
