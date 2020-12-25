@@ -227,23 +227,26 @@ DirBorders txBorders ( const Tile & t, const OutBorderTileMap & out ) {
     return result;
 }
 
-const Border OUT_BORDER { "__________" };
+const Border OUT_BORDER;
 
 bool isMatching( const Facts & facts, const DirBorders & t1b ) {
     for ( const auto & [direction, f] : facts ) {
         const Border & border = f.first;
         if ( border == OUT_BORDER ) continue; // we do not match out borders
         auto i = t1b.find( direction );
-        if ( i == t1b.end() ) { cerr << "No direction: " << direction << " Border: " << border << endl; return false; }
+        if ( i == t1b.end() ) { 
+            // cerr << "No direction: " << direction << " Border: " << border << endl; 
+            return false; 
+        }
         const FactType & type = f.second;
         if ( type == ExactMatch ) {
             if ( border != i->second ) { 
-                cerr << "Does not match exact: " << border << " vs " << i->second << endl; 
+                // cerr << "Does not match exact: " << border << " vs " << i->second << endl; 
                 return false; 
             }
         } else {
             if ( normalize( border ) != normalize( i->second ) ) { 
-                cerr << "Does not match: " << border << " vs " << i->second << endl; 
+                // cerr << "Does not match: " << border << " vs " << i->second << endl; 
                 return false; 
             }
         }
@@ -253,7 +256,7 @@ bool isMatching( const Facts & facts, const DirBorders & t1b ) {
 
 TxOptions options( const Tile & t, const Facts & facts, const OutBorderTileMap & out ) {
     TxOptions result;
-    cout << "Facts: " << endl;
+    // cout << "Facts: " << endl;
     print(facts);
 
     for ( const auto rf : Rotations ) {
@@ -263,7 +266,10 @@ TxOptions options( const Tile & t, const Facts & facts, const OutBorderTileMap &
             print(t2);
             const auto && b = txBorders( t2, out );
             print(b);
-            if ( isMatching( facts, b ) ) { cout << "Match" << endl; result.insert( t2 ); }
+            if ( isMatching( facts, b ) ) { 
+                // cout << "Match" << endl; 
+                result.insert( t2 ); 
+            }
         }
     }
     return result;
@@ -433,67 +439,46 @@ int main() {
     }
     assert( integrityCheck.size() == 144 ); // all image is valid (every tile is used once)
 
-    // TODO 
     // 1. we need to rotate every tile to align parts close each other
-    //      a. we need algorithm for rotation
-    //      b. we need algorithm for fliping
-    //      c. we start from corners (sure orientation is easy to detect)
-    //      d. we continue with sides (where out border is easy to detect)
-    // 2. the borders of each tile are not part of the actual image; we need to remove them
-    // 3. search for monsters
-    // 4. How many # are not part of a sea monster?
-    {
-        assert( outBorderTileId.size() == ( 4 * (SIDE + 2) ) );
+    assert( outBorderTileId.size() == ( 4 * (SIDE + 2) ) );
 
-        ImageTx imageTx;
-
-
-        const Point p {0,2};
-        const int tileId = image.at( p );
-        cout << "Tile ID: " << tileId << endl;
-        const auto & t = tiles.at( tileId );
-        /*
-        Tile t;
-        t.push_back("123");
-        t.push_back("456");
-        t.push_back("789");
-        */
-        print( t );
-
-        // for ( const auto tx : TxTypes ) 
-        {
-            // cout << tx << endl;
-            // auto ft = Transformers.at( tx );
-            auto ft = []( const Point & p, const int n ) { return verFlip( rotate180( p, n ), n ); };
-            // auto ft = rotate180;
+    ImageTx imageTx;
+    for ( auto x = 0; x <= LAST_LINE; x++ ) {
+        for ( auto y = 0; y <= LAST_LINE; y++ ) {
+            const Point p { x, y };
+            const auto && txs = detectTx( p, imageTx, tiles, image, outBorderTileId );
+            const auto & tx0 = *txs.cbegin();
+            imageTx.emplace( p, tx0 );
             cout << endl;
-            const auto && t1 = transform( t, ft );
-            print( t1 );
-            const auto && tb = txBorders( t1, outBorderTileId );
-            print(tb);
-        }
-         
-
-/*        DirBorders facts = { { UP, "#..#.#...#" }, { RIGHT, "##....##.." }, { DOWN, ".###..##.." }, { LEFT, OUT_BORDER } };
-        cout << isMatching( facts, tb );
-        const auto && o = options( t, facts, outBorderTileId );
-        assert( !o.empty() );
-        for ( const auto & oi : o ) cout << oi << endl;
-*/
-        for ( auto x = 0; x <= LAST_LINE; x++ ) {
-            for ( auto y = 0; y <= LAST_LINE; y++ ) {
-                const Point p { x, y };
-                const auto && txs = detectTx( p, imageTx, tiles, image, outBorderTileId );
-                const auto & tx0 = *txs.cbegin();
-                imageTx.emplace( p, tx0 );
-                cout << endl;
-                cout << "CLEAN TILE " << x << " " << y << " ID: " << image.at( p ) << endl;
-                print( tx0 );
-                cout << endl;
-            }
+            cout << "CLEAN TILE " << x << " " << y << " ID: " << image.at( p ) << endl;
+            print( tx0 );
+            cout << endl;
         }
     }
 
+    // 2. the borders of each tile are not part of the actual image; we need to remove them
+    const size_t smallTileSide = SIDE - 2;
+    const size_t bigImageSide = (SIDE + 2) * smallTileSide;
+    const string line( bigImageSide, '?' );
+    Tile bigImage( bigImageSide, line );
+    
+    for ( auto y = 0; y <= LAST_LINE; y++ ) {
+        const int offset_y = y * smallTileSide;
+        for ( auto x = 0; x <= LAST_LINE; x++ ) {
+            const int offset_x = x * smallTileSide;
+            const Point p { x, y };
+            const auto & t = imageTx.at(p);
+            for ( int ix = 0; ix < smallTileSide; ix++ ) {
+                for ( int iy = 0; iy < smallTileSide; iy++ ) {
+                    at( bigImage, fxy( offset_x + ix, offset_y + iy ) ) = at( t, fxy( ix + 1, iy + 1 ) );
+                }
+            }
+        }
+    }
+    print(bigImage);
+
+    // 3. search for monsters
+    // 4. How many # are not part of a sea monster?
 
     return 0;
 }
