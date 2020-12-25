@@ -6,9 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
-#include <numeric>
 #include <assert.h>
-#include <climits>
 
 using namespace std;
 
@@ -26,12 +24,14 @@ Point rotate180( const Point & p, const int n ) { return { inverse( p.first,  n 
 Point rotate270( const Point & p, const int n ) { return { p.second,               inverse( p.first,  n ) }; }
 Point horFlip  ( const Point & p, const int n ) { return { p.first,                inverse( p.second, n ) }; }
 Point verFlip  ( const Point & p, const int n ) { return { inverse( p.first,  n ), p.second }; }
+Point bothFlip ( const Point & p, const int n ) { return verFlip( horFlip( p, n ), n ); }
 
 typedef Point (*Transformer)( const Point &, const int );
-enum TransformationType { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP };
-const vector<TransformationType> TxTypes = { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP };
-const vector<Transformer> Transformers = { original, rotate90, rotate180, rotate270, horFlip, verFlip };
+enum TransformationType { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP, BOTH_FLIP };
+const vector<TransformationType> TxTypes = { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP, BOTH_FLIP };
+const vector<Transformer> Transformers = { original, rotate90, rotate180, rotate270, horFlip, verFlip, bothFlip };
 
+enum FactType { EventualReverse, ExactMatch };
 
 typedef vector<string> Tile;
 typedef map<int, Tile> Tiles;
@@ -41,9 +41,10 @@ typedef map<int, Borders> TileBordersMap;
 typedef pair<Border,Border> TwoBorders;
 typedef map<Point,int> Image;
 typedef map<Border,int> OutBorderTileMap;
-typedef map<Direction,Border> DirBorders;  
-typedef set<TransformationType> TxOptions;
-typedef map<Point,TransformationType> ImageTx;
+typedef map<Direction,Border> DirBorders;
+typedef map<Direction, pair<Border,FactType> > Facts; // bool - exact or not
+typedef set<Tile> TxOptions;
+typedef map<Point,Tile> ImageTx;
 
 Border reverse( const Border & b ) {
     Border result(b);
@@ -193,6 +194,10 @@ void print( const DirBorders & db ) {
     for ( const auto & [d,b] : db ) cout << "Dir: " << d << " b: " << b << endl;
 }
 
+void print( const Facts & facts ) { 
+    for ( const auto & [d,f] : facts ) cout << "Dir: " << d << " Border: " << f.first << " Exact: " << ( f.second == ExactMatch ) << endl;
+}
+
 char & at( Tile & t, const Point & p ) { return t[fy(p)][fx(p)]; }
 char at( const Tile & t, const Point & p ) { return t[fy(p)][fx(p)]; }
 Point fxy( int x, int y ) { return {x, y}; }
@@ -227,17 +232,29 @@ DirBorders txBorders ( const Tile & t, Transformer tx, const OutBorderTileMap & 
 
 const Border OUT_BORDER { "__________" };
 
-bool isMatching( const DirBorders & facts, const DirBorders & t1b ) {
-    for ( const auto & [direction, border] : facts ) {
+bool isMatching( const Facts & facts, const DirBorders & t1b ) {
+    for ( const auto & [direction, f] : facts ) {
+        const Border & border = f.first;
         if ( border == OUT_BORDER ) continue; // we do not match out borders
         auto i = t1b.find( direction );
         if ( i == t1b.end() ) { cerr << "No direction: " << direction << " Border: " << border << endl; return false; }
-        if ( border != i->second ) { cerr << "Does not match: " << border << " vs " << i->second << endl; return false; }
+        const FactType & type = f.second;
+        if ( type == ExactMatch ) {
+            if ( border != i->second ) { 
+                cerr << "Does not match exact: " << border << " vs " << i->second << endl; 
+                return false; 
+            }
+        } else {
+            if ( normalize( border ) != normalize( i->second ) ) { 
+                cerr << "Does not match: " << border << " vs " << i->second << endl; 
+                return false; 
+            }
+        }
     }
     return true;
 }
 
-TxOptions options( const Tile & t, const DirBorders & facts, const OutBorderTileMap & out ) {
+TxOptions options( const Tile & t, const Facts & facts, const OutBorderTileMap & out ) {
     TxOptions result;
     cout << "Facts: " << endl;
     print(facts);
@@ -249,23 +266,24 @@ TxOptions options( const Tile & t, const DirBorders & facts, const OutBorderTile
         print(t1);
         const auto && t1b = txBorders( t1, original, out );
         print(t1b);
-        if ( isMatching( facts, t1b ) ) { cout << "Match" << endl; result.insert( tx ); }
+        if ( isMatching( facts, t1b ) ) { cout << "Match" << endl; result.insert( t1 ); }
     }
     return result;
 }
 
 const int LAST_LINE = SIDE + 1; // 11
 
-TransformationType detectTx( const Point & p, ImageTx & imageTx, const Tiles & tiles, const Image & image, const OutBorderTileMap & out ) {
+set<Tile> detectTx( const Point & p, ImageTx & imageTx, const Tiles & tiles, const Image & image, const OutBorderTileMap & out ) {
     // up to 4 borders in around can be known
-    DirBorders facts;
+    Facts facts;
     // set empty borders
     const auto x = fx(p);
     const auto y = fy(p);
-    if      ( x == 0         ) facts.emplace( LEFT,  OUT_BORDER );
-    else if ( x == LAST_LINE ) facts.emplace( RIGHT, OUT_BORDER );
-    if      ( y == 0         ) facts.emplace( UP,    OUT_BORDER );
-    else if ( y == LAST_LINE ) facts.emplace( DOWN,  OUT_BORDER );
+    const static auto outBorderFact = make_pair( OUT_BORDER, ExactMatch );
+    if      ( x == 0         ) facts.emplace( LEFT,  outBorderFact );
+    else if ( x == LAST_LINE ) facts.emplace( RIGHT, outBorderFact );
+    if      ( y == 0         ) facts.emplace( UP,    outBorderFact );
+    else if ( y == LAST_LINE ) facts.emplace( DOWN,  outBorderFact );
 
     set<Direction> ds { Directions.cbegin(), Directions.cend() };
     for ( const auto & [ d, b ] : facts ) ds.erase( d );
@@ -275,12 +293,20 @@ TransformationType detectTx( const Point & p, ImageTx & imageTx, const Tiles & t
         const auto dx = d == LEFT ? -1 : d == RIGHT ? 1 : 0;
         const auto dy = d == UP   ? -1 : d == DOWN  ? 1 : 0;
         const Point p1 { x + dx, y + dy };
-        auto i = image.find( p1 );
-        if ( i != image.end() ) {
-            const auto o = connection(tiles, tileId, image.at(p1) );
-            assert( o.has_value() );
-            facts.emplace( d, o.value().first );
-        } else assert( false );
+        auto j = imageTx.find( p1 );
+        if ( j != imageTx.end() ) {
+            // found clean tile, where the border is exact
+            const auto & clean = j->second;
+            const auto && otherBorder = border( clean, opposite(d) );
+            facts.emplace( d, make_pair( reverse(otherBorder), ExactMatch ) ); // on our side is always reverse
+        } else {
+            auto i = image.find( p1 );
+            if ( i != image.end() ) {
+                const auto o = connection(tiles, tileId, image.at(p1) );
+                assert( o.has_value() );
+                facts.emplace( d, make_pair( o.value().first, EventualReverse ) );
+            } else assert( false );
+        }
     }
 
     const auto & t = tiles.at(tileId);
@@ -294,7 +320,7 @@ TransformationType detectTx( const Point & p, ImageTx & imageTx, const Tiles & t
         cerr << " No tx for: " << p.first << " " << p.second <<  endl;
         assert( false );
     }
-    return *ts.cbegin();
+    return ts;
 }
 
 int main() {
@@ -423,29 +449,31 @@ int main() {
 
         ImageTx imageTx;
 
-/*
-        const Point p {0,1};
+
+        const Point p {0,2};
         const int tileId = image.at( p );
-        // cout << "Tile ID: " << tileId << endl;
-        // const auto & t = tiles.at( tileId );
+        cout << "Tile ID: " << tileId << endl;
+        const auto & t = tiles.at( tileId );
+        /*
         Tile t;
         t.push_back("123");
         t.push_back("456");
         t.push_back("789");
+        */
         print( t );
-        cout << at(t, {0,1}) << endl;
-        cout << fx(p) << " " << fy(p) << endl;
-        const auto && b = Transformers.at( ORIGINAL )(p, t.size() );
-        cout << fx(b) << " " << fy( b ) << endl;
-    
-        for ( const auto tx : TxTypes ) {
-            cout << tx << endl;
-            auto ft = Transformers.at( tx );
+
+        // for ( const auto tx : TxTypes ) 
+        {
+            // cout << tx << endl;
+            // auto ft = Transformers.at( tx );
+            auto ft = []( const Point & p, const int n ) { return verFlip( rotate180( p, n ), n ); };
+            // auto ft = rotate180;
+            cout << endl;
             print( transform( t, ft ) );
             const auto && tb = txBorders( t, ft, outBorderTileId );
             print(tb);
         }
-        */
+         
 
 /*        DirBorders facts = { { UP, "#..#.#...#" }, { RIGHT, "##....##.." }, { DOWN, ".###..##.." }, { LEFT, OUT_BORDER } };
         cout << isMatching( facts, tb );
@@ -456,8 +484,13 @@ int main() {
         for ( auto x = 0; x <= LAST_LINE; x++ ) {
             for ( auto y = 0; y <= LAST_LINE; y++ ) {
                 const Point p { x, y };
-                const auto tx = detectTx( p, imageTx, tiles, image, outBorderTileId );
-                imageTx.emplace( p, tx );
+                const auto && txs = detectTx( p, imageTx, tiles, image, outBorderTileId );
+                const auto & tx0 = *txs.cbegin();
+                imageTx.emplace( p, tx0 );
+                cout << endl;
+                cout << "CLEAN TILE " << x << " " << y << " ID: " << image.at( p ) << endl;
+                print( tx0 );
+                cout << endl;
             }
         }
     }
