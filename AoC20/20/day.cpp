@@ -24,12 +24,10 @@ Point rotate180( const Point & p, const int n ) { return { inverse( p.first,  n 
 Point rotate270( const Point & p, const int n ) { return { p.second,               inverse( p.first,  n ) }; }
 Point horFlip  ( const Point & p, const int n ) { return { p.first,                inverse( p.second, n ) }; }
 Point verFlip  ( const Point & p, const int n ) { return { inverse( p.first,  n ), p.second }; }
-Point bothFlip ( const Point & p, const int n ) { return verFlip( horFlip( p, n ), n ); }
 
 typedef Point (*Transformer)( const Point &, const int );
-enum TransformationType { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP, BOTH_FLIP };
-const vector<TransformationType> TxTypes = { ORIGINAL, ROTATE_90, ROTATE_180, ROTATE_270, HOR_FLIP, VER_FLIP, BOTH_FLIP };
-const vector<Transformer> Transformers = { original, rotate90, rotate180, rotate270, horFlip, verFlip, bothFlip };
+const vector<Transformer> Rotations = { original, rotate90, rotate180, rotate270 };
+const vector<Transformer> Flips = { original, horFlip, verFlip };
 
 enum FactType { EventualReverse, ExactMatch };
 
@@ -215,9 +213,8 @@ Tile transform( const Tile & t, Transformer tx ) {
     return result;
 }
 
-DirBorders txBorders ( const Tile & t, Transformer tx, const OutBorderTileMap & out ) {
-    const Tile && t1 = transform(t, tx);
-    const auto && bl = borders( t1 );
+DirBorders txBorders ( const Tile & t, const OutBorderTileMap & out ) {
+    const auto && bl = borders( t );
     assert( bl.size() == 4 );
     DirBorders result;
     for ( const auto d : Directions ) {
@@ -259,14 +256,15 @@ TxOptions options( const Tile & t, const Facts & facts, const OutBorderTileMap &
     cout << "Facts: " << endl;
     print(facts);
 
-    for ( const auto tx : TxTypes ) {
-        cout << "Tx: " << tx << endl;
-        const auto ft = Transformers[tx];
-        const auto && t1 = transform( t, ft );
-        print(t1);
-        const auto && t1b = txBorders( t1, original, out );
-        print(t1b);
-        if ( isMatching( facts, t1b ) ) { cout << "Match" << endl; result.insert( t1 ); }
+    for ( const auto rf : Rotations ) {
+        const auto && t1 = transform( t, rf );
+        for ( const auto ff : Flips ) {
+            const auto && t2 = transform( t1, ff );
+            print(t2);
+            const auto && b = txBorders( t2, out );
+            print(b);
+            if ( isMatching( facts, b ) ) { cout << "Match" << endl; result.insert( t2 ); }
+        }
     }
     return result;
 }
@@ -314,7 +312,7 @@ set<Tile> detectTx( const Point & p, ImageTx & imageTx, const Tiles & tiles, con
     if ( ts.empty() ) {
         cout << endl;
         print(t);
-        print( txBorders(t, original, out) );
+        print( txBorders(t, out) );
         cout << "Facts: " << endl;
         print(facts);
         cerr << " No tx for: " << p.first << " " << p.second <<  endl;
@@ -469,8 +467,9 @@ int main() {
             auto ft = []( const Point & p, const int n ) { return verFlip( rotate180( p, n ), n ); };
             // auto ft = rotate180;
             cout << endl;
-            print( transform( t, ft ) );
-            const auto && tb = txBorders( t, ft, outBorderTileId );
+            const auto && t1 = transform( t, ft );
+            print( t1 );
+            const auto && tb = txBorders( t1, outBorderTileId );
             print(tb);
         }
          
