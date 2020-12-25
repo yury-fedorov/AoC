@@ -1,24 +1,18 @@
 #include <iostream>
-#include <map>
-#include <set>
 #include <vector>
-#include <algorithm>
 #include <fstream>
-#include <sstream>
-#include <regex>
-#include <numeric>
 #include <assert.h>
-#include <climits>
 
 using namespace std;
 
+inline long next( int subject, long value ) { return ( value * subject ) % 20201227; }
+
 int loops( const int pk ) {
     const int subjectNumber = 7;
-    int value = 1;
+    long value = 1;
     for ( int loop = 0; true; loop++ ) {
         if ( value == pk ) return loop;
-        value *= subjectNumber;
-        value %= 20201227;
+        value = next(subjectNumber, value);
     }
     return -1;
 }
@@ -26,8 +20,7 @@ int loops( const int pk ) {
 long encryptionKey( const int subjectNumber, const int loops ) {
     long value = 1;
     for ( int loop = 0; loop < loops; loop++ ) {
-        value *= subjectNumber;
-        value %= 20201227;
+        value = next(subjectNumber, value);
     }
     return value;
 }
@@ -39,25 +32,21 @@ int main() {
     string line;
     while (getline(f, line)) {
         input.push_back( stoi(line) );
-        cout << stoi(line) << endl;
     }
 
-    // const int pk1 = 5764801; // input[0];
+    assert( loops( 5764801  ) == 8 );
+    assert( loops( 17807724 ) == 11 );
+    assert( encryptionKey(17807724, 8) == 14897079 );
+
     const int pk1 = input[0];
     const int l1 = loops( pk1 );
-
     const int pk2 = input[1];
     const int l2 = loops( pk2 );
 
-    cout << "8? -> " << loops( 5764801 ) << endl;
-    cout << "11? -> " << loops( 17807724 ) << endl;
-    cout << l1 << endl;
-    cout << l2 << endl;
-    cout << encryptionKey(17807724, 8) << endl;
-    cout << encryptionKey(pk1, l2) << endl;
-    cout << encryptionKey(pk2, l1) << endl;
-
-    cout << "Answer 1: " << encryptionKey(pk1, l2) << endl;
-
+    const auto ek12 = encryptionKey(pk1, l2);
+    const auto ek21 = encryptionKey(pk2, l1);
+    assert( ek12 == ek21 );
+    cout << "Answer 1: " << ek12 << endl;
+    assert( ek12 == 711945 );
     return 0;
 }
