@@ -35,9 +35,10 @@ bool canSpell( Spell s, const Spells & spells, int playerMana ) {
     return i == spells.end() || i->second < 0;
 }
 
-void actionSpells( Spells & spells, HitPoints & hitPoints, int & playerMana ) {
+void actionSpells( Spells & spells, HitPoints & hitPoints, int & playerMana, const bool toPrint ) {
     for ( auto & si : spells ) {
         if ( si.second < 0 ) continue;
+
         switch( si.first ) {
             case SHIELD: break;
             case POISON: hitPoints[BOSS] -= 3; break;
@@ -45,6 +46,7 @@ void actionSpells( Spells & spells, HitPoints & hitPoints, int & playerMana ) {
             default: assert(false);
         }
         si.second -= 1;
+        if (toPrint) cout << "Spell in action: " << si.first << " its timer is now " << si.second << endl;
     }
 }
 
@@ -67,12 +69,19 @@ int playerArmor( const Spells & spells ) {
     return i == spells.end() ? 0 : ( i->second > 0 ) ? 7 : 0;
 }
 
-int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMana, Spells spells, Actor first ) {
+int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMana, Spells spells, Actor first, int depth ) {
+    const bool toPrint = ( depth == 0 );
     int spentMana = 0;
     auto actor = first;
     auto enemy = other(actor);
     for ( ; true; swap( actor, enemy ) ) {
-        actionSpells( spells, hitPoints, playerMana );
+        if ( toPrint ) {
+            cout << ( actor == PLAYER ? "Player" : "Boss" ) << " turn" << endl;
+            cout << "Player has " << hitPoints[PLAYER] << " hit points, " << playerArmor(spells) << " armor, " << playerMana << endl;
+            cout << "Boss has " << hitPoints[BOSS] << " hit points" << endl;
+        }
+
+        actionSpells( spells, hitPoints, playerMana, toPrint );
         if ( hitPoints[BOSS] <= 0 ) return spentMana;
 
         if ( actor == BOSS ) {
@@ -87,10 +96,11 @@ int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMan
                     int playerMana1 { playerMana };
                     int spentMana1 { spentMana };
                     actionSpell( s, spells1, hitPoints1, playerMana1, spentMana1 );
-                    const int m = minManaToWinPlayer( hitPoints1, bossDamage, playerMana, spells1, BOSS );
+                    const int m = minManaToWinPlayer( hitPoints1, bossDamage, playerMana, spells1, BOSS, depth + 1 );
                     options.emplace( s, m );
                 }
             }
+            if ( options.empty() ) return INT_MAX; // loose because no mana
             // selection of the best option
             const auto best = min_element( options.cbegin(), options.cend(), 
                 []( const pair<Spell,int> & a, const pair<Spell,int> & b ) {
@@ -98,19 +108,20 @@ int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMan
                 } );
             if ( best->second == INT_MAX ) return INT_MAX; // loose anyway
             actionSpell( best->first, spells, hitPoints, playerMana, spentMana );
+            if(toPrint) cout << "Player casts " << best->first << endl;
         }
         if ( hitPoints[enemy] <= 0 ) return actor == PLAYER ? spentMana : INT_MAX;
     }
 }
 
 int main() {
-    // cout << minManaToWinPlayer( {10, 13}, 8, 250, Spells(), PLAYER ) << endl;
-    
+    cout << minManaToWinPlayer( {10, 13}, 8, 250, Spells(), PLAYER, 0 ) << endl;
+
     const int bossStartHitPoints = 58;
     const int playerStartHitPoints = 50;
     const int mana = 500;
     const int bossDamage = 9;
     HitPoints hitPoints { playerStartHitPoints , bossStartHitPoints };
-    cout << minManaToWinPlayer( hitPoints, bossDamage, mana, Spells(), PLAYER ) << endl;
+    cout << minManaToWinPlayer( hitPoints, bossDamage, mana, Spells(), PLAYER, 0 ) << endl;
     return 0;
 }
