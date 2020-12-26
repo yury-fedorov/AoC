@@ -72,7 +72,7 @@ int playerArmor( const Spells & spells ) {
 }
 
 int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMana, Spells spells, Actor first, int depth ) {
-    const bool toPrint = ( depth == 0 );
+    const bool toPrint = depth == 0;
     int spentMana = 0;
     auto actor = first;
     auto enemy = other(actor);
@@ -119,10 +119,10 @@ int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMan
 }
 
 int main() {
-    cout << minManaToWinPlayer( {10, 13}, 8, 250, Spells(), PLAYER, 0 ) << endl << endl;
+    // cout << minManaToWinPlayer( {10, 13}, 8, 250, Spells(), PLAYER, 0 ) << endl << endl;
     // sample 2
     cout << minManaToWinPlayer( {10, 14}, 8, 250, Spells(), PLAYER, 0 ) << endl << endl;
-
+    return 0;
     const int bossStartHitPoints = 58;
     const int playerStartHitPoints = 50;
     const int mana = 500;
