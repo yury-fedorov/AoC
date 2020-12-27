@@ -21,8 +21,10 @@ public class Day03Test {
         int answer1 = 0;
         for ( final var l : input ) {
             final var a = l.split( "\\s+" );
-            answer1 += isTriangle( Integer.parseInt(a[0]), Integer.parseInt(a[1]), Integer.parseInt(a[2]) ) ? 1 : 0;
+            answer1 += isTriangle( Integer.parseInt(a[1].trim() ), 
+                Integer.parseInt(a[2].trim() ), 
+                Integer.parseInt(a[3].trim() ) ) ? 1 : 0;
         }
-        assertEquals("", -1, answer1 );
+        assertEquals("answer 1", 1050, answer1 );
     }
 }
