@@ -1,5 +1,5 @@
 # Advent of Code
-## 2020 - C++ 20
+## 2020 - C++ 20 (50 stars)
 https://adventofcode.com/2020
 
 Private Leaderboard
@@ -12,6 +12,7 @@ Private Leaderboard
 https://adventofcode.com/2019/leaderboard/private/view/33618
 
 ## 2018 - C#
+Origionally written in .NET Core 2.1
 https://adventofcode.com/2018
 
 Private Leaderboard
@@ -23,7 +24,7 @@ https://adventofcode.com/2017
 Private Leaderboard
 https://adventofcode.com/2017/leaderboard/private/view/33618
 
-## 2016 - Java
+## 2016 - Java 14
 https://adventofcode.com/2016
 
 Private Leaderboard
