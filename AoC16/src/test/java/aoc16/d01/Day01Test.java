@@ -1,30 +1,34 @@
 package aoc16.d01;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 
-public class Day01 {
+public class Day01Test {
 
-    enum Direction { North, West, South, East };
+    enum Direction { North, West, South, East }
     final Direction [] list = { Direction.North, Direction.West, Direction.South, Direction.East };
 
     static AbstractMap.SimpleEntry<Integer,Integer> point( int x, int y ) {
-        return new AbstractMap.SimpleEntry<Integer,Integer>( x, y );
+        return new AbstractMap.SimpleEntry<>(x, y);
     }
 
     @Test
     public void part12() throws IOException {
-        final var input = Files.readString( Path.of("/Users/fedoy/projects/AoC/AoC16/src/test/java/aoc16/d01/input.txt") );
+        final var url = getClass().getClassLoader().getResource( "d01/input.txt" );
+        assertNotNull(url);
+        final var input = Files.readString( Path.of(url.getPath()) );
         // final var input = "R8, R4, R4, R8";
         final var c = input.split(", ");
         Direction d = Direction.North;
         int x = 0;
         int y = 0;
-        final var visited = new HashSet< AbstractMap.SimpleEntry<Integer,Integer>>();
+        final var visited = new HashSet<AbstractMap.SimpleEntry<Integer,Integer>>();
         visited.add( point(x,y) );
         int answer2 = -1;
         for ( var cc : c ) {
@@ -48,7 +52,7 @@ public class Day01 {
             y += ( dy * delta );
             d = nd;
         }
-        assertEquals( "answer 1", 291, x + y );
+        assertEquals( "answer 1", 291, Math.abs(x) + Math.abs(y) );
         assertEquals( "answer 2", 159, answer2 ); // 274 -- to high
     }
 }
