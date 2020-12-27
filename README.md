@@ -24,7 +24,7 @@ https://adventofcode.com/2017
 Private Leaderboard
 https://adventofcode.com/2017/leaderboard/private/view/33618
 
-## 2016 - Java 14
+## 2016 - Java 11
 https://adventofcode.com/2016
 
 Private Leaderboard
