@@ -62,16 +62,37 @@ public class Day04Test {
         assertEquals("sample 4", 0,   validRoomSectorId(parse("totally-real-room-200[decoy]") ) );
     }
 
+    static char decode( char ch ) {
+        if ( ch == '-' || ch == ' ' ) return ' ';
+        if ( ch == 'z' ) return 'a';
+        return (char)( (int)ch + 1 );
+    }
+
+    static String decode( String text, int key ) {
+        final var n = text.length();
+        var a = text.toCharArray();
+        while ( --key >= 0 ) {
+            for ( int i = 0; i < n; i++ )
+                a[i] = decode(a[i]);
+        }
+        return new String(a);
+    }
+
     @Test
     public void solution() throws IOException {
         final var url = getClass().getClassLoader().getResource( "d04/input.txt" );
         final var input = Files.readAllLines( Path.of(url.getPath()) );
         long answer1 = 0;
+        Optional<Integer> answer2 = Optional.empty();
         for ( final var l : input ) {
             final var p = parse(l);
             answer1 += validRoomSectorId(p);
+            if ( answer2.isEmpty() ) {
+                final var key = p.getValue1();
+                if ( decode( p.getValue0(), key ).indexOf("pole") >= 0 ) answer2 = Optional.of(key);
+            }
         }
         assertEquals("answer 1", 278221, answer1 );
-        // assertEquals("answer 2", 1921, answer2 );
+        assertEquals("answer 2", 267, answer2.get().intValue() );
     }
 }
