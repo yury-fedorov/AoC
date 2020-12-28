@@ -26,9 +26,10 @@ public class Day04Test {
                 frequency.put(ch, counter + 1 );
             }
             // TODO
-            System.out.println("found: " + p1 + " -> " + p2 +" -> " + p3 );
+            // System.out.println("found: " + p1 + " -> " + p2 +" -> " + p3 );
             return p2;
         }
+        System.out.println(line);
         throw new IllegalArgumentException();
     }
     
@@ -44,7 +45,7 @@ public class Day04Test {
 
     @Test
     public void solution() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d03/input.txt" );
+        final var url = getClass().getClassLoader().getResource( "d04/input.txt" );
         final var input = Files.readAllLines( Path.of(url.getPath()) );
         int answer1 = 0;
         for ( final var l : input ) {
