@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class Day04Test {
 
@@ -22,8 +23,19 @@ public class Day04Test {
             final var p3 = matcher.group(3);
             final var frequency = new HashMap<Character,Integer>();
             for ( final var ch : p1.toCharArray() ) {
+                if ( ch == '-' ) continue;
                 final var counter = frequency.getOrDefault( ch, 0 );
                 frequency.put(ch, counter + 1 );
+            }
+            int lastFrequency = p1.length() + 1;
+            for ( final var ch : p3.toCharArray() ) {
+                final var f = frequency.getOrDefault( ch, 0 );
+                if ( ( f == 0 ) || ( f > lastFrequency ) ) return 0;
+                frequency.remove(ch);
+                lastFrequency = Math.min( f, lastFrequency );
+            }
+            for ( final var p : frequency.entrySet() ) {
+                if ( p.getValue() > lastFrequency ) return 0;
             }
             // TODO
             // System.out.println("found: " + p1 + " -> " + p2 +" -> " + p3 );
@@ -47,11 +59,11 @@ public class Day04Test {
     public void solution() throws IOException {
         final var url = getClass().getClassLoader().getResource( "d04/input.txt" );
         final var input = Files.readAllLines( Path.of(url.getPath()) );
-        int answer1 = 0;
+        long answer1 = 0;
         for ( final var l : input ) {
             answer1 += validRoomSectorId(l);
         }
-        assertEquals("answer 1", -1, answer1 );
+        assertEquals("answer 1", 278221, answer1 );
         // assertEquals("answer 2", 1921, answer2 );
     }
 }
