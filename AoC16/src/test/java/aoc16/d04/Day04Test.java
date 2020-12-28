@@ -20,6 +20,11 @@ public class Day04Test {
             final var p1 = matcher.group(1);
             final var p2 = Integer.parseInt( matcher.group(2) );
             final var p3 = matcher.group(3);
+            final var frequency = new HashMap<Character,Integer>();
+            for ( final var ch : p1.toCharArray() ) {
+                final var counter = frequency.getOrDefault( ch, 0 );
+                frequency.put(ch, counter + 1 );
+            }
             // TODO
             System.out.println("found: " + p1 + " -> " + p2 +" -> " + p3 );
             return p2;
