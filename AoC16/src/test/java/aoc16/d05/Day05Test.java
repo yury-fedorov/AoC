@@ -36,7 +36,7 @@ public class Day05Test {
         return min;
     }
 
-    @Test
+    // @Test - slow: takes 329 secs on macOS
     public void solution() {
         var input = "cxdnnyjw";
         // abc
@@ -68,6 +68,6 @@ public class Day05Test {
         final var answer2 = new StringBuilder();
         for ( int i = 0; i < 8; i++ ) answer2.append( map.get(i) );
 
-        assertEquals( "answer 2", "", answer2.toString() );
+        assertEquals( "answer 2", "999828EC", answer2.toString() );
     }
 }
