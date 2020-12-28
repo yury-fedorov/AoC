@@ -6,13 +6,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
 public class Day04Test {
 
     static int validRoomSectorId( String line ) {
-        return 0; // TODO  
+        final var patternString = "([a-z\\-]+)(\\d+)\\[([a-z]+)\\]$";
+        final var pattern = Pattern.compile(patternString);
+        final var matcher = pattern.matcher(line);
+        while(matcher.find()) {
+            final var p1 = matcher.group(1);
+            final var p2 = Integer.parseInt( matcher.group(2) );
+            final var p3 = matcher.group(3);
+            // TODO
+            System.out.println("found: " + p1 + " -> " + p2 +" -> " + p3 );
+            return p2;
+        }
+        throw new IllegalArgumentException();
     }
     
     @Test
