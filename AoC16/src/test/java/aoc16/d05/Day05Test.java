@@ -36,7 +36,8 @@ public class Day05Test {
         return min;
     }
 
-    // @Test - slow: takes 329 secs on macOS
+    // @Test // on macOS - slow: takes 329 secs on macOS
+    // on Andrei's PC - takes 226.5 seconds
     public void solution() {
         var input = "cxdnnyjw";
         // abc
