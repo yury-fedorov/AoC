@@ -39,6 +39,7 @@ public class Day05Test {
     // @Test // on macOS - slow: takes 329 secs on macOS
     // on Andrei's PC - takes 226.5 seconds
     // on ASUS 2011 - takes 287.7 seconds
+    // on ASUS 2012 Windows 10 - 294.6 seconds
     public void solution() {
         var input = "cxdnnyjw";
         // abc
