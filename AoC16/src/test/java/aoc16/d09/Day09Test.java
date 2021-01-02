@@ -16,7 +16,6 @@ public class Day09Test {
         long result = 0;
         boolean isInstruction = false;
         final var instruction = new StringBuilder();
-
         for ( int i = 0; i < s.length(); ) {
             final char ch = s.charAt(i);
             if ( ch == '(' ) {
@@ -32,8 +31,14 @@ public class Day09Test {
                 assertTrue( "matcher.find()", matcher.find() );
                 final var length = Integer.parseInt( matcher.group(1) );
                 var repeated = Integer.parseInt( matcher.group(2) );
-                result += length * (repeated - 1);
-                i++;
+                final var start = i + 1;
+                final var end = start + length;
+                final var ss = s.subSequence( start, end );
+                final long sl = decodedLength( ss );
+                assertEquals( "ss.length()", length, ss.length() );
+                result += ( repeated * sl );
+                instruction.setLength(0);
+                i = end;
             } else {
                 if ( isInstruction ) instruction.append(ch);
                 else result++;
@@ -42,11 +47,11 @@ public class Day09Test {
         }
         return result;
     }
+
     static CharSequence decode( CharSequence s ) {
         final var out = new StringBuilder();
         boolean isInstruction = false;
         final var instruction = new StringBuilder();
-
         for ( int i = 0; i < s.length(); ) {
             final char ch = s.charAt(i);
             if ( ch == '(' ) {
@@ -79,10 +84,13 @@ public class Day09Test {
         return out;
     }
 
+    @Test
     public void test() {
-        assertEquals( "ADVENT", decode("ADVENT") );
-        assertEquals( "ABBBBBC", decode("A(1x5)BC") );
-        assertEquals( "XYZXYZXYZ", decode("(3x3)XYZ"));
+        assertEquals( "ADVENT", decode("ADVENT").toString() );
+        assertEquals( "ABBBBBC", decode("A(1x5)BC").toString() );
+        assertEquals( "XYZXYZXYZ", decode("(3x3)XYZ").toString() );
+        assertEquals( 9, decodedLength( "(3x3)XYZ" ) );
+        assertEquals( "XABCABCABCABCABCABCY".length(), decodedLength("X(8x2)(3x3)ABCY" ) );
     }
 
     @Test
@@ -97,6 +105,6 @@ public class Day09Test {
             assertTrue( "answer2 > 0", answer2 > 0 );
         }
         assertEquals("answer 1", 150914, answer1 );
-        assertEquals("answer 2", -1, answer2 ); // too low - 501035
+        assertEquals("answer 2", 11052855125l, answer2 ); // too low - 501035
     }
 }
