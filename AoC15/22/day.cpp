@@ -14,7 +14,7 @@ enum Spell { MAGIC_MISSILE, DRAIN, SHIELD, POISON, RECHARGE };
 typedef map<Spell, int> Spells;
 typedef vector<int> HitPoints;
 
-const int MAX_MANA = 1'000'000;
+const int MAX_MANA = 100'000'000;
 
 const map < Spell, tuple<int,int> > SPELL_ATTR = {
     { MAGIC_MISSILE, { 53, 1 } }, 
@@ -39,7 +39,7 @@ bool canSpell( Spell s, const Spells & spells, int playerMana ) {
 
 void actionSpells( Spells & spells, HitPoints & hitPoints, int & playerMana, const bool toPrint ) {
     for ( auto & si : spells ) {
-        if ( si.second < 0 ) continue;
+        if ( si.second <= 0 ) continue;
 
         switch( si.first ) {
             case SHIELD: break;
@@ -78,7 +78,7 @@ int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMan
     auto enemy = other(actor);
     for ( ; true; swap( actor, enemy ) ) {
         if ( toPrint ) {
-            cout << ( actor == PLAYER ? "Player" : "Boss" ) << " turn" << endl;
+            cout << endl << "-- " << ( actor == PLAYER ? "Player" : "Boss" ) << " turn" << endl;
             cout << "Player has " << hitPoints[PLAYER] << " hit points, " << playerArmor(spells) << " armor, " 
                 << playerMana << " mana " << endl;
             cout << "Boss has " << hitPoints[BOSS] << " hit points" << endl;
@@ -99,9 +99,11 @@ int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMan
                     int playerMana1 { playerMana };
                     int spentMana1 = 0;
                     actionSpell( s, spells1, hitPoints1, playerMana1, spentMana1 );
-                    const int m = spentMana1 + minManaToWinPlayer( hitPoints1, bossDamage, playerMana, spells1, BOSS, depth + 1 );
-                    options.emplace( s, m );
-                    if (toPrint) cout << "option " << s << " mana " << m << endl;
+                    const int m = spentMana1 + minManaToWinPlayer( hitPoints1, bossDamage, playerMana1, spells1, BOSS, depth + 1 );
+                    if ( m < MAX_MANA ) {
+                        options.emplace( s, m );
+                        if (toPrint) cout << "option " << s << " mana " << m << endl;
+                    }
                 }
             }
             if ( options.empty() ) return MAX_MANA; // loose because no mana
@@ -121,8 +123,8 @@ int minManaToWinPlayer( HitPoints hitPoints, const int bossDamage, int playerMan
 int main() {
     // cout << minManaToWinPlayer( {10, 13}, 8, 250, Spells(), PLAYER, 0 ) << endl << endl;
     // sample 2
-    cout << minManaToWinPlayer( {10, 14}, 8, 250, Spells(), PLAYER, 0 ) << endl << endl;
-    return 0;
+    // cout << minManaToWinPlayer( {10, 14}, 8, 250, Spells(), PLAYER, 0 ) << endl << endl;
+    // return 0;
     const int bossStartHitPoints = 58;
     const int playerStartHitPoints = 50;
     const int mana = 500;
