@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -21,13 +22,6 @@ public class Day10Test {
 
     static Pair<Destination,Integer> out( String d, String n ) {
         return Pair.with( d.equals( "bot" ) ? Destination.BOT : Destination.OUTPUT, Integer.parseInt(n) );
-    }
-
-    static void print( BotMap map, int bot ) {
-        final var p = map.get(bot);
-        System.out.println( bot + " -> "
-                + p.getValue0().getValue0() + " " + p.getValue0().getValue1() + ", "
-                + p.getValue1().getValue0() + " " + p.getValue1().getValue1() );
     }
 
     static Collection< Pair<Source, Integer> > sources( ValueMap vmap, BotMap bmap, final int bot ) {
@@ -98,15 +92,13 @@ public class Day10Test {
         final var processed = new HashSet<Integer>();
         while ( !bl.isEmpty() ) {
             final var curBot = bl.iterator().next();
-            System.out.println( curBot );
             final var bo = botOut( valueBotMap, botOutMap, curBot );
-            System.out.println( bo.getValue0() + " " + bo.getValue1() );
             if ( bo.getValue0() == 17 && bo.getValue1() == 61 ) {
                 answer1 = Optional.of( curBot );
                 break;
             }
             bl.remove(curBot);
-            processed.add(curBot);
+            processed.add(curBot); // works also without it but in this way it is faster
             final var conf = botOutMap.get( curBot );
             if ( conf.getValue0().getValue0() == Destination.BOT ) {
                 final var id = conf.getValue0().getValue1();
@@ -118,5 +110,20 @@ public class Day10Test {
             }
         }
         assertEquals( "answer 1", 118, answer1.get().intValue() );
+
+        long answer2 = 1;
+        final Function< Pair<Destination,Integer>, Boolean> isOutput = ( p ) -> {
+            return p.getValue0() == Destination.OUTPUT && p.getValue1() >= 0 && p.getValue1() <= 2;
+        };
+        for ( final var e : botOutMap.entrySet() ) {
+            final var pp = e.getValue();
+            if ( isOutput.apply( pp.getValue0() )  ) {
+                answer2 *= botOut( valueBotMap, botOutMap, e.getKey() ).getValue0();
+            }
+            if ( isOutput.apply( pp.getValue1() )  ) {
+                answer2 *= botOut( valueBotMap, botOutMap, e.getKey() ).getValue1();
+            }
+        }
+         assertEquals( "answer 2", 143153, answer2 );
     }
 }
