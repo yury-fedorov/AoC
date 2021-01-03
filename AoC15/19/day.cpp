@@ -30,36 +30,28 @@ void addAll( const string & input, const Rules & rules, Combinations & combinati
     }
 }
 const string START { "e" };
-const int MAX_DISTANCE = 505;
-int globalMin = MAX_DISTANCE;
-int distance( const string & input, const ToFromRules & rules, int depth ) {
+const int MAX_DISTANCE = 505 * 2; // length of the given string
+
+int distance( const string & input, const ToFromRules & rules, const vector<string> & toList, int depth ) {
     if ( input == START ) return 0;
     if ( depth >= MAX_DISTANCE ) return MAX_DISTANCE;
-    int minLength = MAX_DISTANCE;
-    for ( auto & p : rules ) {
+    for ( const auto & to : toList ) {
         // we go back from end to the beginning
-        const string & to = p.first;
-        const string & from = p.second;
+        const string & from = rules.at(to);
         auto i = input.find( to );
         const int len = to.length();
         while ( i != string::npos ) {
             string product { input };
             product.replace( i, len, from );
-            if ( product.length() < input.length() ) {
-                const int d = 1 + distance( product, rules, depth + 1 );
-                if ( d < minLength ) {
-                    minLength = d;
-                    const int localMin = depth + d;
-                    if ( localMin < globalMin ) {
-                        globalMin = localMin;
-                        cout << globalMin << endl;
-                    }
-                }
+            if ( product.length() <= input.length() ) {
+                const auto d = distance( product, rules, toList, depth + 1 );
+                if ( d >= MAX_DISTANCE ) return MAX_DISTANCE;
+                return 1 + d;
             }
             i = input.find(to, i + 1 );
         }
     }
-    return minLength;
+    return MAX_DISTANCE;
 }
 
 int main() {
@@ -67,6 +59,7 @@ int main() {
 
     Rules rules;
     map<string,string> toFrom;
+    vector<string> toList;
     string input;
 
     regex reRule("^(\\w+) => (\\w+)$");
@@ -77,7 +70,8 @@ int main() {
             const string from = what[1];
             const string to = what[2];
             rules[from].push_back(to);
-            toFrom.insert( make_pair( to, from ) );
+            toFrom.insert( { to, from } );
+            toList.push_back(to);
         } else if ( !line.empty() ) {
             assert(input.empty());
             input = line;
@@ -86,10 +80,14 @@ int main() {
 
     Combinations combinations;
     addAll( input, rules, combinations );
-    cout << "Answer 1: " << combinations.size() << endl; // 535
+    cout << "Answer 1: " << combinations.size() << endl;
+    assert( 535 == combinations.size() );
 
-    cout << "Answer 2: " << distance(input, toFrom, 0 ) << endl;
-
+    // sort longest "to" first
+    sort( toList.begin(), toList.end(), []( const string & a, const string & b ) { return a.length() > b.length(); } );
+    const auto answer2 = distance(input, toFrom, toList, 0 );
+    cout << "Answer 2: " << answer2 << endl;
+    assert( 212 = answer2 );
 
     return 0;
 }
