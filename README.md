@@ -30,7 +30,7 @@ https://adventofcode.com/2016
 Private Leaderboard
 https://adventofcode.com/2016/leaderboard/private/view/33618
 
-## 2015 - C++ 20
+## 2015 - C++ 20 (50 stars)
 https://adventofcode.com/2015
 
 Private Leaderboard
