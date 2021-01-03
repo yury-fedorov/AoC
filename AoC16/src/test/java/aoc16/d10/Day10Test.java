@@ -49,7 +49,7 @@ public class Day10Test {
         assertEquals( "sources.size() == 2", 2, sources.size() );
         final var outValues = new ArrayList<Integer>();
         for ( final var s : sources ) {
-            if ( s.getValue0() == Source.VALUE ) outValues.add( vmap.get( s.getValue1() ) );
+            if ( s.getValue0() == Source.VALUE ) outValues.add( s.getValue1() );
             else {
                 final var sourceBotId = s.getValue1();
                 final var sourceBotOut = botOut( vmap, bmap, sourceBotId );
@@ -59,7 +59,7 @@ public class Day10Test {
                 } else { // eventual check
                     outValues.add( sourceBotOut.getValue1() );
                 }
-            };
+            }
         }
         var result = ( outValues.get(0) < outValues.get(1) )
                 ? Pair.with( outValues.get(0), outValues.get(1) ) : Pair.with( outValues.get(1), outValues.get(0) );
@@ -117,6 +117,6 @@ public class Day10Test {
                 if ( !processed.contains( id )) bl.add( id );
             }
         }
-        assertEquals( "answer 1", -1, answer1.get().intValue() );
+        assertEquals( "answer 1", 118, answer1.get().intValue() );
     }
 }
