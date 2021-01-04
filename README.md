@@ -1,5 +1,5 @@
 # Advent of Code
-## 2020 - C++ 20 (50 stars)
+## 2020 - C++ 20 (50 stars, rank 3550)
 https://adventofcode.com/2020
 
 Private Leaderboard
@@ -30,7 +30,7 @@ https://adventofcode.com/2016
 Private Leaderboard
 https://adventofcode.com/2016/leaderboard/private/view/33618
 
-## 2015 - C++ 20 (50 stars)
+## 2015 - C++ 20 (50 stars, rank 3532)
 https://adventofcode.com/2015
 
 Private Leaderboard
