@@ -142,7 +142,7 @@ int main() {
             m = max(m, p);
             if ( p >= target ) {
                 cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << i << endl;
-                assert( i == isFirstPart ? 786240 : 831600 );
+                assert( i == isFirstAnswer ? 786240 : 831600 );
                 break;
             }
             if ( i % 100'000 == 0 ) {
