@@ -87,7 +87,7 @@ int main() {
     sort( toList.begin(), toList.end(), []( const string & a, const string & b ) { return a.length() > b.length(); } );
     const auto answer2 = distance(input, toFrom, toList, 0 );
     cout << "Answer 2: " << answer2 << endl;
-    assert( 212 = answer2 );
+    assert( 212 == answer2 );
 
     return 0;
 }
