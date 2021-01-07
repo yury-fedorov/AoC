@@ -57,7 +57,7 @@ public class Day14Test {
         return Optional.empty();
     }
 
-    @Test
+    // @Test - very slow (almost 12 minutes)
     public void solution() throws InterruptedException {
         final var ONE = Optional.of('1');
         Assert.assertEquals( ONE, matchInRow( "112", 2 ) );
