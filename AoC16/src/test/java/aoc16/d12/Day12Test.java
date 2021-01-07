@@ -28,7 +28,7 @@ public class Day12Test {
         execute(input, registers);
         Assert.assertEquals( "answer 1", 318117, registers.get('a').intValue() );
 
-        registers = new HashMap<Character,Integer>();
+        registers = new HashMap<>();
         registers.put('c', 1);
         execute(input, registers);
         Assert.assertEquals( "answer 2", 9227771, registers.get('a').intValue() );
