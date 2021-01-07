@@ -1,36 +1,20 @@
 package aoc16.d05;
 
-import org.junit.Test;
+import aoc16.common.Md5Util;
+
+import java.util.HashMap;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import java.security.*;
-import java.util.HashMap;
-import java.util.Locale;
 
 public class Day05Test {
-    final MessageDigest messageDigest;
 
-    public Day05Test() {
-        try {
-            messageDigest = MessageDigest.getInstance("MD5");
-        } catch ( Exception e ) {
-            throw new RuntimeException( "MD5 not found", e );
-        }
-    }
-
-    String md5(String text) {
-        messageDigest.update(text.getBytes());
-        final var sb = new StringBuilder();
-        for ( final var b : messageDigest.digest() ) {
-            sb.append( String.format("%02X", b) );
-        }
-        return sb.toString();
-    }
+    final static Md5Util util = new Md5Util();
 
     long fiveZeros( String prefix, long min, long max ) {
         for ( ; min <= max; min++ ) {
             final var text = prefix + min;
-            final var h = md5(text);
+            final var h = util.md5(text);
             if ( h.startsWith( "00000" ) ) return min;
         }
         return min;
@@ -43,7 +27,7 @@ public class Day05Test {
     public void solution() {
         var input = "cxdnnyjw";
         // abc
-        assertTrue( "first 5 zeros", md5( "abc3231929" ).startsWith("00000") );
+        assertTrue( "first 5 zeros", util.md5( "abc3231929" ).startsWith("00000") );
         // slow assertEquals( "test", 3231929, fiveZeros("abc", 0, 3232000) );
         final var max = Long.MAX_VALUE;
         long min = 0;
@@ -51,7 +35,7 @@ public class Day05Test {
         final var map = new HashMap<Integer,Character>();
         for ( ; map.size() < 8; min++ ) {
             min = fiveZeros( input, min, max );
-            final var c = md5( input + min );
+            final var c = util.md5( input + min );
             final var p5 = c.charAt(5);
             final var p6 = c.charAt(6);
             if ( sb.length() < 8 ) {
