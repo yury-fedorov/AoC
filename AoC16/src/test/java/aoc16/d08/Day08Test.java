@@ -1,20 +1,20 @@
 package aoc16.d08;
+
+import aoc16.common.IOUtil;
 import org.javatuples.Pair;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.*;
+
 public class Day08Test {
 
-    static Set<Pair<Integer,Integer>> newSet() { return new HashSet<Pair<Integer,Integer>>(); }
+    static Set<Pair<Integer,Integer>> newSet() { return new HashSet<>(); }
 
     static void print( final int width, final int height, Set<Pair<Integer,Integer>> screen ) {
         for ( int y = 0; y < height; y++ ) {
@@ -63,7 +63,7 @@ public class Day08Test {
                                 .collect(Collectors.toList()));
                     } else {
                         System.err.println(l);
-                        assertTrue( false );
+                        fail();
                     }
                 }
                 screen = ns;
@@ -73,16 +73,14 @@ public class Day08Test {
     }
 
     @Test
-    public void sample() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d08/sample.txt" );
-        final var input = Files.readAllLines( Path.of(url.getPath()) );
+    public void sample() {
+        final var input = IOUtil.inputByPath( "d08/sample.txt" );
         assertEquals("test", 6, generic( 7, 3, input ).size() );
     }
 
     @Test
-    public void solution() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d08/input.txt" );
-        final var input = Files.readAllLines( Path.of(url.getPath()) );
+    public void solution() {
+        final var input = IOUtil.input("d08");
         final var screen = generic( 50, 6, input );
         assertEquals("answer 1", 123, screen.size() );
         print( 50, 6, screen ); // answer 2 is printed: AFBUPZBJPS

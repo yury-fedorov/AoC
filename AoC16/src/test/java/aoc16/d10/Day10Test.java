@@ -1,21 +1,22 @@
 package aoc16.d10;
 
+import aoc16.common.IOUtil;
 import org.javatuples.Pair;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+// TODO - to be rewritten with records (for better readibility)
 public class Day10Test {
 
-    enum Destination { BOT, OUTPUT };
-    enum Source { BOT, VALUE };
+    enum Destination { BOT, OUTPUT }
+    enum Source { BOT, VALUE }
 
     public static class BotMap extends HashMap<Integer,Pair<Pair<Destination, Integer>, Pair<Destination,Integer>>> {}
     public static class ValueMap extends HashMap<Integer,Integer> {}
@@ -62,9 +63,8 @@ public class Day10Test {
     }
 
     @Test
-    public void solution() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d10/input.txt" );
-        final var input = Files.readAllLines( Path.of(url.getPath()) );
+    public void solution() {
+        final var input = IOUtil.input("d10");
 
         final var patternValue = Pattern.compile("^value (\\d+) goes to bot (\\d+)$");
         final var patternBot = Pattern.compile("^bot (\\d+) gives low to (\\w+) (\\d+) and high to (\\w+) (\\d+)$");
@@ -112,9 +112,8 @@ public class Day10Test {
         assertEquals( "answer 1", 118, answer1.get().intValue() );
 
         long answer2 = 1;
-        final Function< Pair<Destination,Integer>, Boolean> isOutput = ( p ) -> {
-            return p.getValue0() == Destination.OUTPUT && p.getValue1() >= 0 && p.getValue1() <= 2;
-        };
+        final Function< Pair<Destination,Integer>, Boolean> isOutput
+                = ( p ) -> p.getValue0() == Destination.OUTPUT && p.getValue1() >= 0 && p.getValue1() <= 2;
         for ( final var e : botOutMap.entrySet() ) {
             final var pp = e.getValue();
             if ( isOutput.apply( pp.getValue0() )  ) {

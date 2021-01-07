@@ -1,12 +1,11 @@
 package aoc16.d09;
 
+import aoc16.common.IOUtil;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.util.regex.Pattern;
+
+import static org.junit.Assert.*;
 
 public class Day09Test {
 
@@ -20,7 +19,7 @@ public class Day09Test {
             final char ch = s.charAt(i);
             if ( ch == '(' ) {
                 // starts instruction
-                assertEquals( "instruction == false", false, isInstruction );
+                assertFalse("instruction == false", isInstruction);
                 isInstruction = true;
                 instruction.setLength(0);
                 i++;
@@ -56,7 +55,7 @@ public class Day09Test {
             final char ch = s.charAt(i);
             if ( ch == '(' ) {
                 // starts instruction
-                assertEquals( "instruction == false", false, isInstruction );
+                assertFalse("instruction == false", isInstruction);
                 isInstruction = true;
                 instruction.setLength(0);
                 i++;
@@ -94,9 +93,8 @@ public class Day09Test {
     }
 
     @Test
-    public void solution() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d09/input.txt" );
-        final var input = Files.readAllLines( Path.of(url.getPath()) );
+    public void solution()  {
+        final var input = IOUtil.input("d09");
         int answer1 = 0;
         long answer2 = 0;
         for ( final var l : input ) {
@@ -105,6 +103,6 @@ public class Day09Test {
             assertTrue( "answer2 > 0", answer2 > 0 );
         }
         assertEquals("answer 1", 150914, answer1 );
-        assertEquals("answer 2", 11052855125l, answer2 ); // too low - 501035
+        assertEquals("answer 2", 11052855125L, answer2 ); // too low - 501035
     }
 }

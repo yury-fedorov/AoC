@@ -1,16 +1,14 @@
 package aoc16.d03;
 
+import aoc16.common.IOUtil;
 import org.javatuples.Triplet;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class Day04Test {
 
@@ -79,9 +77,8 @@ public class Day04Test {
     }
 
     @Test
-    public void solution() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d04/input.txt" );
-        final var input = Files.readAllLines( Path.of(url.getPath()) );
+    public void solution() {
+        final var input = IOUtil.input("d04");
         long answer1 = 0;
         Optional<Integer> answer2 = Optional.empty();
         for ( final var l : input ) {
@@ -89,7 +86,7 @@ public class Day04Test {
             answer1 += validRoomSectorId(p);
             if ( answer2.isEmpty() ) {
                 final var key = p.getValue1();
-                if ( decode( p.getValue0(), key ).indexOf("pole") >= 0 ) answer2 = Optional.of(key);
+                if (decode(p.getValue0(), key).contains("pole")) answer2 = Optional.of(key);
             }
         }
         assertEquals("answer 1", 278221, answer1 );

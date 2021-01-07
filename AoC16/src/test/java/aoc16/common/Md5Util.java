@@ -13,7 +13,7 @@ public class Md5Util {
         }
     }
 
-    public synchronized String md5(String text) {
+    public String md5(String text) {
         messageDigest.update(text.getBytes());
         final var sb = new StringBuilder();
         for ( final var b : messageDigest.digest() ) {

@@ -1,13 +1,13 @@
 package aoc16.d01;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import aoc16.common.IOUtil;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.HashSet;
+
+import static org.junit.Assert.assertEquals;
 
 public class Day01Test {
 
@@ -19,10 +19,8 @@ public class Day01Test {
     }
 
     @Test
-    public void part12() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d01/input.txt" );
-        assertNotNull(url);
-        final var input = Files.readString( Path.of(url.getPath()) );
+    public void part12() {
+        final var input = IOUtil.input( "d01" ).get(0);
         // final var input = "R8, R4, R4, R8";
         final var c = input.split(", ");
         Direction d = Direction.North;

@@ -1,17 +1,20 @@
 package aoc16.d14;
 
+import aoc16.common.Config;
 import aoc16.common.Md5Util;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public class Day14Test {
-
 
     final static Map<String,String> cache = new ConcurrentHashMap<>();
 
@@ -57,8 +60,8 @@ public class Day14Test {
         return Optional.empty();
     }
 
-    // @Test - very slow (almost 12 minutes)
-    public void solution() throws InterruptedException {
+    @Test
+    public void testMatchInRow() {
         final var ONE = Optional.of('1');
         Assert.assertEquals( ONE, matchInRow( "112", 2 ) );
         Assert.assertEquals( Optional.empty(), matchInRow( "112", 3 ) );
@@ -67,10 +70,15 @@ public class Day14Test {
         Assert.assertEquals( ONE, matchInRow( "2111", 3 ) );
         Assert.assertEquals( ONE, matchInRow( "21112", 3 ) );
         Assert.assertEquals( ONE, matchInRow( "2111222333", 3 ) );
+    }
 
-        final var fh1 =  new Function<String, String>() { public String apply(String s) { return hash(s);  } };
-        final var fh2 =  new Function<String, String>() { public String apply(String s) { return hash2(s); } };
-        // Assert.assertEquals( "test 1",  22728, solution( "abc", fh1 ) );
+    @Test // very slow (almost 12 minutes)
+    public void solution() throws InterruptedException {
+        if (Config.isFast() ) return;
+        final Function<String, String> fh1 = (s) -> hash(s);
+        final Function<String, String> fh2 =  (s) -> hash2(s);
+
+        Assert.assertEquals( "test 1",  22728, solution( "abc", fh1 ) );
 
         final var SALT = "zpqevtbw";
         Assert.assertEquals( "answer 1",  16106, solution( SALT, fh1 ) );

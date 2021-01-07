@@ -1,11 +1,12 @@
 package aoc16.d07;
 
+import aoc16.common.IOUtil;
 import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
 
 public class Day07Test {
 
@@ -35,9 +36,8 @@ public class Day07Test {
     }
 
     @Test
-    public void solution() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d07/input.txt" );
-        final var input = Files.readAllLines( Path.of(url.getPath()) );
+    public void solution()  {
+        final var input = IOUtil.input("d07");
         int answer1 = 0;
         int answer2 = 0;
         for ( final var l : input ) {

@@ -1,11 +1,9 @@
 package aoc16.d03;
 
+import aoc16.common.IOUtil;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
@@ -16,9 +14,8 @@ public class Day03Test {
     }
 
     @Test
-    public void solution() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d03/input.txt" );
-        final var input = Files.readAllLines( Path.of(url.getPath()) );
+    public void solution() {
+        final var input = IOUtil.input("d03");
         final var list1 = new ArrayList<Integer>();
         final var list2 = new ArrayList<Integer>();
         final var list3 = new ArrayList<Integer>();

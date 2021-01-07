@@ -1,12 +1,15 @@
 package aoc16.d05;
 
+import aoc16.common.Config;
 import aoc16.common.Md5Util;
+import org.junit.Test;
 
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+// TODO - slow - can be applied pool of MD5 like in day 15
 public class Day05Test {
 
     final static Md5Util util = new Md5Util();
@@ -20,11 +23,13 @@ public class Day05Test {
         return min;
     }
 
-    // @Test // on macOS - slow: takes 329 secs on macOS
+    @Test
+    // on macOS - slow: takes 329 secs on macOS
     // on Andrei's PC - takes 226.5 seconds
     // on ASUS 2011 - takes 287.7 seconds
     // on ASUS 2012 Windows 10 - 294.6 seconds
     public void solution() {
+        if ( Config.isFast() ) return;
         var input = "cxdnnyjw";
         // abc
         assertTrue( "first 5 zeros", util.md5( "abc3231929" ).startsWith("00000") );

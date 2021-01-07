@@ -1,16 +1,10 @@
 package aoc16.d02;
 
+import aoc16.common.IOUtil;
 import org.junit.Test;
-
-import com.google.common.collect.*;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import com.google.common.collect.*; // TODO - can be replaced with ad-hoc solution
 import java.util.*;
-
 import org.javatuples.*;
-
 import static org.junit.Assert.assertEquals;
 
 public class Day02Test {
@@ -63,9 +57,8 @@ public class Day02Test {
     }
 
     @Test
-    public void solution() throws IOException {
-        final var url = getClass().getClassLoader().getResource( "d02/input.txt" );
-        final var input = Files.readAllLines( Path.of(url.getPath()) );
+    public void solution() {
+        final var input = IOUtil.input( "d02" );
         var answer1 = answer( input, xy(1,1), KEYPAD );
         assertEquals( "answer 1", "38961", answer1 );
         var answer2 = answer( input, xy(0,2), KEYPAD2 );
