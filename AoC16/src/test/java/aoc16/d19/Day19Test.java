@@ -61,7 +61,7 @@ public class Day19Test {
         Assert.assertEquals( "test 1", 3, detectWinner(5));
         Assert.assertEquals( "answer 1", 1842613, detectWinner(INPUT));
         Assert.assertEquals( "test 2", 2, detectWinner21(5));
-        // if (Config.isFast() ) return; // 1 h 8 minutess 16 seconds
-        Assert.assertEquals( "answer 2", -1, detectWinner21(INPUT)); // 259778 - too low
+        if ( Config.isFast() ) return; // 1 h 8 minutess 16 seconds // 1h 0m
+        Assert.assertEquals( "answer 2", -1, detectWinner21(INPUT)); // 259778 - 1. too low, 26735 (not tried)
     }
 }
