@@ -28,29 +28,23 @@ public class Day19Test {
         return list.peek();
     }
 
-    static int detectWinner2( final int initialSize ) {
-        final LinkedList<Integer> list = init(initialSize);
-        for (  int position = 0; true; ) {
-            final int n = list.size();
-            if ( n == 1 ) return list.peek();
-            final int half = ( n >> 1 ); // divide by 2
-            final int outIndex = ( position + half ) % n;
-            list.remove( outIndex );
-            if ( outIndex > position ) position++;
-        }
+    static void print( List<Integer> list ) {
+        for ( final var e : list ) System.out.print( e + " " );
+        System.out.println();
     }
 
     static int detectWinner21( final int initialSize ) {
         final List<Integer> list = new ArrayList<>( init(initialSize) );
-        for (  int position = 0; true; ) {
-            final int n = list.size();
-            if ( n == 1 ) return list.get(0);
+        int position = 0;
+        for ( int n = list.size(); n > 1; ) {
+            // print(list);
             if ( ( n % 10000 ) == 0 ) System.out.println( n );
             final int half = ( n >> 1 ); // divide by 2
             final int outIndex = ( position + half ) % n;
             list.remove( outIndex );
-            if ( outIndex > position ) position++;
+            if ( (++position) >= (--n) ) position = 0;
         }
+        return list.get(0);
     }
 
     private static LinkedList<Integer> init(int n) {
@@ -67,7 +61,7 @@ public class Day19Test {
         Assert.assertEquals( "test 1", 3, detectWinner(5));
         Assert.assertEquals( "answer 1", 1842613, detectWinner(INPUT));
         Assert.assertEquals( "test 2", 2, detectWinner21(5));
-        if (Config.isFast() ) return; // 1 h 8 minutess 16 seconds
+        // if (Config.isFast() ) return; // 1 h 8 minutess 16 seconds
         Assert.assertEquals( "answer 2", -1, detectWinner21(INPUT)); // 259778 - too low
     }
 }
