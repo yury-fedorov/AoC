@@ -20,10 +20,10 @@ public class Day19Test {
             list.addLast(i);
         }
         var it = next(list, list.listIterator() );
-        for ( ; list.size() > 1;  ) {
+        while (list.size() > 1) {
             it = next(list, it);
             it.remove();
-            it = next(list, it);
+            it = next(list, it); // remove() call brings us to the previous element
         }
         return list.get(0);
     }
