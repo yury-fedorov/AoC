@@ -31,11 +31,23 @@ public class Day21Test {
         return result;
     }
 
+    // rotate left 1 step
+    static StringBuilder rotateLeft( CharSequence t, int s ) {
+        final var result = new StringBuilder(t);
+        while ( --s >= 0 ) {
+            final char ch = result.charAt(0);
+            result.deleteCharAt(0);
+            result.append(ch);
+        }
+        return result;
+    }
+
     @Test
     public void test() {
         Assert.assertEquals( "ebcda", swapPosition( "abcde", 0, 4 ).toString() );
         Assert.assertEquals( "edcba", swapLetter( "ebcda", 'b', 'd' ).toString() );
         Assert.assertEquals( "abcde", reversePosition( "edcba", 0, 4 ).toString() );
+        Assert.assertEquals( "bcdea", rotateLeft( "abcde", 1).toString() );
     }
 
     @Test
