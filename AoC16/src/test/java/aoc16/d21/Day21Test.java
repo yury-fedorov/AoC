@@ -6,13 +6,18 @@ import org.junit.Test;
 
 public class Day21Test {
 
-    /*
-rotate based on position of letter a
-swap letter g with letter d
-move position 1 to position 5
-reverse positions 6 through 7
-move position 5 to position 4
-    */
+    // swap position 4 with position 0
+    static StringBuilder swap( CharSequence t, int a, int b ) {
+        final var t1 = new StringBuilder( t );
+        t1.setCharAt( a, t.charAt(b) );
+        t1.setCharAt( b, t.charAt(a) );
+        return t1;
+    }
+
+    @Test
+    public void test() {
+        Assert.assertEquals( "ebcda", swap( "abcde", 0, 4 ).toString() );
+    }
 
     @Test
     public void solution() {
