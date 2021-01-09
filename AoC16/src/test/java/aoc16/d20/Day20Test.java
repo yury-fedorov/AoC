@@ -18,19 +18,26 @@ public class Day20Test {
         return r.getValue1() - r.getValue0() + 1L;
     }
 
+    final static long maxInt = 4294967295L; // 0x00000000FFFFFFFF
+
+    static long toInt( final long value ) {
+        final var result = value & maxInt;
+        Assert.assertTrue( result >= 0 );
+        Assert.assertTrue( value >= result );
+        return result;
+    }
+
     @Test
     public void solution() {
         final var input = IOUtil.input("d20");
-        final long maxInt = 4294967295L;
         final var pattern = Pattern.compile( "^(\\d+)-(\\d+)$" );
         final var list = new ArrayList<Pair<Long,Long>>( input.size() );
         for ( final var l : input ) {
             final var m = pattern.matcher(l);
             Assert.assertTrue( "Bad syntax: " + l, m.find() );
             final long min = Long.parseLong( m.group(1) );
-            final long max = Long.parseLong(m.group(2));
-            if ( min <= maxInt )
-            list.add( Pair.with(min, Math.min( max, maxInt ) ) );
+            final long max = Long.parseLong( m.group(2) );
+            list.add( Pair.with(min, max ) );
         }
 
         list.sort(Comparator.comparing(Pair::getValue0));
@@ -50,7 +57,7 @@ public class Day20Test {
             }
             if ( isCompressed == false ) break;
         }
-
+        // integrity check
         for ( int i = 2; i < list.size(); i++ ) {
             final var r0 = list.get(i-1);
             final var r1 = list.get(i);
@@ -60,7 +67,7 @@ public class Day20Test {
         final long answer1 = list.get(0).getValue0() == 0 ? list.get(0).getValue1() + 1 : 0L;
         Assert.assertEquals( "answer 1", 32259706L, answer1 );
 
-        if(Config.isFast()) return; // TODO - second part does not work
+        Assert.fail( "not write answer" ); // TODO - second part does not work
 
         long badCount = 0L;
         long good = 0L;
@@ -82,6 +89,7 @@ public class Day20Test {
         final long answer2 = count( Pair.with(0L, maxInt ) ) - blackListed;
         */
         final long answer2 = good;
-        Assert.assertEquals("answer 2", -1, answer2 ); // 836882514 -- too high
+        Assert.assertTrue( "answer 2 is too high: " + answer2, answer2 < 836882514 );
+        Assert.assertEquals("answer 2", -1, answer2 );
     }
 }
