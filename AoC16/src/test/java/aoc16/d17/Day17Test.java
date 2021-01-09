@@ -5,10 +5,7 @@ import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,22 +46,59 @@ public class Day17Test {
     final static int MAX_COOR = 4 - 1;
 
     static String shortestPath( final String passcode ) {
-        var p0 = Pair.with(0,0);
         final var px = Pair.with(MAX_COOR,MAX_COOR);
 
-        final var next = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
+        var prev = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
+        prev.add( Pair.with( "", Pair.with(0,0) ) );
 
-        String path = "";
-        final var options = openDoors(passcode).stream()
-                .map( (d) -> Pair.with( d, move( p0, d ) ) )
-                .filter( (p) -> p.getValue1().isPresent() )
-                .map( (p) -> Pair.with( p.getValue0()._symbol, p.getValue1().get() ) )
-                .collect(Collectors.toList());
-        final var or = options.stream().filter( (p) -> p.getValue1() == px )
-                .map( (p) -> p.getValue0() ).findFirst();
-        if (or.isPresent()) return path + or.get();
+        while ( !prev.isEmpty() ) {
+            final var next = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
+            for ( final var start : prev ) {
+                final var path = start.getValue0();
+                final var p0 = start.getValue1();
+                final var options = openDoors(passcode + path ).stream()
+                        .map( (d) -> Pair.with( d, move( p0, d ) ) )
+                        .filter( (p) -> p.getValue1().isPresent() )
+                        .map( (p) -> Pair.with( p.getValue0()._symbol, p.getValue1().get() ) )
+                        .collect(Collectors.toList());
+                final var or = options.stream().filter( (p) -> p.getValue1().equals(px) )
+                        .map( (p) -> p.getValue0() ).findFirst();
+                if (or.isPresent()) return path + or.get(); // solution found
+                next.addAll( options.stream().map( (p) -> Pair.with( path + p.getValue0(), p.getValue1() ) )
+                        .collect(Collectors.toList()) );
+            }
+            prev = next;
+        }
+        throw new RuntimeException( "no solution was found" );
+    }
 
-        return "";
+    static List<String> allPaths(final String passcode ) {
+        final var result = new LinkedList<String>();
+        final var px = Pair.with(MAX_COOR,MAX_COOR);
+
+        var prev = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
+        prev.add( Pair.with( "", Pair.with(0,0) ) );
+
+        while ( !prev.isEmpty() ) {
+            final var next = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
+            for ( final var start : prev ) {
+                final var path = start.getValue0();
+                final var p0 = start.getValue1();
+                final var options = openDoors(passcode + path ).stream()
+                        .map( (d) -> Pair.with( d, move( p0, d ) ) )
+                        .filter( (p) -> p.getValue1().isPresent() )
+                        .map( (p) -> Pair.with( p.getValue0()._symbol, p.getValue1().get() ) )
+                        .collect(Collectors.toList());
+
+                for ( final var p : options ) {
+                    final var path1 = path + p.getValue0();
+                    if ( p.getValue1().equals(px) ) result.add( path1 );
+                    else next.add( Pair.with( path1, p.getValue1() ) );
+                }
+            }
+            prev = next;
+        }
+        return result;
     }
 
     @Test
@@ -77,6 +111,8 @@ public class Day17Test {
     @Test
     public void solution() {
         final var INPUT = "gdjjyniy";
-        Assert.assertEquals( "answer 1", null, shortestPath( INPUT ) );
+        Assert.assertEquals( "answer 1", "DUDDRLRRRD", shortestPath( INPUT ) );
+        Assert.assertEquals( "answer 2", -1,
+                allPaths( INPUT ).stream().mapToInt( (p) -> p.length() ).max().getAsInt() );
     }
 }
