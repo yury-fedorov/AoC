@@ -1,5 +1,6 @@
 package aoc16.d17;
 
+import aoc16.common.Config;
 import aoc16.common.Md5Util;
 import org.javatuples.Pair;
 import org.junit.Assert;
@@ -45,33 +46,6 @@ public class Day17Test {
 
     final static int MAX_COOR = 4 - 1;
 
-    static String shortestPath( final String passcode ) {
-        final var px = Pair.with(MAX_COOR,MAX_COOR);
-
-        var prev = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
-        prev.add( Pair.with( "", Pair.with(0,0) ) );
-
-        while ( !prev.isEmpty() ) {
-            final var next = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
-            for ( final var start : prev ) {
-                final var path = start.getValue0();
-                final var p0 = start.getValue1();
-                final var options = openDoors(passcode + path ).stream()
-                        .map( (d) -> Pair.with( d, move( p0, d ) ) )
-                        .filter( (p) -> p.getValue1().isPresent() )
-                        .map( (p) -> Pair.with( p.getValue0()._symbol, p.getValue1().get() ) )
-                        .collect(Collectors.toList());
-                final var or = options.stream().filter( (p) -> p.getValue1().equals(px) )
-                        .map( (p) -> p.getValue0() ).findFirst();
-                if (or.isPresent()) return path + or.get(); // solution found
-                next.addAll( options.stream().map( (p) -> Pair.with( path + p.getValue0(), p.getValue1() ) )
-                        .collect(Collectors.toList()) );
-            }
-            prev = next;
-        }
-        throw new RuntimeException( "no solution was found" );
-    }
-
     static List<String> allPaths(final String passcode ) {
         final var result = new LinkedList<String>();
         final var px = Pair.with(MAX_COOR,MAX_COOR);
@@ -101,8 +75,22 @@ public class Day17Test {
         return result;
     }
 
+    static Pair<String,Integer> answers( String passcode ) {
+        final var all =  allPaths( passcode );
+        String answer1 = all.get(0);
+        int answer2 = all.get(0).length();
+        for ( final var e : all ) {
+            answer2 = Math.max( answer2, e.length() );
+            if ( answer1.length() > e.length() ) answer1 = e;
+        }
+        return Pair.with(answer1, answer2);
+    }
+
+    static String shortestPath( String passcode ) { return answers( passcode ).getValue0(); }
+
     @Test
     public void test() {
+        if ( Config.isFast() ) return; // takes 5 seconds
         Assert.assertEquals( "DDRRRD", shortestPath("ihgpwlah") );
         Assert.assertEquals( "DDUDRLRRUDRD", shortestPath("kglvqrro") );
         Assert.assertEquals( "DRURDRUDDLLDLUURRDULRLDUUDDDRR", shortestPath("ulqzkmiv") );
@@ -111,8 +99,14 @@ public class Day17Test {
     @Test
     public void solution() {
         final var INPUT = "gdjjyniy";
-        Assert.assertEquals( "answer 1", "DUDDRLRRRD", shortestPath( INPUT ) );
-        Assert.assertEquals( "answer 2", -1,
-                allPaths( INPUT ).stream().mapToInt( (p) -> p.length() ).max().getAsInt() );
+        final var all =  allPaths( INPUT );
+        String answer1 = all.get(0);
+        int answer2 = all.get(0).length();
+        for ( final var e : all ) {
+            answer2 = Math.max( answer2, e.length() );
+            if ( answer1.length() > e.length() ) answer1 = e;
+        }
+        Assert.assertEquals( "answer 1", "DUDDRLRRRD", answer1 );
+        Assert.assertEquals( "answer 2", 578, answer2 );
     }
 }
