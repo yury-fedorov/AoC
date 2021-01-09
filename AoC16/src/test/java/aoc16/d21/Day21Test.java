@@ -1,6 +1,7 @@
 package aoc16.d21;
 
 import aoc16.common.IOUtil;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class Day21Test {
@@ -17,5 +18,6 @@ move position 5 to position 4
     public void solution() {
         final var operations = IOUtil.input( "d21" );
         final var input = "abcdefgh";
+        Assert.fail( "no solution yet" );
     }
 }
