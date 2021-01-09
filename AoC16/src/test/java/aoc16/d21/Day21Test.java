@@ -22,10 +22,20 @@ public class Day21Test {
         return swapPosition( t, ai, bi );
     }
 
+    // reverse positions 0 through 4
+    static StringBuilder reversePosition( CharSequence t, int a, int b ) {
+        final var result = new StringBuilder();
+        for ( int i = 0; i < a; i++ ) result.append( t.charAt(i) );
+        for ( int i = a; i <= b; i++ ) result.append( t.charAt(b-(i-a)) );
+        for ( int i = b + 1; i < t.length(); i++ ) result.append( t.charAt(i));
+        return result;
+    }
+
     @Test
     public void test() {
         Assert.assertEquals( "ebcda", swapPosition( "abcde", 0, 4 ).toString() );
         Assert.assertEquals( "edcba", swapLetter( "ebcda", 'b', 'd' ).toString() );
+        Assert.assertEquals( "abcde", reversePosition( "edcba", 0, 4 ).toString() );
     }
 
     @Test
