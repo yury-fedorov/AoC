@@ -42,12 +42,33 @@ public class Day21Test {
         return result;
     }
 
+    static StringBuilder rotateRight( CharSequence t, int s ) {
+        final int lastIndex = t.length() - 1;
+        final var result = new StringBuilder(t);
+        while ( --s >= 0 ) {
+            final char ch = result.charAt(lastIndex);
+            result.deleteCharAt(lastIndex);
+            result.insert(0, ch );
+        }
+        return result;
+    }
+
+    // rotate based on position of letter b
+    static StringBuilder rotateByPosition( CharSequence t, Character c ) {
+        final var s = new StringBuilder(t);
+        final int i = s.indexOf( c.toString() );
+        return rotateRight( t, 1 + i + ( i >= 4 ? 1 : 0 ) );
+    }
+
     @Test
     public void test() {
         Assert.assertEquals( "ebcda", swapPosition( "abcde", 0, 4 ).toString() );
         Assert.assertEquals( "edcba", swapLetter( "ebcda", 'b', 'd' ).toString() );
         Assert.assertEquals( "abcde", reversePosition( "edcba", 0, 4 ).toString() );
         Assert.assertEquals( "bcdea", rotateLeft( "abcde", 1).toString() );
+        Assert.assertEquals( "deabc", rotateRight( "abcde", 2).toString() );
+        Assert.assertEquals( "ecabd", rotateByPosition( "abdec", 'b').toString() );
+        Assert.assertEquals( "decab", rotateByPosition( "ecabd", 'd').toString() );
     }
 
     @Test
