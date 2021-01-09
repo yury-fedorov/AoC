@@ -77,13 +77,7 @@ public class Day17Test {
 
     static Pair<String,Integer> answers( String passcode ) {
         final var all =  allPaths( passcode );
-        String answer1 = all.get(0);
-        int answer2 = all.get(0).length();
-        for ( final var e : all ) {
-            answer2 = Math.max( answer2, e.length() );
-            if ( answer1.length() > e.length() ) answer1 = e;
-        }
-        return Pair.with(answer1, answer2);
+        return Pair.with(all.get(0), all.listIterator().next().length());
     }
 
     static String shortestPath( String passcode ) { return answers( passcode ).getValue0(); }
