@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,13 +50,20 @@ public class Day17Test {
 
     static String shortestPath( final String passcode ) {
         var p0 = Pair.with(0,0);
-        var px = Pair.with(MAX_COOR,MAX_COOR);
+        final var px = Pair.with(MAX_COOR,MAX_COOR);
+
+        final var next = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
+
+        String path = "";
         final var options = openDoors(passcode).stream()
                 .map( (d) -> Pair.with( d, move( p0, d ) ) )
                 .filter( (p) -> p.getValue1().isPresent() )
                 .map( (p) -> Pair.with( p.getValue0()._symbol, p.getValue1().get() ) )
                 .collect(Collectors.toList());
-        // TODO - how we move further?
+        final var or = options.stream().filter( (p) -> p.getValue1() == px )
+                .map( (p) -> p.getValue0() ).findFirst();
+        if (or.isPresent()) return path + or.get();
+
         return "";
     }
 
