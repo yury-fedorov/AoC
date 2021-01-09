@@ -5,6 +5,7 @@ import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,10 +29,10 @@ public class Day17Test {
 
     static boolean isOpen( char code ) { return code >= 'b' && code <= 'f'; }
 
-    static Map<Direction,Boolean> doors( String text ) {
+    static Collection<Direction> openDoors(String text ) {
         final var hash = md5(text);
-        return Stream.of(Direction.values()).map( (d) -> Pair.with( d, isOpen( hash.charAt( d._position ) ) ) )
-                .collect(Collectors.toMap( Pair::getValue0, Pair::getValue1 ));
+        return Stream.of(Direction.values()).filter( (d) -> isOpen( hash.charAt( d._position ) ) )
+                .collect(Collectors.toList());
     }
 
     @org.jetbrains.annotations.NotNull
@@ -49,7 +50,12 @@ public class Day17Test {
     static String shortestPath( final String passcode ) {
         var p0 = Pair.with(0,0);
         var px = Pair.with(MAX_COOR,MAX_COOR);
-        // TODO - moves & open doors combination
+        final var options = openDoors(passcode).stream()
+                .map( (d) -> Pair.with( d, move( p0, d ) ) )
+                .filter( (p) -> p.getValue1().isPresent() )
+                .map( (p) -> Pair.with( p.getValue0()._symbol, p.getValue1().get() ) )
+                .collect(Collectors.toList());
+        // TODO - how we move further?
         return "";
     }
 
