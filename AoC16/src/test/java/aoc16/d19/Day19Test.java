@@ -42,7 +42,9 @@ public class Day19Test {
             final int half = ( n >> 1 ); // divide by 2
             final int outIndex = ( position + half ) % n;
             list.remove( outIndex );
-            if ( (++position) >= (--n) ) position = 0;
+            --n;
+            position += ( outIndex >= position ) ? 1 : 0; // we increment position only, if removed is ahead in numbering
+            position = ( position >= n ) ? 0 : position;
         }
         return list.get(0);
     }
@@ -61,8 +63,7 @@ public class Day19Test {
         Assert.assertEquals( "test 1", 3, detectWinner(5));
         Assert.assertEquals( "answer 1", 1842613, detectWinner(INPUT));
         Assert.assertEquals( "test 2", 2, detectWinner21(5));
-        Assert.fail( "answer 2 is not correct" );
-        if ( Config.isFast() ) return; // 1 h 8 minutess 16 seconds // 1h 0m
-        Assert.assertEquals( "answer 2", -1, detectWinner21(INPUT)); // 259778 - 1. too low, 26735 (2. too low)
+        if ( Config.isFast() ) return; // 59m 36s
+        Assert.assertEquals( "answer 2", 1424135, detectWinner21(INPUT));
     }
 }
