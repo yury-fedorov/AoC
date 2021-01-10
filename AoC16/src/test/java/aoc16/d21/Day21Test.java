@@ -4,9 +4,7 @@ import aoc16.common.IOUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -127,11 +125,26 @@ public class Day21Test {
         return result.toString();
     }
 
+    static Optional<String> answer2(String head, String tail, String answer, Collection<String> operations ) {
+        if ( tail.length() > 0 ) {
+            for ( final Character c : tail.toCharArray() ) {
+                final var b = new StringBuilder(tail);
+                final var index = b.indexOf( c.toString() );
+                b.deleteCharAt(index);
+                final var o = answer2( head + c, b.toString(), answer, operations );
+                if ( o.isPresent() ) return o;
+            }
+        } else if ( answer.equals( scramble( head, operations ) ) ) return Optional.of(head);
+        return Optional.empty();
+    }
+
     @Test
     public void solution() {
         final var operations = IOUtil.input( "d21" );
         final var input = "abcdefgh";
         Assert.assertEquals( "answer 1", "aefgbcdh", scramble( input, operations ) );
-
+        // brute force takes 2 seconds
+        Assert.assertEquals( "answer 2", "egcdahbf",
+                answer2( "", input, "fbgdceah", operations ).get() );
     }
 }
