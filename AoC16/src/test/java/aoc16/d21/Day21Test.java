@@ -5,6 +5,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Day21Test {
@@ -68,6 +71,14 @@ public class Day21Test {
         return rotateRight( t, 1 + i + ( i >= 4 ? 1 : 0 ) );
     }
 
+    // move position 1 to position 4
+    final static Pattern MOVE_POS = Pattern.compile( "^move position (\\d+) to position (\\d+)$" );
+    static StringBuilder movePosition( CharSequence t, int a, int b ) {
+        final var s = new StringBuilder(t);
+        s.deleteCharAt( a );
+        s.insert( b, t.charAt(a) );
+        return s;
+    }
     @Test
     public void test() {
         Assert.assertEquals( "ebcda", swapPosition( "abcde", 0, 4 ).toString() );
@@ -81,8 +92,31 @@ public class Day21Test {
         Assert.assertEquals( "decab", scramble( "abcde", IOUtil.inputByPath( "d21/sample.txt" ) ) );
     }
 
+    @FunctionalInterface
+    interface Transformation {
+        StringBuilder apply(Matcher m, StringBuilder t);
+    }
+
+    static final Map<Pattern, Transformation> txMap = initMap();
+
+    private static Map<Pattern, Transformation> initMap() {
+        final var map = new HashMap<Pattern, Transformation>();
+        map.put(SWAP_POS, (m, s) -> swapPosition( s, Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)) ) );
+        map.put(SWAP_LETTER, (m, s) -> swapLetter( s, m.group(1).charAt(0), m.group(2).charAt(0) ) );
+        map.put(REV_POS, (m,s) -> reversePosition(s, Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)) ) );
+        map.put(ROTATE_LEFT, (m,s) -> rotateLeft(s, Integer.parseInt(m.group(1)) ) );
+        map.put(ROTATE_RIGHT, (m,s) -> rotateRight(s, Integer.parseInt(m.group(1)) ) );
+        map.put(ROTATE_BY_POS, (m,s) -> rotateByPosition(s, m.group(1).charAt(0) ) );
+        map.put(MOVE_POS, (m,s) -> movePosition(s, Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))));
+        return map;
+    }
+
     static StringBuilder apply( String operation, StringBuilder input ) {
-        return input;
+        for ( final var e : txMap.entrySet() ) {
+            final var m = e.getKey().matcher(operation);
+            if ( m.find() ) return e.getValue().apply(m, input);
+        }
+        throw new RuntimeException( "No match for: " + operation );
     }
 
     static String scramble( String input, Collection<String> operations ) {
@@ -97,6 +131,7 @@ public class Day21Test {
     public void solution() {
         final var operations = IOUtil.input( "d21" );
         final var input = "abcdefgh";
-        Assert.fail( "no solution yet" );
+        Assert.assertEquals( "answer 1", "aefgbcdh", scramble( input, operations ) );
+
     }
 }
