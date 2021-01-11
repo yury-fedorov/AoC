@@ -82,7 +82,7 @@ public class Day11Test {
         // initialization: thulium - 1, plutonium - 2, strontium - 3, promethium - 4, ruthenium - 5
         var floors = initFloors( List.of(-1, 1, -2, -3), List.of(2, 3), List.of(-4, 4, -5, 5) );
         Assert.assertEquals( "answer 1", 31, solve(floors) );
-        // if ( Config.isFast() ) return; // 523 seconds
+        if ( Config.isFast() ) return; // 521 seconds
         final var floor0 = new ArrayList<>( floors.get(0) );
         // elerium - 6, dilithium - 7
         floor0.addAll( List.of( 6, -6, 7, -7 ) );
