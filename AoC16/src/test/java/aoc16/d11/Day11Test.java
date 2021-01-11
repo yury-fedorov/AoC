@@ -66,6 +66,10 @@ public class Day11Test {
         for ( final var d : directions( floors, floor ) ) {
             final var nextFloorNow = new HashSet<>( floors.get(  nextFloor( floor, d ) ) );
             for ( final var inLift : options ) {
+                // generators are never going down
+                if ( d == LiftDirection.DOWN &&
+                        inLift.stream().filter( (e) -> isGenerator(e) ).findAny().isPresent() ) continue;
+
                 final var nextFloorAfter = new HashSet<>( nextFloorNow );
                 nextFloorAfter.addAll(inLift);
                 if ( getFried( nextFloorAfter ).isEmpty() ) results.add( Pair.with( d, inLift ) );
@@ -104,15 +108,16 @@ public class Day11Test {
                 for ( final var o : options( state, elevator ) ) {
                     final var nextFloor = nextFloor( elevator, o.getValue0() );
                     final var newState = move( state, elevator, nextFloor, o.getValue1() );
-                    if ( !history.containsKey( print( newState ) ) ) // we do not repeat the history
+                    if ( !history.containsKey( print( newState, nextFloor ) ) ) // we do not repeat the history
                         paths1.add( Pair.with( nextFloor, newState ) );
                 }
-                history.put( print( state ), step );
+                history.put( print( state, elevator ), step );
             }
             step++;
             if ( paths1.stream()
                     .filter( (p) -> p.getValue0() == MAX_FLOOR && firstNonEmptyFloor( p.getValue1() ) == MAX_FLOOR )
-                    .findAny().isPresent() ) break;
+                    .findAny().isPresent() )
+                break;
             Assert.assertFalse( "failed to find a solution: " + step, paths1.isEmpty() );
             paths = paths1;
         }
@@ -121,8 +126,9 @@ public class Day11Test {
         Assert.fail( "no solution yet" );
     }
 
-    static String print( List<Collection<Integer>> floors ) {
+    static String print( List<Collection<Integer>> floors, int floor ) {
         final var b = new StringBuilder();
+        b.append("E=").append( floor ).append( " -> ");
         for ( final var f : floors ) {
             final var fo = new ArrayList<>(f);
             fo.sort( Comparator.naturalOrder() );
@@ -140,9 +146,8 @@ public class Day11Test {
             final var fs = new HashSet<>( f );
             if ( curFloor == fi ) fs.removeAll( elevator );
             else if ( nextFloor == fi ) fs.addAll( elevator );
-            // check
             if ( fi == curFloor || fi == nextFloor )
-                Assert.assertTrue( Math.abs( f.size() - fs.size() ) == elevator.size() );
+                Assert.assertTrue( "check",Math.abs( f.size() - fs.size() ) == elevator.size() );
             result.add( fs );
         }
         return result;
