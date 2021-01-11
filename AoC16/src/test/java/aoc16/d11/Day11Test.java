@@ -81,7 +81,7 @@ public class Day11Test {
     @Test
     public void solution() {
         final List<Collection<Integer>> floors = new ArrayList<>(); // generator - negative, corresponding chip positive
-        if ( false ) {
+        if ( true ) {
             // initialization: thulium - 1, plutonium - 2, strontium - 3, promethium - 4, ruthenium - 5
             floors.add( List.of( -1, 1, -2, -3 ) );
             floors.add( List.of( 2, 3 ) );
@@ -94,7 +94,6 @@ public class Day11Test {
             floors.add( new LinkedList<>() );
         }
 
-        // TODO - get the first answer
         var paths = Set.of( Pair.with( 0, floors ) );
         int step = 0;
         final var history = new HashMap<String, Integer>();
@@ -121,13 +120,13 @@ public class Day11Test {
             paths = paths1;
         }
 
-        Assert.assertEquals( "answer 1", -1, step );
+        Assert.assertEquals( "answer 1", 31, step );
         Assert.fail( "no solution yet" );
     }
 
     static String print( List<Collection<Integer>> floors, int floor ) {
         final var b = new StringBuilder();
-        b.append("E=").append( floor ).append( " -> ");
+        b.append( floor ).append( '/' );
         for ( final var f : floors ) {
             final var fo = new ArrayList<>(f);
             fo.sort( Comparator.naturalOrder() );
