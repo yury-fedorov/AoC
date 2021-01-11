@@ -41,7 +41,7 @@ public class Day22Test {
                 if ( used(na) > 0 && used(na) <= available(nb) ) answer1.add( Pair.with(na,nb) );
             }
         }
-        Assert.assertEquals( "answer 1", -1, answer1.size() );
+        Assert.assertEquals( "answer 1", 924, answer1.size() );
         // important points:
         // 1) empty node(s)
         // 2) "full" nodes
