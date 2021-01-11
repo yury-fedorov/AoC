@@ -2,7 +2,6 @@ package aoc16.d02;
 
 import aoc16.common.IOUtil;
 import org.junit.Test;
-import com.google.common.collect.*; // TODO - can be replaced with ad-hoc solution
 import java.util.*;
 import org.javatuples.*;
 import static org.junit.Assert.assertEquals;
@@ -21,7 +20,7 @@ public class Day02Test {
 
     enum Direction { UP, DOWN, LEFT, RIGHT }
 
-    final static Map<Character,Direction> TO_DIR = ImmutableMap.of(
+    final static Map<Character,Direction> TO_DIR = Map.of(
             'U', Direction.UP, 'D', Direction.DOWN, 'L', Direction.LEFT, 'R', Direction.RIGHT );
 
     static char at( char [][] keypad, Pair<Integer,Integer> p ) { return keypad[p.getValue1()][p.getValue0()]; }

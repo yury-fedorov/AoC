@@ -34,7 +34,6 @@ public class Day17Test {
                 .collect(Collectors.toList());
     }
 
-    @org.jetbrains.annotations.NotNull
     static String md5(String text ) { return new Md5Util().md5(text).toLowerCase(); }
 
     static Optional<Pair<Integer,Integer>> move( Pair<Integer,Integer> p0, Direction d ) {
