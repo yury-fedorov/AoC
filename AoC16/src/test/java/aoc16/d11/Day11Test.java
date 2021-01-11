@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.util.*;
 
 public class Day11Test {
-
+    // generator - negative, corresponding chip positive
     static boolean isChip( int obj ) { return obj > 0; }
     static boolean isGenerator( int obj ) { return obj < 0; }
     enum LiftDirection { DOWN, UP }
@@ -80,21 +80,19 @@ public class Day11Test {
 
     @Test
     public void solution() {
-        final List<Collection<Integer>> floors = new ArrayList<>(); // generator - negative, corresponding chip positive
-        if ( true ) {
-            // initialization: thulium - 1, plutonium - 2, strontium - 3, promethium - 4, ruthenium - 5
-            floors.add( List.of( -1, 1, -2, -3 ) );
-            floors.add( List.of( 2, 3 ) );
-            floors.add( List.of( -4, 4, -5, 5 ) );
-            floors.add( new LinkedList<>() );
-        } else {
-            floors.add( List.of( 1, 2 ) ); // HM, LM
-            floors.add( List.of( -2 ) ); // HG
-            floors.add( List.of( -1 ) ); // LG
-            floors.add( new LinkedList<>() );
-        }
+        // initialization: thulium - 1, plutonium - 2, strontium - 3, promethium - 4, ruthenium - 5
+        var floors = initFloors( List.of(-1, 1, -2, -3), List.of(2, 3), List.of(-4, 4, -5, 5) );
+        Assert.assertEquals( "answer 1", 31, solve(floors) );
 
-        var paths = Set.of( Pair.with( 0, floors ) );
+        final var floor0 = new ArrayList<>( floors.get(0) );
+        // elerium - 6, dilithium - 7
+        floor0.addAll( List.of( 6, -6, 7, -7 ) );
+        floors.set(0, floor0 );
+        Assert.assertEquals( "answer 2", 55, solve(floors) );
+    }
+
+    private int solve(List<Collection<Integer>> floors) {
+        var paths = Set.of( Pair.with( 0, floors) );
         int step = 0;
         final var history = new HashMap<String, Integer>();
         while ( !paths.isEmpty() ) {
@@ -112,16 +110,23 @@ public class Day11Test {
                 history.put( print( state, elevator ), step );
             }
             step++;
-            if ( paths1.stream()
+            if ( paths1.parallelStream()
                     .filter( (p) -> p.getValue0() == MAX_FLOOR && firstNonEmptyFloor( p.getValue1() ) == MAX_FLOOR )
                     .findAny().isPresent() )
                 break;
             Assert.assertFalse( "failed to find a solution: " + step, paths1.isEmpty() );
             paths = paths1;
         }
+        return step;
+    }
 
-        Assert.assertEquals( "answer 1", 31, step );
-        Assert.fail( "no solution yet" );
+    static List<Collection<Integer>> initFloors(List<Integer> floor1, List<Integer> floor2, List<Integer> floor3) {
+        final List<Collection<Integer>> floors = new ArrayList<>();
+        floors.add(floor1);
+        floors.add(floor2);
+        floors.add(floor3);
+        floors.add( Collections.emptyList() );
+        return floors;
     }
 
     static String print( List<Collection<Integer>> floors, int floor ) {
