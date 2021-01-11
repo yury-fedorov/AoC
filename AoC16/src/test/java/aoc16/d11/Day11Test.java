@@ -1,10 +1,12 @@
 package aoc16.d11;
 
+import aoc16.common.Config;
 import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Day11Test {
     // generator - negative, corresponding chip positive
@@ -37,18 +39,16 @@ public class Day11Test {
     static Collection< LiftDirection > directions( List<Collection<Integer>> floors, final int elevatorFloor ) {
         final var directions = new ArrayList<>( List.of(LiftDirection.values()));
         if ( elevatorFloor == 0 ) directions.remove( LiftDirection.DOWN );
-        if ( elevatorFloor == MAX_FLOOR ) directions.remove( LiftDirection.UP );
         // we remove from possible options also all empty floors at down floors
-        if ( elevatorFloor <= firstNonEmptyFloor(floors) ) directions.remove( LiftDirection.DOWN );
+        else if ( elevatorFloor <= firstNonEmptyFloor(floors) ) directions.remove( LiftDirection.DOWN );
+        if ( elevatorFloor == MAX_FLOOR ) directions.remove( LiftDirection.UP );
         return directions;
     }
 
     static int nextFloor( int floor, LiftDirection d ) { return floor + ( d == LiftDirection.UP ? 1 : -1 ); }
 
-
     static Collection< Pair< LiftDirection, Collection<Integer> > > options( List<Collection<Integer>> floors, final int floor ) {
         final var results = new LinkedList< Pair< LiftDirection, Collection<Integer> > >();
-
         final var options = new ArrayList< Collection<Integer> >(); // resource optimal
         final var floorNow = floors.get(floor);
         for ( final var a : floorNow ) {
@@ -74,7 +74,6 @@ public class Day11Test {
                 if ( !isFried( nextFloorAfter ) ) results.add( Pair.with( d, inLift ) );
             }
         }
-        // IMPORTANT - to check if we arrive in lift with a combination - can it fry in conjunction (lift, floor)?
         return results;
     }
 
@@ -83,12 +82,25 @@ public class Day11Test {
         // initialization: thulium - 1, plutonium - 2, strontium - 3, promethium - 4, ruthenium - 5
         var floors = initFloors( List.of(-1, 1, -2, -3), List.of(2, 3), List.of(-4, 4, -5, 5) );
         Assert.assertEquals( "answer 1", 31, solve(floors) );
-
+        // if ( Config.isFast() ) return; // 523 seconds
         final var floor0 = new ArrayList<>( floors.get(0) );
         // elerium - 6, dilithium - 7
         floor0.addAll( List.of( 6, -6, 7, -7 ) );
         floors.set(0, floor0 );
         Assert.assertEquals( "answer 2", 55, solve(floors) );
+    }
+
+    static Optional<Pair<Integer, List< Collection<Integer>>>> next(
+            Pair< Integer, List< Collection<Integer>> > now,
+            Pair< LiftDirection, Collection<Integer> > option,
+            Map<String, Integer> history ) {
+        final int curFloor = now.getValue0();
+        final var state = now.getValue1();
+        final var nextFloor = nextFloor( curFloor, option.getValue0() );
+        final var newState = move( state, curFloor, nextFloor, option.getValue1() );
+        if ( !history.containsKey( print( newState, nextFloor ) ) ) // we do not repeat the history
+            return Optional.of( Pair.with( nextFloor, newState ) );
+        return Optional.empty();
     }
 
     private int solve(List<Collection<Integer>> floors) {
@@ -101,12 +113,9 @@ public class Day11Test {
                 final int elevator = path.getValue0();
                 final var state = path.getValue1(); // all flows
 
-                for ( final var o : options( state, elevator ) ) {
-                    final var nextFloor = nextFloor( elevator, o.getValue0() );
-                    final var newState = move( state, elevator, nextFloor, o.getValue1() );
-                    if ( !history.containsKey( print( newState, nextFloor ) ) ) // we do not repeat the history
-                        paths1.add( Pair.with( nextFloor, newState ) );
-                }
+                paths1.addAll( options( state, elevator ).stream().map( (o) -> next( path, o, history ) )
+                        .filter( (o) -> o.isPresent() ).map( (o) -> o.get() ).collect( Collectors.toList() ) );
+
                 history.put( print( state, elevator ), step );
             }
             step++;
