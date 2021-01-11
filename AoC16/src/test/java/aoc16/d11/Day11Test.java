@@ -13,7 +13,7 @@ public class Day11Test {
     enum LiftDirection { DOWN, UP }
 
     // if a chip is ever left in the same area as another RTG, and it's not connected to its own RTG, the chip will be fried
-    static Collection<Integer> getFried( Collection<Integer> area ) {
+    static boolean isFried( Collection<Integer> area ) {
         final var chips = new LinkedList<Integer>();
         final var generators = new LinkedList<Integer>();
         for ( final var e : area ) {
@@ -22,8 +22,7 @@ public class Day11Test {
             else if ( isGenerator(e) ) generators.add( e );
         }
         // now we check what is remained: we cannot have a chip and another generator
-        if ( !chips.isEmpty() && !generators.isEmpty() ) return chips;
-        return Collections.emptyList();
+        return ( !chips.isEmpty() && !generators.isEmpty() );
     }
 
     final static int MAX_FLOOR = 3;
@@ -59,7 +58,7 @@ public class Day11Test {
                 final var floorAfter = new HashSet<>( floorNow );
                 floorAfter.removeAll( inLift );
                 // any combination which not fry in lift and not fry anything on current floor after lift is gone
-                if ( getFried( inLift ).isEmpty() && getFried( floorAfter ).isEmpty() ) options.add( inLift );
+                if ( !isFried( inLift ) && !isFried( floorAfter ) ) options.add( inLift );
             }
         }
 
@@ -72,7 +71,7 @@ public class Day11Test {
 
                 final var nextFloorAfter = new HashSet<>( nextFloorNow );
                 nextFloorAfter.addAll(inLift);
-                if ( getFried( nextFloorAfter ).isEmpty() ) results.add( Pair.with( d, inLift ) );
+                if ( !isFried( nextFloorAfter ) ) results.add( Pair.with( d, inLift ) );
             }
         }
         // IMPORTANT - to check if we arrive in lift with a combination - can it fry in conjunction (lift, floor)?
