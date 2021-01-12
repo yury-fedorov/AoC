@@ -23,30 +23,32 @@ public class Day12Test {
     }
 
     @FunctionalInterface
-    interface Instruction {
-        int apply(Matcher m, List<Pair<Matcher,Instruction>> input, Map<Character,Integer> registers );
+    public interface Instruction {
+        int apply(Matcher m, List<Pair<Matcher,Instruction>> code, int curIns, Map<Character,Integer> registers );
     }
 
     public static Map<Pattern, Instruction> initInstuctions() {
         return Map.of(
-            Pattern.compile("^cpy ([a-d0-9]+) ([a-d])$"),
-            ( m, i, r ) -> { r.put( r( m.group(2) ), refValue(r, m.group(1) ) ); return 1; },
+            Pattern.compile("^cpy ([-a-d0-9]+) ([a-d])$"),
+            ( m, c, ci, r ) -> { r.put( r( m.group(2) ), refValue(r, m.group(1) ) ); return 1; },
             Pattern.compile("^inc ([a-d])$"),
-            ( m, i, r ) -> { final var reg = r(m.group(1));
+            ( m, c, ci, r ) -> { final var reg = r(m.group(1));
                 r.put( reg, r.getOrDefault(reg, 0) + 1 ); return 1; },
             Pattern.compile("^dec ([a-d])$"),
-            ( m, i, r ) -> { final var reg = r(m.group(1));
+            ( m, c, ci, r ) -> { final var reg = r(m.group(1));
                 r.put( reg, r.getOrDefault(reg, 0) -1 ); return 1; },
-            Pattern.compile("^jnz ([a-d0-9]+) ([-0-9]+)$"),
-            ( m, i, r ) -> ( ( refValue(r, m.group(1) ) != 0 ) ? Integer.parseInt( m.group(2) ) : 1 )
+            Pattern.compile("^jnz ([a-d0-9]+) ([-a-d0-9]+)$"),
+            ( m, c, ci, r ) -> ( ( refValue(r, m.group(1) ) != 0 ) ? Integer.parseInt( m.group(2) ) : 1 )
         );
     }
 
     public static Pair<Matcher,Instruction> compile( Map<Pattern, Instruction> instuctionSet, String line ) {
-        return instuctionSet.entrySet().stream()
+        final var o = instuctionSet.entrySet().stream()
                 .map( (p) -> Pair.with( p.getKey().matcher( line ), p.getValue() ) )
                 .filter( (p) -> p.getValue0().find() )
-                .findAny().get();
+                .findAny();
+        Assert.assertTrue( "Bad syntax: " + line, o.isPresent() );
+        return o.get();
     }
 
     public static List<Pair<Matcher,Instruction>> compile( Map<Pattern, Instruction> instuctionSet, List<String> input ) {
@@ -71,7 +73,7 @@ public class Day12Test {
     public static int  execute(List<Pair<Matcher,Instruction>> code, HashMap<Character, Integer> registers) {
         for ( int i = 0; i < code.size(); ) {
             final var ci = code.get(i);
-            i += ci.getValue1().apply( ci.getValue0(), code, registers );
+            i += ci.getValue1().apply( ci.getValue0(), code, i, registers );
         }
         return registers.get('a').intValue();
     }
