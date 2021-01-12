@@ -5,7 +5,9 @@ import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
@@ -42,10 +44,28 @@ public class Day22Test {
             }
         }
         Assert.assertEquals( "answer 1", 924, answer1.size() );
-        // important points:
-        // 1) empty node(s)
-        // 2) "full" nodes
-        // 3) visualisation map
-        Assert.fail( "no answer 2 yet" );
+
+        final var empty = new ArrayList<Pair<Integer,Integer>>(); // empty node(s)
+        final var full = new LinkedList<Pair<Integer,Integer>>(); // "full" nodes
+        final boolean toPrint = false; // visualisation map
+        for ( int y = 0; y <= maxY; y++ ) {
+            for ( int x = 0; x <= maxX; x++ ) {
+                final var a = Pair.with(x,y);
+                final var n = grid.get( a );
+                final boolean isEmpty = ( used(n) / (double)size(n) ) < 0.1;
+                final boolean isFull = used(n) > 100;
+                if ( isEmpty ) empty.add( a );
+                else if ( isFull ) full.add(a);
+                // if (toPrint) System.out.print( used(n) + "/" + size(n) + "=" + ( used(n) * 100 / size(n) ) + " \t" );
+                if (toPrint) System.out.print( isEmpty ? '_' : isFull ? '#' : '.' );
+                System.out.print( ' ' );
+            }
+            if (toPrint) System.out.println();
+        }
+        // XXX solved analytically looking at the map
+        final var iep = empty.get(0);
+        int distance = iep.getValue0() + iep.getValue1() + maxX; // to arrive to initial point
+        distance += 5 * ( maxX - 1 );
+        Assert.assertEquals( "answer 2", 213, distance );
     }
 }
