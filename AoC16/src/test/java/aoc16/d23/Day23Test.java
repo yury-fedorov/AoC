@@ -36,10 +36,18 @@ public class Day23Test extends Day12Test {
         }
     }
 
+    public void test() {
+        final var input = IOUtil.inputByPath("d23/sample.txt");
+        Assert.assertEquals( "sample", 3, execute(input) );
+    }
+
     @Test
     public void solution() {
-        // final var input = IOUtil.input("d23");
-        final var input = IOUtil.inputByPath("d23/sample.txt");
+        final var input = IOUtil.input("d23");
+        Assert.assertEquals( "answer 1", -1, execute(input) );
+    }
+
+    private static int execute(List<String> input) {
         final var iset = new HashMap<>(initInstuctions());
         final var INC = compile(iset, "inc a").getValue1();
         final var DEC = compile(iset, "dec a").getValue1();
@@ -53,7 +61,7 @@ public class Day23Test extends Day12Test {
         final var opposite
                 = Map.of( INC, DEC, DEC, INC, CPY, JNZ, JNZ, CPY, TGL, INC );
         iset.put( Pattern.compile("^tgl ([a-d])$"), TGL );
-        final var code = compile( iset, input );
+        final var code = compile( iset, input);
         for ( int i = 0; i < code.size(); i++ ) {
             final var cl = code.get(i);
             final var op = cl.getValue1();
@@ -62,6 +70,6 @@ public class Day23Test extends Day12Test {
         }
         var registers = new HashMap<Character,Integer>();
         execute(code, registers);
-        Assert.assertEquals( "answer 1", -1, registers.get('a').intValue() );
+        return registers.get('a').intValue();
     }
 }
