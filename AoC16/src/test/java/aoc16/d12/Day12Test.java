@@ -38,7 +38,7 @@ public class Day12Test {
             ( m, c, ci, r ) -> { final var reg = r(m.group(1));
                 r.put( reg, r.getOrDefault(reg, 0) -1 ); return 1; },
             Pattern.compile("^jnz ([a-d0-9]+) ([-a-d0-9]+)$"),
-            ( m, c, ci, r ) -> ( ( refValue(r, m.group(1) ) != 0 ) ? Integer.parseInt( m.group(2) ) : 1 )
+            ( m, c, ci, r ) -> ( ( refValue(r, m.group(1) ) != 0 ) ? refValue(r, m.group(2) ) : 1 )
         );
     }
 
