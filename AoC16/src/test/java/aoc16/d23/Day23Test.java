@@ -36,6 +36,7 @@ public class Day23Test extends Day12Test {
         }
     }
 
+    @Test
     public void test() {
         final var input = IOUtil.inputByPath("d23/sample.txt");
         Assert.assertEquals( "sample", 3, execute(input) );
