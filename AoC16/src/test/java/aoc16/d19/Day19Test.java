@@ -28,16 +28,10 @@ public class Day19Test {
         return list.peek();
     }
 
-    static void print( List<Integer> list ) {
-        for ( final var e : list ) System.out.print( e + " " );
-        System.out.println();
-    }
-
     static int detectWinner21( final int initialSize ) {
         final List<Integer> list = new ArrayList<>( init(initialSize) );
         int position = 0;
         for ( int n = list.size(); n > 1; ) {
-            // print(list);
             if ( ( n % 10000 ) == 0 ) System.out.println( n );
             final int half = ( n >> 1 ); // divide by 2
             final int outIndex = ( position + half ) % n;
