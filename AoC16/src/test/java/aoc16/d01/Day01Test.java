@@ -1,9 +1,9 @@
 package aoc16.d01;
 
 import aoc16.common.IOUtil;
+import aoc16.common.Point;
 import org.junit.Test;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -14,20 +14,16 @@ public class Day01Test {
     enum Direction { North, West, South, East }
     final Direction [] list = { Direction.North, Direction.West, Direction.South, Direction.East };
 
-    static AbstractMap.SimpleEntry<Integer,Integer> point( int x, int y ) {
-        return new AbstractMap.SimpleEntry<>(x, y);
-    }
-
     @Test
-    public void part12() {
+    public void solution() {
         final var input = IOUtil.input( "d01" ).get(0);
         // final var input = "R8, R4, R4, R8";
         final var c = input.split(", ");
         Direction d = Direction.North;
         int x = 0;
         int y = 0;
-        final var visited = new HashSet<AbstractMap.SimpleEntry<Integer,Integer>>();
-        visited.add( point(x,y) );
+        final var visited = new HashSet<Point>();
+        visited.add( Point.with(x,y) );
         int answer2 = -1;
         for ( var cc : c ) {
             final boolean isLeft = cc.charAt(0) == 'L';
@@ -42,7 +38,7 @@ public class Day01Test {
             for ( int i = 1; i <= delta; i++ ) {
                 final var x1 = x + ( dx * i );
                 final var y1 = y + ( dy * i );
-                if ( !visited.add( point(x1,y1) ) && answer2 < 0 ) {
+                if ( !visited.add( Point.with(x1,y1) ) && answer2 < 0 ) {
                     answer2 = Math.abs(x1) + Math.abs(y1);
                 }
             }
