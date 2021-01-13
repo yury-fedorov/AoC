@@ -47,7 +47,7 @@ public class Day23Test extends Day12Test {
     public void solution() {
         final var input = IOUtil.input("d23");
         Assert.assertEquals( "answer 1", 12516, execute(input, 7) );
-        // if (Config.isFast()) return; // 3 mins 2 seconds
+        if (Config.isFast()) return; // 3 mins 2 seconds
         Assert.assertEquals( "answer 2", 479009076, execute(input, 12) );
     }
 
