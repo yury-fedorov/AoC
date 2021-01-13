@@ -1,7 +1,7 @@
 package aoc16.d08;
 
 import aoc16.common.IOUtil;
-import org.javatuples.Pair;
+import aoc16.common.Point;
 import org.junit.Test;
 
 import java.util.Collection;
@@ -10,23 +10,24 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class Day08Test {
 
-    static Set<Pair<Integer,Integer>> newSet() { return new HashSet<>(); }
+    static Set<Point> newSet() { return new HashSet<>(); }
 
-    static void print( final int width, final int height, Set<Pair<Integer,Integer>> screen ) {
+    static void print( final int width, final int height, Set<Point> screen ) {
         for ( int y = 0; y < height; y++ ) {
             for ( int x = 0; x < width; x++ ) {
-                System.out.print( screen.contains( Pair.with(x,y) ) ? '#' : ' ' );
+                System.out.print( screen.contains( Point.with(x,y) ) ? '#' : ' ' );
             }
             System.out.println();
         }
         System.out.println();
     }
 
-    static Set<Pair<Integer,Integer>> generic( final int width, final int height, Collection<String> input ) {
+    static Set<Point> generic( final int width, final int height, Collection<String> input ) {
         var screen = newSet(); // only on are there
         final var patternRect = Pattern.compile("^rect (\\d+)x(\\d+)$");
         final var patternRow = Pattern.compile("^rotate row y=(\\d+) by (\\d+)$");
@@ -38,7 +39,7 @@ public class Day08Test {
                 final var b = Integer.parseInt( matcher.group(2) ); // tall
                 for ( int x = 0; x < a; x++ ) {
                     for ( int y = 0; y < b; y++ ) {
-                        screen.add( Pair.with( x, y ) );
+                        screen.add( Point.with( x, y ) );
                     }
                 }
             } else {
@@ -48,18 +49,18 @@ public class Day08Test {
                 if ( matcher.find() ) {
                     final var y = Integer.parseInt( matcher.group(1) );
                     final var n = Integer.parseInt( matcher.group(2) );
-                    ns.addAll( screen.stream().filter( a -> a.getValue1() != y ).collect(Collectors.toList()) );
-                    ns.addAll( screen.stream().filter( a -> a.getValue1() == y )
-                            .map( a -> Pair.with( ( a.getValue0() + n ) % width, a.getValue1() ) )
+                    ns.addAll( screen.stream().filter( a -> a.y() != y ).collect(Collectors.toList()) );
+                    ns.addAll( screen.stream().filter( a -> a.y() == y )
+                            .map( a -> Point.with( ( a.x() + n ) % width, a.y() ) )
                             .collect(Collectors.toList()));
                 } else {
                     matcher = patternCol.matcher(l);
                     if (matcher.find()) {
                         final var x = Integer.parseInt(matcher.group(1));
                         final var n = Integer.parseInt(matcher.group(2));
-                        ns.addAll( screen.stream().filter( a -> a.getValue0() != x ).collect(Collectors.toList()) );
-                        ns.addAll( screen.stream().filter( a -> a.getValue0() == x )
-                                .map( a -> Pair.with( a.getValue0(), ( a.getValue1() + n ) % height ) )
+                        ns.addAll( screen.stream().filter( a -> a.x() != x ).collect(Collectors.toList()) );
+                        ns.addAll( screen.stream().filter( a -> a.x() == x )
+                                .map( a -> Point.with( a.x(), ( a.y() + n ) % height ) )
                                 .collect(Collectors.toList()));
                     } else {
                         System.err.println(l);

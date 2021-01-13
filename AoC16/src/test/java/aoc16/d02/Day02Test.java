@@ -3,8 +3,10 @@ package aoc16.d02;
 import aoc16.common.IOUtil;
 import aoc16.common.Point;
 import org.junit.Test;
-import java.util.*;
-import org.javatuples.*;
+
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 
 public class Day02Test {

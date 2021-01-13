@@ -2,12 +2,10 @@ package aoc16.d05;
 
 import aoc16.common.Config;
 import aoc16.common.Md5Util;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 // TODO - slow - can be applied pool of MD5 like in day 15
 public class Day05Test {
@@ -32,7 +30,7 @@ public class Day05Test {
         if ( Config.isFast() ) return;
         var input = "cxdnnyjw";
         // abc
-        assertTrue( "first 5 zeros", util.md5( "abc3231929" ).startsWith("00000") );
+        Assert.assertTrue( "first 5 zeros", util.md5( "abc3231929" ).startsWith("00000") );
         // slow assertEquals( "test", 3231929, fiveZeros("abc", 0, 3232000) );
         final var max = Long.MAX_VALUE;
         long min = 0;
@@ -55,11 +53,11 @@ public class Day05Test {
         }
         System.out.println();
         final var answer1 = sb.toString().toLowerCase();
-        assertEquals( "answer 1", "f77a0e6e", answer1 );
+        Assert.assertEquals( "answer 1", "f77a0e6e", answer1 );
 
         final var answer2 = new StringBuilder();
         for ( int i = 0; i < 8; i++ ) answer2.append( map.get(i) );
 
-        assertEquals( "answer 2", "999828EC", answer2.toString() );
+        Assert.assertEquals( "answer 2", "999828EC", answer2.toString() );
     }
 }
