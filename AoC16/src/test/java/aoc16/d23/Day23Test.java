@@ -1,5 +1,6 @@
 package aoc16.d23;
 
+import aoc16.common.Config;
 import aoc16.common.IOUtil;
 import aoc16.d12.Day12Test;
 import org.javatuples.Pair;
@@ -46,8 +47,8 @@ public class Day23Test extends Day12Test {
     public void solution() {
         final var input = IOUtil.input("d23");
         Assert.assertEquals( "answer 1", 12516, execute(input, 7) );
-
-        Assert.assertEquals( "answer 2", -1, execute(input, 12) );
+        // if (Config.isFast()) return; // 3 mins 2 seconds
+        Assert.assertEquals( "answer 2", 479009076, execute(input, 12) );
     }
 
     private static int execute(List<String> input, int regA) {
