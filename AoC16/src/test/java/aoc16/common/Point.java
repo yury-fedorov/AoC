@@ -22,4 +22,6 @@ public class Point {
     public static int distance(Point a, Point b ) {
         return Math.abs( a.x - b.x ) + Math.abs( a.y - b.y );
     }
+
+    public static Point add( Point a, Point b ) { return Point.with( a.x + b.x, a.y + b.y ); }
 }
