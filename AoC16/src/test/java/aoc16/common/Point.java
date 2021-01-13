@@ -1,30 +1,25 @@
 package aoc16.common;
 
-import org.javatuples.Pair;
-
 import java.util.Objects;
 
 public class Point {
-    final Pair<Integer,Integer> point;
-    public Point(int x, int y) { point = Pair.with(x, y); }
+    public final int x;
+    public final int y;
+    public Point(int x, int y) { this.x = x; this.y = y; }
     public static Point with( int x, int y ) { return new Point(x,y); }
-    public int x() { return point.getValue0(); }
-    public int y() { return point.getValue1(); }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Point)) return false;
-        Point point1 = (Point) o;
-        return Objects.equals(point, point1.point);
+        Point point = (Point) o;
+        return x == point.x && y == point.y;
     }
 
     @Override
-    public int hashCode() { return Objects.hash(point); }
-
-    public int distance( Point o ) { return distance( this, o ); }
+    public int hashCode() { return Objects.hash(x, y); }
 
     public static int distance(Point a, Point b ) {
-        return Math.abs( a.x() - b.y() ) + Math.abs( a.x() - b.y() );
+        return Math.abs( a.x - b.x ) + Math.abs( a.y - b.y );
     }
 }
