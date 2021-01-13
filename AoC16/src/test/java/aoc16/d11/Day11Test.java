@@ -86,19 +86,20 @@ public class Day11Test {
         final var floor0 = new ArrayList<>( floors.get(0) );
         // elerium - 6, dilithium - 7
         floor0.addAll( List.of( 6, -6, 7, -7 ) );
-        floors.set(0, floor0 );
-        Assert.assertEquals( "answer 2", 55, solve(floors) );
+        final var floors2 = new ArrayList<>(floors);
+        floors2.set(0, floor0 );
+        Assert.assertEquals( "answer 2", 55, solve(floors2) );
     }
 
     static Optional<Pair<Integer, List< Collection<Integer>>>> next(
             Pair< Integer, List< Collection<Integer>> > now,
             Pair< LiftDirection, Collection<Integer> > option,
-            Map<String, Integer> history ) {
+            Set<String> history ) {
         final int curFloor = now.getValue0();
         final var state = now.getValue1();
         final var nextFloor = nextFloor( curFloor, option.getValue0() );
         final var newState = move( state, curFloor, nextFloor, option.getValue1() );
-        if ( !history.containsKey( print( newState, nextFloor ) ) ) // we do not repeat the history
+        if ( !history.contains( print( newState, nextFloor ) ) ) // we do not repeat the history
             return Optional.of( Pair.with( nextFloor, newState ) );
         return Optional.empty();
     }
@@ -106,7 +107,7 @@ public class Day11Test {
     private int solve(List<Collection<Integer>> floors) {
         var paths = Set.of( Pair.with( 0, floors) );
         int step = 0;
-        final var history = new HashMap<String, Integer>();
+        final var history = new HashSet<String>();
         while ( !paths.isEmpty() ) {
             final var paths1 = new HashSet< Pair<Integer, List< Collection<Integer>>> >();
             for ( final var path : paths ) {
@@ -116,7 +117,7 @@ public class Day11Test {
                 paths1.addAll( options( state, elevator ).stream().map( (o) -> next( path, o, history ) )
                         .filter( (o) -> o.isPresent() ).map( (o) -> o.get() ).collect( Collectors.toList() ) );
 
-                history.put( print( state, elevator ), step );
+                history.add( print( state, elevator ) );
             }
             step++;
             if ( paths1.parallelStream()
@@ -130,12 +131,7 @@ public class Day11Test {
     }
 
     static List<Collection<Integer>> initFloors(List<Integer> floor1, List<Integer> floor2, List<Integer> floor3) {
-        final List<Collection<Integer>> floors = new ArrayList<>();
-        floors.add(floor1);
-        floors.add(floor2);
-        floors.add(floor3);
-        floors.add( Collections.emptyList() );
-        return floors;
+        return List.of( floor1, floor2, floor3, Collections.emptyList() );
     }
 
     static String print( List<Collection<Integer>> floors, int floor ) {

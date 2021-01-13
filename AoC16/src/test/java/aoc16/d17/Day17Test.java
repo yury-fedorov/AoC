@@ -2,6 +2,7 @@ package aoc16.d17;
 
 import aoc16.common.Config;
 import aoc16.common.Md5Util;
+import aoc16.common.Point;
 import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,9 +37,9 @@ public class Day17Test {
 
     static String md5(String text ) { return new Md5Util().md5(text).toLowerCase(); }
 
-    static Optional<Pair<Integer,Integer>> move( Pair<Integer,Integer> p0, Direction d ) {
-        final var p = Pair.with( p0.getValue0() + d._dx, p0.getValue1() + d._dy );
-        if ( p.getValue0() < 0 || p.getValue1() < 0 || p.getValue0() > MAX_COOR || p.getValue1() > MAX_COOR )
+    static Optional<Point> move(Point p0, Direction d ) {
+        final var p = Point.with( p0.x() + d._dx, p0.y() + d._dy );
+        if ( p.x() < 0 || p.y() < 0 || p.x() > MAX_COOR || p.y() > MAX_COOR )
             return Optional.empty();
         return Optional.of(p);
     }
@@ -49,11 +50,11 @@ public class Day17Test {
         final var result = new LinkedList<String>();
         final var px = Pair.with(MAX_COOR,MAX_COOR);
 
-        var prev = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
-        prev.add( Pair.with( "", Pair.with(0,0) ) );
+        var prev = new LinkedList<Pair<String,Point>>();
+        prev.add( Pair.with( "", Point.with(0,0) ) );
 
         while ( !prev.isEmpty() ) {
-            final var next = new LinkedList<Pair<String,Pair<Integer,Integer>>>();
+            final var next = new LinkedList<Pair<String,Point>>();
             for ( final var start : prev ) {
                 final var path = start.getValue0();
                 final var p0 = start.getValue1();

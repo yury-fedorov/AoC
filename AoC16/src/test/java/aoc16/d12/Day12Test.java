@@ -1,6 +1,5 @@
 package aoc16.d12;
 
-import aoc16.common.Config;
 import aoc16.common.IOUtil;
 import org.javatuples.Pair;
 import org.junit.Assert;
@@ -57,7 +56,6 @@ public class Day12Test {
 
     @Test
     public void solution() {
-        // if (Config.isFast()) return; // takes 2.7 seconds
         final var input = IOUtil.input("d12");
         final var code = compile( initInstuctions(), input );
 
