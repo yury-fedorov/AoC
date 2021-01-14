@@ -94,18 +94,24 @@ public class Day24Test {
         final var toGo = new StringBuilder( '0' );
         for ( final char ch : m.keySet() ) if ( ch != '0' ) toGo.append( ch );
         final var allPaths = paths( toGo, "0" );
-        final int answer1 = allPaths.parallelStream().mapToInt( (p) -> {
-            int distance = 0;
-            char prev = '?';
-            for ( final var next : p.toCharArray() ) {
-                if ( prev == '?' ) prev = next;
-                else {
-                    distance += realDistance.get( key( prev, next ) ).getValue0();
-                }
+
+        final int answer1 = allPaths.stream().mapToInt( (p) -> distance(realDistance, p) ).min().getAsInt();
+        Assert.assertEquals( "answer 1", 490, answer1 );
+
+        final int answer2 = allPaths.stream().mapToInt( (p) -> distance(realDistance, p + "0" ) ).min().getAsInt();
+        Assert.assertEquals( "answer 2",  744, answer2 );
+    }
+
+    private int distance(HashMap<Pair<Character, Character>, Pair<Integer, Collection<Character>>> realDistance, String p) {
+        int distance = 0;
+        char prev = '?';
+        for ( final var next : p.toCharArray() ) {
+            if ( prev == '?' ) prev = next;
+            else {
+                distance += realDistance.get( key( prev, next ) ).getValue0();
+                prev = next;
             }
-            return distance;
-        } ).min().getAsInt();
-        // 964 - too high
-        Assert.assertEquals( "answer 1", -1, answer1 );
+        }
+        return distance;
     }
 }
