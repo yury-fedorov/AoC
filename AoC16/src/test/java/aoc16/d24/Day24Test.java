@@ -6,10 +6,7 @@ import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,6 +49,25 @@ public class Day24Test {
         return Pair.with(d, passed);
     }
 
+    public static Collection<String> paths( StringBuilder toGo, String passed ) {
+        final var l = toGo.length();
+        final boolean isLast = l == 1;
+        final var result = new ArrayList<String>(l);
+        for ( int index = 0; index < l; index++ ) {
+            final Character ch = toGo.charAt(index);
+            final String passed1 = passed + ch;
+            if ( isLast ) result.add( passed1 );
+            else {
+                final var toGo1 = new StringBuilder( toGo );
+                toGo1.deleteCharAt(index);
+                result.addAll( paths( toGo1, passed1 ) );
+            }
+        }
+        return result;
+    }
+
+    static Pair<Character,Character> key( char a, char b ) { return a < b ? Pair.with( a, b ) : Pair.with( b, a );  }
+
     @Test
     public void solution() {
         final var map = IOUtil.input("d24");
@@ -75,7 +91,21 @@ public class Day24Test {
         for ( final var k : manhattanDistances.keySet() ) {
             realDistance.put(k, realDistance(map, m.get( k.getValue0() ), m.get( k.getValue1() ) ) );
         }
-
-        Assert.fail("to implement");
+        final var toGo = new StringBuilder( '0' );
+        for ( final char ch : m.keySet() ) if ( ch != '0' ) toGo.append( ch );
+        final var allPaths = paths( toGo, "0" );
+        final int answer1 = allPaths.parallelStream().mapToInt( (p) -> {
+            int distance = 0;
+            char prev = '?';
+            for ( final var next : p.toCharArray() ) {
+                if ( prev == '?' ) prev = next;
+                else {
+                    distance += realDistance.get( key( prev, next ) ).getValue0();
+                }
+            }
+            return distance;
+        } ).min().getAsInt();
+        // 964 - too high
+        Assert.assertEquals( "answer 1", -1, answer1 );
     }
 }
