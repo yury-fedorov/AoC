@@ -6,7 +6,7 @@ class Day02 extends AnyFunSuite {
   def task02a(v:Seq[Int]): Int = v.max - v.min
 
 	def readFile(filename: String): Seq[String] = {
-	    val bufferedSource = io.Source.fromFile(filename)
+	    val bufferedSource = io.Source.fromResource(filename)
 	    val lines = (for (line <- bufferedSource.getLines()) yield line).toList
 	    bufferedSource.close
 	    lines
