@@ -7,18 +7,18 @@ using NUnit.Framework;
 
 namespace AdventOfCode2018
 {
-    public class Point3D : Tuple<int,int,int> {
-        public Point3D(int x, int y, int z) : base(x, y, z) { }
-        public int X => Item1;
-        public int Y => Item2;
-        public int Z => Item3;
+    public record Point3D {
+        public Point3D(int x, int y, int z) => (X,Y,Z) = (x,y,z);
+        public int X { get; }
+        public int Y { get; }
+        public int Z { get; }
     }
 
-    public class Nanobot : Tuple<Point3D,int>
+    public record Nanobot
     {
-        public Nanobot(Point3D center, int radius) : base(center,radius) {}
-        public Point3D P => Item1; // point
-        public int R => Item2;
+        public Nanobot(Point3D center, int radius) => (P, R) = (center, radius);
+        public Point3D P { get; } // point
+        public int R { get; }
     }
 
     public class Day23
@@ -36,10 +36,11 @@ namespace AdventOfCode2018
 
         public int Distance(Point3D a, Point3D b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) + Math.Abs(a.Z - b.Z);
 
-        public int CountPoint(IEnumerable<Nanobot> bots, Point3D point) =>
-            bots.Where(b => Distance(b.P, point) <= b.R).Count();
+        public int CountPoint(IEnumerable<Nanobot> bots, Point3D point) 
+            => bots.Where(b => Distance(b.P, point) <= b.R).Count();
 
         // 125302823 -- too high
+        // 125289441 -- too high
         [TestCase("Day23.txt", 420, 1)]
         public void Test(string file, int eCount, int eDistance)
         {
@@ -71,8 +72,6 @@ namespace AdventOfCode2018
                 {
                     maxNumber = cx;
                     p1 = px;
-                    Assert.True(Distance(p0, p1) < Distance(p0, cp1));
-                    continue;
                 }
 
                 var py = new Point3D(p1.X, p1.Y - dy, p1.Z);
@@ -81,7 +80,6 @@ namespace AdventOfCode2018
                 {
                     maxNumber = cy;
                     p1 = py;
-                    continue;
                 }
 
                 var pz = new Point3D(p1.X, p1.Y, p1.Z - dz);                
@@ -90,9 +88,8 @@ namespace AdventOfCode2018
                 {
                     maxNumber = cz;
                     p1 = pz;
-                    continue;
                 }
-                break;
+                if ( Distance(p0, p1) >= Distance(p0, cp1) ) break;
             }
 
             Assert.AreEqual(-1, Distance(p0,p1));
