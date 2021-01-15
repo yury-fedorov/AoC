@@ -213,7 +213,9 @@ namespace AdventOfCode2018.Day17
 			// now we fill the volume with water
 			var leftRight = map.FindLeftRight(fallingBottom);
 			var prevLeftRight = leftRight;
-			var bottomRestWaterLine = new Line { A = new Point(leftRight.Item1, fallingBottom.Y), B = new Point(leftRight.Item2, fallingBottom.Y) };
+			var bottomRestWaterLine = new Line { 
+                A = new Point( (leftRight?.Left).Value,  fallingBottom.Y), 
+                B = new Point( (leftRight?.Right).Value, fallingBottom.Y) };
 			map.DrawLine(bottomRestWaterLine, Map.RestWater);
 
 			var result = new List<Point>();
