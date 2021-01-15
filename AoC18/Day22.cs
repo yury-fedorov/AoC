@@ -90,10 +90,7 @@ namespace AdventOfCode2018
                 }
             }
         }
-        public Material At(int x, int y)
-            => x >= 0 && x < _sizeX && y >= 0 && y < _sizeY
-             ? _cache[x][y] : Material.SolidRock;
-
+        public Material At(int x, int y) => x >= 0 && x < _sizeX && y >= 0 && y < _sizeY ? _cache[x][y] : Material.SolidRock;
     }
 
     public class CostMap
@@ -117,8 +114,7 @@ namespace AdventOfCode2018
                 for (int x = 0; x < sx; x++ )
                     for (int y = 0; y < sy; y++)
                     {
-                        _at[x, y, t] = (src == null || !src.ValidIndex(x, y)) 
-                                     ? ND : src._at[x,y,t];
+                        _at[x, y, t] = (src == null || !src.ValidIndex(x, y)) ? ND : src._at[x,y,t];
                     }
         }
 
@@ -239,8 +235,6 @@ namespace AdventOfCode2018
             return ways.Any() ? ways.Values.Min() : LongerPath;
         }
     }
-
-    // public enum Tool { Neither, Torch, ClimbingGear }
 
     public class ToolUtil
     {
