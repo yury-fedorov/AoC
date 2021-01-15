@@ -36,13 +36,15 @@ class Day03 extends AnyFunSuite {
     }    	
   }
 
-  test( "Day 3 tests" ) {
+  test( "samples" ) {
     assert( d(1) == 0 ) // Data from square 1 is carried 0 steps, since it's at the access port.
     assert( d(2) == 1)
     assert( d(12) == 3) // Data from square 12 is carried 3 steps, such as: down, left, left.
     assert( d(23) == 2) // Data from square 23 is carried only 2 steps: up twice.
     assert( d(1024) == 31) // Data from square 1024 must be carried 31 steps.
-	  
+  }
+
+  test( "solutions" ) {
     val n = 347991
     assert( d(n) == 480, "answer 1")
   }
