@@ -9,7 +9,7 @@ namespace AoC17
     // alt 8-9 - {}
     public class Day04
     {
-        public const string Directory = "/Users/fedoy/projects/AoC17/AoC17";
+        public const string Directory = "/Users/fedoy/projects/AoC/AoC17/cs";
 
         public bool IsValid(string line)
         {

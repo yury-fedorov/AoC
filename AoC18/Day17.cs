@@ -193,7 +193,7 @@ namespace AdventOfCode2018.Day17
 				springs.AddRange( TraceWaterSpring(spring, map) );
 			}
 
-			File.WriteAllLines("d:\\AoC18-Day17.txt", map.Draw());
+			File.WriteAllLines("AoC18-Day17.txt", map.Draw());
 			// Assert.AreEqual(600, registers.First(), "answer 2");
 		}
 

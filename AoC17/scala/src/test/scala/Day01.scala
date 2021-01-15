@@ -16,7 +16,7 @@ class Day01 extends AnyFunSuite {
   def task01b(p:String): Int = task01(p,p.length()/2)
   
   test("solutions" ){
-			assert( task01a( "1122") == 3 )
+			assert( task01a( "1122") === 3 )
 			assert( task01a( "1111") == 4 )
 			assert( task01a( "1234") == 0 )
 			assert( task01a( "91212129") == 9 )

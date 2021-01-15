@@ -12,13 +12,13 @@ Private Leaderboard
 https://adventofcode.com/2019/leaderboard/private/view/33618
 
 ## 2018 - C#
-Origionally written in .NET Core 2.1
+Origionally written in .NET Core 2.1 (C# 7.3)
 https://adventofcode.com/2018
 
 Private Leaderboard
 https://adventofcode.com/2018/leaderboard/private/view/33618
 
-## 2017 - Scala, C#, F#
+## 2017 - Scala, C#
 https://adventofcode.com/2017
 
 Private Leaderboard
