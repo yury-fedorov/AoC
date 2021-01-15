@@ -1,6 +1,6 @@
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class Day03 extends FunSuite {
+class Day03 extends AnyFunSuite {
 
   def d(n:Int) : Int = {
     if (n<=1) 0

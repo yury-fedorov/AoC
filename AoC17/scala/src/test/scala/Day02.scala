@@ -1,6 +1,6 @@
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class Day02 extends FunSuite {
+class Day02 extends AnyFunSuite {
 
   // minMaxSum
   def task02a(v:Seq[Int]): Int = v.max - v.min
