@@ -8,12 +8,11 @@ using System.Text.RegularExpressions;
 
 namespace AdventOfCode2018.Day17
 {
-    public class Point : Tuple<int, int>
+    public record Point
     {
-        public Point(int x, int y) : base(x, y) {}
-
-        public int X => Item1;
-        public int Y => Item2;
+        public Point(int x, int y) => (X,Y) = (x,y);
+        public int X {get;}
+        public int Y {get;}
 
         public Point Dx(int dx) => new Point(X + dx, Y);
         public Point Dy(int dy) => new Point(X, Y + dy);
@@ -146,7 +145,7 @@ namespace AdventOfCode2018.Day17
                 return null; // no buttom found
             }
 
-            public Tuple<int,int> FindLeftRight(Point fallingBottom)
+            public ( int Left, int Right )? FindLeftRight(Point fallingBottom)
             {
                 // todo - without checking deepness
                 var left = fallingBottom.Dx(-1);
@@ -159,7 +158,7 @@ namespace AdventOfCode2018.Day17
                 {
                     if (right.X >= BottomRight.X) return null; // no right bound
                 }
-                return Tuple.Create(left.X + 1, right.X - 1); // clay borders to substract from both sides
+                return (left.X + 1, right.X - 1); // clay borders to substract from both sides
             }
         }
 
@@ -248,22 +247,24 @@ namespace AdventOfCode2018.Day17
 			for (; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1))
 			{
 				// go outside of the cup from left
-				if ( (prevLeftRight.Item1 > leftRight.Item1) 
+				if ( (prevLeftRight?.Left > leftRight?.Left) 
 					// && map.At( new Point(leftRight.Item1 -2, falling.Y + 1 ) ) != Map.Clay 
 					) break;
 
 				// go outside of the cup from right
-				if ( (prevLeftRight.Item2 < leftRight.Item2) 
+				if ( (prevLeftRight?.Right < leftRight?.Right) 
 					// && map.At(new Point(leftRight.Item2 + 2, falling.Y + 1)) != Map.Clay
 					) break; 
 
-				map.DrawLine(new Line { A = new Point(leftRight.Item1, falling.Y), B = new Point(leftRight.Item2, falling.Y) }, Map.RestWater);
+				map.DrawLine(new Line { 
+                    A = new Point( (leftRight?.Left).Value, falling.Y), 
+                    B = new Point( (leftRight?.Right).Value, falling.Y) }, Map.RestWater);
 				prevLeftRight = leftRight; // we remember we have made it more streight
 			}
 			// we are at the top of the cup
 			// now it can fall down on both sides
-			var cupLeftInternalPoint = new Point(prevLeftRight.Item1, falling.Y);
-			var cupRightInternalPoint = new Point(prevLeftRight.Item2, falling.Y);
+			var cupLeftInternalPoint = new Point( (prevLeftRight?.Left).Value, falling.Y);
+			var cupRightInternalPoint = new Point( (prevLeftRight?.Right).Value, falling.Y);
 			var isFallingOnRight = map.At(cupRightInternalPoint.Dx(1)) != Map.Clay
 				&& map.At(cupRightInternalPoint.Dx(2).Dy(1)) != Map.Clay;
 			var isFallingOnLeft = map.At(cupLeftInternalPoint.Dx(-1)) != Map.Clay 
@@ -281,7 +282,6 @@ namespace AdventOfCode2018.Day17
 			}
 
 			// we detect the sides where it goes down
-
 			if (isFallingOnLeft)
 			{
 				result.Add( line.A);
