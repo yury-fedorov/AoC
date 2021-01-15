@@ -33,9 +33,9 @@ class Day02 extends AnyFunSuite {
   }  
 
   test ( "Given task" ) {
-		val lines = readFile("input02.txt")
+		val lines = readFile("d02/input.txt")
 		val numbers = lines.map( stringToSeq( _, "\t" ) )
-		assert( numbers.map( task02a ).sum == 51833 ) // response 1
-		assert( numbers.map( task02b ).map{case (a: Int, b: Int) => b/a}.sum == 288) // response 2
+		assert( numbers.map( task02a ).sum == 51833, "answer 1")
+		assert( numbers.map( task02b ).map{case (a: Int, b: Int) => b/a}.sum == 288, "answer 2")
   }
 }

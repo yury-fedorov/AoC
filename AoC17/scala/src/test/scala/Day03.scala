@@ -44,6 +44,6 @@ class Day03 extends AnyFunSuite {
     assert( d(1024) == 31) // Data from square 1024 must be carried 31 steps.
 	  
     val n = 347991
-    assert( d(n) == 480) // part 1
+    assert( d(n) == 480, "answer 1")
   }
 }

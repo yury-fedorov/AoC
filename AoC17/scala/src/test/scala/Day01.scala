@@ -20,13 +20,13 @@ class Day01 extends AnyFunSuite {
 			assert( task01a( "1111") == 4 )
 			assert( task01a( "1234") == 0 )
 			assert( task01a( "91212129") == 9 )
-			assert( task01a(taskInput) == 1251) // part 1
+			assert( task01a(taskInput) == 1251, "answer 1")
     
     	assert( task01b("1212") == 6)
     	assert( task01b("1221") == 0)
     	assert( task01b("123425") == 4)
     	assert( task01b("123123") == 12)
     	assert( task01b("12131415") == 4)
-    	assert( task01b(taskInput) == 1244) // part 2
+    	assert( task01b(taskInput) == 1244, "answer 2")
   }
 }
