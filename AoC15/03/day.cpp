@@ -15,7 +15,7 @@ ifstream f("input.txt");
     int y = 0;
 
     set< pair<int,int> > houses;
-    houses.insert( make_pair(x,y) );
+    houses.insert( {x,y} );
     for ( char d : s ) {
         switch(d) {
             case '^': y--; break;
@@ -24,7 +24,7 @@ ifstream f("input.txt");
             case '<': x--; break;
             default: cerr << "Unexpected direction: " << d << endl;
         }
-        houses.insert( make_pair(x,y) );
+        houses.insert( {x,y} );
     }
 
     // Question 1
@@ -46,7 +46,7 @@ ifstream f("input.txt");
             case '<': _x--; break;
             default: cerr << "Unexpected direction: " << d << endl;
         }
-        houses.insert( make_pair(_x,_y) );
+        houses.insert( {_x,_y} );
         isSanta = !isSanta;
     }
 

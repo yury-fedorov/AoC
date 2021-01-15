@@ -16,9 +16,7 @@ typedef tuple<string,bool,int,string> Fact;
 typedef pair<int,int> Pair;
 typedef map<Pair,int> FactMap;
 
-Pair makePair( int a, int b ) {
-    return make_pair( min(a,b), max(a,b) );
-}
+inline Pair makePair( int a, int b ) { return { min(a,b), max(a,b) }; }
 
 int countHappiness( const FactMap & facts, const vector<int> & positions ) {
     auto happiness = 0;
