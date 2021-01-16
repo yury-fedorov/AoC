@@ -6,33 +6,27 @@ using System.Text;
 
 namespace AdventOfCode2018
 {
-    // solid rock cannot be traversed.
-    public enum Material { Rocky, Wet, Narrow, SolidRock }
+    public enum Material { Rocky, Wet, Narrow, SolidRock } // solid rock cannot be traversed.
 
     public enum Tool { Neither, Torch, ClimbingGear }
 
-    public interface IMap
-    {
+    public interface IMap {
         Material At(int x, int y);
     }
 
-    public class Map : IMap
-    {
+    public class Map : IMap {
         readonly int _depth;
         readonly (int, int) _target;
         readonly IDictionary<(int, int), long> _pointIndexMap = new Dictionary<(int, int), long>();
-        public Map(int depth, (int, int) target)
-        {
+        public Map(int depth, (int, int) target) {
             _depth = depth;
             _target = target;
         }
 
         public int ToErosionLevel(long geologicalIndex) => (int)((geologicalIndex + _depth) % 20183);
 
-        public long GeologicalIndex((int, int) point)
-        {
-            long value;
-            if (_pointIndexMap.TryGetValue(point, out value)) return value;
+        public long GeologicalIndex((int, int) point) {
+            if (_pointIndexMap.TryGetValue(point, out var value)) return value;
 
             var (x, y) = point;
             if (point == (0, 0)) value = 0;
@@ -48,16 +42,13 @@ namespace AdventOfCode2018
 
         public Material At(int x, int y) => x >= 0 && y >= 0 ? ToMaterial(GeologicalIndex((x, y))) : Material.SolidRock;
 
-        public string Draw()
-        {
+        public string Draw() {
             // Rocky, Wet, Narrow - Drawing this same cave system with rocky as ., wet as =, narrow as |
             char[] mapping = { '.', '=', '|' };
             var (tx, ty) = _target;
             var map = new StringBuilder();
-            for (var y = 0; y <= ty; y++)
-            {
-                for (var x = 0; x <= tx; x++)
-                {
+            for (var y = 0; y <= ty; y++) {
+                for (var x = 0; x <= tx; x++) {
                     var material = At(x, y);
                     char ch = mapping[(int)material];
                     map.Append(ch);
@@ -69,23 +60,19 @@ namespace AdventOfCode2018
     }
 
     // all 4 sides are bounded
-    public class BoundedMap : IMap
-    {
+    public class BoundedMap : IMap {
         readonly IMap _original; // easily can adopt to calculate also out of cached bounds
         readonly Material[][] _cache;
         readonly int _sizeX;
         readonly int _sizeY;
-        public BoundedMap(IMap map, int sizeX, int sizeY)
-        {
+        public BoundedMap(IMap map, int sizeX, int sizeY) {
             _original = map;
             _sizeX = sizeX;
             _sizeY = sizeY;
             _cache = new Material[sizeX][];
-            for (int x = 0; x < sizeX; x++)
-            {
+            for (int x = 0; x < sizeX; x++) {
                 _cache[x] = new Material[sizeY];
-                for (int y = 0; y < sizeY; y++)
-                {
+                for (int y = 0; y < sizeY; y++) {
                     _cache[x][y] = _original.At(x, y);
                 }
             }
@@ -93,8 +80,7 @@ namespace AdventOfCode2018
         public Material At(int x, int y) => x >= 0 && x < _sizeX && y >= 0 && y < _sizeY ? _cache[x][y] : Material.SolidRock;
     }
 
-    public class CostMap
-    {
+    public class CostMap {
         public const int ND = -1;
         readonly int[,,] _at; // how much it costs to arrive here
         private readonly int _sx;
@@ -105,8 +91,7 @@ namespace AdventOfCode2018
 
         public bool ValidIndex(int x, int y) => x >= 0 && y >= 0 && x < _sx && y < _sy;
 
-        public CostMap( int sx, int sy, CostMap src = null )
-        {
+        public CostMap( int sx, int sy, CostMap src = null ) {
             _sx = sx;
             _sy = sy;
             _at = new int[sx,sy,ToolUtil.ToolsAll.Length];
@@ -122,12 +107,10 @@ namespace AdventOfCode2018
         public const int OtherTool = 7;
 
         // get the wishing tool, if absent, get 2 other tools and select minimal of them + other tool
-        public int CostTill(int x, int y, Tool tool)
-        {
+        public int CostTill(int x, int y, Tool tool) {
             if (!ValidIndex(x, y)) return (int.MaxValue >> 1);
             int cost;
-            if ((cost = At(x, y, tool)) == ND)
-            {
+            if ((cost = At(x, y, tool)) == ND) {
                 // this tool is no go on the region
                 var others = ToolUtil.OtherTools(tool).Where(t => At(x, y, t) != ND); // same point but other tools
                 cost = others.Select(t => At(x, y, t)).Min() + OtherTool;
@@ -139,8 +122,7 @@ namespace AdventOfCode2018
             => Math.Min(CostTill( x - 1, y, tool), CostTill( x, y - 1, tool)) + SameTool;
     }
 
-    public class Optimizer
-    {
+    public class Optimizer {
         readonly IMap _map;
         readonly CostMap _costMap;
         readonly int _longest;
@@ -149,8 +131,7 @@ namespace AdventOfCode2018
         readonly Tool _tool;
         readonly int _switchCount;
 
-        public Optimizer(IMap map, int x1, int y1, Tool tool, CostMap costMap, int switchCount)
-        {
+        public Optimizer(IMap map, int x1, int y1, Tool tool, CostMap costMap, int switchCount) {
             _map = map;
             _x1 = x1;
             _y1 = y1;
@@ -252,12 +233,10 @@ namespace AdventOfCode2018
         // You cannot use the torch (if it gets wet, you won't have a light source).
         static readonly Tool[] ToolsInWet = { Tool.ClimbingGear, Tool.Neither };
 
-        // public enum Material { Rocky, Wet, Narrow, SolidRock }
         static readonly Tool[][] ToolsIn = { ToolsInRocky, ToolsInWet, ToolsInNarow, ToolsInSolidRock };
 
         public static Tool[] UsableTools(Material material) => ToolsIn[(int) material];
 
-        // public enum Material { Rocky, Wet, Narrow, SolidRock }
         // access by material (so 4 elements)
         private const int Neither = 1;
         private const int Torch   = 2;
@@ -288,10 +267,8 @@ namespace AdventOfCode2018
         {
             var map = new Map(depth, (tx, ty));
             int riskLevel = 0;
-            for (var x = 0; x <= tx; x++)
-            {
-                for (var y = 0; y <= ty; y++)
-                {
+            for (var x = 0; x <= tx; x++) {
+                for (var y = 0; y <= ty; y++) {
                     var material = map.At(x, y);
                     riskLevel += (int)material;
                 }
@@ -306,15 +283,12 @@ namespace AdventOfCode2018
             Assert.AreEqual(Material.Rocky, map.At(tx, ty), "rocky target");
 
             var manhattanPath = tx + ty;
-            for (var diagonal = 1; diagonal <= manhattanPath; diagonal++)
-            {
-                for (var x = 0; x <= diagonal; x++)
-                {
+            for (var diagonal = 1; diagonal <= manhattanPath; diagonal++) {
+                for (var x = 0; x <= diagonal; x++) {
                     var y = diagonal - x;
                     var material = map.At(x, y);
                     var tools = ToolUtil.UsableTools(material); // this tools can be used in this region
-                    foreach (var tool in tools)
-                    {
+                    foreach (var tool in tools) {
                         var cost = smallCostMap.MinimalCost(x, y, tool);
                         Assert.GreaterOrEqual(cost, x + y, "cost more or equal manhattan" );
                         smallCostMap.Set( x, y, tool, cost);
@@ -334,15 +308,12 @@ namespace AdventOfCode2018
             var costMap = new CostMap(tx + absoluteDelta, ty + absoluteDelta, smallCostMap);
 
             // now let us play with partial optimizations
-            for (var diagonal = 1; diagonal <= manhattanPath; diagonal++)
-            {
-                for (var x = 0; x <= diagonal; x++)
-                {
+            for (var diagonal = 1; diagonal <= manhattanPath; diagonal++) {
+                for (var x = 0; x <= diagonal; x++) {
                     var y = diagonal - x;
                     var material = map.At(x, y);
                     var tools = ToolUtil.UsableTools(material); // this tools can be used in this region
-                    foreach (var tool in tools)
-                    {
+                    foreach (var tool in tools) {
                         var prevCost = costMap.At(x, y, tool);
                         if ( prevCost == CostMap.ND) // we never done any estimation for this point
                         {
@@ -367,7 +338,7 @@ namespace AdventOfCode2018
             // var realMinimum = optimizer.Minimize(0, 0, Tool.Torch, 0, 0);
 
             var realMinimum = costMap.At(tx, ty, Tool.Torch);
-            Assert.AreEqual(-1, realMinimum, "task 2 response");
+            Assert.AreEqual(-1, realMinimum, "answer 2");
         }
     }
 }

@@ -3,14 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-
-namespace AdventOfCode2018.Day20
-{
-    public class Room
-    {
+namespace AdventOfCode2018.Day20 {
+    public class Room {
         public readonly (int,int) Position;
+        // ?
         public readonly IDictionary<(int,int),Room> Conections = new Dictionary<(int,int),Room>();
+        // ?
         public Room( (int,int) position) { Position = position; }
     }
 
@@ -21,23 +19,19 @@ namespace AdventOfCode2018.Day20
 
         public IEnumerable<(int, int)> Doors() => _roomNeigbours.Keys;
 
-        public void AddDoor( (int,int) a, (int,int) b)
-        {
+        public void AddDoor( (int,int) a, (int,int) b) {
             Neigbours(a).Add(b);
             Neigbours(b).Add(a);
         }
 
-        public List<(int,int)> Neigbours((int,int) room)
-        {
-            List<(int, int)> list;
-            if (!_roomNeigbours.TryGetValue(room, out list)) 
-            {
+        public List<(int,int)> Neigbours((int,int) room) {
+            if (!_roomNeigbours.TryGetValue(room, out var list)) {
                 list = new List<(int, int)>();
                 _roomNeigbours.Add(room, list);
             }
             return list;
         }
-
+        // ?
         public ((int,int),(int,int)) Bounds() {
             var minX = _roomNeigbours.Keys.Min(a => a.Item1);
             var minY = _roomNeigbours.Keys.Min(a => a.Item2);
@@ -47,22 +41,20 @@ namespace AdventOfCode2018.Day20
         }
     }
 
-    public interface IPart
-    {
+    public interface IPart {
         int Length();
         IEnumerable<char> Path();
     }
 
-    class Door : IPart
-    {
+    // ? 
+    class Door : IPart {
         public readonly char _door;
         public Door(char door) { _door = door; }
         public int Length() => 1;
         public IEnumerable<char> Path() => new[] { _door };
     }
 
-    public class Sequence : IPart
-    {
+    public class Sequence : IPart {
         public readonly ICollection<IPart> _sequence = new LinkedList<IPart>();
         public int Length() => _sequence.Sum(p=>p.Length());
         public IEnumerable<char> Path() => _sequence.SelectMany(p => p.Path());
@@ -146,10 +138,7 @@ namespace AdventOfCode2018.Day20
             return (dx, dy);
         }
 
-        public string [] FlatVariations(string path)
-        {
-            return path.Split('|');
-        }
+        public string[] FlatVariations(string path) => path.Split('|');
 
         // 4104 -- this number is too high
         [TestCase("Day20.txt", 4104)] // 3788 ??

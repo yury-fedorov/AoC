@@ -8,8 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace AdventOfCode2018.Day17
 {
-    public record Point
-    {
+    public record Point {
         public Point(int x, int y) => (X,Y) = (x,y);
         public int X {get;}
         public int Y {get;}
@@ -18,8 +17,7 @@ namespace AdventOfCode2018.Day17
         public Point Dy(int dy) => new Point(X, Y + dy);
     }
 
-    public class Line
-    {
+    public class Line {
         public Point A;
         public Point B;
         public bool Horizontal => A.Y == B.Y;
@@ -27,8 +25,7 @@ namespace AdventOfCode2018.Day17
 
     public class Day17 {
 
-        public Line ToLine(string line)
-        {
+        public Line ToLine(string line) {
             // x=309, y=1432..1458
             // y = 231, x = 423..450
             const string pattern = @"([xy])=([0-9]+), ([xy])=([0-9]+)..([0-9]+)";
@@ -63,8 +60,7 @@ namespace AdventOfCode2018.Day17
         }
 
         // view on the part given
-        public class Map
-        {
+        public class Map {
             public const char Sand = '.';
             public const char Clay = '#';
             public const char WaterSpring = '+';
@@ -76,28 +72,23 @@ namespace AdventOfCode2018.Day17
             public readonly Point Size;
             readonly char[,] _map;
 
-            public Map(Point topLeft, Point bottomRight)
-            {
+            public Map(Point topLeft, Point bottomRight) {
                 TopLeft = topLeft;
                 BottomRight = bottomRight;
                 Size = new Point( BottomRight.X - TopLeft.X + 1, BottomRight.Y - TopLeft.Y + 1 );
                 _map = new char[Size.X,Size.Y];
-                for (int x = topLeft.X; x <= bottomRight.X; x++ )
-                {
-                    for (int y = topLeft.Y; y <= bottomRight.Y; y++)
-                    {
+                for (int x = topLeft.X; x <= bottomRight.X; x++ ) {
+                    for (int y = topLeft.Y; y <= bottomRight.Y; y++) {
                         Set(new Point(x, y), Sand);
                     }
                 }
             }
 
-            public void DrawLine(Line line, char symbol)
-            {
+            public void DrawLine(Line line, char symbol) {
                 var d0  = line.Horizontal ? line.A.Y : line.A.X;
                 var d1a = line.Horizontal ? line.A.X : line.A.Y;
                 var d1b = line.Horizontal ? line.B.X : line.B.Y;
-                for (var d1 = d1a; d1 <= d1b; d1++)
-                {
+                for (var d1 = d1a; d1 <= d1b; d1++) {
                     var p = line.Horizontal ? new Point(d1, d0) : new Point(d0, d1);
                     Set(p, symbol);
                 }
@@ -105,14 +96,12 @@ namespace AdventOfCode2018.Day17
 
             public Point ToInternalMap(Point p) => new Point( p.X - TopLeft.X, p.Y - TopLeft.Y );
 
-            public char At(Point p)
-            {
+            public char At(Point p) {
                 var ai = ToInternalMap(p);
                 return _map[ai.X, ai.Y];
             }
 
-            public char Set(Point p, char value)
-            {
+            public char Set(Point p, char value) {
                 var ai = ToInternalMap(p);
                 var prev = _map[ai.X, ai.Y];
                 _map[ai.X, ai.Y] = value;
@@ -120,42 +109,33 @@ namespace AdventOfCode2018.Day17
             }
 
             // for debug purpose
-            public IEnumerable<string> Draw()
-            {
-                for (int y = TopLeft.Y; y <= BottomRight.Y; y++)
-                {
+            public IEnumerable<string> Draw() {
+                for (int y = TopLeft.Y; y <= BottomRight.Y; y++) {
                     var line = new StringBuilder();
-                    for (int x = TopLeft.X; x <= BottomRight.X; x++)
-                    {
+                    for (int x = TopLeft.X; x <= BottomRight.X; x++) {
                         line.Append(At(new Point(x, y)));
                     }
                     yield return line.ToString();
                 }
             }
 
-            public int ? FindBottom(Point from)
-            {
-                for (int y = from.Y; y <= BottomRight.Y; y++)
-                {
-                    if (At(new Point(from.X, y)) == Clay)
-                    {
+            public int ? FindBottom(Point from) {
+                for (int y = from.Y; y <= BottomRight.Y; y++) {
+                    if (At(new Point(from.X, y)) == Clay) {
                         return y;
                     }
                 }
                 return null; // no buttom found
             }
 
-            public ( int Left, int Right )? FindLeftRight(Point fallingBottom)
-            {
+            public ( int Left, int Right )? FindLeftRight(Point fallingBottom) {
                 // todo - without checking deepness
                 var left = fallingBottom.Dx(-1);
                 var right = fallingBottom.Dx(1);
-                for (; At(left) != Clay; left = left.Dx(-1))
-                {
+                for (; At(left) != Clay; left = left.Dx(-1)) {
                     if (left.X <= TopLeft.X) return null; // no left bound
                 }
-                for (; At(right) != Clay; right = right.Dx(1))
-                {
+                for (; At(right) != Clay; right = right.Dx(1)) {
                     if (right.X >= BottomRight.X) return null; // no right bound
                 }
                 return (left.X + 1, right.X - 1); // clay borders to substract from both sides
@@ -178,15 +158,13 @@ namespace AdventOfCode2018.Day17
 
 			var map = new Map(new Point(minX, minY), new Point(maxX, maxY));
 			map.Set(waterSpring, Map.WaterSpring);
-			foreach (var line in realLines)
-			{
+			foreach (var line in realLines) {
 				map.DrawLine(line, Map.Clay);
 			}
 
 			var springs = new List<Point>();
 			springs.Add(waterSpring);
-			while ( springs.Any() && springs.Count < 500)
-			{
+			while ( springs.Any() ) {
 				var spring = springs.First();
 				springs.RemoveAt(0);
 				springs.AddRange( TraceWaterSpring(spring, map) );
@@ -196,8 +174,7 @@ namespace AdventOfCode2018.Day17
 			// Assert.AreEqual(600, registers.First(), "answer 2");
 		}
 
-		private static IEnumerable<Point> TraceWaterSpring(Point waterSpring, Map map)
-		{
+		private static IEnumerable<Point> TraceWaterSpring(Point waterSpring, Map map) {
 			// start to draw 
 			// 1. detect the first bottom
 			int? y = map.FindBottom(waterSpring);
@@ -223,10 +200,8 @@ namespace AdventOfCode2018.Day17
 			// this bottom can be partial and origin of two new springs, to check
 			// this is important to fill the part below
 			for (var bottomLeft = new Point(waterSpring.X-1,fallingBottom.Y); 
-				bottomLeft.X >= bottomRestWaterLine.A.X; bottomLeft = bottomLeft.Dx(-1) )
-			{
-				if ( map.At(bottomLeft.Dy(1)) != Map.Clay )
-				{
+				bottomLeft.X >= bottomRestWaterLine.A.X; bottomLeft = bottomLeft.Dx(-1) ) {
+				if ( map.At(bottomLeft.Dy(1)) != Map.Clay ) {
 					// hole on the left
 					result.Add(bottomLeft);
 					break; // found a spring on the left
@@ -234,10 +209,8 @@ namespace AdventOfCode2018.Day17
 			}
 
 			for (var bottomRight = new Point(waterSpring.X + 1, fallingBottom.Y);
-				bottomRight.X <= bottomRestWaterLine.B.X; bottomRight = bottomRight.Dx(1))
-			{
-				if (map.At(bottomRight.Dy(1)) != Map.Clay)
-				{
+				bottomRight.X <= bottomRestWaterLine.B.X; bottomRight = bottomRight.Dx(1)) {
+				if (map.At(bottomRight.Dy(1)) != Map.Clay) {
 					// hole on the right
 					result.Add(bottomRight);
 					break; // found a spring on the right
@@ -246,8 +219,7 @@ namespace AdventOfCode2018.Day17
 
 			// now we are ready to go up
 			var falling = fallingBottom.Dy(-1);
-			for (; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1))
-			{
+			for (; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1)) {
 				// go outside of the cup from left
 				if ( (prevLeftRight?.Left > leftRight?.Left) 
 					// && map.At( new Point(leftRight.Item1 -2, falling.Y + 1 ) ) != Map.Clay 
@@ -272,26 +244,18 @@ namespace AdventOfCode2018.Day17
 			var isFallingOnLeft = map.At(cupLeftInternalPoint.Dx(-1)) != Map.Clay 
 				&& map.At(cupLeftInternalPoint.Dx(-2).Dy(1)) != Map.Clay;
 
-			var line = new Line
-			{
+			var line = new Line {
 				A = cupLeftInternalPoint.Dx(isFallingOnLeft ? -2 : 0),
 				B = cupRightInternalPoint.Dx(isFallingOnRight ? 2 : 0)
 			};
 
-			if ( map.At( new Point( waterSpring.X, falling.Y ) ) != Map.RestWater )
-			{
+			if ( map.At( new Point( waterSpring.X, falling.Y ) ) != Map.RestWater ) {
 				map.DrawLine(line, Map.FallingWater);
 			}
 
 			// we detect the sides where it goes down
-			if (isFallingOnLeft)
-			{
-				result.Add( line.A);
-			}
-			if (isFallingOnRight)
-			{
-				result.Add( line.B);
-			}
+			if (isFallingOnLeft) result.Add( line.A);
+			if (isFallingOnRight) result.Add( line.B);
 			return result;
 		}
 	}

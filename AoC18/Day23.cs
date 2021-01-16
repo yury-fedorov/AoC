@@ -34,13 +34,10 @@ namespace AdventOfCode2018
             throw new Exception("unexpected format");
         }
 
-        public int Distance(Point3D a, Point3D b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) + Math.Abs(a.Z - b.Z);
+        public static int Distance(Point3D a, Point3D b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) + Math.Abs(a.Z - b.Z);
 
-        public int CountPoint(IEnumerable<Nanobot> bots, Point3D point) 
-            => bots.Where(b => Distance(b.P, point) <= b.R).Count();
+        public static int CountPoint(IEnumerable<Nanobot> bots, Point3D p) => bots.Count(b => Distance(b.P, p) <= b.R);
 
-        // 125302823 -- too high
-        // 125289441 -- too high
         [TestCase("Day23.txt", 420, 1)]
         public void Test(string file, int eCount, int eDistance)
         {
@@ -49,7 +46,9 @@ namespace AdventOfCode2018
             var maxRadius = list.Max(n => n.R);
             var biggest = list.Single(n => n.R == maxRadius);
             var count = list.Where(b => Distance(b.P, biggest.P) <= maxRadius).Count();
-            Assert.AreEqual(eCount, count);
+            Assert.AreEqual(eCount, count, "answer 1");
+
+            Assert.Fail( "No correct answer for task 2" );
 
             var pc = list.ToDictionary(b => b.P, b => CountPoint(list, b.P)); // 870
             var maxNumber = pc.Values.Max();
@@ -91,8 +90,28 @@ namespace AdventOfCode2018
                 }
                 if ( Distance(p0, p1) >= Distance(p0, cp1) ) break;
             }
+            
+            var MAX = 125289441;
+            int shortestDistance = MAX;
+            /*
+            for ( int x = 1; x < shortestDistance; x++ ) {
+                for ( int y = shortestDistance - x; y > 0; y-- ) {
+                    for ( int z = shortestDistance - x - y; z > 0; z-- ) {
+                        var pi = new Point3D( x, y, z );
+                        var ci = CountPoint(list, pi);
+                        var di = Distance(p0,pi);
+                        if ( maxNumber <= ci && shortestDistance > di ) {
+                            shortestDistance = di;
+                            maxNumber = ci;
+                        }
+                    }
+                }
+            }
+            */
 
-            Assert.AreEqual(-1, Distance(p0,p1));
+            // 125302823 -- too high
+            // 125289441 -- too high
+            Assert.AreEqual(-1, shortestDistance, "answer 2");
         }
     }
 }

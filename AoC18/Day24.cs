@@ -5,12 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace AdventOfCode2018.Day24
-{
+namespace AdventOfCode2018.Day24 {
     public enum Damage { Fire, Cold, Slashing, Radiation, Bludgeoning }
 
-    public class Group
-    {
+    public class Group {
         // Immune System or Infection
         public readonly bool Infection;  
         public int Units;
@@ -57,28 +55,23 @@ namespace AdventOfCode2018.Day24
         // the defending group instead takes no damage; 
         // if the defending group is weak to the attacking group's attack type, 
         // the defending group instead takes double damage.
-        public int DamageK(Damage type)
-        {
+        public int DamageK(Damage type) {
             if (Weaknesses.Contains(type)) return 2;
             if (Immunities.Contains(type)) return 0;
             return 1;
         }
     }
 
-    public class Day24
-    {
-        public IEnumerable<Group> Alive(IEnumerable<Group> groups)
-            => groups.Where(g => g.Units > 0);  
+    public class Day24 {
+        public IEnumerable<Group> Alive(IEnumerable<Group> groups) => groups.Where(g => g.Units > 0);  
 
         public IEnumerable<Group> ByType(IEnumerable<Group> groups, bool infection) 
             => Alive(groups).Where(g => g.Infection == infection);
 
-        public bool IsOver(IEnumerable<Group> groups)
-            => !ByType(groups, false).Any() || !ByType(groups, true).Any();
+        public bool IsOver(IEnumerable<Group> groups) => !ByType(groups, false).Any() || !ByType(groups, true).Any();
 
         // but not accounting for whether the defending group has enough units to actually receive all of that damage
-        public int EstimateDamage(Group attacking, Group target, bool selection)
-        {
+        public int EstimateDamage(Group attacking, Group target, bool selection) {
             var maxHit = target.DamageK(attacking.AttackType) * attacking.EffectivePower;
             // if (maxHit < target.HitPoints) return 0; // if we can not kill even one enemy unit, no demage here
             return selection ? maxHit : Math.Min(maxHit, target.PotentialDamage);
@@ -87,25 +80,21 @@ namespace AdventOfCode2018.Day24
         public (int,int,int) TargetOrder(int damage, int effectivePower, int initiative)
             => (damage, effectivePower, initiative);
 
-        public (IEnumerable<Damage>, IEnumerable<Damage>) ReadSpecsFromString(string specs)
-        {
+        public (IEnumerable<Damage>, IEnumerable<Damage>) ReadSpecsFromString(string specs) {
             var weak = new List<Damage>();
             var immune = new List<Damage>();
             const string pattern1 = "\\((.*)\\)";
             var matches = Regex.Matches(specs, pattern1);
-            foreach (Match match1 in matches)
-            {
+            foreach (Match match1 in matches) {
                 var withoutBrackets = match1.Groups[1].Value;
                 var parts = withoutBrackets.Split("; ");
                 // the possible cases: 1 element or 2 elements
                 Assert.True(parts.Length >= 1 && parts.Length <= 2);
 
                 const string pattern2 = "([a-z]+) to (.*)"; // immune to fire
-                foreach ( var part in parts )
-                {
+                foreach ( var part in parts ) {
                     var matches2 = Regex.Matches(part, pattern2);
-                    foreach (Match match2 in matches2)
-                    {
+                    foreach (Match match2 in matches2) {
                         var type = match2.Groups[1].Value == "immune" ? immune : weak;
                         var types = match2.Groups[2].Value.Split(", ").Select(a => Enum.Parse<Damage>(a, true));
                         type.AddRange(types);
@@ -134,8 +123,7 @@ namespace AdventOfCode2018.Day24
         // regardless of whether they are part of the infection or the immune system. 
         // (If a group contains no units, it cannot attack.)
 
-        public Group ReadGroupFromString(bool infection, string line)
-        {
+        public Group ReadGroupFromString(bool infection, string line) {
             const string pattern = "([0-9]+) units each with ([0-9]+) hit points (.*)with an attack that does ([0-9]+) (.+) damage at initiative ([0-9]+)";
             var matches = Regex.Matches(line, pattern);
             foreach (Match match in matches)
@@ -153,29 +141,25 @@ namespace AdventOfCode2018.Day24
             return null;
         }
 
-        public IEnumerable<Group> ReadFromFile( string file )
-        {
+        public IEnumerable<Group> ReadFromFile( string file ) {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToList();
             var infectionStarts = lines.IndexOf("Infection:");
             Assert.Greater(infectionStarts, 0); // infection group starts further
 
             // first immune is going
-            for ( int n = 0; n < infectionStarts; n++ )
-            {
+            for ( int n = 0; n < infectionStarts; n++ ) {
                 var g = ReadGroupFromString(false, lines[n]);
                 if (g != null) yield return g;
             }
 
             // then infection is going
-            for ( int n = infectionStarts; n < lines.Count(); n++ )
-            {
+            for ( int n = infectionStarts; n < lines.Count(); n++ ) {
                 var g = ReadGroupFromString(true, lines[n]);
                 if (g != null) yield return g;
             }
         }
 
-        public Group[] Run(string file, int boost)
-        {
+        public Group[] Run(string file, int boost) {
             var groups = ReadFromFile(file).ToArray();
 
             // boosting every immune system group
@@ -184,12 +168,10 @@ namespace AdventOfCode2018.Day24
 
             int totalPotentialDamage = groups.Sum(g => g.PotentialDamage);
 
-            while (!IsOver(groups))
-            {
+            while (!IsOver(groups)) {
                 var choosingOrder = Alive(groups).OrderByDescending(g => g.ChoosingOrder).ToList();
                 var mapAttackTarget = new Dictionary<string, string>();
-                foreach (var attacking in choosingOrder)
-                {
+                foreach (var attacking in choosingOrder) {
                     var enemy = !attacking.Infection;
                     var allEnimies = ByType(choosingOrder, enemy).ToList();
                     var attackableEnimies = allEnimies.Where(e => !mapAttackTarget.Values.Contains(e.Id)).ToList();
@@ -197,16 +179,15 @@ namespace AdventOfCode2018.Day24
                     var choosable = potentialDamage
                         .OrderByDescending(e => TargetOrder(e.Value, e.Key.EffectivePower, e.Key.Initiative))
                         .ToList();
-                    if (choosable.Any(e => e.Value > 0))
-                    {
+                    if (choosable.Any(e => e.Value > 0)) {
                         mapAttackTarget.Add(attacking.Id, choosable.First().Key.Id);
                     }
                 }
 
                 // now every group has chosen its target
-                foreach (var attacking in choosingOrder
+                foreach ( var attacking in choosingOrder
                     .Where(g => mapAttackTarget.Keys.Contains(g.Id))
-                    .OrderByDescending(g => g.Initiative).ToList())
+                    .OrderByDescending(g => g.Initiative) )
                 {
                     if (attacking.Units == 0) continue; // if they were killed in the meanwhile
                     var targetId = mapAttackTarget[attacking.Id];
@@ -229,14 +210,20 @@ namespace AdventOfCode2018.Day24
             return groups;
         }
 
-        // [TestCase("Day24Sample.txt", 5216)]
-        [TestCase("Day24.txt", 14000)]
-        public void Test(string file, int expected)
-        {
-            // var groups = Input().ToArray();
-            // var groups = TestInput().ToArray();
-            for ( int boost = 88; true; boost++ )
-            {
+        const string FileName = "Day24.txt";
+
+        [TestCase("Day24Sample.txt", 5216)]
+        [TestCase(FileName, 14000)]
+        public void Part1(string file, int answer1) {
+            var groups = Run(file, 0);
+            Assert.True ( IsOver(groups) );
+            var result = Alive(groups).Sum(g => g.Units);
+            Assert.AreEqual(answer1, result);  
+        }
+
+        [TestCase(FileName, 6149)] // the right answer for the task 2: 6149
+        public void Part2(string file, int answer2) {
+            for ( int boost = 88; true; boost++ ) {
                 var groups = Run(file, boost);
                 if ( IsOver(groups) )
                 {
@@ -244,7 +231,7 @@ namespace AdventOfCode2018.Day24
                     {
                         // finally the immune system won
                         var result = Alive(groups).Sum(g => g.Units);
-                        Assert.AreEqual(expected, result);  // the right answer for the task 2: 6149
+                        Assert.AreEqual(answer2, result);  
                         return;
                     }
                 }

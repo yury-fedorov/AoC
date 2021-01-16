@@ -6,8 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace AdventOfCode2018.Day19
-{
+namespace AdventOfCode2018.Day19 {
     /*
 	 The instruction pointer contains 0, and so the first instruction is executed (seti 5 0 1). 
 	 It updates register 0 to the current instruction pointer value (0), sets register 1 to 5, 
@@ -30,26 +29,20 @@ namespace AdventOfCode2018.Day19
 	}
 	*/
 
-    public class Day19
-	{
-		public int GetIP(string line)
-		{
+    public class Day19 {
+		public int GetIP(string line) {
 			const string patternIp = @"#ip ([0-5])";
 			var matches = Regex.Matches(line, patternIp);
-			foreach (Match match in matches)
-			{
-				
+			foreach (Match match in matches) {
 				return Convert.ToInt32(match.Groups[1].Value);
 			}
 			throw new Exception("unexpected flow");
 		}
 
-		public int[] ToArray(string line)
-		{
+		public int[] ToArray(string line) {
 			const string pattern = @"([a-z]+) ([0-9]+) ([0-9]+) ([0-9]+)";
 			var matches = Regex.Matches(line, pattern);
-			foreach (Match match in matches)
-			{
+			foreach (Match match in matches) {
 				Code code;
 				var success = Enum.TryParse(match.Groups[1].Value, out code);
 				Assert.True(success, "expected to parse successfully");
@@ -63,14 +56,11 @@ namespace AdventOfCode2018.Day19
 			throw new Exception("unexpected flow");
 		}
 		
-		public string ToString<T>( T[] a ) 
-			=> string.Join(',', a.Select( o => o.ToString() ).ToArray());
+		public string ToString<T>( T[] a ) => string.Join(',', a.Select( o => o.ToString() ).ToArray());
 
 		[TestCase("Day19Sample.txt", 7, 0)]
-        // slow - [TestCase("Day19.txt", 1536, 0)] // question 1
-        [TestCase("Day21.txt", -1, 0)] // day 21
-        public void Test1(string file, int reg0halt, int reg0start )
-		{
+        [TestCase("Day19.txt", 1536, 0)] // question 1
+        public void Test1(string file, int reg0halt, int reg0start ) {
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
             // The first line (#ip 0) indicates that the instruction pointer should be bound to register 0 in this program. 
             // This is not an instruction, and so the value of the instruction pointer 
@@ -80,30 +70,25 @@ namespace AdventOfCode2018.Day19
             // The instruction pointer starts at 0.
             // int ip =0;
 			var code = new List<int[]>();
-			for( int i = 1; i < lines.Length; i++)
-			{
+			for( int i = 1; i < lines.Length; i++) {
 				code.Add( ToArray(lines[i]) );
 			}
 			var registers = new long[6] { reg0start, 0, 0, 0, 0, 0 };
-
             int operationsExecuted = 0;
 
             // If the instruction pointer ever causes the device to attempt to load an instruction 
             // outside the instructions defined in the program, the program instead immediately halts.
-            while ( registers[ipBinding] < code.Count() )
-			{
+            while ( registers[ipBinding] < code.Count() ) {
 				var curInstruction = code[(int)registers[ipBinding]];
 				var opcode = (Code)curInstruction[0];
 				var instruction = Day16.Day16.MapCodeInstruction[opcode];
 				Console.Write($"[{ToString(registers)}] \t {registers[ipBinding]} \t {opcode} {ToString( new[] { curInstruction[1], curInstruction[2], curInstruction[3] } )} \t ");
-				try
-				{
+				try {
                     // When the instruction pointer is bound to a register, its value is written to that register just before each instruction is executed, 
                     // and the value of that register is written back to the instruction pointer immediately after each instruction finishes execution.
 					instruction.Execute(curInstruction, registers);
 				}
-				catch ( Exception e)
-				{
+				catch ( Exception e) {
 					Assert.Fail(e.Message);
 				}
 				Console.WriteLine($"[{ToString(registers)}]");
@@ -112,7 +97,6 @@ namespace AdventOfCode2018.Day19
                 // (Because of this, instructions must effectively set the instruction pointer to the 
                 // instruction before the one they want executed next.)
                 registers[ipBinding] += 1;
-
                 Assert.Less(operationsExecuted++, 100, "Suspection for a loop");
 			}
 			// correction of increment done out of scope			  
