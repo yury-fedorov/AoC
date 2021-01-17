@@ -8,11 +8,8 @@ using System.Text.RegularExpressions;
 
 namespace AdventOfCode2018.Day17
 {
-    public record Point {
-        public Point(int x, int y) => (X,Y) = (x,y);
-        public int X {get;}
-        public int Y {get;}
-
+    public record Point(int X, int Y)
+    {
         public Point Dx(int dx) => new Point(X + dx, Y);
         public Point Dy(int dy) => new Point(X, Y + dy);
     }
@@ -142,8 +139,8 @@ namespace AdventOfCode2018.Day17
             }
         }
 
-        [TestCase("Day17.txt")]
-        public void TestSample3(string file)
+        [TestCase("Day17/input.txt")]
+        public void Solution(string file)
 		{
 			var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
 			var realLines = lines.Select(l => ToLine(l)).ToArray();
