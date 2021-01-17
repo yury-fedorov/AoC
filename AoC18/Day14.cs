@@ -131,18 +131,14 @@ namespace AdventOfCode2018.Day14
             }
         }
 
-        [Ignore("done")]
+        // [Ignore("done")]
         [TestCase(9, "5158916779")]
         [TestCase(5, "0124515891")]
-
         [TestCase(18, "9251071085")]
         [TestCase(2018, "5941429882")]
-        // [TestCase(919901, "0124515891")]
-
-        public void Test1(int rewind, string expected)
-        {
-            Assert.AreEqual(expected, Rewind(rewind));
-        }
+        [TestCase(919901, "7861362411")] // answer 1
+        public void Day14Part1(int rewind, string expected)
+            => Assert.AreEqual(expected, Rewind(rewind));
 
         /*
         51589 first appears after 9 recipes.
@@ -150,15 +146,13 @@ namespace AdventOfCode2018.Day14
 92510 first appears after 18 recipes.
 59414 first appears after 2018 recipes.
         */
-        [Ignore("done")]
-        [TestCase("51589",9)]
+        // [Ignore("done")]
+        [TestCase("51589", 9)]
         [TestCase("01245", 5)]
         [TestCase("92510", 18)]
         [TestCase("59414", 2018)]
-        [TestCase("919901", 20203532)]
-        public void Test2(string sequence, long expected)
-        {
-            Assert.AreEqual(expected, SearchSequence(sequence));
-        }
+        [TestCase("919901", 20203532)] // answer 2
+        public void Day14Part2(string sequence, long expected)
+            => Assert.AreEqual(expected, SearchSequence(sequence));
     }
 }
