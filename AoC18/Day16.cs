@@ -235,17 +235,18 @@ namespace AdventOfCode2018.Day16
                                 // Console.WriteLine( $"[{ToText(s.Before)}] ({ToText(s.Operation)}) [{ToText(s.After)}] ({ToText(variants.OrderBy(x=>x))})" );
                                 set = set.Intersect(variants).ToHashSet();
                             }
-                            Console.WriteLine($"({ToText(set.OrderBy(x => x))})");
+                            // Console.WriteLine($"({ToText(set.OrderBy(x => x))})");
                             // Assert.IsNotEmpty(a.Value, "option can not be empty");
                         }
                     }
                 }
             }
-
+			/*
 		    foreach (var co in mapCodeOperation)
 		    {
 		        Console.WriteLine($"{co.Key} - [{co.Value}]");
 		    }
+			*/
 		    foreach (var co in mapCodeOptions.OrderBy(a => a.Value.Count))
 		    {
 		        Console.WriteLine($"{co.Key} - [{ToText(co.Value.OrderBy(x => x))}]");

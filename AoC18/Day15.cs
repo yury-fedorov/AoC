@@ -250,14 +250,14 @@ namespace AdventOfCode2018.Day15
         public bool IsOver => !MenOfRace(Race.Elf).Any() || !MenOfRace(Race.Goblin).Any();
 
         // rounds, hitpoints
-        public Tuple<int, int> Go()
+        public ( int Round, int HitPoints ) Go()
         {
             int round = 0;
             while ( !IsOver ) {
 				MakeRound();
                 round++;
             }
-            return Tuple.Create(round, _men.Where(m => m.IsAlive).Sum(m => m.HitPoints));
+            return (round, _men.Where(m => m.IsAlive).Sum(m => m.HitPoints));
         }
 
 		public List<Man> MakeRound()
@@ -430,33 +430,33 @@ namespace AdventOfCode2018.Day15
 
     public class Day15
     {
-        // wrong answer: 108 * 2670 = 288360
-        // wrong answer: 86, 2794 = 86 * 2794 = 240284
-        // correct answer 1: 85 * 2794 = 237490
-        [TestCase("Day15Input.txt")]
-        public void Test1(string file)
+        // same issue on both tasks (one more round)
+        public static int ToAnswer(int round, int hitPoints) => ( round - 1 ) * hitPoints;
+
+        [TestCase("Day15Input.txt", 237490)] // correct answer 1: 85 * 2794 = 237490
+        public void Test1(string file, int correctAnswer1 )
         {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
-            var result = combat.Go();
-            Assert.AreEqual((0, 0), result);
+            var (round, hitPoints) = combat.Go();
+            Assert.AreEqual( correctAnswer1, ToAnswer( round, hitPoints ), "answer 1" );
         }
 
-        // [TestCase("Day15Input.txt")] - same issue as for task 1 (one more round)
-        // correct answer: 24 * 1601 = 38424
-        public void Test2(string file)
+        [TestCase("Day15Input.txt", 38424)] // correct answer: 24 * 1601 = 38424
+        public void Test2(string file, int correctAnswer2 )
         {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
-            Tuple<int,int> result;
             for ( int elfHitPower = Combat.GoblinHitPower; true; elfHitPower++ )
             {
                 var combat = new Combat(new MapGuide(lines), elfHitPower);
                 var elves = combat.MenOfRace(Race.Elf).Count();
-                result = combat.Go();
+                var (round, hitPoints) = combat.Go();
                 if (elves == combat.MenOfRace(Race.Elf).Count())
+                {
+                    Assert.AreEqual( correctAnswer2, ToAnswer(round, hitPoints), "answer 2" );
                     break;
+                }
             }
-            Assert.AreEqual((0, 0), result);
         }
 
 
