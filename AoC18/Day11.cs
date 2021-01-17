@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace AdventOfCode2018.Tests.Day11
+namespace AdventOfCode2018.Day11
 {
     public class Field { 
         readonly int [,] map = new int[300, 300];

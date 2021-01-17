@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-namespace AdventOfCode2018.Tests9 {
+namespace AdventOfCode2018.Day09 {
 
     public class MarbleCircle {
         public readonly LinkedList<int> sequence = new LinkedList<int>();

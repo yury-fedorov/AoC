@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace AdventOfCode2018
-{
+namespace AdventOfCode2018.Day22 {
     public enum Material { Rocky, Wet, Narrow, SolidRock } // solid rock cannot be traversed.
 
     public enum Tool { Neither, Torch, ClimbingGear }
@@ -143,7 +142,7 @@ namespace AdventOfCode2018
 
         public readonly (int, int)[] shifts = { (-1, 0), (1, 0), (0, -1), (0, 1) };
 
-        const int LongerPath = int.MaxValue >> 1;
+        const int LongerPath = 1656; // simplest algorithm
 
         public int Minimize(int x, int y, Tool tool, int path, int switchCount)
         {

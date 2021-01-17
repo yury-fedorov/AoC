@@ -5,8 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 
-namespace AdventOfCode2018
-{
+namespace AdventOfCode2018.Day23 {
     public record Point3D(int X, int Y, int Z) { }
 
     public record Nanobot(Point3D P, int R) { } // center, radius
