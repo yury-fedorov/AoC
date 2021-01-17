@@ -12,7 +12,7 @@ namespace AdventOfCode2018.Tests
         [TestCase("Day4Input.txt", 1993, 36, 2137, 50)]
         public void TestStar1(string file, int guardId, int minute, int guard2, int minute2)
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var log = day4.ReadLog(lines).ToArray();
             var map = day4.GuardSleep(log);
             var sleptMost = map.Values.Max();

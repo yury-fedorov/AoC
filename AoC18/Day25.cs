@@ -60,7 +60,7 @@ namespace AdventOfCode2018.Day25
     {
         public static IEnumerable<Point4D> Read(string file)
         {
-            var lines = File.ReadAllLines(Path.Combine(App.App.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             return lines.Select(l => {
                 var a = l.Split(",").Select(s => Convert.ToInt32(s)).ToArray();
                 return new Point4D(a[0], a[1], a[2], a[3]);

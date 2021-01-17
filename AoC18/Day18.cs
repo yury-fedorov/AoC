@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,7 +35,7 @@ namespace AdventOfCode2018.Day18
 		[TestCase(FileName, 1000000000, 193050)] // answer 2 -> // Identified loop size: 28 on time: 634
 		public void Solution(string file, long time, long expectedAnswer )
 		{
-			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+			var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
 			var size = (lines[0].Length, lines.Length);
 			var map = new char[size.Item1,size.Item2];
 			for (var y = 0; y < size.Item2; y++)

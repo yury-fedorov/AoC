@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -107,7 +107,6 @@ namespace AdventOfCode2018.Day13
                 }
             }
 
-            bool isLastCarAloneTick = false;
             // once the cars are detected, let us move them
             for (int t = 0; true; t++)
             {
@@ -213,7 +212,7 @@ namespace AdventOfCode2018.Day13
         // second (incorrect): 40,20
         public void Test1(string file, bool tillFirstCrash, int ex, int ey) {
             var point = new Point(ex, ey);
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var collision = RunCars(lines,tillFirstCrash);
             Assert.AreEqual(point, collision);
         }

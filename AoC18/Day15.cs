@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -436,7 +436,7 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Input.txt", 237490)] // correct answer 1: 85 * 2794 = 237490
         public void Test1(string file, int correctAnswer1 )
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var (round, hitPoints) = combat.Go();
             Assert.AreEqual( correctAnswer1, ToAnswer( round, hitPoints ), "answer 1" );
@@ -445,7 +445,7 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Input.txt", 38424)] // correct answer: 24 * 1601 = 38424
         public void Test2(string file, int correctAnswer2 )
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             for ( int elfHitPower = Combat.GoblinHitPower; true; elfHitPower++ )
             {
                 var combat = new Combat(new MapGuide(lines), elfHitPower);
@@ -463,7 +463,7 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Sample1.txt")]
         public void TestSample1(string file)
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var alive = combat.Alive;
             Assert.AreEqual(4, alive.Length, "overall men");
@@ -478,7 +478,7 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Sample2.txt")]
         public void TestSample2(string file)
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
 
             var elfs = combat.MenOfRace(Race.Elf);
@@ -514,7 +514,7 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Sample3.txt")]
         public void TestSample3(string file)
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var firstElf = combat.MenOfRace(Race.Elf).First();
             combat.MakeRound(); // first round
@@ -561,7 +561,7 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Sample3.txt", 47, 590)]
         // [TestCase("Day15Sample4.txt", 37, 982)] -- there is a bug in calculating the number of rounds, in this case it adds one round more
         public void TestSample3Go(string file, int rounds, int hitPoints) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var result = combat.Go();
             var who = Who(combat);

@@ -1,4 +1,4 @@
-﻿namespace AdventOfCode2018.App {
+﻿namespace AdventOfCode2018 {
     public class App {
         public static string Directory {
             get {

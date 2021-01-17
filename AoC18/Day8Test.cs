@@ -126,7 +126,7 @@ namespace AdventOfCode2018.Tests8
         [TestCase("Day8Sample.txt", 138, 66)]
         [TestCase("Day8Input.txt", 42472, 21810)]
         public void TestCase1(string file, int esm1,int er2) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var tree = Read( lines.Single().Split(" ").Select(a=>Convert.ToInt32(a)).ToList() );
             var r1 = t1(tree);
             Assert.AreEqual(esm1,r1, "wrong result 1");

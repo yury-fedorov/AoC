@@ -1,4 +1,4 @@
-using AdventOfCode2018.Day16;
+﻿using AdventOfCode2018.Day16;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -60,9 +60,9 @@ namespace AdventOfCode2018.Day19 {
 
 		[TestCase("Day19Sample.txt", 7, 0)]
         [TestCase("Day19.txt", 1536, 0)] // answer 1
-		// SLOW - [TestCase("Day19.txt", 17540352, 1)] // answer 2
+		// SLOW takes more than 1 hour - [TestCase("Day19.txt", 17540352, 1)] // answer 2
 		public void Solution(string file, int reg0halt, int reg0start ) {
-			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+			var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             // The first line (#ip 0) indicates that the instruction pointer should be bound to register 0 in this program. 
             // This is not an instruction, and so the value of the instruction pointer 
             // does not change during the processing of this line.
@@ -75,7 +75,6 @@ namespace AdventOfCode2018.Day19 {
 				code.Add( ToArray(lines[i]) );
 			}
 			var registers = new long[6] { reg0start, 0, 0, 0, 0, 0 };
-            int operationsExecuted = 0;
 
             // If the instruction pointer ever causes the device to attempt to load an instruction 
             // outside the instructions defined in the program, the program instead immediately halts.

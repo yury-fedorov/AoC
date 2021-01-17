@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -142,7 +142,7 @@ namespace AdventOfCode2018.Day24 {
         }
 
         public IEnumerable<Group> ReadFromFile( string file ) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToList();
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToList();
             var infectionStarts = lines.IndexOf("Infection:");
             Assert.Greater(infectionStarts, 0); // infection group starts further
 

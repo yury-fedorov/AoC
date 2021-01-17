@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -145,7 +145,7 @@ namespace AdventOfCode2018.Day17
         [TestCase("Day17.txt")]
         public void TestSample3(string file)
 		{
-			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+			var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
 			var realLines = lines.Select(l => ToLine(l)).ToArray();
 
 			var waterSpring = new Point(500, 0);

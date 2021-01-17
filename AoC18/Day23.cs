@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -41,7 +41,7 @@ namespace AdventOfCode2018
         [TestCase("Day23.txt", 420, 1)]
         public void Test(string file, int eCount, int eDistance)
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var list = lines.Select(Create).ToArray();
             var maxRadius = list.Max(n => n.R);
             var biggest = list.Single(n => n.R == maxRadius);

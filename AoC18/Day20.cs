@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -140,7 +140,7 @@ namespace AdventOfCode2018.Day20 {
         [TestCase(FileName, 3788)] // answer 1
         public void Part1Test(string file, int expectedLength)
         {
-            var path = File.ReadAllText(Path.Combine(Day1Test.Directory, file));
+            var path = File.ReadAllText(Path.Combine(App.Directory, file));
             Assert.AreEqual(expectedLength, Part1(path), "answer 1" );
         }
 
@@ -193,7 +193,7 @@ namespace AdventOfCode2018.Day20 {
         [TestCase(FileName, 8568)] // answer 2
         public void Part2(string file, int answer2)
         {
-            var path = File.ReadAllText(Path.Combine(Day1Test.Directory, file));
+            var path = File.ReadAllText(Path.Combine(App.Directory, file));
             var p = (0, 0);
             var map = new Map();
             var stack = new Stack<(int, int)>();

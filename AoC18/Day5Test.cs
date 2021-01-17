@@ -12,7 +12,7 @@ namespace AdventOfCode2018.Tests
         [TestCase("Day5Input.txt")]
         public void FileTest(string file)
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var polimer = lines.First();
             Assert.IsNotNull(polimer, "polimer not read");
             var output = day5.OptimizePolimer(polimer);

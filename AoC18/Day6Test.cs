@@ -53,7 +53,7 @@ namespace AdventOfCode2018.Tests
         [TestCase("Day6Sample.txt", 17,32,16)]
         [TestCase("Day6Input.txt",3223,10000, 40495)]
         public void TestCase1(string file, int expectedLargestArea, int maxDistance, int maxDistanceArea) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var pId = 0;
             var points = lines.Select(l => {
                 var a = l.Split(',');

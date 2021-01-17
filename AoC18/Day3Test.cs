@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 using System.IO;
 using System.Linq;
@@ -36,7 +36,7 @@ namespace AdventOfCode2018.Day3
 
         [TestCase("Day3Input.txt")]
         public void TestFile(string file) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory,file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory,file));
             var detector = new Detector();
             var claims = lines.Select(l => day3.ParseClaim(l)).ToArray();
             foreach (var claim in claims)

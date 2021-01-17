@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.IO;
 using System;
 using System.Linq;
@@ -28,7 +28,7 @@ namespace AdventOfCode2018
         [TestCase("Day2ExampleInput.txt",12)]
         [TestCase("Day2Input.txt",5658)]
         public void Test3(string file, int expected) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory,file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory,file));
             var result = lines.Select(line => day2.CalculateRudimentaryChecksum(line))
                 .Aggregate(Tuple.Create(0,0), (a,b) => Tuple.Create(a.Item1+b.Item1,a.Item2+b.Item2) );
             var checksum = result.Item1 * result.Item2;
@@ -43,7 +43,7 @@ namespace AdventOfCode2018
 
         [TestCase("Day2Input.txt", "nmgyjkpruszlbaqwficavxneo")]
         public void Test4(string file, string commonBoxId) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory,file));            
+            var lines = File.ReadAllLines(Path.Combine(App.Directory,file));            
             Assert.AreEqual(commonBoxId, day2.IdentifyCorrectBoxId(lines), "Final result");
         }
     }

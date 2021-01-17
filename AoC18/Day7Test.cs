@@ -120,7 +120,7 @@ namespace AdventOfCode2018.Tests7
         [TestCase("Day7Sample.txt", "CABDFE", 0,2, 15)]
         [TestCase("Day7Input.txt", "BGJCNLQUYIFMOEZTADKSPVXRHW", 60,5, 1017)]
         public void TestCase1(string file, string er1, int deltaDuration, int workers, int ed) {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var r1 = t1(lines);
             Assert.AreEqual(er1,r1, "wrong result 1");
             var r2 = t2(lines, deltaDuration, workers);

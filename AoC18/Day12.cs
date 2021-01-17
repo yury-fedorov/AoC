@@ -4,7 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AdventOfCode2018.Tests
+namespace AdventOfCode2018.Day12
 {
     public class Rule
     {
@@ -82,7 +82,7 @@ namespace AdventOfCode2018.Tests
         [TestCase("Day12Input.txt",0)]
         public void Test1(string file,int expected)
         {
-            var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var t = ReadInit(lines);
             var m = t.Item1;
             var rules = t.Item2;
