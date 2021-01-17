@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
-namespace AdventOfCode2018.Tests {
+namespace AdventOfCode2018.Day06 {
     public record Point(int X, int Y) { 
         public static Distance GetDistance(Point a, Point b)
             => new Distance( Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y) );
