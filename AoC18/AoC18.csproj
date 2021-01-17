@@ -24,4 +24,7 @@
     <Compile Remove="EmptyCSharpFile.cs" />
     <Compile Remove="Day10.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Day02\" />
+  </ItemGroup>
 </Project>
