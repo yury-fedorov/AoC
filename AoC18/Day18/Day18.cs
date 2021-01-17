@@ -14,12 +14,12 @@ namespace AdventOfCode2018.Day18
 		public const char Tree = '|';
 		public const char Lumberyard = '#';
 
-        public string ToHash(char[,]map, (int,int) size)
+        public string ToHash(char[,]map, (int X, int Y) size)
         {
             var s = new StringBuilder();
-            for (int y = 0; y < size.Item2; y++)
+            for (int y = 0; y < size.Y; y++)
             {
-                for (int x = 0; x < size.Item1; x++)
+                for (int x = 0; x < size.X; x++)
                     s.Append(map[x, y]);
                 s.AppendLine();
             }
@@ -28,20 +28,21 @@ namespace AdventOfCode2018.Day18
 
 		public static long ToAnswer(int wood, int lumber) => wood * lumber;
 
-		const string FileName = "Day18.txt";
+		const string FileName = "Day18/input.txt";
 
 		[TestCase(FileName,10, 514944)] // answer 1
-        [TestCase("Day18Sample.txt",10, 1147)]
+        [TestCase("Day18/sample.txt",10, 1147)]
 		[TestCase(FileName, 1000000000, 193050)] // answer 2 -> // Identified loop size: 28 on time: 634
 		public void Solution(string file, long time, long expectedAnswer )
 		{
 			var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
 			var size = (lines[0].Length, lines.Length);
-			var map = new char[size.Item1,size.Item2];
-			for (var y = 0; y < size.Item2; y++)
+			var (sizeX, sizeY) = size;
+			var map = new char[sizeX,sizeY];
+			for (var y = 0; y < sizeY; y++)
 			{
 				var line = lines[y];
-				for (var x = 0; x < size.Item1; x++)
+				for (var x = 0; x < sizeX; x++)
 				{
 					map[x, y] = line[x];
 				}
@@ -77,9 +78,9 @@ namespace AdventOfCode2018.Day18
                 }
 
                 var map1 = (char[,])map.Clone();
-				for (var y = 0; y < size.Item2; y++)
+				for (var y = 0; y < sizeY; y++)
 				{
-					for (var x = 0; x < size.Item1; x++)
+					for (var x = 0; x < sizeX; x++)
 					{
 						/*
 						 * An open acre will become filled with trees if three or more adjacent acres contained trees. 
@@ -131,9 +132,9 @@ namespace AdventOfCode2018.Day18
 			int lumberCount = 0;
 			int treeCount = 0;
 			// now counts
-			for (var y = 0; y < size.Item2; y++)
+			for (var y = 0; y < sizeY; y++)
 			{
-				for (var x = 0; x < size.Item1; x++)
+				for (var x = 0; x < sizeX; x++)
 				{
 					switch(map[x,y])
 					{
@@ -145,11 +146,11 @@ namespace AdventOfCode2018.Day18
 			Assert.AreEqual( expectedAnswer , lumberCount * treeCount, "tree count");
 		}
 
-		public IEnumerable<char> Around(char[,] map, (int,int) size, (int,int) at )
+		public IEnumerable<char> Around(char[,] map, (int X, int Y) size, (int X, int Y) at )
 		{
-			for ( int x = Math.Max(at.Item1 - 1, 0); x <= Math.Min(size.Item1 - 1, at.Item1 + 1); x++ )
+			for ( int x = Math.Max(at.X - 1, 0); x <= Math.Min(size.X - 1, at.X + 1); x++ )
 			{
-				for (int y = Math.Max(at.Item2 - 1, 0); y <= Math.Min(size.Item2 - 1, at.Item2 + 1); y++)
+				for (int y = Math.Max(at.Y - 1, 0); y <= Math.Min(size.Y - 1, at.Y + 1); y++)
 				{
 					if ( (x,y) != at )
 					{
