@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace AdventOfCode2018.Tests.Day11
 {
@@ -15,7 +14,7 @@ namespace AdventOfCode2018.Tests.Day11
             }
         }
 
-        public Tuple<int, int, int> Max(int side)
+        public (int, int, int) Max(int side)
         {
             int rValue = -23434324;
             int rx = -1;
@@ -41,7 +40,7 @@ namespace AdventOfCode2018.Tests.Day11
                     }
                 }
             }
-            return Tuple.Create(rx, ry, rValue);
+            return (rx, ry, rValue);
         }
     }
 
@@ -76,17 +75,13 @@ Subtract 5 from the power level. */
             => Assert.AreEqual(expectedPower, PowerAt(x, y, input));
 
         // For grid serial number 18, the largest total 3x3 square has a top-left corner of 33,45 (with a total power of 29);
-        [TestCase(3, 18, 33,45)]
+        [TestCase(3, 18, 33, 45)]
         // For grid serial number 42, the largest 3x3 square's top-left is 21,61 (with a total power of 30);
-        [TestCase(3, 42,21,61)]
-        [TestCase(3, Serial, 243,17)]
-        public void Test1(int side, int input, int ex, int ey)
-        {
-            var t = Test1(side, input);            
-            Assert.AreEqual( Tuple.Create(ex,ey), Tuple.Create(t.Item1,t.Item2) );
-        }
+        [TestCase(3, 42, 21, 61)]
+        [TestCase(3, Serial, 243, 17)] // answer 1
+        public void Test1(int side, int input, int ex, int ey) => Assert.AreEqual((ex, ey), Test1(side, input));
 
-        public Tuple<int,int,int> Test1(int side, int input) {
+        public (int,int,int) Test1(int side, int input) {
             var map = new int[300,300];
             for ( int x = 1; x <= 300; x++ ) {
                 for (int y = 1; y <= 300; y++)
@@ -118,7 +113,7 @@ Subtract 5 from the power level. */
                     }
                 }
             }
-            return Tuple.Create(rx, ry, rValue);
+            return (rx, ry, rValue);
         }
 
         [Ignore("takes too much")]
@@ -126,12 +121,11 @@ Subtract 5 from the power level. */
         // and has a top-left corner of 90,269, so its identifier is 90,269,16.
         // For grid serial number 42, the largest total square(with a total power of 119) is 12x12 
         // and has a top-left corner of 232,251, so its identifier is 232,251,12.
-        // [TestCase(16, 18, 90, 269)]
-        // [TestCase(12, 42, 232, 251)]
-        [TestCase(-1, Serial, -1, -1)]
-        public void Test2(int side, int input, int ex, int ey)
-        {
-            var r = Tuple.Create(-1, -1, -1);
+        [TestCase(18, 90, 269, 16)]
+        [TestCase(42, 232, 251, 12)]
+        [TestCase(Serial, 233, 228, 12)] // answer 2
+        public void Test2( int input, int ex, int ey, int side ) {
+            var r = (-1, -1, -1);
             var os = -1;
             var f = new Field(input);
             for ( int s = 1; s <= 300; s++ ) {
@@ -141,7 +135,7 @@ Subtract 5 from the power level. */
                     os = s;
                 }
             }
-            Assert.AreEqual( Tuple.Create(ex,ey,side), Tuple.Create(r.Item1,r.Item2,os) );
+            Assert.AreEqual( (ex,ey,side), (r.Item1,r.Item2,os) );
         }
     }
 }
