@@ -77,10 +77,10 @@ namespace AdventOfCode2018.Day12
             return m.Where(p => p.Value == '#').Sum(p=>p.Key);
         }
 
-	    [Ignore("part done for question 2 later solved in excel")]
-        // [TestCase("Day12Sample.txt",325)]
-        [TestCase("Day12Input.txt",0)]
-        public void Test1(string file,int expected)
+	    [Ignore("tests are broken - part done for question 2 later solved in excel")]
+        [TestCase("Day12/sample.txt",325)]
+        [TestCase("Day12/input.txt", 3258)]
+        public void Day12Task1(string file,int expected)
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var t = ReadInit(lines);
@@ -107,7 +107,7 @@ namespace AdventOfCode2018.Day12
                 // int genCount = CountPots(m);
                 // count += genCount;
                 // Console.WriteLine($"{g} {genCount} {count} {string.Concat(m.Keys.OrderBy(a => a).Select(k => m[k]))}");
-		        Console.WriteLine($"{g} {CountPots(m)} {ToStr(m)}");
+		        // Console.WriteLine($"{g} {CountPots(m)} {ToStr(m)}");
             }
             Assert.AreEqual(expected, CountPots(m));
 		// question 2: delta by each generation starting from 100 is 72, 
