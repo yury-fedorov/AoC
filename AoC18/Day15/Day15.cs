@@ -5,14 +5,8 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace AdventOfCode2018.Day15
-{
-	public record Point 
-	{
-        public Point(int x, int y) => (X, Y) = (x, y);
-		public int X { get; }
-		public int Y { get; }
-
+namespace AdventOfCode2018.Day15 {
+	public record Point(int X, int Y) {
 		public int Distance(Point other) => Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
 
 		public Point Go(Direction direction) {
@@ -433,7 +427,7 @@ namespace AdventOfCode2018.Day15
         // same issue on both tasks (one more round)
         public static int ToAnswer(int round, int hitPoints) => ( round - 1 ) * hitPoints;
 
-        [TestCase("Day15Input.txt", 237490)] // correct answer 1: 85 * 2794 = 237490
+        [TestCase("Day15/input.txt", 237490)] // correct answer 1: 85 * 2794 = 237490
         public void Test1(string file, int correctAnswer1 )
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
@@ -442,7 +436,7 @@ namespace AdventOfCode2018.Day15
             Assert.AreEqual( correctAnswer1, ToAnswer( round, hitPoints ), "answer 1" );
         }
 
-        [TestCase("Day15Input.txt", 38424)] // correct answer: 24 * 1601 = 38424
+        [TestCase("Day15/input.txt", 38424)] // correct answer: 24 * 1601 = 38424
         public void Test2(string file, int correctAnswer2 )
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
@@ -459,8 +453,7 @@ namespace AdventOfCode2018.Day15
             }
         }
 
-
-        [TestCase("Day15Sample1.txt")]
+        [TestCase("Day15/sample1.txt")]
         public void TestSample1(string file)
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
@@ -475,7 +468,7 @@ namespace AdventOfCode2018.Day15
             Assert.AreEqual(Direction.Right, dest.Item2, "direction of the first man");
         }
 
-        [TestCase("Day15Sample2.txt")]
+        [TestCase("Day15/sample2.txt")]
         public void TestSample2(string file)
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
@@ -511,7 +504,7 @@ namespace AdventOfCode2018.Day15
         public string Who(Combat c) =>
             string.Join('\n', c.Alive.Select(a => $"[{a.Race} ({a.HitPoints}) {a.Position} {a.Id}]").ToArray());
 
-        [TestCase("Day15Sample3.txt")]
+        [TestCase("Day15/sample3.txt")]
         public void TestSample3(string file)
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
@@ -558,16 +551,16 @@ namespace AdventOfCode2018.Day15
             Assert.AreEqual(4, combat.Alive.Count());
         }
 
-        [TestCase("Day15Sample3.txt", 47, 590)]
-        // [TestCase("Day15Sample4.txt", 37, 982)] -- there is a bug in calculating the number of rounds, in this case it adds one round more
+        [TestCase("Day15/sample3.txt", 47, 590)]
+        // [TestCase("Day15/sample4.txt", 37, 982)] // there is a bug in calculating the number of rounds, in this case it adds one round more
         public void TestSample3Go(string file, int rounds, int hitPoints) {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var result = combat.Go();
             var who = Who(combat);
             var map = combat.Draw();
-            Assert.AreEqual(rounds, result.Item1);
-            Assert.AreEqual(hitPoints, result.Item2);
+            Assert.AreEqual(rounds, result.Round);
+            Assert.AreEqual(hitPoints, result.HitPoints);
         }
     }
 }
