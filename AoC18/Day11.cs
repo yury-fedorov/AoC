@@ -79,7 +79,8 @@ Subtract 5 from the power level. */
         // For grid serial number 42, the largest 3x3 square's top-left is 21,61 (with a total power of 30);
         [TestCase(3, 42, 21, 61)]
         [TestCase(3, Serial, 243, 17)] // answer 1
-        public void Test1(int side, int input, int ex, int ey) => Assert.AreEqual((ex, ey), Test1(side, input));
+        public void Day11Part1(int side, int input, int ex, int ey)
+            => Assert.AreEqual((ex, ey), Test1(side, input));
 
         public (int,int) Test1(int side, int input) {
             var map = new int[300,300];
@@ -124,7 +125,7 @@ Subtract 5 from the power level. */
         [TestCase(18, 90, 269, 16)]
         [TestCase(42, 232, 251, 12)]
         [TestCase(Serial, 233, 228, 12)] // answer 2
-        public void Test2( int input, int ex, int ey, int side ) {
+        public void Day11Part2( int input, int ex, int ey, int side ) {
             var r = (-1, -1, -1);
             var os = -1;
             var f = new Field(input);
