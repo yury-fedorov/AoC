@@ -6,14 +6,7 @@ using NUnit.Framework;
 
 namespace AdventOfCode2018.Day25
 {
-    public class Point4D : Tuple<int,int,int,int>
-    {
-        public Point4D(int d1, int d2, int d3, int d4) : base(d1,d2,d3,d4) {}
-        public int A => Item1;
-        public int B => Item2;
-        public int C => Item3;
-        public int D => Item4;
-
+    public record Point4D (int A, int B, int C, int D) {
         public readonly HashSet<Point4D> Neighbours = new HashSet<Point4D>();
     }
 
@@ -22,12 +15,10 @@ namespace AdventOfCode2018.Day25
         public const int MaxDistance = 3;
 
         public static int Distance(Point4D a, Point4D b)
-        {
-            return Math.Abs(a.A - b.A)
+                => Math.Abs(a.A - b.A)
                  + Math.Abs(a.B - b.B)
                  + Math.Abs(a.C - b.C)
                  + Math.Abs(a.D - b.D);
-        }
 
         public static HashSet<Point4D> DefineCastellation(Point4D firstPoint)
         {
@@ -67,7 +58,7 @@ namespace AdventOfCode2018.Day25
             });
         }
 
-        [TestCase("Day25.txt", 394)]
+        [TestCase("Day25/input.txt", 394)]
         public void Test(string file, int count)
         {
             var pl = Read(file).ToArray();
