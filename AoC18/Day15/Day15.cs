@@ -147,17 +147,14 @@ namespace AdventOfCode2018.Day15 {
             ? Wall
             : Map[point.X, point.Y];
 
-        public Direction Opposite(Direction direction)
+        public Direction Opposite(Direction direction) => direction switch
         {
-            switch (direction)
-            {
-                case Direction.Up: return Direction.Down;
-                case Direction.Down: return Direction.Up;
-                case Direction.Left: return Direction.Right;
-                case Direction.Right: return Direction.Left;
-            }
-            throw new Exception("unprocessed direction - never here");
-        }
+            Direction.Up => Direction.Down,
+            Direction.Down => Direction.Up,
+            Direction.Left => Direction.Right,
+            Direction.Right => Direction.Left,
+            _ => throw new Exception( "unexpected direction" )
+        };
 
         public IEnumerable<Direction> Directions(Point start) =>
             // in which directions we may go from here?
