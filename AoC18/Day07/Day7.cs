@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
+using NUnit.Framework;
 
-// {}
-// []
-namespace AdventOfCode2018.Tests7
+namespace AdventOfCode2018.Day07
 {
     class Task {
         public char letter;
@@ -16,39 +13,31 @@ namespace AdventOfCode2018.Tests7
         public int left; 
     }
 
-    public class Day7Test
+    public class Day7
     {
-        // A,B
-        (char,char) ParseLine(string line) {
+        (char A, char B) ParseLine(string line) {
             var pattern = @"Step ([A-Z]) must be finished before step ([A-Z]) can begin.";
             var matches = Regex.Matches(line, pattern);
-            foreach (Match match in matches)
-            {
-                return (
-                    match.Groups[1].Value.Single(), // first
-                    match.Groups[2].Value.Single() );
+            foreach (Match match in matches) {
+                return ( match.Groups[1].Value.Single(), match.Groups[2].Value.Single() );
             }
             throw new ArgumentException(line);
-
         }
 
-
-        public string t1(IEnumerable<string>lines) {
+        public string Task1(IEnumerable<string>lines) {
             var dpl = lines.Select(l => ParseLine(l))
-                .OrderBy( a=> string.Concat<char>( new[] { a.Item1, a.Item2 } ) )
+                .OrderBy( a => string.Concat( new[] { a.A, a.B } ) )
                 .ToList();
-            var set = dpl.Select(a=>a.Item1).Concat(dpl.Select(a=>a.Item2)).ToHashSet();
-
+            var set = dpl.Select(a=>a.A).Concat(dpl.Select(a=>a.B)).ToHashSet();
             var r = new List<char>();
-
             while (set.Any()) {
                 // all elements without dependency from left ordered by alphabet
-                var set1 = set.Where(e => !dpl.Any(t => t.Item2 == e))
+                var set1 = set.Where(e => !dpl.Any(t => t.B == e))
                     .OrderBy(a => a).ToArray();
                 foreach(var e1 in set1)
                 {
-                    var dpl1 = dpl.Where(a => a.Item1 != e1 ).ToList();
-                    var isInternalDependency = dpl1.Any(t => t.Item2 == e1);
+                    var dpl1 = dpl.Where(a => a.A != e1 ).ToList();
+                    var isInternalDependency = dpl1.Any(t => t.B == e1);
                     if (isInternalDependency) continue;
                     r.Add(e1);
                     set.Remove(e1); // this element not necessary any more
@@ -60,12 +49,12 @@ namespace AdventOfCode2018.Tests7
             return string.Concat(r); 
         }
 
-        int t2(IEnumerable<string> lines, int deltaDuration, int workers)
+        int Task2(IEnumerable<string> lines, int deltaDuration, int workers)
         {
             var dpl = lines.Select(l => ParseLine(l))
-                .OrderBy(a => string.Concat<char>(new[] { a.Item1, a.Item2 }))
+                .OrderBy(a => string.Concat(new[] { a.A, a.B }))
                 .ToList();
-            var set = dpl.Select(a => a.Item1).Concat(dpl.Select(a => a.Item2)).ToHashSet();
+            var set = dpl.Select(a => a.A).Concat(dpl.Select(a => a.B)).ToHashSet();
 
             int time = 0;
 
@@ -110,23 +99,17 @@ namespace AdventOfCode2018.Tests7
                     }
                     inProgress.RemoveAll(t => finished.Contains(t.letter));
                 }
-                
                 time++;
             }
-
             return time;
         }
 
-        [TestCase("Day7Sample.txt", "CABDFE", 0,2, 15)]
-        [TestCase("Day7Input.txt", "BGJCNLQUYIFMOEZTADKSPVXRHW", 60,5, 1017)]
-        public void TestCase1(string file, string er1, int deltaDuration, int workers, int ed) {
+        [TestCase("Day07/sample.txt", "CABDFE", 0,2, 15)]
+        [TestCase("Day07/input.txt", "BGJCNLQUYIFMOEZTADKSPVXRHW", 60, 5, 1017)]
+        public void Solution(string file, string answer1, int deltaDuration, int workers, int answer2) {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
-            var r1 = t1(lines);
-            Assert.AreEqual(er1,r1, "wrong result 1");
-            var r2 = t2(lines, deltaDuration, workers);
-            Assert.AreEqual(ed, r2, "wrong result 2");
+            Assert.AreEqual(answer1, Task1(lines), "answer 1");
+            Assert.AreEqual(answer2, Task2(lines, deltaDuration, workers), "answer 2");
         }
     }
 }
-// {}
-// []
