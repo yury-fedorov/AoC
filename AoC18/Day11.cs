@@ -81,7 +81,7 @@ Subtract 5 from the power level. */
         [TestCase(3, Serial, 243, 17)] // answer 1
         public void Test1(int side, int input, int ex, int ey) => Assert.AreEqual((ex, ey), Test1(side, input));
 
-        public (int,int,int) Test1(int side, int input) {
+        public (int,int) Test1(int side, int input) {
             var map = new int[300,300];
             for ( int x = 1; x <= 300; x++ ) {
                 for (int y = 1; y <= 300; y++)
@@ -113,7 +113,7 @@ Subtract 5 from the power level. */
                     }
                 }
             }
-            return (rx, ry, rValue);
+            return (rx, ry);
         }
 
         [Ignore("takes too much")]
