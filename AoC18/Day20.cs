@@ -123,29 +123,25 @@ namespace AdventOfCode2018.Day20 {
             _optimizations.Add(strPath, optimized);
             return optimized;
         }
-        public static (int, int) ToDirection(char direction)
-        {
-            int dx = 0;
-            int dy = 0;
-            switch (direction)
-            {
-                case 'E': dx =  1; break;
-                case 'W': dx = -1; break;
-                case 'N': dy = -1; break;
-                case 'S': dy =  1; break;
-                default: throw new Exception("unknown direction");
-            }
-            return (dx, dy);
-        }
+
+        public static (int, int) ToDirection(char direction ) =>
+            direction switch {
+                 'E' => (  1, 0 ),
+                 'W' => ( -1, 0 ),
+                 'N' => ( 0, -1 ),
+                 'S' => ( 0,  1 ),
+                _ => throw new Exception("unknown direction")
+            };
 
         public string[] FlatVariations(string path) => path.Split('|');
 
-        // 4104 -- this number is too high
-        [TestCase("Day20.txt", 4104)] // 3788 ??
-        public void TestFromFile(string file, int expectedLength)
+        const string FileName = "Day20.txt";
+
+        [TestCase(FileName, 3788)] // answer 1
+        public void Part1Test(string file, int expectedLength)
         {
             var path = File.ReadAllText(Path.Combine(Day1Test.Directory, file));
-            Test(path, expectedLength);
+            Assert.AreEqual(expectedLength, Part1(path), "answer 1" );
         }
 
         [TestCase("^WNE$", 3)]
@@ -154,8 +150,10 @@ namespace AdventOfCode2018.Day20 {
         [TestCase("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$", 23)]
         [TestCase("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$", 31)]
         public void Test(string path, int expectedLength)
+            => Assert.AreEqual(expectedLength, Part1(path), "test part 1");
+
+        public static int Part1(string path)
         {
-            /*
             var stackSeq = new Stack<Sequence>();
             var stackOpt = new Stack<Option>();
             var seq = new Sequence();
@@ -166,7 +164,7 @@ namespace AdventOfCode2018.Day20 {
                 char ch = path[i];
                 if ("EWNS".Contains(ch))
                 {
-                    seq._sequence.Add( new Door(ch) );
+                    seq._sequence.Add(new Door(ch));
                 }
                 else if (ch == '(')
                 {
@@ -189,9 +187,13 @@ namespace AdventOfCode2018.Day20 {
                     option._alternatives.Add(seq);
                 }
             }
-            
-            Assert.AreEqual(expectedLength, seq.Length());
-            */
+            return seq.Length();
+        }
+
+        [TestCase(FileName, 8568)] // answer 2
+        public void Part2(string file, int answer2)
+        {
+            var path = File.ReadAllText(Path.Combine(Day1Test.Directory, file));
             var p = (0, 0);
             var map = new Map();
             var stack = new Stack<(int, int)>();
@@ -245,9 +247,7 @@ namespace AdventOfCode2018.Day20 {
                 }
                 distance++;
             }
-            // 8567 - too low
-            // 8568 - right 2nd answer
-            Assert.AreEqual(8568, mapDistance.Values.Count(d=>d>=1000) );
+            Assert.AreEqual(answer2, mapDistance.Values.Count(d=>d>=1000), "answer 2");
         }
     }
 }

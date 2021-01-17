@@ -7,11 +7,11 @@ using NUnit.Framework;
 
 namespace AdventOfCode2018.Day15
 {
-	public class Point : Tuple<int, int>
+	public record Point 
 	{
-		public Point(int x, int y) : base(x, y) { }
-		public int X => Item1;
-		public int Y => Item2;
+        public Point(int x, int y) => (X, Y) = (x, y);
+		public int X { get; }
+		public int Y { get; }
 
 		public int Distance(Point other) => Math.Abs(X - other.X) + Math.Abs(Y - other.Y);
 
@@ -165,11 +165,9 @@ namespace AdventOfCode2018.Day15
             throw new Exception("unprocessed direction - never here");
         }
 
-        public IEnumerable<Direction> Directions(Point start)
-        {
+        public IEnumerable<Direction> Directions(Point start) =>
             // in which directions we may go from here?
-            return AllDirections.Where(d => At(start.Go(d)) == Path);
-        }
+            AllDirections.Where(d => At(start.Go(d)) == Path);
 
         public void Move(Man man, Direction direction)
         {
@@ -255,8 +253,7 @@ namespace AdventOfCode2018.Day15
         public Tuple<int, int> Go()
         {
             int round = 0;
-            while ( !IsOver)
-            {
+            while ( !IsOver ) {
 				MakeRound();
                 round++;
             }
@@ -268,8 +265,7 @@ namespace AdventOfCode2018.Day15
 			Assert.False(IsOver, "nothing to do anymore");
 			var dead = new List<Man>();
 			var alive = Alive;
-			foreach (var m in alive)
-			{
+			foreach (var m in alive) {
 				if (!m.IsAlive || IsOver) continue; // could be killed during this loop of battle
 				var hitted = ManAction(m);
 				if (hitted != null && !hitted.IsAlive)
@@ -434,15 +430,12 @@ namespace AdventOfCode2018.Day15
 
     public class Day15
     {
-        const bool IsOn = true;
-
         // wrong answer: 108 * 2670 = 288360
         // wrong answer: 86, 2794 = 86 * 2794 = 240284
         // correct answer 1: 85 * 2794 = 237490
         [TestCase("Day15Input.txt")]
         public void Test1(string file)
         {
-            if (!IsOn) return;
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var result = combat.Go();
@@ -453,7 +446,6 @@ namespace AdventOfCode2018.Day15
         // correct answer: 24 * 1601 = 38424
         public void Test2(string file)
         {
-            if (!IsOn) return;
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             Tuple<int,int> result;
             for ( int elfHitPower = Combat.GoblinHitPower; true; elfHitPower++ )
@@ -471,7 +463,6 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Sample1.txt")]
         public void TestSample1(string file)
         {
-            if (!IsOn) return;
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var alive = combat.Alive;
@@ -487,7 +478,6 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Sample2.txt")]
         public void TestSample2(string file)
         {
-            if (!IsOn) return;
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
 
@@ -524,7 +514,6 @@ namespace AdventOfCode2018.Day15
         [TestCase("Day15Sample3.txt")]
         public void TestSample3(string file)
         {
-            if (!IsOn) return;
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var firstElf = combat.MenOfRace(Race.Elf).First();
@@ -571,9 +560,7 @@ namespace AdventOfCode2018.Day15
 
         [TestCase("Day15Sample3.txt", 47, 590)]
         // [TestCase("Day15Sample4.txt", 37, 982)] -- there is a bug in calculating the number of rounds, in this case it adds one round more
-        public void TestSample3Go(string file, int rounds, int hitPoints)
-        {
-            if (!IsOn) return;
+        public void TestSample3Go(string file, int rounds, int hitPoints) {
             var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var result = combat.Go();
