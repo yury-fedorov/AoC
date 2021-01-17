@@ -7,19 +7,9 @@ using NUnit.Framework;
 
 namespace AdventOfCode2018
 {
-    public record Point3D {
-        public Point3D(int x, int y, int z) => (X,Y,Z) = (x,y,z);
-        public int X { get; }
-        public int Y { get; }
-        public int Z { get; }
-    }
+    public record Point3D(int X, int Y, int Z) { }
 
-    public record Nanobot
-    {
-        public Nanobot(Point3D center, int radius) => (P, R) = (center, radius);
-        public Point3D P { get; } // point
-        public int R { get; }
-    }
+    public record Nanobot(Point3D P, int R) { } // center, radius
 
     public class Day23
     {
@@ -38,7 +28,7 @@ namespace AdventOfCode2018
 
         public static int CountPoint(IEnumerable<Nanobot> bots, Point3D p) => bots.Count(b => Distance(b.P, p) <= b.R);
 
-        [TestCase("Day23.txt", 420, 1)]
+        [TestCase("Day23/input.txt", 420, 1)]
         public void Test(string file, int eCount, int eDistance)
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
