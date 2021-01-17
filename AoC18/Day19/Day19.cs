@@ -58,8 +58,8 @@ namespace AdventOfCode2018.Day19 {
 		
 		public string ToString<T>( T[] a ) => string.Join(',', a.Select( o => o.ToString() ).ToArray());
 
-		[TestCase("Day19Sample.txt", 7, 0)]
-        [TestCase("Day19.txt", 1536, 0)] // answer 1
+		[TestCase("Day19/sample.txt", 7, 0)]
+        [TestCase("Day19/input.txt", 1536, 0)] // answer 1
 		// SLOW takes more than 1 hour - [TestCase("Day19.txt", 17540352, 1)] // answer 2
 		public void Solution(string file, int reg0halt, int reg0start ) {
 			var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
@@ -101,6 +101,21 @@ namespace AdventOfCode2018.Day19 {
 			}
 			// correction of increment done out of scope			  
 			Assert.AreEqual(reg0halt, registers[0]);
+		}
+
+        [TestCase(17540352)]
+        public void SolutionTask2(int answer2)
+			=> Assert.AreEqual(answer2, CalculateFaster(), "answer 2" );
+
+        static int CalculateFaster() {
+			const int r4 = 10551387;
+			int r0 = 0;
+			for (int r1 = 1; r1 <= r4; r1++) {
+				if (r4 % r1 == 0) {
+					r0 += r1; // 7   addr 1 0 0
+				}
+			}
+			return r0;
 		}
 	}
 }
