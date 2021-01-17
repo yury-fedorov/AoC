@@ -4,13 +4,8 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
-
-namespace AdventOfCode2018.Day13
-{
-    public class Point : Tuple<int,int> { 
-        public Point(int x, int y) : base(x,y) { }
-        public int X => Item1;
-        public int Y => Item2;
+namespace AdventOfCode2018.Day13 {
+    public record Point(int X, int Y) { 
     }
 
     public enum Direction { Left, Up, Right, Down } // must be in circle for rotation design
@@ -26,7 +21,6 @@ namespace AdventOfCode2018.Day13
     public enum Turn { Left, GoStraight, Right }
 
     public class Car {
-
         public Point point;
         public Direction direction;
         public Turn nextTurn;
@@ -59,19 +53,13 @@ namespace AdventOfCode2018.Day13
 
         public Point NewPoint(char[,] road, Point current, Direction direction)
         {
-            int dx = 0;
-            int dy = 0;
-            switch (direction)
-            {
-                case Direction.Down: dy = 1;
-                    break;
-                case Direction.Up: dy = -1;
-                    break;
-                case Direction.Left: dx = -1;
-                    break;
-                case Direction.Right: dx = 1;
-                    break;
-            }
+            var (dx, dy) = direction switch {
+                Direction.Down => (0, 1),
+                Direction.Up => (0, -1),
+                Direction.Left => (-1, 0),
+                Direction.Right => (1, 0),
+                _ => throw new Exception( "unexpected direction" )
+            };
             var newPoint = new Point( current.X + dx, current.Y + dy );
             if ( newPoint.X >= road.GetLength(0) || newPoint.X < 0 )
                 Assert.Fail( "X is out of bounds" );
@@ -89,19 +77,16 @@ namespace AdventOfCode2018.Day13
             var road = new char[sizeX, sizeY];
             for (var x = 0; x < sizeX; x++ ) for (var y = 0; y < sizeY; y++) road[x,y] = ' ';
 
-            for (var y = 0; y < roadMap.Length; y++)
-            {
+            for (var y = 0; y < roadMap.Length; y++) {
                 var line = roadMap[y].ToCharArray();
-                for (var x = 0; x < line.Length; x++)
-                {
+                for (var x = 0; x < line.Length; x++) {
                     var ch = line[x];
-                    if (carDirections.Contains(ch))
-                    {
-                        cars.Add( new Car{ point = new Point(x,y), direction = CharToDirection(ch), nextTurn = Turn.Left, isRunning = true } );
+                    if (carDirections.Contains(ch)) {
+                        cars.Add( new Car { point = new Point(x, y),
+                            direction = CharToDirection(ch),
+                            nextTurn = Turn.Left, isRunning = true } );
                         road[x, y] = "<>".Contains(ch) ? '-' : '|';
-                    }
-                    else
-                    {
+                    } else {
                         road[x, y] = ch;
                     }
                 }
@@ -201,20 +186,17 @@ namespace AdventOfCode2018.Day13
             }  // end of the time circle
         }
 
-        [Ignore("done")]
-        [TestCase("Day13Sample1.txt", true, 0,3)]
-        [TestCase("Day13Sample2.txt", true, 7,3)]
-        [TestCase("Day13Input.txt", true, 76, 108)] // correct 1: "76,108"
-        [TestCase("Day13Sample3.txt", false, 6, 4)] // test case
-        [TestCase("Day13Input.txt", false, 2,84)] // correct 2: "2,84"
-        // second (incorrect): 59, 9
-        // second (incorrect): 29,104
-        // second (incorrect): 40,20
-        public void Test1(string file, bool tillFirstCrash, int ex, int ey) {
+        // [Ignore("done")]
+        [TestCase("Day13/sample1.txt", true, 0,3)]
+        [TestCase("Day13/sample2.txt", true, 7,3)]
+        [TestCase("Day13/input.txt", true, 76, 108)] // correct 1: "76,108"
+        [TestCase("Day13/sample3.txt", false, 6, 4)] // test case
+        [TestCase("Day13/input.txt", false, 2,84)] // correct 2: "2,84"
+        public void Solution(string file, bool tillFirstCrash, int ex, int ey) {
             var point = new Point(ex, ey);
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var collision = RunCars(lines,tillFirstCrash);
-            Assert.AreEqual(point, collision);
+            Assert.AreEqual(point, collision, "answer" );
         }
     }
 }
