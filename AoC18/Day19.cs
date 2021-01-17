@@ -59,8 +59,9 @@ namespace AdventOfCode2018.Day19 {
 		public string ToString<T>( T[] a ) => string.Join(',', a.Select( o => o.ToString() ).ToArray());
 
 		[TestCase("Day19Sample.txt", 7, 0)]
-        [TestCase("Day19.txt", 1536, 0)] // question 1
-        public void Test1(string file, int reg0halt, int reg0start ) {
+        [TestCase("Day19.txt", 1536, 0)] // answer 1
+		// SLOW - [TestCase("Day19.txt", 17540352, 1)] // answer 2
+		public void Solution(string file, int reg0halt, int reg0start ) {
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
             // The first line (#ip 0) indicates that the instruction pointer should be bound to register 0 in this program. 
             // This is not an instruction, and so the value of the instruction pointer 
@@ -97,7 +98,7 @@ namespace AdventOfCode2018.Day19 {
                 // (Because of this, instructions must effectively set the instruction pointer to the 
                 // instruction before the one they want executed next.)
                 registers[ipBinding] += 1;
-                Assert.Less(operationsExecuted++, 100, "Suspection for a loop");
+                // Assert.Less(operationsExecuted++, 100, "Suspection for a loop");
 			}
 			// correction of increment done out of scope			  
 			Assert.AreEqual(reg0halt, registers[0]);
