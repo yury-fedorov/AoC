@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AdventOfCode2018
+namespace AdventOfCode2018.Day21
 {
     public class Day21
     {
