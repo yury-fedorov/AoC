@@ -32,10 +32,8 @@ namespace AdventOfCode2018.Day16
 	    }
 
         public virtual long Execute(int[] instruction, long[] registers)
-	    {
-	        return registers[instruction[C]] = Method(ArgA(instruction, registers, A), ArgB(instruction, registers, B));
-        }
-	}
+			=> registers[instruction[C]] = Method(ArgA(instruction, registers, A), ArgB(instruction, registers, B));
+    }
 
 	// (add register) stores into register C the result of adding register A and register B.
 	public class OpRegister : Instruction
@@ -138,8 +136,8 @@ namespace AdventOfCode2018.Day16
 	        return set;
 	    }
 
-        [TestCase("Day16.txt")]
-		public void TestSample3(string file)
+        [TestCase("Day16/input.txt")]
+		public void Solution(string file)
 		{
 			var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
 
@@ -201,11 +199,12 @@ namespace AdventOfCode2018.Day16
 
             // Assert.AreEqual(Instructions.Length, mapCodeOperation.Count, "All has to be mapped");
 
+			/*
 		    foreach (var co in mapCodeOptions.OrderBy(a=>a.Value.Count))
 		    {
 		        Console.WriteLine($"{co.Key} - [{ToText(co.Value.OrderBy(x => x))}]");
 		    }
-
+			*/
 
             var mapCodeOperation = new Dictionary<int, Code>();
             
@@ -246,13 +245,13 @@ namespace AdventOfCode2018.Day16
 		    {
 		        Console.WriteLine($"{co.Key} - [{co.Value}]");
 		    }
-			*/
-		    foreach (var co in mapCodeOptions.OrderBy(a => a.Value.Count))
+			foreach (var co in mapCodeOptions.OrderBy(a => a.Value.Count))
 		    {
 		        Console.WriteLine($"{co.Key} - [{ToText(co.Value.OrderBy(x => x))}]");
             }
+			*/
 
-		    Assert.IsEmpty(mapCodeOptions, "expected full decoding");
+			Assert.IsEmpty(mapCodeOptions, "expected full decoding");
 
             long[] registers = { 0, 0, 0, 0 };
 			for (int i = latestSampleStart + 3; i < lines.Length; i++ )
