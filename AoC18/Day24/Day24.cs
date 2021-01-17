@@ -210,9 +210,9 @@ namespace AdventOfCode2018.Day24 {
             return groups;
         }
 
-        const string FileName = "Day24.txt";
+        const string FileName = "Day24/input.txt";
 
-        [TestCase("Day24Sample.txt", 5216)]
+        [TestCase("Day24/sample.txt", 5216)]
         [TestCase(FileName, 14000)]
         public void Part1(string file, int answer1) {
             var groups = Run(file, 0);

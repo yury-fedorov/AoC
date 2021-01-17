@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-
+    <!-- a lot of warnings <Nullable>enable</Nullable> -->
     <IsPackable>false</IsPackable>
-
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -19,20 +18,11 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="EmptyCSharpFile.cs" />
-    <Compile Remove="Day10.cs" />
-  </ItemGroup>
+  
   <ItemGroup>
     <Folder Include="Day02\" />
     <Folder Include="Day03\" />
     <Folder Include="Day04\" />
-    <Folder Include="Day05\" />
-    <Folder Include="Day06\" />
-    <Folder Include="Day07\" />
-    <Folder Include="Day08\" />
-    <Folder Include="Day13\" />
-    <Folder Include="Day15\" />
+    <Folder Include="Day10\" />
   </ItemGroup>
 </Project>

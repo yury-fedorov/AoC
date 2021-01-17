@@ -2,41 +2,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
 using System;
 using NUnit.Framework;
 
-// {} []
 namespace AdventOfCode2018.Day10
 {
-    public class TwoD
+    public record Point(int X, int Y) { }
+
+    public record Velocity(int X, int Y) { }
+
+    public record Light(Point point0, Velocity velocity)
     {
-        public int X;
-        public int Y;
+        public Point AtTime(int time) => new Point(point0.X + (velocity.X * time), point0.Y + (velocity.Y * time));
     }
 
-    public class Point : TwoD { }
-
-    public class Velocity : TwoD { }
-
-    public class Light
+    public record Rectangle (Point min, Point max) // topLeft, bottomRight
     {
-        public Point point0;
-        public Velocity velocity;
-        public Point AtTime(int time)
-        {
-            return new Point
-            {
-                X = point0.X + (velocity.X * time),
-                Y = point0.Y + (velocity.Y * time)
-            };
-        }
-    }
-
-    public class Rectangle
-    {
-        public Point min; // ie topLeft
-        public Point max; // ie bottomRight
 	    public int Width => max.X - min.X;
 	    public int Height => max.Y - min.Y;
     }
@@ -51,17 +32,17 @@ namespace AdventOfCode2018.Day10
             foreach (Match match in matches)
             {
                     return new Light
-                    {
-                        point0 = new Point
-                        {
-                            X = Convert.ToInt32(match.Groups[1].Value), 
-                            Y = Convert.ToInt32(match.Groups[2].Value)
-                        },
-                        velocity = new Velocity {
-                            X = Convert.ToInt32(match.Groups[3].Value),
-                            Y = Convert.ToInt32(match.Groups[4].Value)
-                        }
-                    };
+                    (
+                        new Point
+                        (
+                            Convert.ToInt32(match.Groups[1].Value), 
+                            Convert.ToInt32(match.Groups[2].Value)
+                        ),
+                        new Velocity (
+                            Convert.ToInt32(match.Groups[3].Value),
+                            Convert.ToInt32(match.Groups[4].Value)
+                        )
+                    );
             }
             throw new ArgumentException(line);
         }
@@ -69,24 +50,24 @@ namespace AdventOfCode2018.Day10
         static Rectangle Bounds(IEnumerable<Point> points)
         {
             var min = new Point
-            {
-                X = points.Select(p => p.X).Min(),
-                Y = points.Select(p => p.Y).Min()
-            };
+            (
+                points.Select(p => p.X).Min(),
+                points.Select(p => p.Y).Min()
+            );
             var max = new Point
-            {
-                X = points.Select(p => p.X).Max(),
-                Y = points.Select(p => p.Y).Max()
-            };
-            return new Rectangle { min = min, max = max };
+            (
+                points.Select(p => p.X).Max(),
+                points.Select(p => p.Y).Max()
+            );
+            return new Rectangle( min, max );
         }
 
 
-        [TestCase("Day10Sample.txt",3)]
-        [TestCase("Day10Input.txt", 10003)]
+        [TestCase("Day10/sample.txt",3)]
+        [TestCase("Day10/input.txt", 10003)]
         public void Test(string file, long et)
         {
-            var lines = File.ReadAllLines(Path.Combine(App.App.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var lights = lines.Select(l => ParseLine(l)).ToArray();
             var b = Bounds(lights.Select(l => l.point0));
             var yPrev = b.Height;
@@ -101,7 +82,7 @@ namespace AdventOfCode2018.Day10
             }
 		    Assert.GreaterOrEqual( 50, b.Height );
             Assert.GreaterOrEqual( 80, b.Width );
-            Console.WriteLine( $"{b.min.X} , {b.min.Y} - {b.max.X} {b.max.Y}" );
+            // Console.WriteLine( $"{b.min.X} , {b.min.Y} - {b.max.X} {b.max.Y}" );
 
             var ol = lights.Select(l => l.AtTime(t)).ToArray();
 
@@ -125,4 +106,3 @@ namespace AdventOfCode2018.Day10
         }
     }
 }
-// {} []
