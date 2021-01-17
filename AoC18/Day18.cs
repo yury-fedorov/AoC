@@ -26,11 +26,14 @@ namespace AdventOfCode2018.Day18
             return s.ToString();
         }
 
-        [TestCase("Day18.txt",10,894,576)]
-        [TestCase("Day18Sample.txt",10,37,31)]
-		[TestCase("Day18.txt", 1000000000, -1, -1, 193050)] // task 2
-                                                            // Identified loop size: 28 on time: 634
-        public void Test1(string file, long time, int wood, int lumber)
+		public static long ToAnswer(int wood, int lumber) => wood * lumber;
+
+		const string FileName = "Day18.txt";
+
+		[TestCase(FileName,10, 514944)] // answer 1
+        [TestCase("Day18Sample.txt",10, 1147)]
+		[TestCase(FileName, 1000000000, 193050)] // answer 2 -> // Identified loop size: 28 on time: 634
+		public void Solution(string file, long time, long expectedAnswer )
 		{
 			var lines = File.ReadAllLines(Path.Combine(Day1Test.Directory, file));
 			var size = (lines[0].Length, lines.Length);
@@ -139,9 +142,7 @@ namespace AdventOfCode2018.Day18
 					}
 				}
 			}
-			// Assert.AreEqual(lumber, lumberCount, "lumber count");
-			// Assert.AreEqual(wood, treeCount, "wood count");
-			Assert.AreEqual(lumber*wood, lumberCount * treeCount, "tree count"); // wrong 656366
+			Assert.AreEqual( expectedAnswer , lumberCount * treeCount, "tree count");
 		}
 
 		public IEnumerable<char> Around(char[,] map, (int,int) size, (int,int) at )

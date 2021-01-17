@@ -82,7 +82,7 @@ namespace AdventOfCode2018.Day19 {
 				var curInstruction = code[(int)registers[ipBinding]];
 				var opcode = (Code)curInstruction[0];
 				var instruction = Day16.Day16.MapCodeInstruction[opcode];
-				Console.Write($"[{ToString(registers)}] \t {registers[ipBinding]} \t {opcode} {ToString( new[] { curInstruction[1], curInstruction[2], curInstruction[3] } )} \t ");
+				// Console.Write($"[{ToString(registers)}] \t {registers[ipBinding]} \t {opcode} {ToString( new[] { curInstruction[1], curInstruction[2], curInstruction[3] } )} \t ");
 				try {
                     // When the instruction pointer is bound to a register, its value is written to that register just before each instruction is executed, 
                     // and the value of that register is written back to the instruction pointer immediately after each instruction finishes execution.
@@ -91,7 +91,7 @@ namespace AdventOfCode2018.Day19 {
 				catch ( Exception e) {
 					Assert.Fail(e.Message);
 				}
-				Console.WriteLine($"[{ToString(registers)}]");
+				// Console.WriteLine($"[{ToString(registers)}]");
                 // Afterward, move to the next instruction by adding one to the instruction pointer, 
                 // even if the value in the instruction pointer was just updated by an instruction. 
                 // (Because of this, instructions must effectively set the instruction pointer to the 
