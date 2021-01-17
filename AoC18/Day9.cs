@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
 
-// {}
-// []
-namespace AdventOfCode2018.Tests9
-{
+namespace AdventOfCode2018.Tests9 {
 
     public class MarbleCircle {
         public readonly LinkedList<int> sequence = new LinkedList<int>();
@@ -89,7 +83,7 @@ namespace AdventOfCode2018.Tests9
 
     public class Day9Test
     {
-        [Ignore("2 seconds")]
+        
         [TestCase( 9, 25,32)]
 
         /*
@@ -105,15 +99,16 @@ namespace AdventOfCode2018.Tests9
         [TestCase(21, 6111, 54718)]
         [TestCase(30, 5807, 37305)]
         // 425 players; last marble is worth 70848 points
-        [TestCase(425, 70848, 413188)] // reply 1
-        [TestCase(425, 7084800, 3377272893)] // reply 2 - extremely slow (more then 1 hour?)
-        public void TestCase1(int p, int l, long ws)
+        [TestCase(425, 70848, 413188)] // task1
+        public void Day9Solutions(int p, int l, long ws)
         {
             var result = MarbleCircle.Play(p, l);
             Assert.AreEqual(ws, result.Item2, "winning score not match");
         }
 
+        [Ignore("extremely slow (more then 1 hour?")]
+        [TestCase(425, 7084800, 3377272893)] // task 2
+        public void Day9Task2(int p, int l, long ws)
+            => Day9Solutions(p, l, ws);
     }
 }
-// {}
-// []
