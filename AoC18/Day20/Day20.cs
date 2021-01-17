@@ -5,10 +5,8 @@ using System.IO;
 using System.Linq;
 namespace AdventOfCode2018.Day20 {
     public class Room {
-        public readonly (int,int) Position;
-        // ?
+        public readonly (int, int) Position;
         public readonly IDictionary<(int,int),Room> Conections = new Dictionary<(int,int),Room>();
-        // ?
         public Room( (int,int) position) { Position = position; }
     }
 
@@ -31,7 +29,7 @@ namespace AdventOfCode2018.Day20 {
             }
             return list;
         }
-        // ?
+
         public ((int,int),(int,int)) Bounds() {
             var minX = _roomNeigbours.Keys.Min(a => a.Item1);
             var minY = _roomNeigbours.Keys.Min(a => a.Item2);
@@ -46,7 +44,6 @@ namespace AdventOfCode2018.Day20 {
         IEnumerable<char> Path();
     }
 
-    // ? 
     class Door : IPart {
         public readonly char _door;
         public Door(char door) { _door = door; }
@@ -135,7 +132,7 @@ namespace AdventOfCode2018.Day20 {
 
         public string[] FlatVariations(string path) => path.Split('|');
 
-        const string FileName = "Day20.txt";
+        const string FileName = "Day20/input.txt";
 
         [TestCase(FileName, 3788)] // answer 1
         public void Part1Test(string file, int expectedLength)
