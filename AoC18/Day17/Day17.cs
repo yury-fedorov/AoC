@@ -95,6 +95,8 @@ namespace AdventOfCode2018.Day17
 
             public char At(Point p) {
                 var ai = ToInternalMap(p);
+                if (ai.X < 0 || ai.Y < 0 || ai.X >= Size.X || ai.Y >= Size.Y)
+                    throw new IndexOutOfRangeException();
                 return _map[ai.X, ai.Y];
             }
 
@@ -139,8 +141,9 @@ namespace AdventOfCode2018.Day17
             }
         }
 
-        [TestCase("Day17/input.txt")]
-        public void Solution(string file)
+        [TestCase("Day17/input.txt", -1)]
+        [TestCase("Day17/sample.txt", 57)]
+        public void Solution(string file, int answer1)
 		{
 			var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
 			var realLines = lines.Select(l => ToLine(l)).ToArray();
@@ -159,16 +162,23 @@ namespace AdventOfCode2018.Day17
 				map.DrawLine(line, Map.Clay);
 			}
 
-			var springs = new List<Point>();
+			var springs = new HashSet<Point>();
+            var springsDone = new HashSet<Point>();
 			springs.Add(waterSpring);
 			while ( springs.Any() ) {
 				var spring = springs.First();
-				springs.RemoveAt(0);
-				springs.AddRange( TraceWaterSpring(spring, map) );
+				springs.Remove(spring);
+                springsDone.Add(spring);
+                TraceWaterSpring(spring, map)
+                    .Where( s => !springsDone.Contains(s) )
+                    .ToList().ForEach( s => springs.Add(s) );
 			}
 
 			File.WriteAllLines("AoC18-Day17.txt", map.Draw());
-			// Assert.AreEqual(600, registers.First(), "answer 2");
+            var countWater = map.Draw().SelectMany(l => l.ToCharArray())
+                .Count(c => c == Map.RestWater || c == Map.FallingWater );
+
+            Assert.AreEqual( answer1, countWater, "answer 1");
 		}
 
 		private static IEnumerable<Point> TraceWaterSpring(Point waterSpring, Map map) {
@@ -186,6 +196,7 @@ namespace AdventOfCode2018.Day17
 			// now we at the bottom
 			// now we fill the volume with water
 			var leftRight = map.FindLeftRight(fallingBottom);
+            if (leftRight == null) return Enumerable.Empty<Point>(); // that is the end, we are at the bottom
 			var prevLeftRight = leftRight;
 			var bottomRestWaterLine = new Line { 
                 A = new Point( (leftRight?.Left).Value,  fallingBottom.Y), 
@@ -218,14 +229,10 @@ namespace AdventOfCode2018.Day17
 			var falling = fallingBottom.Dy(-1);
 			for (; (leftRight = map.FindLeftRight(falling)) != null; falling = falling.Dy(-1)) {
 				// go outside of the cup from left
-				if ( (prevLeftRight?.Left > leftRight?.Left) 
-					// && map.At( new Point(leftRight.Item1 -2, falling.Y + 1 ) ) != Map.Clay 
-					) break;
+				if ( prevLeftRight?.Left > leftRight?.Left ) break;
 
 				// go outside of the cup from right
-				if ( (prevLeftRight?.Right < leftRight?.Right) 
-					// && map.At(new Point(leftRight.Item2 + 2, falling.Y + 1)) != Map.Clay
-					) break; 
+				if ( prevLeftRight?.Right < leftRight?.Right ) break; 
 
 				map.DrawLine(new Line { 
                     A = new Point( (leftRight?.Left).Value, falling.Y), 
@@ -236,14 +243,30 @@ namespace AdventOfCode2018.Day17
 			// now it can fall down on both sides
 			var cupLeftInternalPoint = new Point( (prevLeftRight?.Left).Value, falling.Y);
 			var cupRightInternalPoint = new Point( (prevLeftRight?.Right).Value, falling.Y);
-			var isFallingOnRight = map.At(cupRightInternalPoint.Dx(1)) != Map.Clay
-				&& map.At(cupRightInternalPoint.Dx(2).Dy(1)) != Map.Clay;
-			var isFallingOnLeft = map.At(cupLeftInternalPoint.Dx(-1)) != Map.Clay 
-				&& map.At(cupLeftInternalPoint.Dx(-2).Dy(1)) != Map.Clay;
+
+            Point fallingRightPoint = null;
+            for ( int dx = 1; map.At(cupRightInternalPoint.Dx(dx)) != Map.Clay; dx++ )
+            {
+                if ( map.At(cupRightInternalPoint.Dx(dx+1).Dy(1)) != Map.Clay )
+                {
+                    fallingRightPoint = cupRightInternalPoint.Dx(dx + 2);
+                    break;
+                }
+            }
+
+            Point fallingLeftPoint = null;
+            for (int dx = -1; map.At(cupLeftInternalPoint.Dx(dx)) != Map.Clay; dx--)
+            {
+                if (map.At(cupLeftInternalPoint.Dx(dx - 1).Dy(1)) != Map.Clay)
+                {
+                    fallingLeftPoint = cupLeftInternalPoint.Dx(dx - 2);
+                    break;
+                }
+            }
 
 			var line = new Line {
-				A = cupLeftInternalPoint.Dx(isFallingOnLeft ? -2 : 0),
-				B = cupRightInternalPoint.Dx(isFallingOnRight ? 2 : 0)
+				A = fallingLeftPoint  ?? cupLeftInternalPoint,
+				B = fallingRightPoint ?? cupRightInternalPoint
 			};
 
 			if ( map.At( new Point( waterSpring.X, falling.Y ) ) != Map.RestWater ) {
@@ -251,8 +274,8 @@ namespace AdventOfCode2018.Day17
 			}
 
 			// we detect the sides where it goes down
-			if (isFallingOnLeft) result.Add( line.A);
-			if (isFallingOnRight) result.Add( line.B);
+			if (fallingLeftPoint != null) result.Add(fallingLeftPoint);
+            if (fallingRightPoint != null) result.Add(fallingRightPoint);
 			return result;
 		}
 	}
