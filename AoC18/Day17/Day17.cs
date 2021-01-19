@@ -193,10 +193,11 @@ namespace AdventOfCode2018.Day17
 			var fallingSpringLine = new Line { A = new Point(waterSpring.X, y0), B = fallingBottom };
 			map.DrawLine(fallingSpringLine, Map.FallingWater);
 
-			// now we at the bottom
-			// now we fill the volume with water
-			var leftRight = map.FindLeftRight(fallingBottom);
-            if (leftRight == null) return Enumerable.Empty<Point>(); // that is the end, we are at the bottom
+            if (y == null) return Enumerable.Empty<Point>(); // that is the end, we are at the bottom
+
+            // now we at the bottom
+            // now we fill the volume with water
+            var leftRight = map.FindLeftRight(fallingBottom);
 			var prevLeftRight = leftRight;
 			var bottomRestWaterLine = new Line { 
                 A = new Point( (leftRight?.Left).Value,  fallingBottom.Y), 
@@ -249,7 +250,7 @@ namespace AdventOfCode2018.Day17
             {
                 if ( map.At(cupRightInternalPoint.Dx(dx+1).Dy(1)) != Map.Clay )
                 {
-                    fallingRightPoint = cupRightInternalPoint.Dx(dx + 2);
+                    fallingRightPoint = cupRightInternalPoint.Dx(dx + 1);
                     break;
                 }
             }
@@ -259,7 +260,7 @@ namespace AdventOfCode2018.Day17
             {
                 if (map.At(cupLeftInternalPoint.Dx(dx - 1).Dy(1)) != Map.Clay)
                 {
-                    fallingLeftPoint = cupLeftInternalPoint.Dx(dx - 2);
+                    fallingLeftPoint = cupLeftInternalPoint.Dx(dx - 1);
                     break;
                 }
             }
