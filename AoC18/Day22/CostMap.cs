@@ -66,6 +66,6 @@ namespace AdventOfCode2018.Day22
         }
 
         public static int GetCost(Tool fromTool, Tool toTool)
-            => fromTool == toTool ? 1 : 7;
+            => fromTool == toTool ? 1 : 8; // 7 for change + 1 for move
     }
 }
