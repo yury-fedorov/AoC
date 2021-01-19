@@ -87,31 +87,22 @@ namespace AdventOfCode2018.Day17
                 var d1b = line.Horizontal ? line.B.X : line.B.Y;
                 for (var d1 = d1a; d1 <= d1b; d1++) {
                     var p = line.Horizontal ? new Point(d1, d0) : new Point(d0, d1);
-                    if (p.X < TopLeft.X || p.X > BottomRight.X) continue; // we skip points out of our map of interest
                     Set(p, symbol);
                 }
             }
 
             public Point ToInternalMap(Point p) => new Point( p.X - TopLeft.X, p.Y - TopLeft.Y );
 
-            public char At( Point p, bool isVirtual = false ) {
-                var ai = ToInternalMap(p);
-                if (ai.X < 0 || ai.Y < 0 || ai.X >= Size.X || ai.Y >= Size.Y)
-                {
-                    if ( isVirtual ) return Sand;
-                    throw new IndexOutOfRangeException($"Point {p} is out of map");
-                }
-                return _map[ai.X, ai.Y];
+            public char At( Point p ) {
+                var (x,y) = ToInternalMap(p);
+                return _map[x, y];
             }
 
-            public char Set(Point p, char value) {
-                var ai = ToInternalMap(p);
-                var prev = _map[ai.X, ai.Y];
-                _map[ai.X, ai.Y] = value;
-                return prev;
+            public void Set(Point p, char value) {
+                var (x,y) = ToInternalMap(p);
+                _map[x, y] = value;
             }
 
-            // for debug purpose
             public IEnumerable<string> Draw() {
                 for (int y = TopLeft.Y; y <= BottomRight.Y; y++) {
                     var line = new StringBuilder();
@@ -123,7 +114,6 @@ namespace AdventOfCode2018.Day17
             }
 
             public int ? FindBottom(Point from) {
-                if (from.X < TopLeft.X || from.X > BottomRight.X) return null;
                 for (int y = from.Y; y <= BottomRight.Y; y++) {
                     if (At(new Point(from.X, y)) == Clay) {
                         return y;
@@ -294,8 +284,8 @@ namespace AdventOfCode2018.Day17
             {
                 if (fallingPoint != null)
                 {
-                    if (map.At(fallingPoint, true) == Map.FallingWater  // on the top of the cup is all falling water
-                        && map.At( fallingPoint.Dy(1), true ) == Map.RestWater ) // and below is rest water
+                    if (map.At(fallingPoint) == Map.FallingWater  // on the top of the cup is all falling water
+                        && map.At( fallingPoint.Dy(1)) == Map.RestWater ) // and below is rest water
                         return FillUp(fallingPoint, map, false ); // we know that below is us water
                     return new [] { fallingPoint }; // we detect a part where it goes down
                 }
@@ -312,14 +302,10 @@ namespace AdventOfCode2018.Day17
 
             static Point GetFallingPoint(Map map, Point cupInternalPoint, int delta)
             {
-                for (int dx = delta; true; dx+= delta)
+                for (int dx = delta; map.At(cupInternalPoint.Dx(dx)) != Map.Clay; dx+= delta)
                 {
-                    var highWaterBorder = cupInternalPoint.Dx(dx);
-                    if (highWaterBorder.X < map.TopLeft.X || highWaterBorder.X > map.BottomRight.X) break;
-                    if (map.At(highWaterBorder) == Map.Clay) break;
-                    var lowerWaterBorder = cupInternalPoint.Dx(dx + delta).Dy(1);
-                    // if (lowerWaterBorder.X < map.TopLeft.X || lowerWaterBorder.X > map.BottomRight.X) break;
-                    if ( map.At(lowerWaterBorder, true) != Map.Clay) return cupInternalPoint.Dx(dx + delta);
+                    var result = cupInternalPoint.Dx(dx + delta);
+                    if ( map.At(result.Dy(1)) != Map.Clay) return result;
                 }
                 return null;
             }
