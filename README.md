@@ -11,7 +11,7 @@ https://adventofcode.com/2019
 Private Leaderboard
 https://adventofcode.com/2019/leaderboard/private/view/33618
 
-## 2018 - C#
+## 2018 - C# 9, .NET 5 (50 stars, rank 3009)
 Origionally written in .NET Core 2.1 (C# 7.3)
 https://adventofcode.com/2018
 
