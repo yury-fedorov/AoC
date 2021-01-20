@@ -95,26 +95,46 @@ namespace AdventOfCode2018.Day23 {
             var shortest = maxD;
             var maxCount = 0;
 
-            for (int x = area.X.Min; x <= area.X.Max; x++)
+            int bits = 4; // 16 segments
+
+            while (true)
             {
-                for (int y = area.Y.Min; y <= area.Y.Max; y++)
+                var dx = Math.Max(1, (area.X.Max - area.X.Min) >> bits);
+                var dy = Math.Max(1, (area.Y.Max - area.Y.Min) >> bits);
+                var dz = Math.Max(1, (area.Z.Max - area.Z.Min) >> bits);
+                var area1 = area;
+                for (int x = area.X.Min; x <= area.X.Max; x += dx )
                 {
-                    for (int z = area.Z.Min; z <= area.Z.Max; z++)
+                    for (int y = area.Y.Min; y <= area.Y.Max; y += dy )
                     {
-                        var pi = new Point3D(x, y, z);
-                        var ci = CountPoint(s0, pi);
-                        var di = Distance(P0, pi);
-                        if (ci == s0.Count) return di;
-                        if ( ci > maxCount )
+                        for (int z = area.Z.Min; z <= area.Z.Max; z += dz )
                         {
-                            maxCount = ci;
-                            shortest = di;
-                        } else if ( ci == maxCount )
-                        {
-                            shortest = Math.Min(shortest, di);
+                            var pi = new Point3D(x, y, z);
+                            var ci = CountPoint(s0, pi);
+                            var di = Distance(P0, pi);
+                            if (ci == s0.Count) return di;
+                            bool toUpdate = false;
+                            if (ci > maxCount)
+                            {
+                                maxCount = ci;
+                                shortest = di;
+                                toUpdate = true;
+                            }
+                            else if (ci == maxCount && di < shortest )
+                            {
+                                shortest = di;
+                                toUpdate = true;
+                            }
+                            if (toUpdate) area1 = new Cuboid(
+                                    new Range(x - dx, x + dx),
+                                    new Range(y - dy, y + dy),
+                                    new Range(z - dz, z + dz));
                         }
                     }
                 }
+                if (dx == 1 && dy == 1 && dz == 1) break;
+                if (area == area1) break;
+                else area = area1;
             }
             return shortest;
         }
@@ -136,7 +156,7 @@ namespace AdventOfCode2018.Day23 {
         readonly Point3D P0 = new Point3D(0, 0, 0);
 
         [TestCase("Day23/sample2.txt", 36)]
-        [TestCase( FileName, -1)]
+        [TestCase( FileName, 124276103)]
         public void Task2(string file, int answer2)
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
@@ -166,8 +186,6 @@ namespace AdventOfCode2018.Day23 {
             }
 
             Assert.True( maxNumber < s0.Count, "we optimized more" );
-
-            // var MAX = 125289441; // too high
 
             var shortest = GetRealShortestDistance(intersection, s0);
 
