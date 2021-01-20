@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace AdventOfCode2018.Day22
+﻿namespace AdventOfCode2018.Day22
 {
     public abstract class ToolUtil
     {
@@ -23,23 +19,5 @@ namespace AdventOfCode2018.Day22
         static readonly Tool[][] ToolsIn = { ToolsInRocky, ToolsInWet, ToolsInNarow, ToolsInSolidRock };
 
         public static Tool[] UsableTools(Material material) => ToolsIn[(int)material];
-
-        // access by material (so 4 elements)
-        private const int Neither = 1;
-        private const int Torch = 2;
-        private const int ClimbingGear = 4;
-
-        static readonly int[] FastUsableTools = { ClimbingGear | Torch, ClimbingGear | Neither, Torch | Neither, 0 }; // no tool is usable
-
-        // public enum Tool { Neither, Torch, ClimbingGear
-        private static readonly int[] ToolToCode = { Neither, Torch, ClimbingGear };
-
-        public static bool Go(Material a, Material b, Tool tool)
-            => a == b || (FastUsableTools[(int)a] & FastUsableTools[(int)b] & ToolToCode[(int)tool]) != 0;
-
-        public static Tool[] ToolsAll = Enum.GetValues(typeof(Tool)).Cast<Tool>().ToArray();
-
-        public static IEnumerable<Tool> OtherTools(Tool tool) => ToolsAll.Where(t => t != tool);
-
     }
 }

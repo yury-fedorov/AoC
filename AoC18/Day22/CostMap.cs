@@ -7,65 +7,76 @@ namespace AdventOfCode2018.Day22
     public class CostMap
     {
         public record Phase(int X, int Y, Tool Tool) { }
+        public record CostInfo(int Cost, HashSet<Phase> Steps) { }
         // how much it costs to arrive here
-        readonly IDictionary<Phase, int> _at = new Dictionary<Phase, int>();
+        readonly IDictionary<Phase, CostInfo> _at = new Dictionary<Phase, CostInfo>();
 
         public int? At(int x, int y, Tool tool) => At( new Phase(x, y, tool) );
 
-        public int? At(Phase p) => _at.TryGetValue(p, out var cost) ? cost : null;
+        public int? At(Phase p) => _at.TryGetValue(p, out var cost) ? cost.Cost : null;
 
-        public void Set(int x, int y, Tool tool, int cost)
+        public void Set(int x, int y, Tool tool, CostInfo cost)
             => Set( new Phase(x, y, tool), cost );
-        public void Set(Phase p, int cost) => _at[p] = cost;
+        public void Set(Phase p, CostInfo cost) => _at[p] = cost;
 
-        public bool Optimize( Phase p, int subOptimalCost )
+        public bool Optimize( Phase p, CostInfo subOptimal )
         {
-            var exist = _at.TryGetValue(p, out var curCost);
-            var newCost = exist ? Math.Min(curCost, subOptimalCost) : subOptimalCost;
-            Set(p, newCost);
-            return !exist || newCost < curCost; // optimized?
+            var exist = _at.TryGetValue(p, out var curCostInfo);
+            var isUpdated = !exist || subOptimal.Cost < curCostInfo.Cost;
+            if (isUpdated) _at[p] = subOptimal;
+            return isUpdated; // optimized?
         }
 
-        public readonly (int X, int Y)[] Moves = { (-1, 0), (1, 0), (0, -1), (0, 1) };
+        public readonly (int X, int Y)[] Moves = { (1, 0), (0, 1), (0, -1), (-1, 0) };
 
         public int Path( Phase from, Phase to, IMap map, int maxTotalCost )
         {
-            Set(from, 0);
+            Set(from, new CostInfo( 0, new HashSet<Phase>() ) );
+            var moves = Moves; // .Where(s => to.X > to.Y ? (s.X >= 0) : (s.Y >= 0));
             var next = new HashSet<Phase>();
             next.Add(from);
-            while ( next.Any() )
+            for ( var path = 0; next.Any(); path++ )
             {
                 var next1 = new HashSet<Phase>();
                 foreach( var p0 in next )
                 {
-                    var p1List = Moves.Select(s => new Point(p0.X + s.X, p0.Y + s.Y))
-                        .Where(p => map.At(p) != Material.SolidRock).ToList();
+                    var ci0 = _at[p0];
+                    var p1List = moves.Select(s => new Point(p0.X + s.X, p0.Y + s.Y));
                     foreach (var p1 in p1List)
                     {
-                        var ut = ToolUtil.UsableTools(map.At(p1));
-                        foreach (var t in ut)
-                        {
-                            var cost = GetCost(p0.Tool, t);
-                            var totalCost = cost + At(p0).Value;
-                            if ( totalCost <= maxTotalCost)
-                            {
-                                var phase1 = new Phase(p1.X, p1.Y, t);
-                                if ( Optimize( phase1, totalCost) )
-                                {
-                                    if (phase1 == to) Console.WriteLine( totalCost );
-                                    next1.Add(phase1);
-                                }
-                            }
-                        }
-
+                        if (!ToolUtil.UsableTools(map.At(p1)).Contains(p0.Tool))
+                            continue;
+                        var phase1 = new Phase(p1.X, p1.Y, p0.Tool);
+                        Step(maxTotalCost, next1, ci0, phase1, 1);
                     }
+                    var otherTool = ToolUtil.UsableTools(map.At(p0.X, p0.Y))
+                        .Single(t => t != p0.Tool);
+                    var phase10 = new Phase(p0.X, p0.Y, otherTool);
+                    Step(maxTotalCost, next1, ci0, phase10, 7);
+                }
+                var solution = At(to);
+                if (solution.HasValue)
+                {
+                    if (solution.Value < path)
+                        return solution.Value; // no sense to go further
+                    maxTotalCost = Math.Min(maxTotalCost, solution.Value);
                 }
                 next = next1;
             }
             return At(to).Value;
         }
 
-        public static int GetCost(Tool fromTool, Tool toTool)
-            => fromTool == toTool ? 1 : 8; // 7 for change + 1 for move
+        void Step(int maxTotalCost, ICollection<Phase> next1, CostInfo ci0, Phase phase, int cost )
+        {
+            if (ci0.Steps.Contains(phase)) return; // we were already here
+            var totalCost = cost + ci0.Cost;
+            if (totalCost <= maxTotalCost)
+            {
+                var dp1 = new HashSet<Phase>(ci0.Steps);
+                dp1.Add(phase);
+                if (Optimize(phase, new CostInfo(totalCost, dp1)))
+                    next1.Add(phase);
+            }
+        }
     }
 }

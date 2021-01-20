@@ -10,5 +10,7 @@
                 return cd;
             }
         }
+
+        public static bool IsFast => true;
     }
 }
