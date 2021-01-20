@@ -29,6 +29,9 @@ namespace AdventOfCode2018.Day22
 
         public readonly (int X, int Y)[] Moves = { (1, 0), (0, 1), (0, -1), (-1, 0) };
 
+        // TODO - better quick maxTotalCost detection could significantly reduce processing time
+        // ie. moving only for the given number of path == (x + y) distance and only positive increments:
+        // so every step only closer to the target.
         public int Path( Phase from, Phase to, IMap map, int maxTotalCost )
         {
             Set(from, new CostInfo( 0, new HashSet<Phase>() ) );
