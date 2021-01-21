@@ -4,9 +4,6 @@ using NUnit.Framework;
 
 namespace AoC17
 {
-    // alt 5 - square brackets
-    // alt 7 - or pipe
-    // alt 8-9 - {}
     public class Day04
     {
         public const string Directory = "/Users/fedoy/projects/AoC/AoC17/cs";
