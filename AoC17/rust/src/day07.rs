@@ -9,7 +9,7 @@ pub fn task1() -> String {
    let lines = text.lines();
    // https://docs.rs/regex/1.4.3/regex/
    lazy_static! {
-        static ref re: Regex = Regex::new(r"(\w{4}) \((\d+)\)(.+)").unwrap();
+        static ref RE: Regex = Regex::new(r"(\w{4}) \((\d+)\)(.+)").unwrap();
    }
    // https://doc.rust-lang.org/rust-by-example/primitives/tuples.html
    type Data = (String, i32);
@@ -17,7 +17,7 @@ pub fn task1() -> String {
    let mut v: Vec<Data> = Vec::new();
    // https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
    for line in lines {
-      for cap in re.captures_iter(line) {
+      for cap in RE.captures_iter(line) {
          v.push( (cap[1].to_string(), i32::from_str(&cap[2]).unwrap() ) );
       }
    }
