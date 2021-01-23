@@ -37,11 +37,12 @@ pub fn task1( file : &str ) -> String {
        .flat_map(|line| RE_LINE.captures_iter(line))
        .map(|cap| (cap[1].to_string(), i32::from_str(&cap[2]).unwrap(), tail(&cap[3]) ))
        .collect();
-   
-   let mut result : Vec<String> = Vec::new();
-   for (n,_,_) in &v {
-      result.push(n.to_string());
-   }
+
+   let mut result : Vec<String> = v
+       .clone()
+       .into_iter()
+       .map(|(n,_,_)| n)
+       .collect();
 
    for (_,_,s) in &v {
       result.retain( |x| !s.contains(x) );
