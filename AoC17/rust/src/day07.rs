@@ -3,9 +3,8 @@ use regex::Regex;
 use crate::common;
 use std::str::FromStr;
 use std::collections::HashSet;
-// type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
-fn tail( t : &str ) -> Option<HashSet<String>> {
+fn tail( t : &str ) -> HashSet<String> {
    lazy_static! {
         static ref RE_TAIL: Regex = Regex::new(r" -> (.+)").unwrap();
         static ref RE_ELEMENT: Regex = Regex::new(r"([a-z]+),?").unwrap();
@@ -15,9 +14,9 @@ fn tail( t : &str ) -> Option<HashSet<String>> {
       for cap_element in RE_ELEMENT.captures_iter( &cap_tail[1] ) {
          set.insert( cap_element[1].to_string() );
       }
-      return Some(set);
+      return set;
    }
-   None
+   HashSet::new()
 }
 
 pub fn task1( file : &str ) -> String {
@@ -28,7 +27,7 @@ pub fn task1( file : &str ) -> String {
         static ref RE_LINE: Regex = Regex::new(r"([a-z]+) \((\d+)\)(.+)").unwrap();
    }
    // https://doc.rust-lang.org/rust-by-example/primitives/tuples.html
-   type Data = (String, i32, Option<HashSet<String>>);
+   type Data = (String, i32, HashSet<String>);
    // https://doc.rust-lang.org/book/ch08-01-vectors.html
    let mut v: Vec<Data> = Vec::new();
    // https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
@@ -41,11 +40,8 @@ pub fn task1( file : &str ) -> String {
    for (n,_,_) in &v {
       result.push(n.to_string());
    }
-   for (_,_,o) in &v {
-      match o {
-         Some(s) => result.retain( |x| !s.contains(x) ),
-         None => {}
-      }
+   for (_,_,s) in &v {
+      result.retain( |x| !s.contains(x) );
    }
    if result.len() != 1 {
       let mut error = String::new();
