@@ -10,10 +10,10 @@ fn tail( t : &str ) -> Option<HashSet<String>> {
         static ref RE_TAIL: Regex = Regex::new(r" -> (.+)").unwrap();
         static ref RE_ELEMENT: Regex = Regex::new(r"([a-z]+),?").unwrap();
    }
-   for capTail in RE_TAIL.captures_iter(t) {
+   for cap_tail in RE_TAIL.captures_iter(t) {
       let mut set = HashSet::new();
-      for capElement in RE_ELEMENT.captures_iter( &capTail[1] ) {
-         set.insert( capElement[1].to_string() );
+      for cap_element in RE_ELEMENT.captures_iter( &cap_tail[1] ) {
+         set.insert( cap_element[1].to_string() );
       }
       return Some(set);
    }
