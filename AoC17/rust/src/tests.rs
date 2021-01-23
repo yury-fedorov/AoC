@@ -5,5 +5,7 @@ fn it_works() {
 
 #[test]
 fn test_day07() {
-    assert_eq!( "", crate::day07::task1() );
+    use crate::day07;
+    assert_eq!( "tknk", day07::task1( "d07/sample.txt" ) );
+    assert_eq!( "azqje", day07::task1( "d07/input.txt" ) );
 }
