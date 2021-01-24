@@ -61,7 +61,7 @@ pub fn task1( v : &Vec<Data> ) -> String {
    String::from(result.get(0).unwrap())
 }
 
-fn get_weight( tree : &HashMap<&String, &Data>, head : &String ) -> i32 {
+fn get_weight( tree : &HashMap<&str, &Data>, head : &str ) -> i32 {
    let ( _, w, leaves ) = tree.get( head ).unwrap();
    let mut result : i32 = *w;
    for l in leaves {
@@ -70,8 +70,8 @@ fn get_weight( tree : &HashMap<&String, &Data>, head : &String ) -> i32 {
    result
 }
 
-pub fn task2( v : &Vec<Data>, head : &String ) -> i32  {
-   let mut tree : HashMap<&String,&Data> = HashMap::new();
+pub fn task2( v : &Vec<Data>, head : &str ) -> i32  {
+   let mut tree : HashMap<&str,&Data> = HashMap::new();
    for e in v {
       let ( name, _, _ ) = e;
       tree.insert( name, e );
@@ -81,7 +81,7 @@ pub fn task2( v : &Vec<Data>, head : &String ) -> i32  {
    let mut level_up = check_balance(&tree, leaves);
    while level_up.is_some() {
       let ( node_to_fix, diff ) = level_up.unwrap();
-      let unbalanced_node = tree.get( &node_to_fix );
+      let unbalanced_node = tree.get(&*node_to_fix);
       let ( _, weight, subnodes ) = unbalanced_node.unwrap();
       let level_down = check_balance(&tree, subnodes );
       if level_down.is_none() {
@@ -92,7 +92,7 @@ pub fn task2( v : &Vec<Data>, head : &String ) -> i32  {
    panic!("unexpected");
 }
 
-fn check_balance(tree: & HashMap<&String, &(String, i32, HashSet<String>)>, leaves: &HashSet<String>)
+fn check_balance(tree: & HashMap<&str, &(String, i32, HashSet<String>)>, leaves: &HashSet<String>)
       -> Option<(String, i32)> {
    let mut a: i32 = -1;
    let mut b: i32 = -1;
@@ -109,7 +109,7 @@ fn check_balance(tree: & HashMap<&String, &(String, i32, HashSet<String>)>, leav
       } else if b == w { b_set.insert(l); } else { panic!("Unexpected 3rd different weight"); }
    }
 
-   let node_to_fix: &&String;
+   let node_to_fix: & str;
    let diff: i32;
    if a_set.len() == 1 && b_set.len() > 1 {
       diff = b - a;
