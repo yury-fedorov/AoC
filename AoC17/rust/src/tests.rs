@@ -1,8 +1,3 @@
-#[test]
-fn it_works() {
-    assert_eq!(2 + 2, 4);
-}
-
 
 fn day07( file : &str, answer1 : &str, answer2 : i32 ) {
     use crate::day07;
@@ -14,6 +9,6 @@ fn day07( file : &str, answer1 : &str, answer2 : i32 ) {
 
 #[test]
 fn test_day07() {
-    day07( "d07/sample.txt", "tknk", 60 );
-    day07( "d07/input.txt", "azqje", 646 );
+    day07( "07/sample.txt", "tknk", 60 );
+    day07( "07/input.txt", "azqje", 646 );
 }

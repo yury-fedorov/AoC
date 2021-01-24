@@ -25,7 +25,7 @@ pub fn parse( file : &str ) -> Vec<Data> {
    let text = common::input(file);
    // https://docs.rs/regex/1.4.3/regex/
    lazy_static! {
-        static ref RE_LINE: Regex = Regex::new(r"([a-z]+) \((\d+)\)(.*)$").unwrap();
+        static ref RE_LINE: Regex = Regex::new(r"^([a-z]+) \((\d+)\)(.*)$").unwrap();
    }
    // https://doc.rust-lang.org/book/ch08-01-vectors.html
    let v: Vec<Data> = text
