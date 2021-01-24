@@ -2,7 +2,7 @@ extern crate regex;
 use regex::Regex;
 use crate::common;
 use std::str::FromStr;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 
 fn tail( t : &str ) -> HashSet<String> {
    lazy_static! {
@@ -19,17 +19,15 @@ fn tail( t : &str ) -> HashSet<String> {
    HashSet::new()
 }
 
-pub fn task1( file : &str ) -> String {
+// https://doc.rust-lang.org/rust-by-example/primitives/tuples.html
+type Data = (String, i32, HashSet<String>);
+pub fn parse( file : &str ) -> Vec<Data> {
    let text = common::input(file);
-   // https://doc.rust-lang.org/rust-by-example/primitives/tuples.html
-   type Data = (String, i32, HashSet<String>);
    // https://docs.rs/regex/1.4.3/regex/
    lazy_static! {
-        static ref RE_LINE: Regex = Regex::new(r"([a-z]+) \((\d+)\)(.+)").unwrap();
+        static ref RE_LINE: Regex = Regex::new(r"^([a-z]+) \((\d+)\)(.+)$").unwrap();
    }
-
    // https://doc.rust-lang.org/book/ch08-01-vectors.html
-
    let v: Vec<Data> = text
        // https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
        .lines()
@@ -37,14 +35,18 @@ pub fn task1( file : &str ) -> String {
        .flat_map(|line| RE_LINE.captures_iter(line))
        .map(|cap| (cap[1].to_string(), i32::from_str(&cap[2]).unwrap(), tail(&cap[3]) ))
        .collect();
+   assert_eq!( text.lines().count(), v.len() ); // equal sizes expected
+   v
+}
 
+pub fn task1( v : &Vec<Data> ) -> String {
    let mut result : Vec<String> = v
        .clone()
        .into_iter()
        .map(|(n,_,_)| n)
        .collect();
 
-   for (_,_,s) in &v {
+   for (_,_,s) in v {
       result.retain( |x| !s.contains(x) );
    }
 
@@ -58,4 +60,47 @@ pub fn task1( file : &str ) -> String {
       panic!( error );
    }
    String::from(result.get(0).unwrap())
+}
+
+fn get_weight( tree : &HashMap<&String, &Data>, head : &String ) -> i32 {
+   let ( _, w, leaves ) = tree.get( head ).unwrap();
+   let mut result : i32 = *w;
+   for l in leaves {
+      result += get_weight( tree, l );
+   }
+   result
+}
+
+pub fn task2( v : &Vec<Data>, head : &String ) -> i32 {
+   let mut tree : HashMap<&String,&Data> = HashMap::new();
+   for e in v {
+      let ( name, _, _ ) = e;
+      tree.insert( name, e );
+   }
+   let ( _, _, leaves ) = tree.get(head).unwrap();
+
+   let mut a : i32 = -1;
+   let mut b : i32 = -1;
+   let mut a_set = HashSet::new();
+   let mut b_set = HashSet::new();
+   for l in leaves {
+      let w = get_weight( &tree, l );
+      if a < 0 { a = w; a_set.insert(l); }
+      else if a == w { a_set.insert(l); }
+      else if b < 0 { b = w; b_set.insert(l); }
+      else if b == w { b_set.insert(l); }
+      else { panic!( "Unexpected 3rd different weight" ); }
+   }
+
+   let node_to_fix: &&String;
+   let diff : i32;
+   if a_set.len() == 1 && b_set.len() > 1 {
+      diff = b - a;
+      node_to_fix = a_set.iter().last().unwrap();
+   } else if b_set.len() == 1 && a_set.len() > 1 {
+      diff = a - b;
+      node_to_fix = b_set.iter().last().unwrap();
+   } else { panic!( "Unexpected distribution: only one bad node is expected" ); }
+   let (_, nw, _ ) = tree.get(*node_to_fix).unwrap();
+   nw - diff
 }
