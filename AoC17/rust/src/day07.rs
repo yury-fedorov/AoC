@@ -25,7 +25,7 @@ pub fn parse( file : &str ) -> Vec<Data> {
    let text = common::input(file);
    // https://docs.rs/regex/1.4.3/regex/
    lazy_static! {
-        static ref RE_LINE: Regex = Regex::new(r"^([a-z]+) \((\d+)\)(.+)$").unwrap();
+        static ref RE_LINE: Regex = Regex::new(r"([a-z]+) \((\d+)\)(.*)$").unwrap();
    }
    // https://doc.rust-lang.org/book/ch08-01-vectors.html
    let v: Vec<Data> = text
@@ -35,7 +35,6 @@ pub fn parse( file : &str ) -> Vec<Data> {
        .flat_map(|line| RE_LINE.captures_iter(line))
        .map(|cap| (cap[1].to_string(), i32::from_str(&cap[2]).unwrap(), tail(&cap[3]) ))
        .collect();
-   assert_eq!( text.lines().count(), v.len() ); // equal sizes expected
    v
 }
 
@@ -71,7 +70,7 @@ fn get_weight( tree : &HashMap<&String, &Data>, head : &String ) -> i32 {
    result
 }
 
-pub fn task2( v : &Vec<Data>, head : &String ) -> i32 {
+pub fn task2( v : &Vec<Data>, head : &String ) -> i32  {
    let mut tree : HashMap<&String,&Data> = HashMap::new();
    for e in v {
       let ( name, _, _ ) = e;
@@ -79,28 +78,48 @@ pub fn task2( v : &Vec<Data>, head : &String ) -> i32 {
    }
    let ( _, _, leaves ) = tree.get(head).unwrap();
 
-   let mut a : i32 = -1;
-   let mut b : i32 = -1;
+   let mut level_up = check_balance(&tree, leaves);
+   while level_up.is_some() {
+      let ( node_to_fix, diff ) = level_up.unwrap();
+      let unbalanced_node = tree.get( &node_to_fix );
+      let ( _, weight, subnodes ) = unbalanced_node.unwrap();
+      let level_down = check_balance(&tree, subnodes );
+      if level_down.is_none() {
+         return weight + diff;
+      }
+      level_up = level_down;
+   }
+   panic!("unexpected");
+}
+
+fn check_balance(tree: & HashMap<&String, &(String, i32, HashSet<String>)>, leaves: &HashSet<String>)
+      -> Option<(String, i32)> {
+   let mut a: i32 = -1;
+   let mut b: i32 = -1;
    let mut a_set = HashSet::new();
    let mut b_set = HashSet::new();
    for l in leaves {
-      let w = get_weight( &tree, l );
-      if a < 0 { a = w; a_set.insert(l); }
-      else if a == w { a_set.insert(l); }
-      else if b < 0 { b = w; b_set.insert(l); }
-      else if b == w { b_set.insert(l); }
-      else { panic!( "Unexpected 3rd different weight" ); }
+      let w = get_weight(&tree, l);
+      if a < 0 {
+         a = w;
+         a_set.insert(l);
+      } else if a == w { a_set.insert(l); } else if b < 0 {
+         b = w;
+         b_set.insert(l);
+      } else if b == w { b_set.insert(l); } else { panic!("Unexpected 3rd different weight"); }
    }
 
    let node_to_fix: &&String;
-   let diff : i32;
+   let diff: i32;
    if a_set.len() == 1 && b_set.len() > 1 {
       diff = b - a;
       node_to_fix = a_set.iter().last().unwrap();
    } else if b_set.len() == 1 && a_set.len() > 1 {
       diff = a - b;
       node_to_fix = b_set.iter().last().unwrap();
-   } else { panic!( "Unexpected distribution: only one bad node is expected" ); }
-   let (_, nw, _ ) = tree.get(*node_to_fix).unwrap();
-   nw - diff
+   } else if  b_set.len() == 0 {
+      return None;
+   }
+   else { panic!("Unexpected distribution: only one bad node is expected"); }
+   return Some( (node_to_fix.to_string(), diff) );
 }
