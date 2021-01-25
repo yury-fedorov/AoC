@@ -49,15 +49,7 @@ pub fn task1( v : &Vec<Data> ) -> String {
       result.retain( |x| !s.contains(x) );
    }
 
-   if result.len() != 1 {
-      let mut error = String::new();
-      error.push_str("Unexpected content: ");
-      for e in result {
-         error.push_str( &e );
-         error.push_str( ", ");
-      }
-      panic!( error );
-   }
+   if result.len() != 1 { panic!( "Unexpected state. There must be one head." ); }
    String::from(result.get(0).unwrap())
 }
 
