@@ -53,3 +53,13 @@ fn test_day09() {
     assert_eq!( 10050, answers.0 );
     assert_eq!( 4482, answers.1 );
 }
+
+#[test]
+fn test_day10() {
+    use crate::day10;
+    assert_eq!(12, day10::task1( 5, "3, 4, 1, 5"));
+
+    let lengths = common::input("10/input.txt");
+    let list_size = 256;
+    assert_eq!( -1, day10::task1( list_size, &lengths ) );
+}
