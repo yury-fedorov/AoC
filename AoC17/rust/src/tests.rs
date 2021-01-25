@@ -62,4 +62,9 @@ fn test_day10() {
     let lengths = common::input("10/input.txt");
     let list_size = 256;
     assert_eq!( 23715, day10::task1( list_size, &lengths ) );
+    assert_eq!( "a2582a3a0e66e6e86e3812dcb672a272", day10::task2( list_size, "" ) );
+    assert_eq!( "33efeb34ea91902bb2f59c9920caa6cd", day10::task2( list_size, "AoC 2017" ) );
+    assert_eq!( "3efbe78a8d82f29979031a4aa0b16a9d", day10::task2( list_size, "1,2,3" ) );
+    assert_eq!( "63960835bcdc130f0b66d7ff4f6a5a8e", day10::task2( list_size, "1,2,4" ) );
+    assert_eq!( "", day10::task2( list_size, &lengths ) ); // 1675acadf1ab6a1df6ef286836dd9865
 }
