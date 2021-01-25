@@ -1,3 +1,5 @@
+use crate::common;
+
 fn day07( file : &str, answer1 : &str, answer2 : i32 ) {
     use crate::day07;
     let input = day07::parse( file );
@@ -13,7 +15,6 @@ fn test_day07() {
 }
 
 fn day08( file : &str, answer1 : i32, answer2 : i32 ) {
-    use crate::common;
     use crate::day08;
     let text = common::input(file);
     let (a1,a2) = day08::tasks( &text );
@@ -27,4 +28,28 @@ fn test_day08() {
     day08( "08/input.txt", 5849, 6702 );
 }
 
+#[test]
+fn test_day09() {
+    use crate::day09;
+    assert_eq!( 1, day09::task1("{}") );
+    assert_eq!( 6, day09::task1("{{{}}}") );
+    assert_eq!( 5, day09::task1("{{},{}}") );
+    assert_eq!( 16, day09::task1("{{{},{},{{}}}}") );
+    assert_eq!( 1, day09::task1("{<a>,<a>,<a>,<a>}") );
+    assert_eq!( 9, day09::task1("{{<ab>},{<ab>},{<ab>},{<ab>}}") );
+    assert_eq!( 9, day09::task1("{{<!!>},{<!!>},{<!!>},{<!!>}}" ) );
+    assert_eq!( 3, day09::task1("{{<a!>},{<a!>},{<a!>},{<ab>}}") );
 
+    assert_eq!(0, day09::task2( "<>" ) );
+    assert_eq!(17, day09::task2( "<random characters>" ) );
+    assert_eq!(3, day09::task2( "<<<<>" ) );
+    assert_eq!(2, day09::task2( "<{!>}>" ) );
+    assert_eq!(0, day09::task2( "<!!>" ) );
+    assert_eq!(0, day09::task2( "<!!!>>" ) );
+    assert_eq!(10, day09::task2( "<{o\"i!a,<{i<a>" ) );
+
+    let text = common::input("09/input.txt");
+    let answers = day09::tasks(&text);
+    assert_eq!( 10050, answers.0 );
+    assert_eq!( 4482, answers.1 );
+}
