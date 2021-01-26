@@ -82,3 +82,15 @@ fn test_day11() {
     assert_eq!(764, answers.0 );
     assert_eq!(1532, answers.1 );
 }
+
+#[test]
+fn test_day12() {
+    use crate::day12;
+    let a0 = day12::tasks( &common::input("12/sample.txt") );
+    assert_eq!(6, a0.0);
+    assert_eq!(2, a0.1);
+
+    let answers = day12::tasks( &common::input("12/input.txt") );
+    assert_eq!(141, answers.0);
+    assert_eq!(171, answers.1);
+}
