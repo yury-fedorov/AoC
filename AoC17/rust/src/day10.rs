@@ -42,9 +42,11 @@ fn xor( list: &Vec<i32>, start : usize ) -> i32 {
 
 pub fn task2(n : i32, l : &str) -> String {
     let mut list : Vec<i32> = (0 .. n).collect();
-    let mut nl = l.trim().to_string();
-    nl.push_str( ",17,31,73,47,23" );
-    let lengths : Vec<i32> = nl.chars().map( |x| x as i32 ).collect();
+    let nl = l.trim();
+    let mut tail = vec![17,31,73,47,23];
+    let mut head : Vec<i32>= nl.chars().map( |x| x as i32 ).collect();
+    head.append( &mut tail);
+    let lengths : Vec<i32>  = head;
     let mut cur_pos = 0;
     let mut skip_size = 0;
     for _ in 0 .. 64 {

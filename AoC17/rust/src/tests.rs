@@ -66,5 +66,5 @@ fn test_day10() {
     assert_eq!( "33efeb34ea91902bb2f59c9920caa6cd", day10::task2( list_size, "AoC 2017" ) );
     assert_eq!( "3efbe78a8d82f29979031a4aa0b16a9d", day10::task2( list_size, "1,2,3" ) );
     assert_eq!( "63960835bcdc130f0b66d7ff4f6a5a8e", day10::task2( list_size, "1,2,4" ) );
-    assert_eq!( "", day10::task2( list_size, &lengths ) ); // 1675acadf1ab6a1df6ef286836dd9865
+    assert_eq!( "541dc3180fd4b72881e39cf925a50253", day10::task2( list_size, &lengths ) ); // 1675acadf1ab6a1df6ef286836dd9865
 }
