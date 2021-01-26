@@ -68,3 +68,17 @@ fn test_day10() {
     assert_eq!( "63960835bcdc130f0b66d7ff4f6a5a8e", day10::task2( list_size, "1,2,4" ) );
     assert_eq!( "541dc3180fd4b72881e39cf925a50253", day10::task2( list_size, &lengths ) ); // 1675acadf1ab6a1df6ef286836dd9865
 }
+
+#[test]
+fn test_day11() {
+    use crate::day11;
+    assert_eq!(3, day11::task1("ne,ne,ne"));
+    assert_eq!(0, day11::task1("ne,ne,sw,sw"));
+    assert_eq!(2, day11::task1("ne,ne,s,s"));
+    assert_eq!(3, day11::task1("se,sw,se,sw,sw"));
+
+    let path = common::input("11/input.txt");
+    let answers = day11::tasks(&path);
+    assert_eq!(764, answers.0 );
+    assert_eq!(1532, answers.1 );
+}
