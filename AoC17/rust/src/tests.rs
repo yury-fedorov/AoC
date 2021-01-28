@@ -137,3 +137,8 @@ fn test_day15() {
     assert_eq!( 569, day15::task1( input ) );
     assert_eq!( 298, day15::task2( input ) );
 }
+
+#[test]
+fn test_day16() {
+    use crate::day16;
+}
