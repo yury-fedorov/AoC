@@ -65,6 +65,7 @@ pub fn task1( state: &State ) -> i32 {
                           scanners,  false) )
 }
 
+// takes almost 10 minutes (9 min 26 sec)
 pub fn task2( state : &State ) -> i32 {
     let (_, dp, scanners, max_depth ) = state;
     let mut depth_position = dp.clone();
