@@ -7,3 +7,5 @@ pub fn input( short_path: &str ) -> String {
     std::fs::read_to_string(filename)
         .expect("Something went wrong reading the file")
 }
+
+pub fn is_fast() -> bool { true } // only fast tests

@@ -94,3 +94,17 @@ fn test_day12() {
     assert_eq!(141, answers.0);
     assert_eq!(171, answers.1);
 }
+
+fn day13( file : &str, answer1: i32, answer2 : i32 ) {
+    use crate::day13;
+    let map = day13::input( &common::input(file ) );
+    assert_eq!( answer1, day13::task1( &map ) );
+    if common::is_fast() && answer2 > 10000 { return }
+    assert_eq!( answer2, day13::task2( &map ) );
+}
+
+#[test]
+fn test_day13() {
+    day13( "13/sample.txt", 24, 10 );
+    day13( "13/input.txt", 1900, 3966414 ); // 9 min 26 sec
+}
