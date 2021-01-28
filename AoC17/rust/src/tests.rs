@@ -113,7 +113,14 @@ fn test_day13() {
 fn test_day14() {
     use crate::day14;
     assert_eq!( 5, day14::count( "d401" ) );
-    assert_eq!( 8108, day14::task1( "flqrgnkx" ) );
+    let map1 = day14::input( "flqrgnkx" );
+    assert_eq!( 8108, day14::task1( &map1 ) );
+
     let input = "jzgqcdpd";
-    assert_eq!( 8074, day14::task1( input ) );
+    let map = day14::input( input );
+    assert_eq!( 8074, day14::task1( &map ) );
+
+    if common::is_fast() { return; } // takes 25 seconds
+    assert_eq!( 1242, day14::task2( &map1 ) );
+    assert_eq!( 1212, day14::task2( &map ) );
 }
