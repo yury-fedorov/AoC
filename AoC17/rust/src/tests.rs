@@ -124,3 +124,16 @@ fn test_day14() {
     assert_eq!( 1242, day14::task2( &map1 ) );
     assert_eq!( 1212, day14::task2( &map ) );
 }
+
+#[test]
+fn test_day15() {
+    use crate::day15;
+    if common::is_fast() { return } // takes 7-8 seconds
+    let test = (65, 8921);
+    assert_eq!( 588, day15::task1( test ) );
+    assert_eq!( 309, day15::task2( test ) );
+
+    let input = (116, 299);
+    assert_eq!( 569, day15::task1( input ) );
+    assert_eq!( 298, day15::task2( input ) );
+}
