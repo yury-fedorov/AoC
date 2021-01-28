@@ -108,3 +108,12 @@ fn test_day13() {
     day13( "13/sample.txt", 24, 10 );
     day13( "13/input.txt", 1900, 3966414 ); // 9 min 26 sec
 }
+
+#[test]
+fn test_day14() {
+    use crate::day14;
+    assert_eq!( 5, day14::count( "d401" ) );
+    assert_eq!( 8108, day14::task1( "flqrgnkx" ) );
+    let input = "jzgqcdpd";
+    assert_eq!( 8074, day14::task1( input ) );
+}
