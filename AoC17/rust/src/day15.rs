@@ -1,4 +1,4 @@
-type Input = (u32,u32);
+pub type Input = (u32,u32);
 
 const BASIS : u64 = 2147483647;
 

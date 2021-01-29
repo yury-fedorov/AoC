@@ -1,4 +1,5 @@
 use crate::common;
+use std::iter::FromIterator;
 
 fn day07( file : &str, answer1 : &str, answer2 : i32 ) {
     use crate::day07;
@@ -125,20 +126,25 @@ fn test_day14() {
     assert_eq!( 1212, day14::task2( &map ) );
 }
 
-#[test]
-fn test_day15() {
+fn day15( input : crate::day15::Input, answer1 : i32, answer2 : i32 ) {
     use crate::day15;
     if common::is_fast() { return } // takes 7-8 seconds
-    let test = (65, 8921);
-    assert_eq!( 588, day15::task1( test ) );
-    assert_eq!( 309, day15::task2( test ) );
+    assert_eq!( answer1, day15::task1( input ) );
+    assert_eq!( answer2, day15::task2( input ) );
+}
 
-    let input = (116, 299);
-    assert_eq!( 569, day15::task1( input ) );
-    assert_eq!( 298, day15::task2( input ) );
+#[test]
+fn test_day15() {
+    day15( (65, 8921), 588, 309 );
+    day15( (116, 299), 569, 298 );
 }
 
 #[test]
 fn test_day16() {
     use crate::day16;
+    let test_dance = common::input( "16/sample.txt" );
+    assert_eq!( "baedc", day16::task1( "abcde", &test_dance ) );
+    let dance = common::input( "16/input.txt" );
+    let input = String::from_iter(( 0 .. 16 ).into_iter().map( |dc| ( 'a' as u8 + dc ) as char )  );
+    assert_eq!( "", day16::task1( &input, &test_dance ) );
 }
