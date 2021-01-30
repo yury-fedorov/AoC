@@ -1,13 +1,15 @@
+/*
 use std::sync::mpsc;
 use std::thread;
-
+*/
 pub type Input = (u32,u32);
 
 const BASIS : u64 = 2147483647;
-
+/*
 const CHANNEL_BOUND: usize = 100;
 const CHUNK_SIZE: usize = 100000;
 const MASK: u64 = 0xFFFF;
+*/
 
 type FnNext = fn(u64) -> u64;
 
@@ -29,7 +31,7 @@ fn task( input : Input, na : FnNext, nb : FnNext, n : i32 ) -> i32 {
     }
     count
 }
-
+/*
 fn generate(sender: mpsc::SyncSender<Vec<u64>>, input: u64, fn_next: FnNext, n: usize) {
     let mut i: usize = 0;
     let mut total_i: usize = 0;
@@ -72,6 +74,7 @@ pub fn task1_concurrent(input: Input) -> i32 {
     }
 
 }
+*/
 
 pub fn task1( input : Input ) -> i32 {
     let n = 40000000; // 40 millions
