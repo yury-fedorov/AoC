@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+extern crate regex;
+use regex::Regex;
 
 type Registers = HashMap<char,i32>;
 
@@ -23,7 +25,15 @@ type Command = fn ( &mut Registers, &mut Music ) -> i32;
 type Music = Vec<i32>;
 
 fn compile( line : &str ) -> Command {
-
+    lazy_static! {
+        static ref RE_SND: Regex = Regex::new(r"^snd (\w+)$").unwrap();         // snd X
+        static ref RE_SET: Regex = Regex::new(r"^set (\w+) (\w+)$").unwrap();   // set X Y
+        static ref RE_ADD: Regex = Regex::new(r"^add (\w+) (\w+)$").unwrap();   // add X Y
+        static ref RE_MUL: Regex = Regex::new(r"^mul (\w+) (\w+)$").unwrap();   // mul X Y
+        static ref RE_MOD: Regex = Regex::new(r"^mod (\w+) (\w+)$").unwrap();   // mod X Y
+        static ref RE_RCV: Regex = Regex::new(r"^rcv (\w+)$").unwrap();         // rcv X
+        static ref RE_JGZ: Regex = Regex::new(r"^jgz (\w+) (\w+)$").unwrap();   // jgz X Y
+    }
     |r, m | -1000
 }
 
