@@ -149,3 +149,12 @@ fn test_day16() {
     assert_eq!( "hmefajngplkidocb", day16::task1( &input, &dance ) );
     assert_eq!( "fbidepghmjklcnoa", day16::task2( &input, &dance ) );
 }
+
+#[test]
+fn test_day17() {
+    use crate::day17;
+    assert_eq!( 638, day17::task1( 3 ) );
+    let input = 337;
+    assert_eq!( 600, day17::task1( input ) );
+    assert_eq!( -1, day17::task2( input ) );
+}
