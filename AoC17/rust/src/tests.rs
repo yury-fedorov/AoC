@@ -174,3 +174,10 @@ fn test_day17() {
     if common::is_fast() { return } // it takes 31 minutes
     assert_eq!( 31220910, day17::task2( input ) );
 }
+
+#[test]
+fn test_day18() {
+    use crate::day18;
+    assert_eq!(  4, day18::task1( &common::input( "18/sample.txt" ) ) );
+    assert_eq!( -1, day18::task1( &common::input( "18/input.txt"  ) ) );
+}
