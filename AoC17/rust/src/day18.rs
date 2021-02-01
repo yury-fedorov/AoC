@@ -103,3 +103,7 @@ pub fn task1(script: &str) -> Int {
     }
     *music.last().unwrap() // too high: 8039
 }
+
+pub fn task2(script: &str) -> i32 {
+    0
+}
