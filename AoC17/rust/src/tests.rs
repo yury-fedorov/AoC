@@ -178,6 +178,6 @@ fn test_day17() {
 #[test]
 fn test_day18() {
     use crate::day18;
-    assert_eq!(  4, day18::task1( &common::input( "18/sample.txt" ) ) );
-    assert_eq!( -1, day18::task1( &common::input( "18/input.txt"  ) ) );
+    assert_eq!(    4, day18::task1( &common::input( "18/sample.txt" ) ) );
+    assert_eq!( 1187, day18::task1( &common::input( "18/input.txt"  ) ) );
 }

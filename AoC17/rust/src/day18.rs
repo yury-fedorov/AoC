@@ -101,5 +101,5 @@ pub fn task1(script: &str) -> Int {
         let di = f( &mut registers, &mut music );
         index += di;
     }
-    music[0] // too high: 8039
+    *music.last().unwrap() // too high: 8039
 }
