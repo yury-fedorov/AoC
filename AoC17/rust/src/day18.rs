@@ -91,19 +91,10 @@ fn compile( line : &str ) -> Command {
 
 pub fn task1(script: &str) -> Int {
     let code : Code = script.lines().into_iter().map( compile ).collect();
-    let n = code.len() as Int;
-    let mut registers : HashMap<char,Int> = HashMap::new();
     let mut m_in : Music = Vec::new();
     let mut m_out : Music = Vec::new();
-    let mut index :  Int = 0;
-    while index >= 0 && index < n {
-        let cmd = code.get(index as usize );
-        if cmd.is_none() { break; }
-        let f = cmd.unwrap();
-        let di = f( &mut registers, &mut m_in, &mut m_out );
-        index += di;
-    }
-    *m_out.last().unwrap() // too high: 8039
+    run_duet( 0, &mut m_in, &mut m_out, &code );
+    *m_out.last().unwrap()
 }
 
 fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
