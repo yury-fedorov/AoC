@@ -23,9 +23,11 @@ impl<Item> Tree<Item>
         }
     }
 
-    pub fn insert(&mut self, value: Item) {
+    /// inserting in position n means: insert after position n-1, and shift all elements that
+    /// have been in positions >=n before one position to the right.
+    pub fn insert(&mut self, position: usize, value: Item) {
         let top = mem::replace(&mut self.top, End);
-        let top = top.insert(value);
+        let top = top.insert(position, value);
         let top = top.make_black();
         mem::replace(&mut self.top, top);
     }
@@ -51,8 +53,8 @@ impl<A> FromIterator<A> for Tree<A>
         where T: IntoIterator<Item=A> {
 
         let mut tree = Tree::<A>::new();
-        for val in iter {
-            tree.insert(val);
+        for (val, pos) in iter.into_iter().zip((0..)) {
+            tree.insert(pos, val);
         }
 
         tree
@@ -79,6 +81,7 @@ enum Link<Item> {
     End,
     ColoredLink {
         color: Color,
+        left_children_count: usize,
         value: Item,
         left: Box<Link<Item>>,
         right: Box<Link<Item>>,
@@ -88,40 +91,43 @@ enum Link<Item> {
 impl<Item> Link<Item>
     where Item: PartialOrd {
 
-    fn insert(self, value: Item) -> Link<Item> {
+    /// inserting in position n means: insert after position n-1, and shift all elements that
+    /// have been in positions >=n before one position to the right.
+    fn insert(self, position: usize, value: Item) -> Link<Item> {
         match self {
-            End => ColoredLink {
-                color: Red,
-                value,
-                left: Box::new(End),
-                right: Box::new(End),
+            End => if position != 0 {
+                panic!("Inserting with position {} at End", position)
+            } else {
+                ColoredLink {
+                    color: Red,
+                    left_children_count: 0,
+                    value,
+                    left: Box::new(End),
+                    right: Box::new(End),
+                }
             },
             ColoredLink {
                 color,
+                left_children_count,
                 value: self_value,
                 left,
                 right
             } => {
                 (
-                    if value > self_value {
+                    if position > left_children_count {
                         ColoredLink {
                             color,
+                            left_children_count,
                             value: self_value,
                             left,
-                            right: Box::new(right.insert(value)),
+                            right: Box::new(right.insert(position - left_children_count - 1, value)),
                         }
-                    } else if value < self_value {
+                    } else /*if value <= self_value*/ {
                         ColoredLink {
                             color,
+                            left_children_count: left_children_count + 1,
                             value: self_value,
-                            left: Box::new(left.insert(value)),
-                            right,
-                        }
-                    } else {
-                        ColoredLink {
-                            color,
-                            value: self_value,
-                            left,
+                            left: Box::new(left.insert(position, value)),
                             right,
                         }
                     }
@@ -161,12 +167,14 @@ impl<Item> Link<Item>
         match self {
             End => End,
             ColoredLink {
+                left_children_count,
                 value,
                 left,
                 right,
                 ..
             } => ColoredLink {
                 color: Black,
+                left_children_count,
                 value,
                 left,
                 right
@@ -177,6 +185,7 @@ impl<Item> Link<Item>
     fn rotate_left(self) -> Link<Item> {
         if let ColoredLink {
             color,
+            left_children_count: top_left_children_count,
             value: top_value,
             left,
             right
@@ -184,6 +193,7 @@ impl<Item> Link<Item>
             let right = *right;
             if let ColoredLink {
                 color: Red,
+                left_children_count: right_left_children_count,
                 value: right_value,
                 left: middle,
                 right
@@ -191,9 +201,11 @@ impl<Item> Link<Item>
                 // construct the rotated link
                 ColoredLink {
                     color,
+                    left_children_count: top_left_children_count + right_left_children_count + 1,
                     value: right_value,
                     left: Box::new(ColoredLink {
                         color: Red,
+                        left_children_count: top_left_children_count,
                         value: top_value,
                         left,
                         right: middle,
@@ -205,6 +217,7 @@ impl<Item> Link<Item>
                 // because we already de-constructed it
                 ColoredLink {
                     color,
+                    left_children_count: top_left_children_count,
                     value: top_value,
                     left,
                     right: Box::new(right),
@@ -218,6 +231,7 @@ impl<Item> Link<Item>
     fn rotate_right(self) -> Link<Item> {
         if let ColoredLink {
             color,
+            left_children_count: top_left_children_count,
             value: top_value,
             left,
             right
@@ -225,6 +239,7 @@ impl<Item> Link<Item>
             let left = *left;
             if let ColoredLink {
                 color: Red,
+                left_children_count: left_left_children_count,
                 value: left_value,
                 left,
                 right: middle
@@ -234,10 +249,12 @@ impl<Item> Link<Item>
                         // construct the rotated link
                         ColoredLink {
                             color,
+                            left_children_count: left_left_children_count,
                             value: left_value,
                             left,
                             right: Box::new(ColoredLink {
                                 color: Red,
+                                left_children_count: top_left_children_count - 1 - left_left_children_count,
                                 value: top_value,
                                 left: middle,
                                 right,
@@ -249,9 +266,11 @@ impl<Item> Link<Item>
                         // because we already de-constructed it
                         ColoredLink {
                             color,
+                            left_children_count: top_left_children_count,
                             value: top_value,
                             left: Box::new(ColoredLink {
                                 color: Red,
+                                left_children_count: left_left_children_count,
                                 value: left_value,
                                 left,
                                 right: middle,
@@ -265,6 +284,7 @@ impl<Item> Link<Item>
                 // because we already de-constructed it
                 ColoredLink {
                     color,
+                    left_children_count: top_left_children_count,
                     value: top_value,
                     left: Box::new(left),
                     right,
@@ -278,6 +298,7 @@ impl<Item> Link<Item>
     fn color_flip(self) -> Link<Item> {
         if let ColoredLink {
             color: Black,
+            left_children_count,
             value,
             left,
             right
@@ -288,26 +309,31 @@ impl<Item> Link<Item>
             match (left, right) {
                 (ColoredLink {
                     color: Red,
+                    left_children_count: left_left_children_count,
                     value: left_value,
                     left: left_left,
                     right: left_right,
                 }, ColoredLink {
                     color: Red,
+                    left_children_count: right_left_children_count,
                     value: right_value,
                     left: right_left,
                     right: right_right,
                 }) => {
                     ColoredLink {
                         color: Red,
+                        left_children_count,
                         value,
                         left: Box::new(ColoredLink {
                             color: Black,
+                            left_children_count: left_left_children_count,
                             value: left_value,
                             left: left_left,
                             right: left_right,
                         }),
                         right: Box::new(ColoredLink {
                             color: Black,
+                            left_children_count: right_left_children_count,
                             value: right_value,
                             left: right_left,
                             right: right_right,
@@ -316,6 +342,7 @@ impl<Item> Link<Item>
                 }
                 (l, r) => ColoredLink {
                     color: Black,
+                    left_children_count,
                     value,
                     left: Box::new(l),
                     right: Box::new(r),
@@ -515,6 +542,7 @@ impl<Item> IntoIter<Item> {
                     done = true;
                 },
                 ColoredLink{
+                    left_children_count,
                     value,
                     left,
                     right,
@@ -522,6 +550,7 @@ impl<Item> IntoIter<Item> {
                 } => {
                     let vector_elem = ColoredLink {
                         color: Black, // irrelevant
+                        left_children_count,
                         value,
                         left: Box::new(End), // we want to own the original left, so we put an End here instead
                         right
@@ -560,6 +589,7 @@ impl<Item> Iterator for IntoIter<Item> {
                             done = true;
                         },
                         ColoredLink{
+                            left_children_count,
                             value,
                             left,
                             right,
@@ -567,6 +597,7 @@ impl<Item> Iterator for IntoIter<Item> {
                         } => {
                             let vector_elem = ColoredLink {
                                 color: Black, // irrelevant
+                                left_children_count,
                                 value,
                                 left: Box::new(End), // we want to own the original left, so we put an End here instead
                                 right
@@ -589,5 +620,5 @@ mod tests {
     use super::{Tree, Link};
     use super::Link::{ColoredLink, End};
     use super::Color::{Black, Red};
-    
+
 }
