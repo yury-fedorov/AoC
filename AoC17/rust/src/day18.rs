@@ -89,8 +89,11 @@ fn compile( line : &str ) -> Command {
     panic!(line.to_string());
 }
 
-pub fn task1(script: &str) -> Int {
-    let code : Code = script.lines().into_iter().map( compile ).collect();
+pub fn to_code(script: &str) -> Code {
+    script.lines().into_iter().map( compile ).collect()
+}
+
+pub fn task1(code: &Code) -> Int {
     let mut m_in : Music = Vec::new();
     let mut m_out : Music = Vec::new();
     run_duet( 0, &mut m_in, &mut m_out, &code );
@@ -111,7 +114,6 @@ fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
     }
 }
 
-pub fn task2(script: &str) -> i32 {
-
+pub fn task2(code: &Code) -> i32 {
     0
 }
