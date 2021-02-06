@@ -9,6 +9,7 @@ use std::ops::Range;
 use std::cmp;
 use std::mem;
 use std::iter::FromIterator;
+use std::ops::{Index, Deref};
 
 pub struct Tree<Item> {
     top: Link<Item>
@@ -53,7 +54,7 @@ impl<A> FromIterator<A> for Tree<A>
         where T: IntoIterator<Item=A> {
 
         let mut tree = Tree::<A>::new();
-        for (val, pos) in iter.into_iter().zip((0..)) {
+        for (val, pos) in iter.into_iter().zip(0..) {
             tree.insert(pos, val);
         }
 
@@ -67,6 +68,14 @@ impl<A> IntoIterator for Tree<A> {
 
     fn into_iter(self) -> IntoIter<A> {
         IntoIter::new(self.top)
+    }
+}
+
+impl<A> Index<usize> for Tree<A> {
+    type Output = A;
+
+    fn index(&self, index: usize) -> &A {
+        &self.top[index]
     }
 }
 
@@ -457,6 +466,31 @@ impl<Item> Link<Item>
     }
 }
 
+impl<A> Index<usize> for Link<A> {
+    type Output = A;
+
+    fn index(&self, index: usize) -> &A {
+        match &self {
+            End => panic!("Trying to index End with {}", index),
+            ColoredLink {
+                value,
+                left_children_count,
+                left,
+                right,
+                ..
+            } => {
+                if index < *left_children_count {
+                    &left[index]
+                } else if index == *left_children_count {
+                    value
+                } else {
+                    &right[index - left_children_count - 1]
+                }
+            }
+        }
+    }
+}
+
 pub struct Iter<'a, Item> {
   link_path: Vec<&'a Link<Item>>
 }
@@ -618,7 +652,32 @@ impl<Item> Iterator for IntoIter<Item> {
 #[cfg(test)]
 mod tests {
     use super::{Tree, Link};
-    use super::Link::{ColoredLink, End};
-    use super::Color::{Black, Red};
+
+    #[test]
+    fn test_simple_iterator() {
+        let mut bst: Tree<i32> = Tree::new();
+        bst.insert(0, 1); // 1
+        bst.insert(1, 2); // 1, 2
+        bst.insert(1, 3); // 1, 3, 2
+        bst.insert(0, 4); // 4, 1, 3, 2
+
+        let result: Vec<i32> = bst.into_iter().collect();
+
+        assert_eq!(result, vec!(4, 1, 3, 2));
+    }
+
+    #[test]
+    fn test_simple_index() {
+        let mut bst: Tree<i32> = Tree::new();
+        bst.insert(0, 1); // 1
+        bst.insert(1, 2); // 1, 2
+        bst.insert(1, 3); // 1, 3, 2
+        bst.insert(0, 4); // 4, 1, 3, 2
+
+        assert_eq!(bst[0], 4);
+        assert_eq!(bst[1], 1);
+        assert_eq!(bst[2], 3);
+        assert_eq!(bst[3], 2);
+    }
 
 }
