@@ -1,5 +1,6 @@
-use super::{Instruction, Register, Registers, Value, ValueArgument, Argument, RegisterArgument};
+use super::{Instruction, Register, Registers, Value, ValueArgument, Argument, RegisterArgument, parse_instruction};
 use super::Instruction::*;
+use crate::common;
 
 pub(super) struct Duet {
     instructions: Vec<Instruction>,
@@ -77,4 +78,20 @@ impl Duet {
             }
         }
     }
+}
+
+pub fn task1(path: &str) -> Value {
+    let text = common::input(path);
+    let instructions: Result<Vec<Instruction>, pom::Error> = text
+        .lines()
+        .into_iter()
+        .map(|line| parse_instruction().parse(line.as_bytes()))
+        .collect();
+
+    let instructions = instructions.unwrap();
+    let mut duet = Duet::new(instructions);
+
+    std::iter::from_fn(|| Some(duet.step()))
+        .skip_while(|o| o.is_none())
+        .next().unwrap().unwrap()
 }

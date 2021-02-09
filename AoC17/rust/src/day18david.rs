@@ -5,6 +5,7 @@ use std::ops::{Index, IndexMut};
 use std::str::{FromStr, from_utf8};
 use crate::day18david::Argument::ValueArgument;
 use parsing::parse_instruction;
+pub use task1::task1;
 
 type Register = u8;
 type Value = i64;
@@ -56,22 +57,6 @@ impl IndexMut<Register> for Registers {
     fn index_mut(&mut self, index: Register) -> &mut Value {
         &mut self.inner[index as usize - 'a' as usize]
     }
-}
-
-pub fn task1(path: &str) -> Value {
-    let text = common::input(path);
-    let instructions: Result<Vec<Instruction>, pom::Error> = text
-        .lines()
-        .into_iter()
-        .map(|line| parse_instruction().parse(line.as_bytes()))
-        .collect();
-
-    let instructions = instructions.unwrap();
-    let mut duet = task1::Duet::new(instructions);
-
-    std::iter::from_fn(|| Some(duet.step()))
-        .skip_while(|o| o.is_none())
-        .next().unwrap().unwrap()
 }
 
 #[cfg(test)]
