@@ -1,16 +1,18 @@
 mod parsing;
 mod task1;
+mod task2;
 
 use std::ops::{Index, IndexMut};
 use std::str::{FromStr, from_utf8};
 use crate::day18david::Argument::ValueArgument;
 use parsing::parse_instruction;
 pub use task1::task1;
+pub use task2::task2;
 
 type Register = u8;
 type Value = i64;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum Argument {
     RegisterArgument(Register),
     ValueArgument(Value),
@@ -18,14 +20,14 @@ enum Argument {
 
 use Argument::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum Instruction {
     Snd(Argument),
     Set(Register, Argument),
     Add(Register, Argument),
     Mul(Register, Argument),
     Mod(Register, Argument),
-    Rcv(Argument),
+    Rcv(Register),
     Jgz(Argument, Argument),
 }
 
@@ -67,16 +69,30 @@ mod test {
     use super::parsing::parse_instruction;
 
     #[test]
-    fn test_sample() {
+    fn test_tassk1_sample() {
         let result = task1("18/sample.txt");
 
         assert_eq!(result, 4)
     }
 
     #[test]
-    fn test_input_david() {
+    fn test_task1_input_david() {
         let result = task1("18/input_david.txt");
 
         assert_eq!(result, 8600)
+    }
+
+    #[test]
+    fn test_task2_sample2() {
+        let result = task2("18/sample2.txt");
+
+        assert_eq!(result, 3)
+    }
+
+    #[test]
+    fn test_task2_input_david() {
+        let result = task2("18/input_david.txt");
+
+        assert_eq!(result, 7239)
     }
 }

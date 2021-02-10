@@ -28,14 +28,14 @@ fn parse_argument<'a>() -> Parser<'a, u8, Argument> {
     parse_register_argument() | parse_value_argument()
 }
 
-fn parse_snd_rcv<'a>() -> Parser<'a, u8, Instruction> {
-    fn parse_instr_arg<'a>(instruction_token: &'a [u8], constructor: fn(Argument) -> Instruction) -> Parser<'a, u8, Instruction> {
-        (seq(instruction_token) + is_a(char_class::space) + parse_argument())
-            .map(move |(_, argument)| constructor(argument))
-    }
+fn parse_snd<'a>() -> Parser<'a, u8, Instruction> {
+    (seq(b"snd") + is_a(char_class::space) + parse_argument())
+        .map(move |(_, arg)| Snd(arg))
+}
 
-    parse_instr_arg(b"snd", Snd) |
-        parse_instr_arg(b"rcv", Rcv)
+fn parse_rcv<'a>() -> Parser<'a, u8, Instruction> {
+    (seq(b"rcv") + is_a(char_class::space) + parse_register())
+        .map(move |(_, reg)| Rcv(reg))
 }
 
 fn parse_add_set_mul_mod<'a>() -> Parser<'a, u8, Instruction> {
@@ -56,7 +56,7 @@ fn parse_jgz<'a>() -> Parser<'a, u8, Instruction> {
 }
 
 pub(super) fn parse_instruction<'a>() -> Parser<'a, u8, Instruction> {
-    parse_snd_rcv() | parse_add_set_mul_mod() | parse_jgz()
+    parse_snd() | parse_rcv() | parse_add_set_mul_mod() | parse_jgz()
 }
 
 #[cfg(test)]

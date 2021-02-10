@@ -59,8 +59,8 @@ impl Duet {
                 self.instruction_pointer += 1;
                 None
             },
-            Rcv(arg) => {
-                if self.eval(arg) != 0 {
+            Rcv(reg) => {
+                if self.registers[*reg] != 0 {
                     self.instruction_pointer += 1;
                     self.sound
                 } else {
