@@ -96,6 +96,15 @@ impl Direction {
             Left => Down,
         }
     }
+
+    fn apply(self, coord: Coord) -> Coord {
+        match self {
+            Up => Coord {x: coord.x, y: coord.y - 1},
+            Right => Coord {x: coord.x + 1, y: coord.y},
+            Left => Coord {x: coord.x - 1, y: coord.y},
+            Down => Coord {x: coord.x, y: coord.y + 1},
+        }
+    }
 }
 
 fn fits_direction(elem: Element) -> bool {
@@ -135,41 +144,16 @@ impl<'a> State<'a> {
         }
     }
 
-    fn ahead_coord(& self) -> Coord {
-        match self.direction {
-            Up => Coord {x: self.coord.x, y: self.coord.y - 1},
-            Right => Coord {x: self.coord.x + 1, y: self.coord.y},
-            Left => Coord {x: self.coord.x - 1, y: self.coord.y},
-            Down => Coord {x: self.coord.x, y: self.coord.y + 1},
-        }
-    }
-
-    fn turn_right_coord(& self) -> Coord {
-        match self.direction {
-            Up => Coord {x: self.coord.x + 1, y: self.coord.y},
-            Right => Coord {x: self.coord.x, y: self.coord.y + 1},
-            Left => Coord {x: self.coord.x, y: self.coord.y - 1},
-            Down => Coord {x: self.coord.x - 1, y: self.coord.y},
-        }
-    }
-
-    fn turn_left_coord(& self) -> Coord {
-        match self.direction {
-            Up => Coord {x: self.coord.x - 1, y: self.coord.y},
-            Right => Coord {x: self.coord.x, y: self.coord.y - 1},
-            Left => Coord {x: self.coord.x, y: self.coord.y + 1},
-            Down => Coord {x: self.coord.x + 1, y: self.coord.y},
-        }
-    }
-
     fn step(&mut self) -> Option<()> {
         let element = self.routing_diagram[self.coord];
         match element {
             Cross => {
-                let turn_right_coord = self.turn_right_coord();
                 let turn_right_direction = self.direction.turn_right();
-                let turn_left_coord = self.turn_left_coord();
+                let turn_right_coord = turn_right_direction.apply(self.coord);
+
                 let turn_left_direction = self.direction.turn_left();
+                let turn_left_coord = turn_left_direction.apply(self.coord);
+
                 if fits_direction_after_cross(turn_right_direction, self.routing_diagram[turn_right_coord]) {
                     self.coord = turn_right_coord;
                     self.direction = turn_right_direction;
@@ -183,7 +167,7 @@ impl<'a> State<'a> {
                 }
             },
             Horizontal | Vertical | Letter(_) => {
-                let ahead_coord = self.ahead_coord();
+                let ahead_coord = self.direction.apply(self.coord);
                 if fits_direction( self.routing_diagram[ahead_coord]) {
                     self.coord = ahead_coord;
                     Some(())
@@ -224,19 +208,38 @@ pub fn task1(path: &str) -> String {
     state.filter_map(identity).collect()
 }
 
+pub fn task2(path: &str) -> usize {
+    let text = common::input(path);
+    let routing_diagram = RoutingDiagram::new(&text);
+    let state = State::new(&routing_diagram);
+    state.count() + 1
+}
+
 #[cfg(test)]
 mod test {
-    use super::task1;
+    use super::{task1, task2};
 
     #[test]
-    fn test_sample() {
+    fn test_sample_task1() {
         let result = task1("19/sample.txt");
         assert_eq!(result, "ABCDEF");
     }
 
     #[test]
-    fn test_input() {
+    fn test_sample_task2() {
+        let result = task2("19/sample.txt");
+        assert_eq!(result, 38);
+    }
+
+    #[test]
+    fn test_input_task1() {
         let result = task1("19/input_david.txt");
         assert_eq!(result, "FEZDNIVJWT");
+    }
+
+    #[test]
+    fn test_input_task2() {
+        let result = task2("19/input_david.txt");
+        assert_eq!(result, 17200);
     }
 }
