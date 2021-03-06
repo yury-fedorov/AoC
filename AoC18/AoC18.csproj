@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <!-- a lot of warnings <Nullable>enable</Nullable> -->
+    <TargetFramework>net6</TargetFramework>
+    <!-- a lot of warnings -->
+    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
