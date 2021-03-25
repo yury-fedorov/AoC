@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 extern crate regex;
 use regex::Regex;
+use std::thread;
+use std::sync::mpsc;
+use std::sync::mpsc::{Receiver, Sender, channel};
 
 type Int = i64;
 
@@ -24,7 +27,7 @@ fn get_v( value :&str, registers : &Registers ) -> Int {
     get_r( registers, to_r( value ) )
 }
 
-type Command = Box< dyn Fn ( &mut Registers, &mut Music, &mut Music ) -> Int >;
+type Command = Box< dyn Fn ( &mut Registers, &Sender<Int>, &Receiver<Int> ) -> Int >;
 type Code = Vec<Command>;
 type Music = Vec<Int>;
 
@@ -46,43 +49,43 @@ fn compile( line : &str ) -> Command {
     }
     for cap in RE_SND.captures_iter( line ) {
         let value = cap[1].to_string();
-        return Box::new( move | r, _mi, mo | {
-            mo.push( get_v( &value, r ) ); 1 } )
+        return Box::new( move | r, s, _r | {
+            s.send( get_v( &value, r ) ); 1 } )
     }
     for cap in RE_SET.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
-        return Box::new( move |r, _mi, _mo |
+        return Box::new( move |r, _s, _r |
             { set_r( r, a, get_v( &b, r ) ); 1 } )
     }
     for cap in RE_ADD.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
-        return Box::new( move |r, _mi, _mo |
+        return Box::new( move |r, _s, _r |
             op_r_v( a, &b, |a,b| a + b, r ) )
     }
     for cap in RE_MUL.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
-        return Box::new( move |r, _mi, _mo |
+        return Box::new( move |r, _s, _r |
             op_r_v( a, &b, |a,b| a * b, r ) )
     }
     for cap in RE_MOD.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
-        return Box::new( move |r, _mi, _mo |
+        return Box::new( move |r, _s, _r |
             op_r_v( a, &b, |a,b| a % b, r ) )
     }
     for cap in RE_RCV.captures_iter( line ) {
         let a = to_r(&cap[1] );
-        return Box::new( move |r, _mi, _mo|
+        return Box::new( move |r, _s, _r|
              { if get_r( r, a ) != 0 { return 1000000 }
                1 } )
     }
     for cap in RE_JGZ.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
-        return Box::new( move |r, _mi, _mo |
+        return Box::new( move |r, _s, _r |
             { if get_r( r, a ) > 0 { return get_v( &b, r ) }
                 1 } )
     }
@@ -94,13 +97,17 @@ pub fn to_code(script: &str) -> Code {
 }
 
 pub fn task1(code: &Code) -> Int {
-    let mut m_in : Music = Vec::new();
-    let mut m_out : Music = Vec::new();
-    run_duet( 0, &mut m_in, &mut m_out, &code );
-    *m_out.last().unwrap()
+    let (sender, reciver) = channel();
+    run_duet( 0, &sender, &reciver, &code );
+    reciver.iter().last().unwrap()
 }
 
-fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
+fn run_duet_( p_id: Int, m_out : &Sender<Int>, m_in : &Receiver<Int>, script : String ) {
+    let code = to_code(&script);
+    run_duet( p_id, m_out, m_in, &code );
+}
+
+fn run_duet( p_id: Int, m_out : &Sender<Int>, m_in : &Receiver<Int>, code : &Code ) {
     let mut registers : HashMap<char,Int> = HashMap::new();
     registers.insert( 'p', p_id );
     let n = code.len() as Int;
@@ -109,11 +116,25 @@ fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
         let cmd = code.get(index as usize );
         if cmd.is_none() { break; }
         let f = cmd.unwrap();
-        let di = f( &mut registers, m_in, m_out );
+        let di = f( &mut registers, m_out, m_in );
         index += di;
     }
 }
 
-pub fn task2(code: &Code) -> i32 {
+pub fn task2(script: &str) -> usize {
+    // let mut m0 : Music = Vec::new(); // p0 in, p1 out
+    // let mut m1 : Music = Vec::new(); // p1 in, p0 out
+
+    let (sender0, receiver1) = mpsc::channel();
+    let (sender1, receiver0) = mpsc::channel();
+    // let (tx2, rx2) = mpsc::channel(); // (p_id, val)
+    let s1 = script.clone().to_string();
+
+    let handle = thread::spawn( move ||
+         run_duet_(0, &sender0, &receiver0, s1) );
+    run_duet(1, &sender1, &receiver1, &to_code( script ) );
+    // how many times did program 1 send a value?
+    // m0 -> p1 out
+    handle.join().unwrap(); // wait till the end of the thread
     0
 }

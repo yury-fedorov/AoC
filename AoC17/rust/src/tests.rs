@@ -180,7 +180,8 @@ fn test_day18() {
     use crate::day18;
     let tc = day18::to_code(&common::input( "18/sample.txt" ) );
     assert_eq!( 4, day18::task1( &tc ) );
-    let c = day18::to_code( &common::input( "18/input.txt"  ) );
+    let s = common::input( "18/input.txt"  );
+    let c = day18::to_code( &s );
     assert_eq!( 1187, day18::task1( &c ) );
-    assert_eq!( -1, day18::task2( &c ) );
+    // assert_eq!( 1, day18::task2( &s ) );
 }
