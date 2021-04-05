@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -35,17 +36,19 @@ long long answer2( const vector<int> & numbers ) {
     throw domain_error( "answer is not found" );
 }
 
-int main() {
-    const bool isFirstAnswer = true;
-
-    ifstream f("input.txt");
+TEST_CASE( "Day01", "[01]" ) {
+    ifstream f("01/input.txt");
     vector<int> numbers;
     string line;
     while (getline(f, line)) {
         numbers.push_back( stoi(line) );
     }
 
-    const auto answer = isFirstAnswer ? answer1(numbers) : answer2(numbers);
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " <<  answer << endl;
-    return 0;
+    SECTION( "01-1" ) {
+        REQUIRE( answer1(numbers) == 744475 );
+    }
+
+    SECTION( "01-2" ) {
+        REQUIRE( answer2(numbers) == 70276940 );
+    }
 }
