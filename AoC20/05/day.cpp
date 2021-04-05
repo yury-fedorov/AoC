@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <climits>
 #include <string_view>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -32,12 +33,11 @@ int makeSeatId( const string_view rowCode, const string_view columnCode ) {
     return ( ( row * 8 ) + column );
 }
 
-int main() {
-
+TEST_CASE( "Day05", "[05]" ) {
     // cout << codeToNumber("FBFBBFF", 'B', 'F') << endl;
     // cout << codeToNumber("RLR", 'R', 'L') << endl;
 
-    ifstream f("input.txt");
+    ifstream f("05/input.txt");
 
     auto maxSeatId = INT_MIN;
     auto minSeatId = INT_MAX;
@@ -60,14 +60,13 @@ int main() {
         }
     }
 
-    cout << "Answer 1: " <<  maxSeatId << endl;
+    REQUIRE(998 == maxSeatId);
 
-    cout << "Answer 2: " << endl;
     for ( int id = minSeatId; id < maxSeatId; id++ ) {
         if ( seats.find( id ) == seats.end() ) {
-            cout << id << endl;
+            REQUIRE(676 == id);
+            return;
         }
     }
-
-    return 0;
+    FAIL();
 }
