@@ -5,5 +5,5 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(Catch2 REQUIRED)
 # add_executable(aoc20 test.cpp 01/day.cpp 02/day.cpp 03/day.cpp 05/day.cpp)
-add_executable(aoc20 test.cpp 01/day.cpp)
+add_executable(aoc20 test.cpp 01/day.cpp 02/day.cpp)
 target_link_libraries(aoc20 PRIVATE Catch2::Catch2)

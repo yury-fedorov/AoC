@@ -2,15 +2,14 @@
 #include <algorithm>
 #include <fstream>
 #include <regex>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-int main() {
-
-    const bool isFirstAnswer = false;
+auto answer( const bool isFirstAnswer ) {
     auto validPasswordCount = 0;
 
-    ifstream f("input.txt");
+    ifstream f("02/input.txt");
     regex re("(\\d+)-(\\d+) ([a-z]): ([a-z]+)");
     string line;
     while (getline(f, line)) {
@@ -27,11 +26,14 @@ int main() {
                 const auto match_at = [symbol, pwd](int oneBasedIndex) { return symbol == pwd[oneBasedIndex-1]; };
                 validPasswordCount += ( match_at(min) + match_at(max) ) == 1;
             }
-            // cout << min << " - " << max << " " << symbol << " : " << pwd << endl;
         } else {
             cerr << "Unexpected line: " << line << endl;
         }
     }
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << validPasswordCount << endl;
-    return 0;
+    return validPasswordCount;
+}
+
+TEST_CASE( "Day02", "[02]" ) {
+    REQUIRE( answer(true)  == 422 );
+    REQUIRE( answer(false) == 451 );
 }
