@@ -3,6 +3,7 @@
 #include <set>
 #include <fstream>
 #include <sstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -50,8 +51,8 @@ bool isNice2( const string & s ) {
     return false;
 }
 
-int main() {
-    ifstream f("input.txt");
+TEST_CASE( "Day05", "[05]" ) {
+    ifstream f("05/input.txt");
     
     auto niceCount(0);
     auto niceCount2(0);
@@ -62,10 +63,8 @@ int main() {
     }
 
     // Question 1
-    cout << "Answer 1: " << niceCount << endl;
+    REQUIRE( niceCount == 236 );
 
     // Question 2
-    cout << "Answer 2: " << niceCount2 << endl;
-
-    return 0;
+    REQUIRE( niceCount2 == 51 );
 }
