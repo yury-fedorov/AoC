@@ -2,11 +2,12 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-int main() {
-    ifstream f("input.txt");
+TEST_CASE( "Day02", "[02]" ) {
+    ifstream f("02/input.txt");
 
     long paper = 0;
     long ribbon = 0;
@@ -23,10 +24,8 @@ int main() {
     }
     
     // Question 1
-    cout << "Answer 1: " << paper << endl;
+    REQUIRE( paper == 1598415 );
 
     // Question 2
-    cout << "Answer 2: " << ribbon << endl;
-
-    return 0;
+    REQUIRE( ribbon == 3812909 );
 }

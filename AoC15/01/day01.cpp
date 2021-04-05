@@ -7,7 +7,7 @@
 using namespace std;
 
 TEST_CASE( "Day01", "[01]" ) {
-    ifstream f("input.txt");
+    ifstream f("01/input.txt");
     stringstream buffer;
     buffer << f.rdbuf();
     const auto s = buffer.str();
@@ -28,9 +28,9 @@ TEST_CASE( "Day01", "[01]" ) {
         } 
     }
     // Question 1 - Final floor:
-    REQUIRE( floor == 0 );
+    REQUIRE( floor == 138 );
 
     // Question 2 - First time in basement:
-    REQUIRE( position == 1 );
+    REQUIRE( position == 1771 );
 }
 
