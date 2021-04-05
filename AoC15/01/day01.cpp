@@ -2,16 +2,17 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-int main() {
+TEST_CASE( "Day01", "[01]" ) {
     ifstream f("input.txt");
     stringstream buffer;
     buffer << f.rdbuf();
     const auto s = buffer.str();
     // const string s = "()())";
-    
+
     auto floor = 0;
     auto position = 1;
     bool isPositionFound = false;
@@ -26,11 +27,10 @@ int main() {
             position += ( isPositionFound ? 0 : 1 );
         } 
     }
-    // Question 1
-    cout << "Final floor: " << floor << endl;
+    // Question 1 - Final floor:
+    REQUIRE( floor == 0 );
 
-    // Question 2
-    cout << "First time in basement: " << position << endl;
-
-    return 0;
+    // Question 2 - First time in basement:
+    REQUIRE( position == 1 );
 }
+
