@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <fstream>
 #include <regex>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -85,12 +86,11 @@ bool isValidValues( const Passport & passport ) {
     return true;
 }
 
-int main() {
-
+TEST_CASE( "Day04", "[04]" ) {
     vector<Passport> passports;
     Passport curPassport; // due to multiline case
 
-    ifstream f("input.txt");
+    ifstream f("04/input.txt");
     regex re("(\\w+):([^\\s]+)");
     string line;
     while (getline(f, line)) {
@@ -116,10 +116,8 @@ int main() {
     }
 
     const int validCount = count_if( passports.cbegin(), passports.cend(), isValid );
-    cout << "Answer 1: " << validCount << endl; 
+    REQUIRE(230 == validCount);
 
     const int validCount2 = count_if( passports.cbegin(), passports.cend(), isValidValues );
-    cout << "Answer 2: " << validCount2 << endl;
-
-    return 0;
+    REQUIRE(156 == validCount2);
 }
