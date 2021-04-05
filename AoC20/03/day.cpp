@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -20,8 +21,8 @@ auto countTrees(const vector<string> & inputMap, int dx, int dy) {
      return treeCount;
 }
 
-int main() {
-    ifstream f("input.txt");
+TEST_CASE( "Day03", "[03]" ) {
+    ifstream f("03/input.txt");
     vector<string> inputMap;
     string line;
     while (getline(f, line)) {
@@ -33,12 +34,9 @@ int main() {
     const auto c51 = countTrees(inputMap, 5, 1);
     const auto c71 = countTrees(inputMap, 7, 1);
     const auto c12 = countTrees(inputMap, 1, 2);
-
-    cout << "Answer 1: " << c31 << endl;
+    REQUIRE( c31 == 299 );
 
     long long result = c11 * c31;
     result *= c51 * c71 * c12;
-    cout << "Answer 2: " << result << endl; // too low
-
-    return 0;
+    REQUIRE( result == 3621285278 );
 }
