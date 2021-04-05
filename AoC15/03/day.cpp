@@ -2,11 +2,12 @@
 #include <set>
 #include <fstream>
 #include <sstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-int main() {
-ifstream f("input.txt");
+TEST_CASE( "Day03", "[03]" ) {
+    ifstream f("03/input.txt");
     stringstream buffer;
     buffer << f.rdbuf();
     const auto s = buffer.str();
@@ -28,7 +29,7 @@ ifstream f("input.txt");
     }
 
     // Question 1
-    cout << "Answer 1: " << houses.size() << endl;
+    REQUIRE( houses.size() == 2081 );
 
     x = 0;
     y = 0;
@@ -51,7 +52,5 @@ ifstream f("input.txt");
     }
 
     // Question 2
-    cout << "Answer 2: " << houses.size() << endl;
-
-    return 0;
+    REQUIRE( houses.size() == 2341 );
 }
