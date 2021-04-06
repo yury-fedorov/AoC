@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <climits>
 #include <cmath>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -71,13 +72,11 @@ void setMemory( Memory & mem, const string & mask, const Int a, const Int v ) {
     }
 }
 
-int main() {
-    const bool isFirstAnswer = true;
-
+auto day14(const bool isFirstAnswer) {
     string mask;
     Memory mem;
 
-    ifstream f("input.txt");
+    ifstream f("14/input.txt");
 
     string line;
     // mask = 1000XX0X0X0X0011XX11110110X101101X01
@@ -112,12 +111,13 @@ int main() {
     }
     // XXX accomulate ?
     Int sum = 0;
-    for ( const auto [ a, v ] : mem ) {
+    for ( const auto & [ a, v ] : mem ) {
         sum += v;
     }
+    return sum;
+}
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << sum << endl;
-    assert( sum == ( isFirstAnswer ? 13105044880745 : 3505392154485 ) );
-
-    return 0;
+TEST_CASE( "Day14", "[14]" ) {
+    REQUIRE( 13105044880745 == day14(true)  );
+    REQUIRE( 3505392154485  == day14(false) );
 }
