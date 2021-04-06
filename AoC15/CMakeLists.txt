@@ -13,7 +13,7 @@ endif()
 
 find_package(Catch2 REQUIRED)
 add_executable(aoc15 test.cpp 01/day.cpp 02/day.cpp 03/day.cpp 05/day.cpp 06/day.cpp 07/day.cpp 08/day.cpp 09/day.cpp 10/day.cpp
-    11/day.cpp 12/day.cpp 13/day.cpp 14/day.cpp 15/day.cpp 16/day.cpp 17/day.cpp 18/day.cpp)
+    11/day.cpp 12/day.cpp 13/day.cpp 14/day.cpp 15/day.cpp 16/day.cpp 17/day.cpp 18/day.cpp 19/day.cpp)
 
 
 target_link_libraries(aoc15 PRIVATE Catch2::Catch2)
