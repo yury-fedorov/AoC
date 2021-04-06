@@ -6,6 +6,7 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -46,9 +47,9 @@ bool matchRule( const int fieldValue, const Rule & rule ) {
     return false;
 }
 
-bool removeFieldFromOptions( const string field, int validField, ValidFields & fields ) {
+bool removeFieldFromOptions( const string field, size_t validField, ValidFields & fields ) {
     bool isErased = false;
-    for ( int fi = 0; fi < fields.size(); fi++ ) {
+    for ( size_t fi = 0; fi < fields.size(); fi++ ) {
         if ( fi != validField ) {
             isErased |= fields[fi].erase( field ) > 0;
             // could happen that at this point this set is only one again
@@ -68,7 +69,7 @@ bool afterFieldRemoved( int fieldIndex, ValidFields & fields ) {
 
 bool clean( ValidFields & fields ) {
     bool isErased = false;
-    for ( int f = 0; f < fields.size(); f++ ) {
+    for ( size_t f = 0; f < fields.size(); f++ ) {
         const int n = fields[f].size();
         assert( n > 0 );
         if ( n == 1 ) 
@@ -77,10 +78,11 @@ bool clean( ValidFields & fields ) {
     return isErased;
 }
 
-int main() {
+
+TEST_CASE( "Day16", "[16]" ) {
     Rules rules;
 
-    ifstream f("input");
+    ifstream f("16/input");
     string line;
 
     const regex reRule("^([a-z ]+): (\\d+)-(\\d+) or (\\d+)-(\\d+)");
@@ -112,7 +114,7 @@ int main() {
         bool isGoodTicket = true;
         for ( const auto & f : t ) {
             bool isGoodField = false;
-            for ( const auto [name,rule] : rules ) {
+            for ( const auto & [name,rule] : rules ) {
                 isGoodField = matchRule(f, rule);
                 if ( isGoodField ) break;
             }
@@ -124,13 +126,12 @@ int main() {
         if (isGoodTicket) goodTickets.push_back(t);
     }
 
-    cout << "Answer 1: " << ticketScanningErrorRate << endl;
-    assert(ticketScanningErrorRate == 24980);
+    REQUIRE(ticketScanningErrorRate == 24980);
 
     // part 2
     const int fieldCount = myTicket.size();
     set<string> fullSet;
-    for ( const auto [name,rule] : rules ) {
+    for ( const auto & [name,rule] : rules ) {
         fullSet.insert(name);
     }
     
@@ -145,10 +146,9 @@ int main() {
                 if ( removeFieldFromOptions( *valid[f].begin(), f, valid ) ) {
                     while ( clean(valid) ) {}
                 }
-                
             }
 
-            for ( const auto [name,rule] : rules ) {
+            for ( const auto & [name,rule] : rules ) {
                 if ( !matchRule(t.at(f), rule) ) {
                     valid[f].erase(name);
                     if ( afterFieldRemoved( f, valid ) ) {
@@ -165,12 +165,9 @@ int main() {
         assert( s.size() == 1 );
         const string & name = *s.begin();
         if ( name.find("departure") == 0 ) {
-            cout << name << " = " << myTicket[i] << endl;
+            // cout << name << " = " << myTicket[i] << endl;
             answer2 *= myTicket[i];
         }
     }
-
-    cout << "Answer 2: " <<  answer2  << endl;
-    assert(answer2 == 809376774329);
-    return 0;
+    REQUIRE(answer2 == 809376774329);
 }
