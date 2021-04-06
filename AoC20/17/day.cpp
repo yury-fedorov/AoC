@@ -3,13 +3,12 @@
 #include <fstream>
 #include <assert.h>
 #include <tuple>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
 typedef tuple<int,int,int,int> Point;
 typedef set<Point> Config; 
-
-const bool isFirstAnswer = true;
 
 inline int & gx( Point & p ) { return get<0>(p); }
 inline int & gy( Point & p ) { return get<1>(p); }
@@ -35,14 +34,13 @@ int countOn( const Config & c, const Point & p ) {
             }
         }
     }
-    assert(count <= ( isFirstAnswer ? 26 : 80 ) );
     return count;
 }
 
-int main() {
+auto day17(const bool isFirstAnswer) {
     Config configOn;
 
-    ifstream f("input");
+    ifstream f("17/input");
     string line;
     for ( int y = 0; getline(f, line); y++ ) {
         for ( int x = line.length(); --x >= 0; ) {
@@ -52,7 +50,7 @@ int main() {
     }
 
     for ( int cycle = 1; cycle <= 6; cycle++ ) {
-        cout << cycle << " " << configOn.size() << endl;
+        // cout << cycle << " " << configOn.size() << endl;
         Point mi { *configOn.cbegin() };
         Point ma { mi };
         for ( const auto & p : configOn ) {
@@ -86,8 +84,10 @@ int main() {
         }
         configOn = newConfig;
     }
-    const auto answer = configOn.size();
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << answer << endl;
-    assert( answer == ( isFirstAnswer ? 286 : 960 ) );
-    return 0;
+    return configOn.size();
+}
+
+TEST_CASE( "Day17", "[17]" ) {
+    REQUIRE( 286 == day17(true) );
+    REQUIRE( 960 == day17(false) );
 }
