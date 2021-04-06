@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <climits>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -138,19 +139,14 @@ Int minManaToWinPlayer( const bool isFirst, HitPoints hitPoints, const int bossD
     }
 }
 
-int main() {
-    // cout << minManaToWinPlayer( {10, 13}, 8, 250, Spells(), PLAYER, 0 ) << endl << endl; // sample 1
-    // cout << minManaToWinPlayer( {10, 14}, 8, 250, Spells(), PLAYER, 0 ) << endl << endl; // sample 2
+TEST_CASE( "Day22", "[22]" ) {
     const int bossStartHitPoints = 58;
     const int playerStartHitPoints = 50;
     const int mana = 500;
     const int bossDamage = 9;
     HitPoints hitPoints { playerStartHitPoints , bossStartHitPoints };
     const auto answer1 = minManaToWinPlayer( true, hitPoints, bossDamage, mana, Spells(), PLAYER, 0 );
-    cout << "answer 1: " << answer1 << endl;
-    assert( answer1 == 1269 );
+    REQUIRE( 1269 == answer1 );
     const auto answer2 = minManaToWinPlayer( false, hitPoints, bossDamage, mana, Spells(), PLAYER, 0 );
-    cout << "answer 2: " << answer2 << endl;
-    assert( answer2 == 1309 );
-    return 0;
+    REQUIRE( 1309 == answer2 );
 }
