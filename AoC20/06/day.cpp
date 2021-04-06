@@ -9,17 +9,15 @@
 #include <numeric>
 #include <assert.h>
 #include <climits>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-int main() {
-
-    const bool isFirstAnswer = false;
-
+auto day06(const bool isFirstAnswer ) {
     auto sumUniqueAnswers = 0;
     set<char> uniqueInGroup;
     bool isNewSet = true;
-    ifstream f("input.txt");
+    ifstream f("06/input.txt");
     string line;
     while (getline(f, line)) {
         if ( line.empty() ) {
@@ -48,7 +46,10 @@ int main() {
     }
     sumUniqueAnswers += uniqueInGroup.size();
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << sumUniqueAnswers << endl; // 3471 - not right 
+    return sumUniqueAnswers;
+}
 
-    return 0;
+TEST_CASE( "Day06", "[06]" ) {
+    REQUIRE( 6911 == day06(true) );
+    REQUIRE( 3473 == day06(false) );
 }
