@@ -3,11 +3,12 @@
 #include <sstream>
 #include <string_view>
 #include <regex>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-int main() {
-    ifstream f("input.txt");
+TEST_CASE( "Day12", "[12]" ) {
+    ifstream f("12/input.txt");
 
     long long sum = 0;
 
@@ -19,12 +20,9 @@ int main() {
         while ( regex_search( searchStart, line.cend(), res, exp ) )
         {
             sum += stoi(res[0]);
-            // cout << ( searchStart == line.cbegin() ? "" : " " ) << res[0];  
             searchStart = res.suffix().first;
         }
     }
 
-    cout << sum << endl;
-
-    return 0;
+    REQUIRE( 156366 == sum );// answer 1
 }
