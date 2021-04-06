@@ -9,14 +9,12 @@
 #include <numeric>
 #include <assert.h>
 #include <climits>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-int main() {
-
-    const bool isFirstAnswer = false;
-
-    ifstream f("input.txt");
+TEST_CASE( "Day09", "[09]" ) {
+    ifstream f("09/input.txt");
 
     long maxDistance = 0;
     long minDistance = LONG_MAX;
@@ -37,10 +35,10 @@ int main() {
             sites.insert(b);
         } else {
             cerr << "Unexpected line: " << line << endl;
+            FAIL();
         }
     }
     const auto siteCount( sites.size() );
-    cout << "Cites: " << siteCount << endl;
     vector<string> siteList(sites.begin(), sites.end());
     vector<int> route(siteCount);
     iota( route.begin(), route.end(), 0 );
@@ -50,10 +48,8 @@ int main() {
     do {
         long distance = 0;
         auto a = siteList[route[0]];
-        cout << a;
         for ( int i = 1; i < siteCount; i++ ) {
             const string & b = siteList[route[i]];
-            cout << " -> " << b;
             assert( a != b );
             const auto ab = routes.find( make_pair(a, b) );
             if ( ab != noRoute ) {
@@ -63,17 +59,15 @@ int main() {
                 if ( ba != noRoute ) {
                     distance += ba->second;
                 } else {
-                    cerr << "No route found between " << a << " and " << b << endl; 
+                    cerr << "No route found between " << a << " and " << b << endl;
+                    FAIL(); 
                 }
             }
             a = b;
         }
-        cout << " distance = " << distance << endl;
         minDistance = min(minDistance, distance);
         maxDistance = max(maxDistance, distance);
     } while ( std::next_permutation(route.begin(),route.end()) );    
-
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? minDistance : maxDistance ) << endl; // 884 too high
-
-    return 0;
+    REQUIRE(207 == minDistance);
+    REQUIRE(804 == maxDistance);
 }
