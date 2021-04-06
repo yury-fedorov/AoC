@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <string_view>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -53,13 +54,13 @@ string next(string_view pwd) {
     return result;
 }
 
-int main() {
+TEST_CASE( "Day11", "[11]" ) {
     string input = "hepxcrrq";
     for ( ; !isValidPassword(input); input = next(input) ) {}
-    cout << "Answer 1: " << input << endl;
+    REQUIRE( "hepxxyzz" == input );
+
     do {
         input = next(input);
     } while (!isValidPassword(input));
-    cout << "Answer 2: " << input << endl;
-    return 0;
+    REQUIRE( "heqaabcc" == input );
 }
