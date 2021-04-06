@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <regex>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -16,11 +17,10 @@ optional<int> get( const Facts & facts, const string & fact) {
     return ( i == facts.end() ) ? optional<int>() : optional<int>{ i->second };
 }
 
-int main() {
-    const bool isFirstAnswer = false;
+auto day16( const bool isFirstAnswer ) {
     SueFacts facts;
 
-    ifstream f("input.txt");
+    ifstream f("16/input.txt");
     // Sue 500: cats: 2, goldfish: 9, children: 8
     const regex reLine("^Sue (\\d+): (.+)$");
     const regex reList("(\\w+): (\\d+)");
@@ -61,10 +61,14 @@ int main() {
         
         const auto n = good.size();
         if ( n == 1 ) {
-            cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << good.begin()->first << endl;
-            break;
+            return good.begin()->first;
         }
         swap( facts, good );
     }
-    return 0;
+    throw new domain_error( "failed to find a solution" );
+}
+
+TEST_CASE( "Day16", "[16]" ) {
+    REQUIRE( 40 == day16(true) );
+    REQUIRE( 241  == day16(false));
 }
