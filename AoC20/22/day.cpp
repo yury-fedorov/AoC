@@ -108,7 +108,8 @@ auto day22(const bool isFirstAnswer ) {
     return answer(*d);
 }
 
-TEST_CASE( "Day22", "[22]" ) {
+TEST_CASE( "Day22-SLOW", "[22]" ) {
     REQUIRE( 30138 == day22(true)  );
+    return; // takes 16 seconds
     REQUIRE( 31587 == day22(false) );
 }
