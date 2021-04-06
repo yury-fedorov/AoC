@@ -9,6 +9,7 @@
 #include <numeric>
 #include <assert.h>
 #include <climits>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -27,17 +28,16 @@ bool battle( int bossHitPoints, int bossHit, int playerHitPoints, int playerHit 
     }
 }
 
-int main() {
+TEST_CASE( "Day21-TODO", "[21]" ) {
 
+    /* 
     const int bossStartHitPoints = 109;
     const int bossDamage = 8;
     const int bossArmor = 2;
     const int playerStartHitPoints = 100;
 
-    /*
-    const int approxDiff = (bossDamage - bossArmor) * bossStartHitPoints / playerStartHitPoints;
-    cout << approxDiff << endl;
-    */
+    // const int approxDiff = (bossDamage - bossArmor) * bossStartHitPoints / playerStartHitPoints;
+    // cout << approxDiff << endl;
 
     const int playerDemage = 7;
     const int playerArmor = 4;
@@ -56,6 +56,5 @@ int main() {
     // the run of combinations confirms that the only things that matters is the sum
     // of player's damage and armor that must be 10 to loose
     // 188 (right answer 2) - 8 cheapest weapon, 100 for damage ring +3, 80 for defence ring +3
-
-    return 0;
+    */
 }
