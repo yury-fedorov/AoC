@@ -5,6 +5,7 @@
 #include <fstream>
 #include <regex>
 #include <numeric>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -24,14 +25,13 @@ auto distance( const Data & d, const int t ) {
     const auto fullInternval = fly + rest;
     const auto n = t / fullInternval;
     const auto fraction = t % fullInternval;
-    const auto distanceInterval = speed * fly;
     return ( ( n * fly ) + min(fraction, fly) ) * speed;
 }
 
-int main() {
+TEST_CASE( "Day14", "[14]" ) {
     map<string, Data> deers;
 
-    ifstream f("input.txt");
+    ifstream f("14/input.txt");
     // Dancer can fly 27 km/s for 5 seconds, but then must rest for 132 seconds.
     regex re("(\\w+) can fly (\\d+) km/s for (\\d+) seconds, but then must rest for (\\w+) seconds.");
     string line;
@@ -41,6 +41,7 @@ int main() {
             deers.insert( make_pair( what[1], make_tuple( stoi(what[2]), stoi(what[3]), stoi(what[4])) ) );
         } else {
             cerr << "Unexpected line: " << line << endl;
+            FAIL();
         }
     }
 
@@ -54,7 +55,7 @@ int main() {
         running.push_back( make_shared<Deer>(p.second) ); // for the second question (initialization)
     }
 
-    cout << "Answer 1: " << dmax  << endl;
+    REQUIRE( 2640 == dmax );
 
     const auto delta = [](const Data & d, int t ) { return distance(d, t) - distance(d, t-1); };
     auto curMax = 0;
@@ -80,7 +81,5 @@ int main() {
     }
     const auto maxByPoints = max_element( running.cbegin(), running.cend(), 
         []( const shared_ptr<Deer> & a, const shared_ptr<Deer> & b ) { return a->points < b->points; } );
-    cout << "Answer 2: " << (*maxByPoints)->points << endl;
-
-    return 0;
+    REQUIRE( 1102 ==  (*maxByPoints)->points );
 }
