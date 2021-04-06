@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -26,8 +27,8 @@ int options( int digit, int length ) {
     }
 }
 
-int main() {
-    ifstream f("input.txt");
+TEST_CASE( "Day10", "[10]" ) {
+    ifstream f("10/input.txt");
 
     vector<int> adapters;
 
@@ -43,12 +44,12 @@ int main() {
 
     map<int,int> differences;
     vector<int> seq;
-    for ( auto i = 1; i < n; i++ ) {
+    for ( size_t i = 1; i < n; i++ ) {
         const auto diff = adapters[i]-adapters[i-1];
         differences[diff]++;
         seq.push_back(diff);
     }
-    cout << "Answer 1: " << differences[1] * differences[3] << endl; // 1914
+    REQUIRE( 1914 == ( differences[1] * differences[3] ) ); 
 
     vector<pair<int,int>> grseq;
     int prev = 0;
@@ -67,11 +68,9 @@ int main() {
     grseq.emplace_back( prev, length );
 
     long long combinations = 1;
-    for ( const auto p : grseq ) {
+    for ( const auto & p : grseq ) {
         combinations *= options( p.first, p.second );
     }
 
-    cout << "Answer 2: " << combinations << endl; // right - 9256148959232
-
-    return 0;
+    REQUIRE(9256148959232 == combinations); 
 }
