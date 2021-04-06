@@ -7,6 +7,7 @@
 #include <regex>
 #include <assert.h>
 #include <cmath>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ const int SIDE = 10;
 typedef pair<int,int> Point;
 
 inline int inverse( const int v, const int n ) { return n - v - 1; };
-Point original ( const Point & p, const int n ) { return p; };
+Point original ( const Point & p, const int ) { return p; };
 Point rotate90 ( const Point & p, const int n ) { return { inverse( p.second, n ), p.first }; }
 Point rotate180( const Point & p, const int n ) { return { inverse( p.first,  n ), inverse( p.second, n ) }; }
 Point rotate270( const Point & p, const int n ) { return { p.second,               inverse( p.first,  n ) }; }
@@ -100,7 +101,7 @@ Direction where( const Tiles & tiles, int id, const Border & b ) {
 
 Tiles init() {
     Tiles tiles;
-    ifstream f("input.txt");
+    ifstream f("20/input.txt");
     regex re("^Tile (\\d+):$");
     string line;
     while (getline(f, line)) {        
@@ -152,12 +153,10 @@ void initSide( Point p, int & value(Point & p), const int maxValue, const Tiles 
         const auto d2 = where( tiles, t1, b2 );
         const auto d2o = opposite(d2); // good for going through side but not for corner
         const auto b2o = border( tiles, t1, d2o );
-        cout << "Searching " << t1 << " " << b2o << endl;
         auto && close = next( tiles, t1, scope, b2o );
         if ( close.empty() ) close = next( tiles, t1, scope, reverse(b2o) );
         const int t2 = close.cbegin()->first;
         value(p) += 1;
-        cout << t2 << " " << p.first << "-" << p.second << endl;
         image.emplace( p, t2 );
     }
 }
@@ -175,25 +174,10 @@ vector<int> tilesClose( const Tiles & tiles, const int tileId, const vector<int>
         if ( close.empty() ) close = next( tiles, tileId, scope, reverse(b) );
         if ( close.size() == 1 ) {
             const int sideId = close.cbegin()->first;
-            cout << sideId << " " << b << endl;
             result.push_back(sideId);
         } 
     }
     return result;
-}
-
-void print(const Tile & t ) {
-    for ( const auto & l : t ) {
-        cout << l << endl;
-    }
-}
-
-void print( const DirBorders & db ) { 
-    for ( const auto & [d,b] : db ) cout << "Dir: " << d << " b: " << b << endl;
-}
-
-void print( const Facts & facts ) { 
-    for ( const auto & [d,f] : facts ) cout << "Dir: " << d << " Border: " << f.first << " Exact: " << ( f.second == ExactMatch ) << endl;
 }
 
 char & at( Tile & t, const Point & p ) { return t[fy(p)][fx(p)]; }
@@ -256,18 +240,12 @@ bool isMatching( const Facts & facts, const DirBorders & t1b ) {
 
 TxOptions options( const Tile & t, const Facts & facts, const OutBorderTileMap & out ) {
     TxOptions result;
-    // cout << "Facts: " << endl;
-    print(facts);
-
     for ( const auto rf : Rotations ) {
         const auto && t1 = transform( t, rf );
         for ( const auto ff : Flips ) {
             const auto && t2 = transform( t1, ff );
-            print(t2);
             const auto && b = txBorders( t2, out );
-            print(b);
             if ( isMatching( facts, b ) ) { 
-                // cout << "Match" << endl; 
                 result.insert( t2 ); 
             }
         }
@@ -316,12 +294,6 @@ set<Tile> detectTx( const Point & p, ImageTx & imageTx, const Tiles & tiles, con
     const auto & t = tiles.at(tileId);
     const auto && ts = options( t, facts, out );
     if ( ts.empty() ) {
-        cout << endl;
-        print(t);
-        print( txBorders(t, out) );
-        cout << "Facts: " << endl;
-        print(facts);
-        cerr << " No tx for: " << p.first << " " << p.second <<  endl;
         assert( false );
     }
     return ts;
@@ -335,10 +307,10 @@ const vector<string> Monster = {
 
 bool putMonster( Tile & image, int ix0, int iy0, bool toPut = true ) {
     const auto mll = Monster[0].length();
-    for ( int l = 0; l < Monster.size(); l++ ) {
+    for ( size_t l = 0; l < Monster.size(); l++ ) {
         const string & monsterLine = Monster[l];
         const int iy = iy0 + l;
-        for ( int x = 0; x < mll; x++ ) {
+        for ( size_t x = 0; x < mll; x++ ) {
             if ( monsterLine[x] == '#' ) {
                 const auto && p = fxy( ix0 + x, iy );
                 const bool isPointOk = at(image, p) == '#';
@@ -360,8 +332,8 @@ int countMonsters( Tile & image ) {
     const auto mh = Monster.size();
     const auto maxX = image[0].size() - ml;
     const auto maxY = image.size() - mh;
-    for ( int y = 0; y <= maxY; y++ ) {
-        for ( int x = 0; x < maxX; x++ ) {
+    for ( size_t y = 0; y <= maxY; y++ ) {
+        for ( size_t x = 0; x < maxX; x++ ) {
             if ( isMonster( image, x, y ) ) {
                 putMonster( image, x, y );
                 count++;
@@ -379,29 +351,24 @@ int count( const Tile & image, const char symbol ) {
     return totalCount;
 }
 
-int main() {
+TEST_CASE( "Day20", "[20]" ) {
     Tiles && tiles = init();
-    cout << tiles.size() << endl;
 
     // normalized border to tile IDs
     map< Border, set<int> > borderIdsMap;
-    for ( const auto [ id, tile ] : tiles ) {
+    for ( const auto & [ id, tile ] : tiles ) {
         const Borders && bs = borders( tile );
-        cout << id << endl;
         for ( const auto & b : bs ) {
-            cout << b << " " << reverse(b) << endl;
             borderIdsMap[normalize(b)].insert( id );
         }
     }
-    cout << borderIdsMap.size() << endl;
 
     // unique tile ID for border (sign of outer side)
     map<int, int> idCount;
     OutBorderTileMap outBorderTileId;
-    for ( const auto [ b, ids ] : borderIdsMap ) {
+    for ( const auto & [ b, ids ] : borderIdsMap ) {
         if ( ids.size() == 1 ) { 
             const int id = *ids.cbegin();
-            cout << b << " " << id << endl;
             idCount[id] += 1;
             outBorderTileId.emplace( b, id );
         }
@@ -410,23 +377,21 @@ int main() {
     vector<int> corners; // 4 corners
     vector<int> sides; // all sides (tile IDs) with one border out
     vector<int> sidesAndCorners;
-    for ( const auto [ id, count ] : idCount ) {
+    for ( const auto & [ id, count ] : idCount ) {
         if ( count == 1 ) { sides.push_back(id); }
         else if ( count == 2 ) {
-            cout << "Corner found: " << id << endl;
             answer1 *= id;
             corners.push_back(id);
         } else assert(false);
         sidesAndCorners.push_back(id);
     }
 
-    cout << "Answer 1: " << answer1 << endl;
-    // assert( answer1 == 8581320593371 );
+    REQUIRE( answer1 == 8581320593371 );
 
-    const int tilesCount = tiles.size();
-    const int tilesSideCount = sqrt( tilesCount );
-    const int internalTilesSideCount = tilesSideCount - 2;
-    const int maxSideValue = tilesSideCount - 1;
+    const size_t tilesCount = tiles.size();
+    const size_t tilesSideCount = sqrt( tilesCount );
+    const size_t internalTilesSideCount = tilesSideCount - 2;
+    const size_t maxSideValue = tilesSideCount - 1;
 
     assert( idCount.size() == ( corners.size() + sides.size() ) ); // 4 corners and 40 borders
     assert( corners.size() == 4 );
@@ -440,7 +405,7 @@ int main() {
         if ( image.size() == 1 ) image.emplace( Point{0,1}, sideId );
         else image.emplace( Point{1,0}, sideId );
     }
-    const int side = internalTilesSideCount;
+    const size_t side = internalTilesSideCount;
     initSide( Point {1,0}, fx, side, tiles, sidesAndCorners, image );
     initSide( Point {0,1}, fy, side, tiles, sidesAndCorners, image );
     // till now we defined the first corner and its neighbour sides
@@ -449,7 +414,6 @@ int main() {
         const int side0X0 = image.at( Point{maxSideValue - 1,0} );
         const auto && cornerX0Tiles = tilesClose( tiles, cornerX0, sides );
         for ( const int sideId : cornerX0Tiles ) {
-            cout << sideId << endl;
             if ( sideId != side0X0 ) image.emplace( Point{maxSideValue,1}, sideId );
         }
         initSide( Point{maxSideValue,1}, fy, side, tiles, sidesAndCorners, image );
@@ -460,7 +424,6 @@ int main() {
         const int side00X = image.at( Point{0, maxSideValue - 1} );
         const auto && corner0XTiles = tilesClose( tiles, corner0X, sides );
         for ( const int sideId : corner0XTiles ) {
-            cout << sideId << endl;
             if ( sideId != side00X ) image.emplace( Point{1, maxSideValue}, sideId );
         }
         initSide( Point{1,maxSideValue}, fx, side - 1, tiles, sidesAndCorners, image );
@@ -480,19 +443,17 @@ int main() {
     image.emplace( Point{1,1}, t10center[0] ); // first center tile placed
 
     initSide( Point{1,1}, fy, side - 1, tiles, center, image ); // first center column placed
-    for ( int i = 1; i <= side; i++ ) { // now we may put all center rows
+    for ( size_t i = 1; i <= side; i++ ) { // now we may put all center rows
         initSide( Point{1,i}, fx, side - 1, tiles, center, image );
     }
 
     // all image is ready now
     set<int> integrityCheck;
-    for ( int y = 0; y <= maxSideValue; y++ ) {
-        for ( int x = 0; x <= maxSideValue; x++ ) {
+    for ( size_t y = 0; y <= maxSideValue; y++ ) {
+        for ( size_t x = 0; x <= maxSideValue; x++ ) {
             const int id = image.at( Point{ x, y } );
-            cout << id << '\t';
             integrityCheck.insert(id);
-        }
-        cout << endl;       
+        }   
     }
     assert( integrityCheck.size() == ( tilesSideCount * tilesSideCount ) ); // all image is valid (every tile is used once)
 
@@ -500,16 +461,12 @@ int main() {
     assert( outBorderTileId.size() == ( 4 * (side + 2) ) );
 
     ImageTx imageTx;
-    for ( auto x = 0; x <= maxSideValue; x++ ) {
-        for ( auto y = 0; y <= maxSideValue; y++ ) {
+    for ( size_t x = 0; x <= maxSideValue; x++ ) {
+        for ( size_t y = 0; y <= maxSideValue; y++ ) {
             const Point p { x, y };
             const auto && txs = detectTx( p, imageTx, tiles, image, outBorderTileId );
             const auto & tx0 = *txs.cbegin();
             imageTx.emplace( p, tx0 );
-            cout << endl;
-            cout << "CLEAN TILE " << x << " " << y << " ID: " << image.at( p ) << endl;
-            print( tx0 );
-            cout << endl;
         }
     }
 
@@ -525,33 +482,27 @@ int main() {
             const int offset_x = x * smallTileSide;
             const Point p { x, y };
             const auto & t = imageTx.at(p);
-            for ( int ix = 0; ix < smallTileSide; ix++ ) {
-                for ( int iy = 0; iy < smallTileSide; iy++ ) {
+            for ( size_t ix = 0; ix < smallTileSide; ix++ ) {
+                for ( size_t iy = 0; iy < smallTileSide; iy++ ) {
                     at( bigImage, fxy( offset_x + ix, offset_y + iy ) ) = at( t, fxy( ix + 1, iy + 1 ) );
                 }
             }
         }
     }
 
-    print(bigImage);
-    cout << "total count: " << count(bigImage, '#') << endl;
-
     for ( auto ff : Flips ) {
         const auto && tbi1 = transform(bigImage, ff);
         for ( auto tf : Rotations ) {
-            cout << endl;
             // 3. search for monsters
             auto && tbi = transform(tbi1, tf);
             const int mc = countMonsters(tbi);
             if ( mc < 1 ) continue;
-            print(tbi);
-            cout << "monsters: " << mc << endl;
 
             // 4. How many # are not part of a sea monster?
             const auto answer2 = count(tbi, '#');
-            cout << "Answer 2: " << answer2 << endl;
-            assert( answer2 == 2031 );
-            return 0;
+            REQUIRE( answer2 == 2031 );
+            return;
         }
     }
+    FAIL();
 }
