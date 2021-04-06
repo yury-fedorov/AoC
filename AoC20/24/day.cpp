@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -53,7 +54,7 @@ DirectionSeq instruction( const string & line ) {
         if ( first.has_value() ) {
             const string sd = { first.value(), ch };
             assert( sd.length() == 2);
-            const int sb = seq.size();
+            const size_t sb = seq.size();
             for ( int i = Directions.size(); --i >= 0; ) {
                 if ( Directions[i] == sd ) {
                     seq.push_back( (Direction)i );
@@ -90,10 +91,10 @@ int countBlack( const PosMap & counter, const Position & p ) {
     return result;
 }
 
-int main() {
+TEST_CASE( "Day24", "[24]" ) {
     PosMap counter;
 
-    ifstream f("input.txt");
+    ifstream f("24/input.txt");
     string line;
     while (getline(f, line)) {
         const auto && dl = instruction(line);
@@ -102,8 +103,7 @@ int main() {
     }
 
     const auto answer1 = countBlack(counter);
-    cout << "Answer 1: " << answer1 << endl;
-    assert( answer1 == 436 );
+    REQUIRE( answer1 == 436 );
 
     typedef pair<Position,int> PosCount;
     for ( int day = 1; day <= 100; day++ ) {
@@ -128,25 +128,21 @@ int main() {
                 } else {
                     if ( dx != 1 ) continue;
                 }
-                for ( const auto d : Directions ) {
-                    const Position p { x, y }; 
-                    const int black = countBlack(counter, p);
-                    const int flipCount = counter[p];
-                    auto result = isBlack( flipCount ) ? Black : White;
-                    if ( result == Black ) {
-                        if ( ( black == 0 ) || ( black > 2 ) ) result = White;
-                    } else {
-                        if ( ( black == 2 ) ) result = Black;
-                    }
-                    if ( result == Black ) copy[p] = Black;
+
+                const Position p { x, y }; 
+                const int black = countBlack(counter, p);
+                const int flipCount = counter[p];
+                auto result = isBlack( flipCount ) ? Black : White;
+                if ( result == Black ) {
+                    if ( ( black == 0 ) || ( black > 2 ) ) result = White;
+                } else {
+                    if ( ( black == 2 ) ) result = Black;
                 }
+                if ( result == Black ) copy[p] = Black;
             }
         }
         swap( counter, copy );
     }
-
     const auto answer2 = countBlack(counter);
-    cout << "Answer 2: " << answer2 << endl;
-    assert( answer2 == 4133 );
-    return 0;
+    REQUIRE( answer2 == 4133 );
 }
