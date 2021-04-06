@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <regex>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -24,8 +25,8 @@ int countIn( const Rules & rules, const string & out ) {
     return result;
 }
 
-int main() {
-    ifstream f("input.txt");
+TEST_CASE( "Day07", "[07]" ) {
+    ifstream f("07/input.txt");
     // ifstream f("test.txt");
 
     string line;
@@ -61,8 +62,6 @@ int main() {
     for ( auto & p : rules ) {
         count += canContain( rules, p.first, color);
     }
-    cout << "Answer 1: " << count << endl;
-    cout << "Answer 2: " << countIn(rules, color) << endl;
-
-    return 0;
+    REQUIRE( 370 == count );
+    REQUIRE( 29547 == countIn(rules, color) );
 }
