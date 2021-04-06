@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <climits>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -51,10 +52,10 @@ auto split( const vector<int> & containers, const int target ) {
 }
 */
 
-int main() {
+TEST_CASE( "Day17", "[17]" ) {
     vector<int> containers;
     
-    ifstream f("input.txt");
+    ifstream f("17/input.txt");
     string line;
     while (getline(f, line)) {
         containers.push_back( stoi(line) );
@@ -95,14 +96,12 @@ int main() {
             minSum = min(minSum, p.second);
         }
     }
-    cout << "Answer 1: " << answer1 << endl; // 4372 - right
+    REQUIRE( 4372 == answer1 );
 
     auto answer2 = 0;
     for ( auto c = maxCounter(containers.size()); c > 0; c-- ) {
         const auto p = sum(containers, c);
         answer2 += ( p.first == TARGET && p.second == minSum );
     }
-    cout << "Answer 2: " << answer2 << endl; // 4 - right
-
-    return 0;
+    REQUIRE( 4 == answer2 );
 }
