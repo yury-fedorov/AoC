@@ -4,6 +4,7 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -26,11 +27,9 @@ pair<char, int> argsToRegOffset( const string & args ) {
     assert( false );
 }
 
-int main() {
+auto day23(const bool isFirstAnswer) {
     Program program;
-    const bool isFirstAnswer = false;
-
-    ifstream f("input");
+    ifstream f("23/input");
     const regex re("^(\\w{3}) (.+)$");
 
     string line;
@@ -40,10 +39,11 @@ int main() {
             program.emplace_back( what[1], what[2] );
         } else {
             cerr << "Unexpected line: " << line << endl;
+            FAIL();
         }
     }
 
-    const auto n = program.size();
+    const int n = program.size();
     Registers registers;
     if ( !isFirstAnswer ) registers['a'] = 1;
     for ( int curOp = 0; curOp >= 0 && curOp < n; ) {
@@ -67,8 +67,10 @@ int main() {
             curOp += ( registers[r] == 1 ) ? offset : 1;
         } else assert(false);
     }
-    const auto answer = registers['b'];
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << answer << endl;
-    assert( answer == ( isFirstAnswer ? 184 : 231 ) );
-    return 0;
+    return registers['b'];
+}
+
+TEST_CASE( "Day23", "[23]" ) {
+    REQUIRE( 184 == day23(true) );
+    REQUIRE( 231 == day23(false) );
 }
