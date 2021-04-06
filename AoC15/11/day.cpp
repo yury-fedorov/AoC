@@ -6,7 +6,7 @@
 using namespace std;
 
 bool containsIncreasing3Letters(string_view pwd) {
-    const auto n = pwd.length();
+    const int n = pwd.length();
     for ( auto i = 2; i < n; i++ ) {
         if ( ( pwd[i] - pwd[i-1] ) == 1 && ( pwd[i-1] - pwd[i-2] ) == 1 )
           return true;
@@ -40,7 +40,7 @@ bool isValidPassword(string_view pwd) {
 }
 
 string next(string_view pwd) {
-    const auto n = pwd.length();
+    const int n = pwd.length();
     string result(pwd);
     auto i = n - 1;
     while ( i >= 0 ) {

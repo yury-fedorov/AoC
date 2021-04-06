@@ -38,7 +38,7 @@ TEST_CASE( "Day09", "[09]" ) {
             FAIL();
         }
     }
-    const auto siteCount( sites.size() );
+    const int siteCount( sites.size() );
     vector<string> siteList(sites.begin(), sites.end());
     vector<int> route(siteCount);
     iota( route.begin(), route.end(), 0 );
@@ -48,7 +48,7 @@ TEST_CASE( "Day09", "[09]" ) {
     do {
         long distance = 0;
         auto a = siteList[route[0]];
-        for ( int i = 1; i < siteCount; i++ ) {
+        for ( auto i = 1; i < siteCount; i++ ) {
             const string & b = siteList[route[i]];
             assert( a != b );
             const auto ab = routes.find( make_pair(a, b) );

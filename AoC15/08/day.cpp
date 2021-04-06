@@ -30,8 +30,8 @@ string toMemory( string_view line ) {
             if ( next1 != 'x' ) {
                 v.push_back(next1);
             } else {
-                const auto next2 = pop(c);
-                const auto next3 = pop(c);
+                pop(c);
+                pop(c);
                 v.push_back('?'); // we care only about size
             }
         }
