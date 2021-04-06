@@ -5,6 +5,7 @@
 #include <fstream>
 #include <assert.h>
 #include <climits>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -25,7 +26,6 @@ int sum( const Combination & c ) {
 }
 
 Combinations combinations( const Input & input, const int in, const int n, const int target ) {
-    const auto in1 = input.size() - 1; 
     Combinations result;
     for ( int i = 0; i < in; i++ ) {
         const int e = input[i];
@@ -46,9 +46,8 @@ Combinations combinations( const Input & input, const int in, const int n, const
     return result;
 }
 
-int main() {
-    const bool isFirstAnswer = false;
-    ifstream f("input");
+auto day24(const bool isFirstAnswer) {
+    ifstream f("24/input");
     Input input;
     string line;
     int sum {0};
@@ -60,7 +59,7 @@ int main() {
     const auto dt = div( sum, isFirstAnswer ? 3 : 4 );
     assert( dt.rem == 0 );
     const auto target = dt.quot;
-    const auto n = input.size();
+    const int n = input.size();
     int a {0};
     int minCount = 0;
     for ( auto i = input.rbegin(); a <= target; i++ ) {
@@ -79,8 +78,10 @@ int main() {
             break;
         }
     }
+    return answer;
+}
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << answer << endl;
-    assert( answer == ( isFirstAnswer ? 11846773891 : 80393059 ) );
-    return 0;
+TEST_CASE( "Day24", "[24]" ) {
+    REQUIRE( 11846773891 == day24(true)  );
+    REQUIRE( 80393059    == day24(false) );
 }
