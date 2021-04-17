@@ -6,10 +6,11 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-typedef int Card;
+typedef size_t Card;
 typedef list<int> Deck;
 typedef vector<Deck> Decks;
 typedef set<Decks> History;
@@ -19,7 +20,7 @@ Card next( Deck & d ) { const Card c = d.front(); d.pop_front(); return c; }
 
 void put( Deck & d, Card c1, Card c2 ) { d.push_back( c1 ); d.push_back( c2 ); }
 
-void resize( Deck & d, int n ) {
+void resize( Deck & d, size_t n ) {
     assert( n > 0 && n <= d.size() );
     if ( n == d.size() ) return;
     auto end = next(d.begin(), n);
@@ -65,11 +66,9 @@ long answer( const Deck & d ) {
     return result;
 }
 
-int main() {
+auto day22(const bool isFirstAnswer ) {
     Decks decks;
-    const bool isFirstAnswer = true;
-
-    ifstream f("input.txt");
+    ifstream f("22/input.txt");
     const regex rePlayer("^Player (\\d+):$");
     string line;
     smatch what;
@@ -85,6 +84,7 @@ int main() {
             decks.push_back(deck);
         } else {
             cerr << "Unexpected line: " << line << endl;
+            FAIL();
         }
     }
     Deck & d1 = decks[FIRST];
@@ -105,9 +105,11 @@ int main() {
         d = recursiveCombat(decks) == FIRST ? &d1 : &d2;
     }
     assert( d != nullptr );
+    return answer(*d);
+}
 
-    const auto a = answer(*d);
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << a << endl;
-    assert( a == ( isFirstAnswer ? 30138 : 31587 ) );
-    return 0;
+TEST_CASE( "Day22-SLOW", "[22]" ) {
+    REQUIRE( 30138 == day22(true)  );
+    return; // takes 16 seconds
+    REQUIRE( 31587 == day22(false) );
 }

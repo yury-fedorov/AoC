@@ -4,14 +4,13 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
-int main() {
+auto day15(const bool isFirstAnswer ) {
     vector<int> s; // sequence
-    const bool isFirstAnswer = false;
-
-    ifstream f("input.txt");
+    ifstream f("15/input.txt");
     string line;
     f >> line;
     regex re("(\\d+)");
@@ -25,7 +24,7 @@ int main() {
 
     const int index = isFirstAnswer ? 2020 : 30'000'000;
     map<int,int> lastMap;
-    for ( int i = 0; i < s.size() - 1; i++ ) {
+    for ( size_t i = 0; i < s.size() - 1; i++ ) {
         lastMap[s[i]] = i;
     }
     int last = *s.rbegin();
@@ -36,8 +35,12 @@ int main() {
         if ( i >= index ) break;
         last = next;
     }
-    const int answer = last;
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << answer << endl;
-    assert( answer == isFirstAnswer ? 1015 : 201 );
-    return 0;
+    return last;
+}
+
+TEST_CASE( "Day15", "[15]" ) {
+    REQUIRE( 1015 == day15(true) );
+    const auto runSlow = false;
+    if (!runSlow) return;
+    REQUIRE( 201 == day15(false) ); // slow 45 seconds
 }

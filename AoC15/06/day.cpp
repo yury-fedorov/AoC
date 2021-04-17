@@ -3,10 +3,10 @@
 #include <set>
 #include <fstream>
 #include <sstream>
-#include <boost/regex.hpp>
+#include <regex>
+#include <catch2/catch.hpp>
 
 using namespace std;
-using namespace boost;
 
 struct Instruction {
     string operation;
@@ -16,11 +16,8 @@ struct Instruction {
     int y1;
 };
 
-int main() {
-
-    const bool isFirstAnswer = false;
-
-    ifstream f("input.txt");
+auto solution(const bool isFirstAnswer) {
+    ifstream f("06/input.txt");
     
     regex re("(.+) (\\d+),(\\d+) through (\\d+),(\\d+)");
     smatch what;
@@ -29,7 +26,7 @@ int main() {
 
     string line;
     while (getline(f, line)) {
-        if( regex_match( line, what, re, match_extra )) {
+        if( regex_match( line, what, re )) {
             // cout << "Original: " << line << endl;
             // cout << what[1] << " " << what[2] << "," << what[3] << " - " << what[4] << "," << what[5] << endl;
             Instruction i;
@@ -77,7 +74,10 @@ int main() {
         for ( auto y = 0; y < SIZE; y++ )
             countOn += grid[x][y];
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << countOn << endl; 
+    return countOn;
+}
 
-    return 0;
+TEST_CASE( "Day06", "[06]" ) {
+    REQUIRE(569999 == solution(true));
+    REQUIRE(17836115 == solution(false));
 }

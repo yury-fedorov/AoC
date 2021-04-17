@@ -3,14 +3,13 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
 typedef unsigned long long Int;
 
-const bool isFirstAnswer = false;
-
-Int evaluate( const string & e ) {
+Int evaluate( const string & e, const bool isFirstAnswer ) {
     stack<string> s;
     string level;
     for ( const char ch : e ) {
@@ -20,7 +19,7 @@ Int evaluate( const string & e ) {
         } else if ( ch == ')' ) {
             const string level1 = s.top();
             s.pop();
-            const auto value = evaluate( level );
+            const auto value = evaluate( level, isFirstAnswer );
             level = level1 + to_string(value);
         } else {
             level += ch;
@@ -64,15 +63,18 @@ Int evaluate( const string & e ) {
     return num;
 }
 
-int main() {
+auto day18(const bool isFirstAnswer) {
     Int sum {0};
-    ifstream f("input");
+    ifstream f("18/input");
     string line;
     while (getline(f, line)) {
-        const auto r = evaluate(line);
+        const auto r = evaluate(line, isFirstAnswer);
         sum += r;
     }
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << sum << endl;
-    assert( sum == ( isFirstAnswer ? 3885386961962 : 112899558798666 ) );
-    return 0;
+    return sum;
+}
+
+TEST_CASE( "Day18", "[18]" ) {
+    REQUIRE( 3885386961962   == day18(true)  );
+    REQUIRE( 112899558798666 == day18(false) );
 }

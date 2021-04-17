@@ -15,7 +15,7 @@ auto countTrees(const vector<string> & inputMap, int dx, int dy) {
      const auto sizeY = inputMap.size();
      auto x = 0;
      auto treeCount = 0;
-     for ( auto y = 0; y < sizeY; y += dy, x += dx ) {
+     for ( size_t y = 0; y < sizeY; y += dy, x += dx ) {
          treeCount += get(x, y) == '#';
      }
      return treeCount;

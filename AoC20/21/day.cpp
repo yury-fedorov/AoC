@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -39,10 +40,9 @@ set<string> intersect( const set<string> & a, const set<string> & b ) {
     return result;
 }
 
-int main() {
+TEST_CASE( "Day21", "[21]" ) {
     FoodAllergenList list;
-
-    ifstream f("input.txt");
+    ifstream f("21/input.txt");
     const regex re("^([\\w ]+) \\(contains (.+)\\)$");
     const regex reItem("([\\w]+)");
     string line;
@@ -54,6 +54,7 @@ int main() {
             list.emplace_back( split( foods, reItem ), split( allergens, reItem ) );
         } else {
             cerr << "Unexpected line: " << line << endl;
+            FAIL();
         }
     }
 
@@ -68,12 +69,11 @@ int main() {
     for ( const auto & a : allAllergens ) {
         Foods & optFoods = allergenOptions[a];
         addAll( optFoods, allFoods );
-        for ( const auto [ foods, allergens ] : list ) {
+        for ( const auto & [ foods, allergens ] : list ) {
             const bool containsAllergen = allergens.find( a ) != allergens.end();
             if ( containsAllergen ) {
                 optFoods = intersect( optFoods, foods );
                 if ( optFoods.size() == 1 ) {
-                    const string & f = *optFoods.cbegin();
                     break;
                 }
             }
@@ -111,8 +111,7 @@ int main() {
         const auto && f = intersect( foods, foodsWithoutAllergens );
         answer1 += f.size();
     }
-    cout << "Answer 1: " << answer1 << endl;
-    assert( answer1 == 2569 );
+    REQUIRE( answer1 == 2569 );
 
     sort( foodAllergenList.begin(), foodAllergenList.end(), 
         []( const FoodAllergen & a, const FoodAllergen & b ) { return a.second < b.second; } );
@@ -122,8 +121,5 @@ int main() {
         answer2 += f + ",";
     }
     answer2.pop_back();
-    cout << "Answer 2: " << answer2 << endl;
-    assert( answer2 == "vmhqr,qxfzc,khpdjv,gnrpml,xrmxxvn,rfmvh,rdfr,jxh");
-
-    return 0;
+    REQUIRE( answer2 == "vmhqr,qxfzc,khpdjv,gnrpml,xrmxxvn,rfmvh,rdfr,jxh");
 }

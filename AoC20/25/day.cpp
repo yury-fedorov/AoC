@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -25,10 +26,10 @@ long encryptionKey( const int subjectNumber, const int loops ) {
     return value;
 }
 
-int main() {
+TEST_CASE( "Day25", "[25]" ) {
     vector<int> input;
 
-    ifstream f("input.txt");
+    ifstream f("25/input.txt");
     string line;
     while (getline(f, line)) {
         input.push_back( stoi(line) );
@@ -46,7 +47,5 @@ int main() {
     const auto ek12 = encryptionKey(pk1, l2);
     const auto ek21 = encryptionKey(pk2, l1);
     assert( ek12 == ek21 );
-    cout << "Answer 1: " << ek12 << endl;
-    assert( ek12 == 711945 );
-    return 0;
+    REQUIRE( ek12 == 711945 );
 }

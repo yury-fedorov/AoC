@@ -5,6 +5,7 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ typedef pair<Operation, int> Instruction;
 
 pair<bool,int> run( const vector<Instruction> & code ) {
     int accumulator {0};
-    int next {0};
+    size_t next {0};
     set<int> executed;
 
     while ( executed.find( next ) == executed.end() ) {
@@ -26,15 +27,15 @@ pair<bool,int> run( const vector<Instruction> & code ) {
             case JMP: next += i.second; break;
             default: 
                 cerr << next << ": " << i.first << " " << i.second << endl;
-                assert(false);
+                FAIL();
         }
         if ( next == code.size() ) return make_pair(true, accumulator); // proper termination
     }
     return make_pair(false,accumulator);
 }
 
-int main() {
-    ifstream f("input.txt");
+TEST_CASE( "Day08", "[08]" ) {
+    ifstream f("08/input.txt");
     regex re("^(\\w{3}) ([-+]\\d+)$");
     smatch what;
     string line;
@@ -48,11 +49,12 @@ int main() {
             code.emplace_back( (Operation)(int)(i - operations.cbegin()), arg );
         } else {
             cerr << "Unexpected line: " << line << endl;
+            FAIL();
         }
     }
 
     const auto r = run(code);
-    cout << "Answer 1: " << r.second << endl;
+    REQUIRE( 1563 == r.second );
 
     for ( auto & i : code ) {
         const Operation originalOp = i.first;
@@ -62,12 +64,11 @@ int main() {
             i.first = newOp.value();
             const auto r2 = run(code);
             if (r2.first) {
-                cout << "Answer 2: " << r2.second << endl;
-                break;
+                REQUIRE( 767 == r2.second );
+                return;
             }
             i.first = originalOp;
         }
     }
-
-    return 0;
+    FAIL();
 }

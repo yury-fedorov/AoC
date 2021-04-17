@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -19,10 +20,7 @@ inline int score( const vector<Composition> & properties, const vector<int> & qt
     return max( result, 0 );
 }
 
-int main() {
-
-    const bool isFirstAnswer = true;
-
+auto day15(const bool isFirstAnswer) {
     Score maxScore = 0;
 
     vector<Composition> properties;
@@ -52,8 +50,10 @@ int main() {
             }
         }
     }
+    return maxScore;
+}
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << maxScore << endl; // 21,367,368 - right answer 1; 1,766,400 - right answer 2
-
-    return 0;
+TEST_CASE( "Day15", "[15]" ) {
+    REQUIRE( 21367368 == day15(true) );
+    REQUIRE( 1766400  == day15(false));
 }

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -43,11 +44,8 @@ uint16_t eval( const string & e ) {
     return result;
 }
 
-int main() {
-
-    const bool isFirstAnswer = false;
-
-    ifstream f("input.txt");
+auto day07(const bool isFirstAnswer) {
+    ifstream f("07/input.txt");
     
     regex re("(.+) -> (\\w+)");
     smatch what;
@@ -61,12 +59,15 @@ int main() {
         }
     }
 
+    valMap.clear(); // init
+
     if ( !isFirstAnswer )
         varExp["b"] = "16076"; // answer 1
 
-    const auto a = eval( varExp["a"] );
+    return eval( varExp["a"] );
+}
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << a << endl; 
-
-    return 0;
+TEST_CASE( "Day07", "[07]" ) {
+    REQUIRE(16076 == day07(true));
+    REQUIRE(2797  == day07(false));
 }

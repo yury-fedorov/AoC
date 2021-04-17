@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -23,36 +24,36 @@ bool isSum( const vector<lint> & v, lint n ) {
     return false;
 }
 
-int main() {
+TEST_CASE( "Day09", "[09]" ) {
     vector<lint> numbers;
 
     lint answer1 = 0;
 
-    ifstream f("input.txt");
+    ifstream f("09/input.txt");
     string line;
     while (getline(f, line)) {
         const auto n = stoll(line);
         if ( numbers.size() >= 25 ) {
             if ( !isSum( numbers, n ) ) {
                 answer1 = n;
-                cout << "Answer 1: " << n << endl; // 29221323 - answer 1
+                REQUIRE( 29221323 == n );
             }
         }
         numbers.push_back(n);
     }
 
     const auto n = numbers.size();
-    for ( int i = 0; i < n; i++ ) {
+    for ( size_t i = 0; i < n; i++ ) {
         lint sum = answer1;
-        for ( int j = i; j < n; j++ ) {
+        for ( size_t j = i; j < n; j++ ) {
             sum -= numbers[j];
             if ( sum == 0 && ( i < j ) ) { // at least 2 numbers
                 // found
                 const auto [mi,ma] = minmax_element( numbers.begin() + i, numbers.begin() + j + 1 );
-                cout << "Answer 2: " << ( *mi + *ma ) << endl; // 4389369 - right
+                REQUIRE( 4389369 == ( *mi + *ma ) );
+                return;
             } else if ( sum < 0 ) break;
         }
     }
-
-    return 0;
+    FAIL();
 }

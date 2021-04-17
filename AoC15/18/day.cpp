@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <cassert>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -17,7 +18,6 @@ inline void set( Field & f, int x, int y, bool isOn ) {
 }
 
 int countOn( const Field & f, int x, int y ) {
-    const int n = f.size();
     auto count = 0;
     for ( int dx = -1; dx <= 1; dx++ ) {
         for ( int dy = -1; dy <= 1; dy++ ) {
@@ -45,13 +45,10 @@ void print( const Field & f ) {
     cout << endl;
 }
 
-int main() {
-
-    const bool isFirstAnswer = false;
-
+int day18(const bool isFirstAnswer) {
     Field field;
 
-    ifstream f("input.txt");
+    ifstream f("18/input.txt");
     const int t = 100;
 
     string line;
@@ -67,7 +64,7 @@ int main() {
         if ( !isFirstAnswer ) {
             turnOnCorners(field);
         }
-        print(field);
+        // print(field);
         Field newField (field) ;
         for ( int x = 0; x < n; x++ ) {
             for ( int y = 0; y < n; y++ ) {
@@ -86,7 +83,7 @@ int main() {
     if ( !isFirstAnswer ) {
         turnOnCorners(field);
     }
-    print(field);
+    // print(field);
 
     auto count = 0;
     for ( int x = 0; x < n; x++ ) {
@@ -94,8 +91,10 @@ int main() {
             count += get(field, x, y);
         }
     }
+    return count;
+}
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << count << endl; // 1061 - right 1; 1006 - right 2
-
-    return 0;
+TEST_CASE( "Day18", "[18]" ) {
+    REQUIRE( 1061 == day18(true) );
+    REQUIRE( 1006 == day18(false));
 }

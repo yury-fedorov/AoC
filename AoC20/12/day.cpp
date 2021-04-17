@@ -2,6 +2,7 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -26,9 +27,7 @@ Direction rotate( bool toLeft, int value, Direction previousDirection ) {
     return (Direction)( shifted );
 }
 
-int main() {
-    const bool isFirstAnswer = true;
-
+auto day12( const bool isFirstAnswer ) {
     Direction direction = dEast;
     int wpEast = 10;
     int wpNorth = 1;
@@ -36,7 +35,7 @@ int main() {
     int east = 0;
     int north = 0;
 
-    ifstream f("input.txt");
+    ifstream f("12/input.txt");
     regex re("^(\\w)(\\d+)$");
     smatch what;
     string line;
@@ -112,10 +111,13 @@ int main() {
             }
         } else {
             cerr << "Unexpected line: " << line << endl;
+            FAIL();
         }
     }
+    return ( abs(east) + abs(north) );
+}
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( abs(east) + abs(north) ) << endl; // part 1 - 923; part 2 - 24769
-
-    return 0;
+TEST_CASE( "Day12", "[12]" ) {
+    REQUIRE( 923 == day12(true) );
+    REQUIRE( 24769 == day12(false) );
 }

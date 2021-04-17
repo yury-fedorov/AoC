@@ -7,6 +7,7 @@
 #include <regex>
 #include <assert.h>
 #include <climits>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -54,8 +55,8 @@ int distance( const string & input, const ToFromRules & rules, const vector<stri
     return MAX_DISTANCE;
 }
 
-int main() {
-    ifstream f("input.txt");
+TEST_CASE( "Day19", "[19]" ) {
+    ifstream f("19/input.txt");
 
     Rules rules;
     map<string,string> toFrom;
@@ -80,14 +81,10 @@ int main() {
 
     Combinations combinations;
     addAll( input, rules, combinations );
-    cout << "Answer 1: " << combinations.size() << endl;
-    assert( 535 == combinations.size() );
+    REQUIRE( 535 == combinations.size() );
 
     // sort longest "to" first
     sort( toList.begin(), toList.end(), []( const string & a, const string & b ) { return a.length() > b.length(); } );
     const auto answer2 = distance(input, toFrom, toList, 0 );
-    cout << "Answer 2: " << answer2 << endl;
-    assert( 212 == answer2 );
-
-    return 0;
+    REQUIRE( 212 == answer2 );
 }

@@ -7,9 +7,9 @@ using namespace std;
 
 long long answer1( const vector<int> & numbers ) {
     const auto n = numbers.size();
-    for ( auto i = 0; i < n; i++ ) {
+    for ( size_t i = 0; i < n; i++ ) {
         const auto a = numbers[i];
-        for ( auto j = 0; j < i; j++ ) {
+        for ( size_t j = 0; j < i; j++ ) {
             const auto b = numbers[j];
             if ( ( a + b ) == 2020 ) {
                 return a * b;
@@ -21,11 +21,11 @@ long long answer1( const vector<int> & numbers ) {
 
 long long answer2( const vector<int> & numbers ) {
     const auto n = numbers.size();
-    for ( auto i = 0; i < n; i++ ) {
+    for ( size_t i = 0; i < n; i++ ) {
         const auto a = numbers[i];
-        for ( auto j = 0; j < i; j++ ) {
+        for ( size_t j = 0; j < i; j++ ) {
             const auto b = numbers[j];
-            for ( auto k = 0; k < j; k++ ) {
+            for ( size_t k = 0; k < j; k++ ) {
                 const auto c = numbers[k];
                 if ( ( a + b + c ) == 2020 ) {
                     return a * b * c;

@@ -3,6 +3,7 @@
 #include <list>
 #include <algorithm>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -11,12 +12,7 @@ typedef list<Cup> Cups;
 typedef list<Cup>::iterator CupIter;
 typedef map<Cup, CupIter> CupIterMap;
 
-void print( const Cups & cups ) {
-    for ( const auto c : cups ) cout << c << " ";
-    cout << endl;
-}
-
-string answer( const Cups & cups ) {
+string answer23( const Cups & cups ) {
     string result;
     auto i = find( cups.cbegin(), cups.cend(), 1 );
     for ( auto j = next(i); j != i; j++ ) {
@@ -28,15 +24,8 @@ string answer( const Cups & cups ) {
 
 void play( Cups & cups, CupIterMap & map, int n ) {
     const int maxElement = *max_element( cups.cbegin(), cups.cend() );
-    const bool isPrintOn = false;
     auto cur = cups.begin();
     for ( int i = 1; i <= n; i++ ) {
-        if ( i % 100'000 == 0 ) cout << i << endl;
-        if ( isPrintOn ) {
-            cout << endl << "Move: " << i << endl;
-            cout << "Cups: "; print(cups);
-            cout << "Current: " << *cur << endl;
-        }
         Cups pickUp;
         for ( int j = 0; j < 3; j++ ) {
             auto cur1 = next(cur);
@@ -44,7 +33,6 @@ void play( Cups & cups, CupIterMap & map, int n ) {
             pickUp.push_back( *cur1 );
             cups.erase( cur1 );
         }
-        if ( isPrintOn ) { cout << "Pick up: "; print(pickUp); }
         for ( int prev = *cur - 1; true; prev-- ) {
             if ( prev < 1 ) { 
                 for ( prev = maxElement; find( pickUp.begin(), pickUp.end(), prev ) != pickUp.end(); prev-- ) {}
@@ -52,7 +40,6 @@ void play( Cups & cups, CupIterMap & map, int n ) {
             auto i = map.at(prev);
             if ( i != cups.end() ) {
                 auto j = next(i);
-                if ( isPrintOn ) cout << "Destination: " << prev << endl;
                 auto ri = cups.insert( j, pickUp.begin(), pickUp.end() );
                 for ( const auto pue : pickUp ) {
                     map[pue] = ri++;
@@ -65,10 +52,7 @@ void play( Cups & cups, CupIterMap & map, int n ) {
     }
 }
 
-int main() {
-
-    const bool isFirstAnswer = false;
-
+string day23(const bool isFirstAnswer) {
     const string input = "463528179";
     // const string input = "32415"; // test
     // const string input = "389125467"; // test1
@@ -83,9 +67,7 @@ int main() {
     
     if ( isFirstAnswer ) {
         play( cups, map, 100 );
-        const auto answer1 = answer(cups) ;
-        cout << "Answer 1: " << answer1 << endl;
-        assert( answer1 == "52937846" );
+        return answer23(cups) ;
     } else {
         int i = *max_element( cups.cbegin(), cups.cend() ) + 1;
         const int n = 1'000'000;
@@ -101,8 +83,12 @@ int main() {
         if ( ++j == cups.cend() ) j = cups.cbegin();
         const unsigned long long b = *j;
         const unsigned long long answer2 = a * b;
-        cout << "Answer 2: " << answer2 << endl;
-        assert( answer2 == 8456532414 );
+        return to_string(answer2);
     }
-    return 0;
+}
+
+TEST_CASE( "Day23-SLOW", "[23]" ) {
+    REQUIRE( "52937846"   == day23(true ) );
+    return;
+    REQUIRE( "8456532414" == day23(false) ); // takes 63 seconds
 }

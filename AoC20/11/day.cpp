@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -79,13 +80,10 @@ void print( const Field & f ) {
     cout << endl;
 }
 
-int main() {
-
-    const bool isFirstAnswer = true;
-
+auto day11(const bool isFirstAnswer) {
     Field field;
     
-    ifstream f("input.txt");
+    ifstream f("11/input.txt");
     string line;
     while (getline(f, line)) {
         field.push_back(line);
@@ -112,8 +110,10 @@ int main() {
         prevTotal = totalOccupied(newField);
         swap( field, newField );
     }
+    return prevTotal;
+}
 
-    cout << "Answer " << (isFirstAnswer ? 1 : 2 ) << ": " << prevTotal << endl; // answer 1: 2344, answer 2: 2076
-
-    return 0;
+TEST_CASE( "Day11", "[11]" ) {
+    REQUIRE( 2344 == day11(true) );
+    REQUIRE( 2076 == day11(false) );
 }

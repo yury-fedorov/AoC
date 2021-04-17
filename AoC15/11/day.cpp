@@ -1,11 +1,12 @@
 #include <iostream>
 #include <sstream>
 #include <string_view>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
 bool containsIncreasing3Letters(string_view pwd) {
-    const auto n = pwd.length();
+    const int n = pwd.length();
     for ( auto i = 2; i < n; i++ ) {
         if ( ( pwd[i] - pwd[i-1] ) == 1 && ( pwd[i-1] - pwd[i-2] ) == 1 )
           return true;
@@ -39,7 +40,7 @@ bool isValidPassword(string_view pwd) {
 }
 
 string next(string_view pwd) {
-    const auto n = pwd.length();
+    const int n = pwd.length();
     string result(pwd);
     auto i = n - 1;
     while ( i >= 0 ) {
@@ -53,13 +54,13 @@ string next(string_view pwd) {
     return result;
 }
 
-int main() {
+TEST_CASE( "Day11", "[11]" ) {
     string input = "hepxcrrq";
     for ( ; !isValidPassword(input); input = next(input) ) {}
-    cout << "Answer 1: " << input << endl;
+    REQUIRE( "hepxxyzz" == input );
+
     do {
         input = next(input);
     } while (!isValidPassword(input));
-    cout << "Answer 2: " << input << endl;
-    return 0;
+    REQUIRE( "heqaabcc" == input );
 }

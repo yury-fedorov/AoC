@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -29,10 +30,9 @@ string transform_n( string input, int times ) {
     return input;
 }
 
-int main() {
+TEST_CASE( "Day10", "[10]" ) {
     string input = "3113322113";
     input = transform_n(input, 40);
-    cout << "Answer 1: " << input.length() << endl;
-    cout << "Answer 2: " << transform_n(input, 50-40).length() << endl;
-    return 0;
+    REQUIRE( 329356 == input.length() );
+    REQUIRE( 4666278 == transform_n(input, 50-40).length() );
 }

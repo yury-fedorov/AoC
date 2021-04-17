@@ -5,14 +5,13 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
 typedef map<int,string> Input;
 typedef set<string> RuleSet;
 typedef shared_ptr<RuleSet> RuleSetPtr;
-
-const bool isFirstAnswer = false;
 
 RuleSetPtr append( const RuleSetPtr & a, const RuleSetPtr & b ) {
     RuleSetPtr result = make_shared<RuleSet>();
@@ -105,7 +104,7 @@ vector<int> rules( const int n, const int n11 ) {
     return result;
 }
 
-bool match( const string & msg, const Input & input ) {
+bool match( const string & msg ) {
     const int l = msg.length();
     // 0: 8 11
     // 8: 42 | 42 8 (it was just "8: 42")
@@ -126,11 +125,11 @@ bool match( const string & msg, const Input & input ) {
     return false;
 }
 
-int main() {
+auto day19(const bool isFirstAnswer) {
     Input input;
     vector<string> messages;
 
-    ifstream f("input.txt");
+    ifstream f("19/input.txt");
     string line;
 
     const regex re("^(\\d+): (.+)$");
@@ -150,16 +149,14 @@ int main() {
     if ( isFirstAnswer ) {
         const auto && ruleSetPtr = rule(input, 0); // boostrapping
         const RuleSet & rules = *ruleSetPtr;
-        cout << "Rules: " << rules.size() << endl;
+        // cout << "Rules: " << rules.size() << endl;
 
         int count = 0;
         for ( const auto & m : messages ) {
             const auto & i = rules.find( m );
             count += i != rules.end();
         }
-
-        cout << "Answer 1: " << count << endl;
-        assert( count == 291 );
+        return count;
     } else {
         // 8: 42 | 42 8 (it was just "8: 42") 
         // 11: 42 31 | 42 11 31 ( it was "11: 42 31" )
@@ -177,12 +174,17 @@ int main() {
 
         int answer2 = 0;
         for ( const auto & msg : messages ) {
-            if ( match( msg, input ) ) {
+            if ( match( msg ) ) {
                 answer2++;
             }
         }
-        cout << "Answer 2: " << answer2 << endl;
-        assert( answer2 == 409 );
+        return answer2;
     }
-    return 0;
+}
+
+TEST_CASE( "Day19-SLOW", "[19]" ) {
+    const auto runSlow = false; // takes 19 seconds
+    if ( !runSlow ) return;
+    REQUIRE( 291 == day19(true)  );
+    REQUIRE( 409 == day19(false) ); 
 }

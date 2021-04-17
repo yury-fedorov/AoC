@@ -9,6 +9,7 @@
 #include <numeric>
 #include <assert.h>
 #include <climits>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -19,27 +20,22 @@ typedef map<Pair,int> FactMap;
 inline Pair makePair( int a, int b ) { return { min(a,b), max(a,b) }; }
 
 int countHappiness( const FactMap & facts, const vector<int> & positions ) {
-    auto happiness = 0;
-    const auto n = positions.size();
+    int happiness = 0;
+    const int n = positions.size();
     for ( auto i = 0; i < n; i++ ) {
         const auto j = (i + 1) % n;
         const auto a = positions[i];
         const auto b = positions[j];
         const auto h = facts.find( makePair( a, b ) );
-        if ( h == facts.end() ) {
-            cerr << a << " " << b << endl;
-            assert(false);
+        if ( h != facts.end() ) {
+            happiness += h->second;
         }
-        happiness += h->second;
     }
     return happiness;
 }
 
-int main() {
-
-    const bool isFirstAnswer = true;
-
-    ifstream f("input.txt");
+int day13( const bool isFirstAnswer ) {
+    ifstream f("13/input.txt");
 
     vector<Fact> facts;
 
@@ -53,6 +49,7 @@ int main() {
             facts.emplace_back( what[1], what[2] == "gain", stoi(what[3]), what[4] );
         } else {
             cerr << "Unexpected line: " << line << endl;
+            FAIL();
         }
     }
 
@@ -61,21 +58,22 @@ int main() {
         persons.insert(get<0>(f));
     }
 
+    const auto ME = "me";
     if (!isFirstAnswer) {
-        persons.insert("me"); // for the part 2
+        persons.insert(ME); // for the part 2
     }
 
-    const auto personCount = persons.size();
-    cout << personCount << endl;
+    const int personCount = persons.size();
+    const auto adjPersonCount = isFirstAnswer ? personCount : personCount - 1;
 
     // now we optimize 
     FactMap factsMap;
-    for ( auto i = 0; i < personCount; i++ ) {
-        for ( auto j = i + 1; j < personCount; j++ ) {
+    for ( auto i = 0; i < adjPersonCount; i++ ) {
+        for ( auto j = i + 1; j < adjPersonCount; j++ ) {
             // get names by indexes
             const string & nameA = *next(persons.cbegin(), i);
             const string & nameB = *next(persons.cbegin(), j);
-            // find both facts in vector
+             // find both facts in vector
             auto ab = find_if( facts.cbegin(), facts.cend(), 
                 [nameA, nameB] (const Fact & f) { return get<0>(f) == nameA && get<3>(f) == nameB; } );
             auto ba = find_if( facts.cbegin(), facts.cend(), 
@@ -84,8 +82,7 @@ int main() {
             // sum the happiness
             auto fh = []( const Fact & f ) { return ( get<1>(f) ? 1 : -1 ) * get<2>(f); };
             const int happiness = fh(*ab) + fh(*ba);
-            // cout << nameA << " & " << nameB << " " << fh(*ab) << " + " << fh(*ba) << " = " << happiness << endl;
-            
+            // cout << nameA << " & " << nameB << " " << fh(*ab) << " + " << fh(*ba) << " = " << happiness << endl;    
             factsMap.insert( make_pair( makePair(i,j), happiness ) );
         }
     }
@@ -101,18 +98,20 @@ int main() {
     // 1 2 ... 8 -> is ok
     // 1 8 ... 2 -> is filtered out
     const auto lastPositionIndex = personCount - 1;
-    auto maxHappiness = INT_MIN;
+    int maxHappiness = INT_MIN;
     do {
         const auto right = positions[1];
         const auto left = positions[lastPositionIndex];
         if ( right < left ) {
             const auto curHappiness = countHappiness(factsMap, positions);
-            // cout << curHappiness << " " << right << " " << left << endl;
             maxHappiness = max(maxHappiness, curHappiness);
         }
     } while ( next_permutation( secondPosition, positions.end() ) );
 
-    cout << "Answer " << (isFirstAnswer ? 1 : 2 ) << ": " << maxHappiness << endl;
+    return maxHappiness;
+}
 
-    return 0;
+TEST_CASE( "Day13", "[13]" ) {
+    REQUIRE( 618 == day13(true) );
+    REQUIRE( 601 == day13(false) );
 }

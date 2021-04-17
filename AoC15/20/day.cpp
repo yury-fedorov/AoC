@@ -9,6 +9,7 @@
 #include <numeric>
 #include <assert.h>
 #include <climits>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -84,7 +85,9 @@ Int presents( Int house, const vector<int> & primes ) {
     return count;
 }
 
-int main() {
+TEST_CASE( "Day20-TODO", "[20]" ) {
+    const bool runSlow = false;
+    if (!runSlow) return;
     const bool isFirstAnswer= false;
 /*
     const int n = 200;
@@ -142,7 +145,7 @@ int main() {
             m = max(m, p);
             if ( p >= target ) {
                 cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << i << endl;
-                assert( i == isFirstAnswer ? 786240 : 831600 );
+                assert( i == ( isFirstAnswer ? 786240 : 831600 ) );
                 break;
             }
             if ( i % 100'000 == 0 ) {
@@ -151,7 +154,7 @@ int main() {
         }
     }
 
-    return 0;
+    return;
     
     /*
 
@@ -226,7 +229,7 @@ int main() {
         for ( )
     }
     */
-    return 0;
+    return;
     /*
     for ( int i : PRIME ) {
         const auto a = TARGET1 - 1 - i;
@@ -276,6 +279,4 @@ int main() {
     */
 
     // cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << ( isFirstAnswer ? 1 : 2 ) << endl;
-
-    return 0;
 }

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <string_view>
+#include <catch2/catch.hpp>
 
 using namespace std;
 
@@ -29,8 +30,8 @@ string toMemory( string_view line ) {
             if ( next1 != 'x' ) {
                 v.push_back(next1);
             } else {
-                const auto next2 = pop(c);
-                const auto next3 = pop(c);
+                pop(c);
+                pop(c);
                 v.push_back('?'); // we care only about size
             }
         }
@@ -56,11 +57,8 @@ string fromMemory(string_view line) {
     return string(v.begin(), v.end());
 }
 
-int main() {
-
-    const bool isFirstAnswer = false;
-
-    ifstream f("input.txt");
+auto day08( const bool isFirstAnswer ) {
+    ifstream f("08/input.txt");
 
     int codeLength = 0;
     int textLength = 0;
@@ -72,10 +70,11 @@ int main() {
         const string s = isFirstAnswer ? toMemory(line) : fromMemory(line);
         const int l1 = s.length();
         textLength += l1;
-        cout << "[" << line << "] [" << s << "] = " << l << " - " << l1 << " = " << (l - l1) <<  endl; 
     }
+    return abs(codeLength - textLength);
+}
 
-    cout << "Answer " << ( isFirstAnswer ? 1 : 2 ) << ": " << (codeLength - textLength) << endl;
-
-    return 0;
+TEST_CASE( "Day08", "[08]" ) {
+    REQUIRE(1333 == day08(true));
+    REQUIRE(2046  == day08(false));
 }
