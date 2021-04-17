@@ -157,8 +157,6 @@ fn test_day15_concurrent() {
 #[test]
 fn test_day16() {
     use crate::day16;
-    let test_dance = day16::init( &common::input( "16/sample.txt" ) );
-    assert_eq!( "baedc", day16::task1( "abcde", &test_dance ) );
     let dance = day16::init( &common::input( "16/input.txt" ) );
     let input = String::from_iter(( 0 .. 16 ).into_iter().map( |dc| ( 'a' as u8 + dc ) as char )  );
     assert_eq!( "hmefajngplkidocb", day16::task1( &input, &dance ) );
