@@ -79,12 +79,13 @@ fn next_point( m: &Map, p : &Point, d : &Direction ) -> Option<( Point, Directio
     None
 }
 
-pub fn task1(map : &str) -> String {
+pub fn task12(map : &str) -> ( String, i32 ) {
     let m : Map = map.lines().map( |s| s.to_string() ).collect();
     let mut answer = String::new();
     let start = m.get(0).unwrap().find('|').unwrap() as i32;
     let mut p : Point = (start, 0);
     let mut d = Direction::Down;
+    let mut steps = 1;
     loop {
         let c = at(&m, &p);
         println!( "p {} {} d {} c {}", p.0, p.1, d.clone() as i32, c );
@@ -106,6 +107,7 @@ pub fn task1(map : &str) -> String {
         } else {
             p = p1;
         }
+        steps += 1;
     }
-    answer
+    ( answer, steps )
 }
