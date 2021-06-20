@@ -3,7 +3,7 @@ enum Direction {
     Down, Up, Left, Right
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 enum Part {
     Cable, Letter, Space
 }
@@ -14,9 +14,9 @@ type Map = Vec<String>;
 fn next( p : &Point, d : &Direction ) -> Point {
     let (x,y) = p;
     match d {
-        Direction::Down => ( *x, *y + 1 ),
-        Direction::Up => ( *x, *y - 1 ),
-        Direction::Left => ( *x - 1, *y ),
+        Direction::Down  => ( *x, *y + 1 ),
+        Direction::Up    => ( *x, *y - 1 ),
+        Direction::Left  => ( *x - 1, *y ),
         Direction::Right => ( *x + 1, *y )
     }
 }
@@ -33,12 +33,24 @@ fn at( m : &Map, p : &Point ) -> char {
     return row.chars().nth( *x as usize).unwrap();
 }
 
-fn other_directions( d: &Direction ) -> Vec<Direction> {
+fn opposite( d: &Direction ) -> Direction {
+    match *d {
+        Direction::Right => Direction::Left,
+        Direction::Left  => Direction::Right,
+        Direction::Up    => Direction::Down,
+        Direction::Down  => Direction::Up
+    }
+}
+
+fn directions( d: &Direction ) -> Vec<Direction> {
     let mut r = vec![Direction::Down, Direction::Left, Direction::Right, Direction::Up];
-    let i = r.iter().position( |e| *e == *d ).unwrap();
+    let o : Direction = opposite(d);
+    let i = r.iter().position( |e| *e == o ).unwrap();
     r.remove(i);
     r
 }
+
+fn is_cross( c : char ) -> bool { c == '+' }
 
 fn is_cable( c : char ) -> bool {
     match c {
@@ -56,7 +68,7 @@ fn what( c : char ) -> Part {
 }
 
 fn next_point( m: &Map, p : &Point, d : &Direction ) -> Option<( Point, Direction )> {
-    let nd = other_directions(d);
+    let nd = directions(d);
     for d1 in nd {
         let p1 = next(&p, &d1);
         let c1 = at(&m, &p1);
@@ -76,11 +88,23 @@ pub fn task1(map : &str) -> String {
     loop {
         let c = at(&m, &p);
         println!( "p {} {} d {} c {}", p.0, p.1, d.clone() as i32, c );
-        if what(c) == Part::Letter { answer.push(c) }
-        let o1 = next_point( &m,&p, &d);
-        match o1 {
-            None => break,
-            Some( (p1, d1) ) => { p = p1; d = d1 }
+        let part = what(c);
+        match part {
+            Part::Letter => answer.push(c),
+            Part::Space => 
+                panic!( "must not ever happen" ),
+            Part::Cable => {}
+        }
+        let p1 = next(&p, &d);
+        let cross = is_cross(c) || ( part == Part::Letter && is_space( at( &m, &p1 ) ) );
+        if cross {
+            let o1 = next_point( &m, &p, &d );
+            match o1 {
+                None => break,
+                Some( (p1, d1) ) => { p = p1; d = d1 }
+            }
+        } else {
+            p = p1;
         }
     }
     answer
