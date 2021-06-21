@@ -88,7 +88,6 @@ pub fn task12(map : &str) -> ( String, i32 ) {
     let mut steps = 1;
     loop {
         let c = at(&m, &p);
-        println!( "p {} {} d {} c {}", p.0, p.1, d.clone() as i32, c );
         let part = what(c);
         match part {
             Part::Letter => answer.push(c),
