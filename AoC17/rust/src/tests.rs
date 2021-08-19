@@ -186,5 +186,7 @@ fn test_day18() {
 #[test]
 fn test_day19() {
     use crate::day19;
-    assert_eq!( "A", day19::task1( &common::input( "19/input" ) ) );
+    let (a1, a2) = day19::task12( &common::input( "19/input" ) );
+    assert_eq!( "VEBTPXCHLI", a1 );
+    assert_eq!( 18702, a2 );
 }
