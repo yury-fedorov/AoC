@@ -14,6 +14,7 @@ endif()
 find_package(Catch2 REQUIRED)
 file( GLOB SOURCES */*.cpp )
 set(CMAKE_CXX_CPPCHECK "cppcheck")
+# a lot of warnings 
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc15 test.cpp ${SOURCES} )
 

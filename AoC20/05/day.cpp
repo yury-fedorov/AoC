@@ -18,7 +18,7 @@ int codeToNumber( const string_view code, const char one, const char zero ) {
         if ( chPos == one ) {
             number |= ( 1 << position );
         } else {
-            assert( chPos == zero );
+            assert( chPos == zero );;
         }
         position--;
     }

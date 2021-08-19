@@ -10,7 +10,7 @@ typedef pair<int,int> Position;
 inline Int next( Int value ) { return ( value * 252533 ) % 33554393; }
 inline Position next( const Position & p ) { 
     return ( p.second == 1 ) ? Position { 1,  p.first + 1 } : Position { p.first + 1, p.second -1 };
-};
+}
 
 TEST_CASE( "Day25", "[25]" ) {
     const Position target { 3075, 2981 }; // row 2981, column 3075

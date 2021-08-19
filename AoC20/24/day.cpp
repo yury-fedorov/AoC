@@ -30,6 +30,7 @@ Position shift( Direction d ) {
         case NorthWest: return { -SHIFT_HALF,  SHIFT_HALF };
         case NorthEast: return {  SHIFT_HALF,  SHIFT_HALF };
     }
+    throw exception();
 }
 
 inline Position shift( Direction d, const Position & p ) {

@@ -18,8 +18,8 @@ const int SIDE = 10;
 
 typedef pair<int,int> Point;
 
-inline int inverse( const int v, const int n ) { return n - v - 1; };
-Point original ( const Point & p, const int ) { return p; };
+inline int inverse( const int v, const int n ) { return n - v - 1; }
+Point original ( const Point & p, const int ) { return p; }
 Point rotate90 ( const Point & p, const int n ) { return { inverse( p.second, n ), p.first }; }
 Point rotate180( const Point & p, const int n ) { return { inverse( p.first,  n ), inverse( p.second, n ) }; }
 Point rotate270( const Point & p, const int n ) { return { p.second,               inverse( p.first,  n ) }; }
@@ -55,7 +55,7 @@ inline Direction opposite( Direction d ) { return (Direction)( ( d + 2 ) % 4 ); 
 
 inline TwoBorders minmax( const Border & b ) { return minmax(b, reverse(b)); } 
 
-inline Border normalize( const Border & b ) { return minmax(b).first; };
+inline Border normalize( const Border & b ) { return minmax(b).first; }
 
 Border border( const Tile & tile, Direction d ) {
     switch (d) {
