@@ -190,3 +190,11 @@ fn test_day19() {
     assert_eq!( "VEBTPXCHLI", a1 );
     assert_eq!( 18702, a2 );
 }
+
+#[test]
+fn test_day20() {
+    use crate::day20;
+    let (a1, a2) = day20::task12( &common::input( "20/input" ) );
+    assert_eq!( -1, a1 );
+    assert_eq!( -1, a2 );
+}

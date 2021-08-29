@@ -14,6 +14,7 @@ pub mod day16;
 pub mod day17;
 pub mod day18;
 pub mod day19;
+pub mod day20;
 
 #[cfg(test)]
 // https://doc.rust-lang.org/book/ch11-02-running-tests.html#controlling-how-tests-are-run
