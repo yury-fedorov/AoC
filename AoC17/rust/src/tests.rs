@@ -195,6 +195,6 @@ fn test_day19() {
 fn test_day20() {
     use crate::day20;
     let (a1, a2) = day20::task12( &common::input( "20/input" ) );
-    assert_eq!( -1, a1 );
+    assert_eq!( 0, a1 ); // 21 is not correct answer
     assert_eq!( -1, a2 );
 }
