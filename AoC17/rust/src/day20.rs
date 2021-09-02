@@ -1,13 +1,10 @@
 extern crate regex;
 use regex::Regex;
 
-struct Point3 {
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
-}
+type Point = (i64,i64,i64);
+type PVA = (Point,Point,Point);
 
-fn parse( line : &str ) -> ( Point3, Point3, Point3 ) {
+fn parse( line : &str ) -> PVA {
     lazy_static! {
         // p=<-833,-499,-1391>, v=<84,17,61>, a=<-4,1,1>
         static ref RE_LINE: Regex = Regex::new(r"p=<([-]?\d+),([-]?\d+),([-]?\d+)>, v=<([-]?\d+),([-]?\d+),([-]?\d+)>, a=<([-]?\d+),([-]?\d+),([-]?\d+)>$").unwrap();
@@ -27,14 +24,30 @@ fn parse( line : &str ) -> ( Point3, Point3, Point3 ) {
             let ay : i64 = cap[8].to_string().parse().unwrap();
             let az : i64 = cap[9].to_string().parse().unwrap();
 
-            return ( Point3 {x:px, y:py, z:pz}, Point3{x:vx, y:vy,z:vz}, Point3{x:ax,y:ay,z:az} );
+            return ( (px, py, pz), (vx, vy, vz), (ax,ay,az) );
         } ).unwrap();
 }
 
+fn abs_sum( p : Point ) -> i64 {
+    let (x,y,z) = p;
+    return x.abs() + y.abs() + z.abs();
+}
+
 pub fn task12(data : &str) -> ( usize, i32 ) {
-    let d : Vec<( Point3, Point3, Point3 )> = data.lines().map( |l| parse(l) ).collect();
-    let a : Vec<i64> = d.iter().map( |pva| { let (p,v,a) = pva; return a.x.abs() + a.y.abs() + a.z.abs(); } ).collect();
-    let min_a = a.iter().min().unwrap();
-    let a1 = a.iter().position(|ai| ai == min_a).unwrap();
-    (a1,-1)
+    let d : Vec<PVA> = data.lines().map( parse ).collect();
+    let id : Vec<(usize,PVA)> = d.iter().enumerate().map(|i| (i.0, *(i.1)) ).collect();
+    // we sort by minimal acceleration first
+    let min_a : i64 = id.iter()
+        .map( |idi| { let (_,_,a) = idi.1; return abs_sum(a); } ).min().unwrap();
+    let a : Vec<&(usize,PVA)> = id.iter()
+        .filter( |idi| { let (_,_,a) = idi.1; return abs_sum(a) == min_a; } )
+        .collect();
+    // XXX dirty - for clean way we need to sort filter also by velocity and position
+    let a1 = a.last().unwrap().0;
+    /*
+    let v : Vec<i64> = a1.iter().filter( |pva| { let (_,v,_) = pva; return abs_sum(v); } ).collect();
+    let min_v = v.iter().min().unwrap();
+    let v1 = d.iter().filter( |pva| { let (_,v,_) = pva; return abs_sum(v) == min_v; } ).collect();
+    */
+    (a1,0)
 }
