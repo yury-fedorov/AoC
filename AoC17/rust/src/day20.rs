@@ -1,5 +1,6 @@
 extern crate regex;
 use regex::Regex;
+use std::collections::HashSet;
 
 type Point = (i64,i64,i64);
 type PVA = (Point,Point,Point);
@@ -33,7 +34,48 @@ fn abs_sum( p : Point ) -> i64 {
     return x.abs() + y.abs() + z.abs();
 }
 
-pub fn task12(data : &str) -> ( usize, i32 ) {
+fn distance( a : Point, b : Point ) -> usize {
+    ( (a.0 - b.0).abs() + (a.1 - b.1).abs() + (a.2 - b.2).abs() ) as usize
+}
+
+fn get_collision_time( a: PVA, b: PVA ) -> Option<usize> {
+    let mut pa = a.0;
+    let mut pb = b.0;
+    let mut va = a.1;
+    let mut vb = b.1;
+    let aa = a.2;
+    let ab = b.2;
+    let mut prev_distance = distance(pa, pb);
+    let mut when : usize = 0;
+    if prev_distance == 0 { return Some(when) };
+    loop {
+        // update velocities
+        va.0 += aa.0; va.1 += aa.1; va.2 += aa.2;
+        vb.0 += ab.0; vb.1 += ab.1; vb.2 += ab.2;
+        // update positions
+        when += 1;
+        pa.0 += va.0; pb.0 += vb.0;
+        let dx = distance(pa, pb);
+        if dx > prev_distance { return None; }
+        if dx == 0 { return Some(when); }
+
+        when += 1;
+        pa.1 += va.1; pb.1 += vb.1;
+        let dy = distance(pa, pb);
+        if dy > dx { return None; }
+        if dy == 0 { return Some(when); }
+
+        when += 1;
+        pa.2 += va.2; pb.2 += vb.2;
+        let dz = distance(pa, pb);
+        if dz > dx {return None;}
+        if dz == 0 {return Some(when);}
+        if prev_distance == dz {return None;}
+        prev_distance = dz;
+    }
+}
+
+pub fn task12(data : &str) -> ( usize, usize ) {
     let d : Vec<PVA> = data.lines().map( parse ).collect();
     let id : Vec<(usize,PVA)> = d.iter().enumerate().map(|i| (i.0, *(i.1)) ).collect();
     // we sort by minimal acceleration first
@@ -44,10 +86,12 @@ pub fn task12(data : &str) -> ( usize, i32 ) {
         .collect();
     // XXX dirty - for clean way we need to sort filter also by velocity and position
     let a1 = a.last().unwrap().0;
-    /*
-    let v : Vec<i64> = a1.iter().filter( |pva| { let (_,v,_) = pva; return abs_sum(v); } ).collect();
-    let min_v = v.iter().min().unwrap();
-    let v1 = d.iter().filter( |pva| { let (_,v,_) = pva; return abs_sum(v) == min_v; } ).collect();
-    */
-    (a1,0)
+
+    let all : HashSet<usize> = id.iter().map( |i| i.0 ).collect();
+    let sureLeft : HashSet<&usize> = all.iter()
+        .filter( |i| all.iter()
+            .any( |j| *j != **i && get_collision_time( d[**i], d[*j] ).is_some() ) == false
+        ).collect();
+
+    (a1,sureLeft.len())
 }
