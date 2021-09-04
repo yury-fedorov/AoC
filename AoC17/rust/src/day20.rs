@@ -2,7 +2,7 @@ extern crate regex;
 use regex::Regex;
 use std::collections::HashSet;
 
-type Point = (i64,i64,i64);
+type Point = (i64,i64,i64);//x,y,z
 type PVA = (Point,Point,Point);
 
 fn parse( line : &str ) -> PVA {
@@ -30,8 +30,7 @@ fn parse( line : &str ) -> PVA {
 }
 
 fn abs_sum( p : Point ) -> i64 {
-    let (x,y,z) = p;
-    return x.abs() + y.abs() + z.abs();
+    return p.0.abs() + p.1.abs() + p.2.abs();
 }
 
 fn distance( a : Point, b : Point ) -> usize {
@@ -75,6 +74,30 @@ fn get_collision_time( a: PVA, b: PVA ) -> Option<usize> {
     }
 }
 
+// x = x0 + (v0+0.5)*t + (a*0.5)*t*t
+// based on Ramanujan summation (1+2+3...)
+fn collision_time_on_axis( pva0: Point, pva1: Point ) -> Vec<f64> {
+    let dp = pva0.0 - pva1.0;
+    let dv = pva0.1 - pva1.1;
+    let da = pva0.2 - pva1.2;
+    let c = dp;
+    let b = dv;
+    let a = da * 0.5;
+    let det = b*b - 4*a*c;
+    if det < 0 { return []; }
+    if det == 0 { return [ ( -b / (2*a) ) ]; }
+    let sr = sqrt(det);
+    return [ (-b + sr) / (2*a), (-b-sr) / (2*a) ];
+}
+
+fn get_collision_time( a: PVA, b : PVA ) -> Option<f64> {
+    let x = collision_time_on_axis( ( a.0.0, a.1.0, a.2.0 ), ( b.0.0, b.1.0, b.2.0 ) );
+    let y = collision_time_on_axis( ( a.0.1, a.1.1, a.2.1 ), ( b.0.1, b.1.1, b.2.1 ) );
+    let z = collision_time_on_axis( ( a.0.2, a.1.2, a.2.2 ), ( b.0.2, b.1.2, b.2.2 ) );
+    // TODO
+    return 0;
+}
+
 pub fn task12(data : &str) -> ( usize, usize ) {
     let d : Vec<PVA> = data.lines().map( parse ).collect();
     let id : Vec<(usize,PVA)> = d.iter().enumerate().map(|i| (i.0, *(i.1)) ).collect();
@@ -87,11 +110,13 @@ pub fn task12(data : &str) -> ( usize, usize ) {
     // XXX dirty - for clean way we need to sort filter also by velocity and position
     let a1 = a.last().unwrap().0;
 
+    let p0_unique : HashSet<Point> = d.iter().map(|pva| pva.0 ).collect();
+
     let all : HashSet<usize> = id.iter().map( |i| i.0 ).collect();
-    let sureLeft : HashSet<&usize> = all.iter()
+    let sure_left: HashSet<&usize> = all.iter()
         .filter( |i| all.iter()
             .any( |j| *j != **i && get_collision_time( d[**i], d[*j] ).is_some() ) == false
         ).collect();
 
-    (a1,sureLeft.len())
+    (a1, p0_unique.len())
 }

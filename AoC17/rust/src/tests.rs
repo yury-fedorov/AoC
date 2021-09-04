@@ -139,21 +139,6 @@ fn test_day15() {
     day15( (116, 299), 569, 298 );
 }
 
-/*
-fn day15_concurrent( input : crate::day15::Input, answer1 : i32, answer2 : i32 ) {
-    use crate::day15;
-    // if common::is_fast() { return } // takes 7-8 seconds
-    assert_eq!( answer1, day15::task1_concurrent( input ) );
-    assert_eq!( answer2, day15::task2( input ) );
-}
-
-#[test]
-fn test_day15_concurrent() {
-    day15_concurrent( (65, 8921), 588, 309 );
-    day15_concurrent( (116, 299), 569, 298 );
-}
- */
-
 #[test]
 fn test_day16() {
     use crate::day16;
