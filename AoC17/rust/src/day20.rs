@@ -74,28 +74,44 @@ fn get_collision_time( a: PVA, b: PVA ) -> Option<usize> {
     }
 }
 
+fn round_time(t:f64) -> f64 {
+    const N : f64 = 1000.0;
+    return ( N * t ).round() / N;
+}
+
 // x = x0 + (v0+0.5)*t + (a*0.5)*t*t
 // based on Ramanujan summation (1+2+3...)
 fn collision_time_on_axis( pva0: Point, pva1: Point ) -> Vec<f64> {
-    let dp = pva0.0 - pva1.0;
-    let dv = pva0.1 - pva1.1;
-    let da = pva0.2 - pva1.2;
+    let dp : f64 = ( pva0.0 - pva1.0 ) as f64;
+    let dv : f64 = ( pva0.1 - pva1.1 ) as f64;
+    let da : f64 = ( pva0.2 - pva1.2 ) as f64;
     let c = dp;
     let b = dv;
     let a = da * 0.5;
-    let det = b*b - 4*a*c;
-    if det < 0 { return []; }
-    if det == 0 { return [ ( -b / (2*a) ) ]; }
-    let sr = sqrt(det);
-    return [ (-b + sr) / (2*a), (-b-sr) / (2*a) ];
+    let det = b*b - 4.0*a*c;
+    if det < 0.0 { return [].to_vec(); }
+    if det == 0.0 { return [ round_time( -b / (2.0*a) ) ].to_vec(); }
+    let sr = det.sqrt();
+    let t0 = round_time((-b+sr) / (2.0*a) );
+    let t1 = round_time((-b-sr) / (2.0*a) );
+    if t0 > 0.0 && t1 > 0.0 { return [t0,t1].to_vec(); }
+    if t0 > 0.0 { return [t0].to_vec(); }
+    return [t1].to_vec();
 }
 
-fn get_collision_time( a: PVA, b : PVA ) -> Option<f64> {
-    let x = collision_time_on_axis( ( a.0.0, a.1.0, a.2.0 ), ( b.0.0, b.1.0, b.2.0 ) );
-    let y = collision_time_on_axis( ( a.0.1, a.1.1, a.2.1 ), ( b.0.1, b.1.1, b.2.1 ) );
-    let z = collision_time_on_axis( ( a.0.2, a.1.2, a.2.2 ), ( b.0.2, b.1.2, b.2.2 ) );
-    // TODO
-    return 0;
+fn get_collision_time1( a: PVA, b : PVA ) -> Option<f64> {
+    let x = collision_time_on_axis(( a.0.0, a.1.0, a.2.0 ), ( b.0.0, b.1.0, b.2.0 ) );
+    if x.len() == 0 { return None; }
+    let y = collision_time_on_axis(( a.0.1, a.1.1, a.2.1 ), ( b.0.1, b.1.1, b.2.1 ) );
+    if y.len() == 0 { return None; }
+    let z = collision_time_on_axis(( a.0.2, a.1.2, a.2.2 ), ( b.0.2, b.1.2, b.2.2 ) );
+    if z.len() == 0 { return None; }
+    if x.len() == 1 && y.len() == 1 && z.len() == 1 {
+        let t = x[0];
+        if t == y[0] && t == z[0] { return Some(t); }
+        return None;
+    }
+    panic!( "not implemented yet for multiple roots" );
 }
 
 pub fn task12(data : &str) -> ( usize, usize ) {
@@ -115,7 +131,7 @@ pub fn task12(data : &str) -> ( usize, usize ) {
     let all : HashSet<usize> = id.iter().map( |i| i.0 ).collect();
     let sure_left: HashSet<&usize> = all.iter()
         .filter( |i| all.iter()
-            .any( |j| *j != **i && get_collision_time( d[**i], d[*j] ).is_some() ) == false
+            .any( |j| *j != **i && get_collision_time1( d[**i], d[*j] ).is_some() ) == false
         ).collect();
 
     (a1, p0_unique.len())
