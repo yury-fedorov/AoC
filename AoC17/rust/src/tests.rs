@@ -179,6 +179,9 @@ fn test_day19() {
 #[test]
 fn test_day20() {
     use crate::day20;
+    let (_, t2) = day20::task12( &common::input( "20/test2.txt" ) );
+    assert_eq!(1, t2);
+
     let (a1, a2) = day20::task12( &common::input( "20/input" ) );
     assert_eq!( 457, a1 ); // 21 is not correct answer
     assert_eq!( 99999, a2 ); // 453 is too high, 477 is too high, 523 is too high

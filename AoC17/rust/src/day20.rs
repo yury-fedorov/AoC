@@ -2,14 +2,14 @@ extern crate regex;
 use regex::Regex;
 use std::collections::HashSet;
 
-type Point = (i64,i64,i64);//x,y,z
-type PVA = (Point,Point,Point);
+pub type Point = (i64,i64,i64); // x, y, z
+pub type PVA = (Point,Point,Point); // Point, Velocity, Acceleration
 
 fn parse( line : &str ) -> PVA {
     lazy_static! {
         // p=<-833,-499,-1391>, v=<84,17,61>, a=<-4,1,1>
-        static ref RE_LINE: Regex = Regex::new(r"p=<([-]?\d+),([-]?\d+),([-]?\d+)>, v=<([-]?\d+),([-]?\d+),([-]?\d+)>, a=<([-]?\d+),([-]?\d+),([-]?\d+)>$").unwrap();
-
+        static ref RE_LINE: Regex = Regex::new(
+            r"p=<([-]?\d+),([-]?\d+),([-]?\d+)>, v=<([-]?\d+),([-]?\d+),([-]?\d+)>, a=<([-]?\d+),([-]?\d+),([-]?\d+)>$").unwrap();
     }
     return RE_LINE.captures_iter(line).last()
         .map(|cap| {
@@ -110,8 +110,13 @@ fn get_collision_time1( a: PVA, b : PVA ) -> Option<f64> {
     return None;
 }
 */
+
+pub fn to_pva(data : &str) -> Vec<PVA> {
+    return data.lines().map( parse ).collect();
+}
+
 pub fn task12(data : &str) -> ( usize, usize ) {
-    let d : Vec<PVA> = data.lines().map( parse ).collect();
+    let d : Vec<PVA> = to_pva(data);
     let id : Vec<(usize,PVA)> = d.iter().enumerate().map(|i| (i.0, *(i.1)) ).collect();
     // we sort by minimal acceleration first
     let min_a : i64 = id.iter()
