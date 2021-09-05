@@ -22,7 +22,7 @@ pub fn tasks(path: &str) -> (i32,i32) {
             "sw" => { y += 1; x -= 1; },
             "ne" => { y -= 1; x += 1; },
             "se" => { y += 1; x += 1; },
-            _ => panic!( ss )
+            _ => panic!( "{}", ss )
         }
         max_distance = max_distance.max( distance(x, y) );
     }

@@ -86,7 +86,7 @@ fn compile( line : &str ) -> Command {
             { if get_r( r, a ) > 0 { return get_v( &b, r ) }
                 1 } )
     }
-    panic!(line.to_string());
+    panic!("{}",line);
 }
 
 pub fn to_code(script: &str) -> Code {
