@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::collections::HashMap;
 
 enum Direction { Left, Right }
 enum State { A, B, C, D, E, F }
@@ -10,5 +11,9 @@ pub fn task1() -> usize {
     let mut tape : HashSet<i64> = HashSet::new();
     let mut cur : i64 = 0;
     let mut state : State = State::A;
+
+    let code = [
+            ( State::A, ( (true, Direction::Right, State::B), (false, Direction::Left, State::B) ) )
+        ];
     return tape.len();
 }
