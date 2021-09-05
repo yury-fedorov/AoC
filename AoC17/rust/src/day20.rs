@@ -37,6 +37,10 @@ fn distance( a : Point, b : Point ) -> usize {
     ( (a.0 - b.0).abs() + (a.1 - b.1).abs() + (a.2 - b.2).abs() ) as usize
 }
 
+fn add( a: Point, b: Point ) -> Point {
+    ( (a.0 + b.0), (a.1 + b.1), (a.2 + b.2) )
+}
+
 fn get_collision_time( a: PVA, b: PVA ) -> Option<usize> {
     let mut pa = a.0;
     let mut pb = b.0;
@@ -49,31 +53,20 @@ fn get_collision_time( a: PVA, b: PVA ) -> Option<usize> {
     if prev_distance == 0 { return Some(when) };
     loop {
         // update velocities
-        va.0 += aa.0; va.1 += aa.1; va.2 += aa.2;
-        vb.0 += ab.0; vb.1 += ab.1; vb.2 += ab.2;
+        va = add( va, aa );
+        vb = add( vb, ab );
+
         // update positions
         when += 1;
-        pa.0 += va.0; pb.0 += vb.0;
-        let dx = distance(pa, pb);
-        if dx > prev_distance { return None; }
-        if dx == 0 { return Some(when); }
-
-        when += 1;
-        pa.1 += va.1; pb.1 += vb.1;
-        let dy = distance(pa, pb);
-        if dy > dx { return None; }
-        if dy == 0 { return Some(when); }
-
-        when += 1;
-        pa.2 += va.2; pb.2 += vb.2;
-        let dz = distance(pa, pb);
-        if dz > dx {return None;}
-        if dz == 0 {return Some(when);}
-        if prev_distance == dz {return None;}
-        prev_distance = dz;
+        pa = add( pa, va );
+        pb = add( pb, vb );
+        let new_distance = distance(pa, pb);
+        if new_distance >= prev_distance {return None;}
+        if new_distance == 0 {return Some(when);}
+        prev_distance = new_distance;
     }
 }
-
+/*
 fn round_time(t:f64) -> f64 {
     const N : f64 = 1000.0;
     return ( N * t ).round() / N;
@@ -116,7 +109,7 @@ fn get_collision_time1( a: PVA, b : PVA ) -> Option<f64> {
     }
     return None;
 }
-
+*/
 pub fn task12(data : &str) -> ( usize, usize ) {
     let d : Vec<PVA> = data.lines().map( parse ).collect();
     let id : Vec<(usize,PVA)> = d.iter().enumerate().map(|i| (i.0, *(i.1)) ).collect();
@@ -129,13 +122,13 @@ pub fn task12(data : &str) -> ( usize, usize ) {
     // XXX dirty - for clean way we need to sort filter also by velocity and position
     let a1 = a.last().unwrap().0;
 
-    let p0_unique : HashSet<Point> = d.iter().map(|pva| pva.0 ).collect();
+    // let p0_unique : HashSet<Point> = d.iter().map(|pva| pva.0 ).collect();
 
     let all : HashSet<usize> = id.iter().map( |i| i.0 ).collect();
     let sure_left: HashSet<&usize> = all.iter()
         .filter( |i| all.iter()
-            .any( |j| *j != **i && get_collision_time1( d[**i], d[*j] ).is_some() ) == false
+            .any( |j| *j != **i && get_collision_time( d[**i], d[*j] ).is_some() ) == false
         ).collect();
 
-    (a1, p0_unique.len())
+    (a1, sure_left.len())
 }
