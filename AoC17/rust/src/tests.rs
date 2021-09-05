@@ -186,3 +186,10 @@ fn test_day20() {
     assert_eq!( 457, a1 ); // 21 is not correct answer
     assert_eq!( 99999, a2 ); // 453 is too high, 477 is too high, 523 is too high
 }
+
+#[test]
+fn test_day25() {
+    use crate::day25;
+    let a = day25::task1();
+    assert_eq!(1234567890, a);
+}
