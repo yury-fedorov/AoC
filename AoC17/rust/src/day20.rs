@@ -111,7 +111,10 @@ fn get_collision_time1( a: PVA, b : PVA ) -> Option<f64> {
         if t == y[0] && t == z[0] { return Some(t); }
         return None;
     }
-    panic!( "not implemented yet for multiple roots" );
+    for t in x.iter() {
+        if y.iter().any( |i| *i == *t ) && z.iter().any( |i| *i == *t ) { return Some(*t); }
+    }
+    return None;
 }
 
 pub fn task12(data : &str) -> ( usize, usize ) {
