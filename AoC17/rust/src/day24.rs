@@ -41,11 +41,40 @@ fn max_strength( head : Bridge, components : Bridge ) -> i32 {
     head_strength + std::cmp::max( h1, h2 )
 }
 
+fn max_length( head : Bridge, components : Bridge ) -> Vec<Bridge> {
+    let last : i32 = head.last().unwrap().1;
+    let mut h1 : Vec<Bridge> = components.iter().filter( |i| i.0 == last )
+        .flat_map( |h|
+        max_length( [*h].to_vec(), minus(components.clone(), *h) ) )
+        .collect();
+    let mut h2 : Vec<Bridge> = components.iter().filter( |i| i.1 == last )
+        .flat_map( |h|
+        max_length( [ invert( *h )].to_vec(), minus(components.clone(), *h) ) )
+        .collect();
+    if h1.len() == 0 && h2.len() == 0 { return [head].to_vec(); }
+
+    h1.append( &mut h2 );
+    let m = h1.iter().map( |i| i.len() ).max().unwrap_or(0);
+    h1.iter().filter( |i| i.len() == m ).map( |i| {
+        let mut r = head.clone();
+        r.extend( i );
+        r
+    } ).collect()
+}
+
 pub fn task12( components : &str ) -> (i32,i32) {
     let c : Bridge = components.lines().map( |l| normalize(parse(l)) ).collect();
     let heads : Bridge = c.iter().filter( |a| a.0 == 0 ).map(|i| *i).collect();
     let a1 : i32 = heads.iter()
         .map( |h| max_strength( [*h].to_vec(), minus(c.clone(), *h) ) )
         .max().unwrap();
-    return ( a1 ,-1); // 2612
+
+    let a2v : Vec<Bridge> = heads.iter()
+        .flat_map( |h| max_length( [*h].to_vec(), minus(c.clone(), *h) ) )
+        .collect();
+    let m2 : usize = a2v.iter().map(|i| i.len() ).max().unwrap();
+    let a2 = a2v.iter().filter(|i| i.len() == m2)
+        .map( |b| strength( b.clone() ) ).max().unwrap();
+
+    return (a1, a2 );
 }

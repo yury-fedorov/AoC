@@ -189,10 +189,11 @@ fn test_day20() {
 
 #[test]
 fn test_day24() {
+    if common::is_fast() { return } // takes 24 seconds
     use crate::day24;
     let (a1, a2) = day24::task12( &common::input( "24/input" ) );
     assert_eq!( 1511, a1 );
-    assert_eq!( 0, a2 );
+    assert_eq!( 1471, a2 );
 }
 
 #[test]
