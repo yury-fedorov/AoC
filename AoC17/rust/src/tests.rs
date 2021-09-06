@@ -191,5 +191,5 @@ fn test_day20() {
 fn test_day25() {
     use crate::day25;
     let a = day25::task1();
-    assert_eq!(1234567890, a);
+    assert_eq!(3578, a);
 }
