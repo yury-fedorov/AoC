@@ -27,7 +27,6 @@ fn get_v( value :&str, registers : &Registers ) -> Int {
 
 type Command = Box< dyn Fn ( &mut Registers ) -> Int >;
 type Code = Vec<Command>;
-type Music = Vec<Int>;
 
 fn op_r_v( a : char, b : &str, f : fn( a : Int, b : Int ) -> Int, r : &mut Registers ) -> Int {
     let new_value = f( get_r(r, a), get_v( &b, r ) );
