@@ -7,6 +7,8 @@ type Int = i64;
 type Registers = HashMap<char,Int>;
 const COUNTER: char = '#';
 
+// TODO - XXX - a lot of code here is the same  as in day18
+
 fn get_r( registers : &Registers, name : char ) -> Int {
     let ro = registers.get( &name );
     if ro.is_none() { return 0; }
