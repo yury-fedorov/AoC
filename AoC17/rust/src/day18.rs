@@ -115,5 +115,36 @@ fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
 }
 
 pub fn task2(code: &Code) -> i32 {
-    0
+    /*
+    let mut p0_in : Music = Vec::new();
+    let mut p0_out : Music = Vec::new();
+    let mut p0_registers : HashMap<char,Int> = HashMap::new();
+    p0_registers.insert( 'p', 0 );
+
+    let mut p1_in : Music = p0_out;
+    let mut p1_out : Music = p0_in;
+    let mut p1_registers : HashMap<char,Int> = HashMap::new();
+    p1_registers.insert( 'p', 1 );
+
+    let n = code.len() as Int;
+    let mut p0_index : Int = 0;
+    let mut p1_index : Int = 0;
+    let mut active_p0 = true;
+    let mut index : &Int = &p0_index;
+    let mut m_in =  &mut p0_in;
+    let mut m_out  = &mut p0_out;
+    let mut registers = &mut p0_registers;
+    while *index >= 0 && *index < n {
+        let cmd = code.get(*index as usize );
+        if cmd.is_none() { break; }
+        let f = cmd.unwrap();
+        let di = f( &mut registers, m_in, m_out );
+        index += di;
+        if m_out.len() > 0 {
+            if p0_out.len() > 0 &&  p1_out.len() > 0
+            // we switch to  another process
+        }
+    }
+     */
+    0 //  TODO
 }
