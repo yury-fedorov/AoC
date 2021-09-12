@@ -183,8 +183,8 @@ fn test_day20() {
     assert_eq!(1, t2);
 
     let (a1, a2) = day20::task12( &common::input( "20/input" ) );
-    assert_eq!( 457, a1 ); // 21 is not correct answer
-    assert_eq!( 99999, a2 ); // 453 is too high, 504 is too high
+    assert_eq!( 457, a1 );
+    assert_eq!( 448, a2 );
 }
 
 #[test]
