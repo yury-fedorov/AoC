@@ -34,7 +34,7 @@ fn op_r_v( a : char, b : &str, f : fn( a : Int, b : Int ) -> Int, r : &mut Regis
     1
 }
 
-fn compile( line : &str ) -> Command {
+fn compile( line : &str, is_task1 : bool ) -> Command {
     lazy_static! {
         static ref RE_SND: Regex = Regex::new(r"^snd (\w+)$").unwrap();         // snd X
         static ref RE_SET: Regex = Regex::new(r"^set (\w+) (\S+)$").unwrap();   // set X Y
@@ -75,9 +75,18 @@ fn compile( line : &str ) -> Command {
     }
     for cap in RE_RCV.captures_iter( line ) {
         let a = to_r(&cap[1] );
-        return Box::new( move |r, _mi, _mo|
-             { if get_r( r, a ) != 0 { return 1000000 }
-               1 } )
+        if is_task1 {
+            return Box::new( move |r, _mi, _mo|
+                { if get_r( r, a ) != 0 { return 1000000 }
+                    1 } )
+        } else {
+            return Box::new( move |r, _mi, _mo|
+                {
+                    let first = _mi[0];
+                    _mi.remove( 0 );
+                    set_r( r, a, first );
+                    1 } )
+        }
     }
     for cap in RE_JGZ.captures_iter( line ) {
         let a = to_r(&cap[1] );
@@ -89,8 +98,8 @@ fn compile( line : &str ) -> Command {
     panic!("{}",line);
 }
 
-pub fn to_code(script: &str) -> Code {
-    script.lines().into_iter().map( compile ).collect()
+pub fn to_code(script: &str, is_task1: bool ) -> Code {
+    script.lines().into_iter().map( |i| compile( i, is_task1) ).collect()
 }
 
 pub fn task1(code: &Code) -> Int {
@@ -115,7 +124,7 @@ fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
 }
 
 pub fn task2(code: &Code) -> i32 {
-    /*
+
     let mut p0_in : Music = Vec::new();
     let mut p0_out : Music = Vec::new();
     let mut p0_registers : HashMap<char,Int> = HashMap::new();
@@ -145,6 +154,6 @@ pub fn task2(code: &Code) -> i32 {
             // we switch to  another process
         }
     }
-     */
+
     0 //  TODO
 }
