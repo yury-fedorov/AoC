@@ -161,11 +161,11 @@ fn test_day17() {
 #[test]
 fn test_day18() {
     use crate::day18;
-    let tc = day18::to_code(&common::input( "18/sample.txt" ), true );
+    let tc = common::input( "18/sample.txt" );
     assert_eq!( 4, day18::task1( &tc ) );
-    let c1 = day18::to_code( &common::input( "18/input.txt"  ), true );
+    let c1 = common::input( "18/input.txt"  );
     assert_eq!( 1187, day18::task1( &c1 ) );
-    let c2 = day18::to_code( &common::input( "18/input.txt"  ), false );
+    let c2 = common::input( "18/input.txt"  );
     assert_eq!( -1, day18::task2( &c2 ) );
 }
 
@@ -210,7 +210,6 @@ fn test_day22() {
 
 #[test]
 fn test_day23() {
-    assert_eq!( 1, 0 ); // to show that it is not yet done
     if common::is_fast() { return } // takes HOURS and does not solve
     use crate::day23;
     let (a1, a2) = day23::task12( &common::input( "23/input" ) );
