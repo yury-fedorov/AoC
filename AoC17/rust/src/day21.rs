@@ -1,4 +1,3 @@
-/*
 use std::collections::HashMap;
 
 type Point = (i32,i32);
@@ -15,7 +14,7 @@ fn equal( a : &Image, b : &Image) -> bool { false }  // TODO
 fn to_image( data : &str ) -> Image {
     let lines : Vec<&str> = data.split_terminator( '/' ).collect();
     let mut result : Image = Image::new();
-    let n = i.len();
+    let n = lines.len();
     for x in 0 .. n {
         for y in 0 .. n {
             let c = lines[y].chars().nth(x).unwrap();
@@ -24,16 +23,14 @@ fn to_image( data : &str ) -> Image {
     }
     result
 }
-*/
+
 pub fn task12( data : &str ) -> (i32,i32) {
-    /*
     let init = ".#./..#/###";
     let init_image = to_image( init );
     let mut image = init_image;
     for _ in 0 .. 2 { //  TODO 5 iterations
-        let n = sqrt( image.len() ) as usize;
+        let n = ( image.len() as f64 ).sqrt() as usize;
         let is_by_2 = n % 2 == 0;
     }
-    */
     (0,0)
 }
