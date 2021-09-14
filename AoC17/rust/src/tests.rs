@@ -165,8 +165,10 @@ fn test_day18() {
     assert_eq!( 4, day18::task1( &tc ) );
     let c1 = common::input( "18/input.txt"  );
     assert_eq!( 1187, day18::task1( &c1 ) );
+    let tc2 = common::input( "18/sample2.txt" );
+    assert_eq!( 3, day18::task2( &tc2 ) );
     let c2 = common::input( "18/input.txt"  );
-    assert_eq!( -1, day18::task2( &c2 ) );
+    assert_eq!( 5969, day18::task2( &c2 ) );
 }
 
 #[test]

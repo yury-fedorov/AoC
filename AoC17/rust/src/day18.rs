@@ -1,16 +1,14 @@
 use std::collections::HashMap;
-use std::collections::VecDeque;
 extern crate regex;
 use regex::Regex;
 
-type Int = i64;
+type Int = i64; // 32 bits leads to "attempt to multiply with overflow"
 
 type Registers = HashMap<char,Int>;
 
 fn get_r( registers : &Registers, name : char ) -> Int {
     let ro = registers.get( &name );
-    if ro.is_none() { return 0; }
-    *ro.unwrap()
+    *ro.unwrap_or(&0)
 }
 
 fn set_r( registers : &mut Registers, name : char, value : Int ) {
@@ -27,16 +25,16 @@ fn get_v( value :&str, registers : &Registers ) -> Int {
 
 type CommandFn = Box< dyn Fn ( &mut Registers, &mut Music, &mut Music ) -> Int >;
 
-struct Op {
+struct Command {
     operation : CommandFn, is_receive : bool, is_send : bool
 }
 
-fn execute( op : &Op, r: &mut Registers, mi: &mut Music, mo: &mut Music) -> Int {
+fn execute(op : &Command, r: &mut Registers, mi: &mut Music, mo: &mut Music) -> Int {
     (op.operation)( r, mi, mo )
 }
 
-type Code = Vec<Op>;
-type Music = VecDeque<Int>; // fast pop_front
+type Code = Vec<Command>;
+type Music = Vec<Int>; // easier debug
 
 fn op_r_v( a : char, b : &str, f : fn( a : Int, b : Int ) -> Int, r : &mut Registers ) -> Int {
     let new_value = f( get_r(r, a), get_v( &b, r ) );
@@ -44,7 +42,7 @@ fn op_r_v( a : char, b : &str, f : fn( a : Int, b : Int ) -> Int, r : &mut Regis
     1
 }
 
-fn compile( line : &str, is_task1 : bool ) -> Op {
+fn compile( line : &str, is_task1 : bool ) -> Command {
     lazy_static! {
         static ref RE_SND: Regex = Regex::new(r"^snd (\w+)$").unwrap();         // snd X
         static ref RE_SET: Regex = Regex::new(r"^set (\w+) (\S+)$").unwrap();   // set X Y
@@ -57,60 +55,61 @@ fn compile( line : &str, is_task1 : bool ) -> Op {
     for cap in RE_SND.captures_iter( line ) {
         let a = cap[1].to_string();
         let o : CommandFn = Box::new ( move |r, _mi, mo | {
-            mo.push_back( get_v( &a, r ) ); 1 } );
-        return Op { operation : o, is_send : true, is_receive : false };
+            mo.push( get_v( &a, r ) ); 
+            1 } );
+        return Command { operation : o, is_send : true, is_receive : false };
     }
     for cap in RE_SET.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
         let o : CommandFn = Box::new ( move |r, _mi, _mo |
                 { set_r( r, a, get_v( &b, r ) ); 1 } );
-        return Op { operation : o, is_send : false, is_receive : false };
+        return Command { operation : o, is_send : false, is_receive : false };
     }
     for cap in RE_ADD.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
-        let o : CommandFn = Box::new( move |r, _mi, _mo |
-            op_r_v( a, &b, |a,b| a + b, r ) );
-        return Op { operation : o, is_send : false, is_receive : false };
+        let op_add : CommandFn = Box::new( move |r, _mi, _mo |
+            { op_r_v( a, &b, |a,b| a + b, r ) } );
+        return Command { operation : op_add, is_send : false, is_receive : false };
     }
     for cap in RE_MUL.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
         let o : CommandFn = Box::new( move |r, _mi, _mo |
             op_r_v( a, &b, |a,b| a * b, r ) );
-        return Op { operation : o, is_send : false, is_receive : false };
+        return Command { operation : o, is_send : false, is_receive : false };
     }
     for cap in RE_MOD.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let b = cap[2].to_string();
         let o : CommandFn = Box::new( move |r, _mi, _mo |
             op_r_v( a, &b, |a,b| a % b, r ) );
-        return Op { operation : o, is_send : false, is_receive : false };
+        return Command { operation : o, is_send : false, is_receive : false };
     }
     for cap in RE_RCV.captures_iter( line ) {
         let a = to_r(&cap[1] );
         let o : CommandFn = match is_task1 {
             true => Box::new( move |r, _mi, _mo|
-                { if get_r( r, a ) != 0 { return 1000000 }
+                {   if get_r( r, a ) != 0 { return 1_000_000 }
                     1 } ),
-            _ => Box::new( move |r, _mi, _mo|
-                { let first = _mi.pop_front().unwrap();
+            _ => Box::new( move |r, mi, _mo|
+                {   let first = mi.remove(0);
                     set_r( r, a, first );
                     1 } )
         };
-        return Op { operation : o, is_send : false, is_receive : true };
+        return Command { operation : o, is_send : false, is_receive : true };
     }
     for cap in RE_JGZ.captures_iter( line ) {
-        let a = to_r(&cap[1] );
+        let a = cap[1].to_string();
         let b = cap[2].to_string();
         let o : CommandFn = Box::new( move |r, _mi, _mo |
-            { if get_r( r, a ) > 0 { return get_v( &b, r ) }
+            {   let value = get_v(  &a,  r );
+                if value > 0 { return get_v( &b, r ) }
                 1 } );
-        return Op { operation : o, is_send : false, is_receive : false };
+        return Command { operation : o, is_send : false, is_receive : false };
     }
-
-    panic!("{}",line);
+    panic!("Unexpected command: {}",line);
 }
 
 fn to_code(script: &str, is_task1: bool ) -> Code {
@@ -125,9 +124,14 @@ pub fn task1(script:  &str) -> Int {
     *m_out.get( m_out.len() - 1 ).unwrap()
 }
 
-fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
+fn create_registers( p_id : Int ) -> HashMap<char,Int> {
     let mut registers : HashMap<char,Int> = HashMap::new();
     registers.insert( 'p', p_id );
+    registers
+}
+
+fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
+    let mut registers = create_registers( p_id );
     let n = code.len() as Int;
     let mut index :  Int = 0;
     while index >= 0 && index < n {
@@ -139,47 +143,50 @@ fn run_duet( p_id: Int, m_in : &mut Music, m_out : &mut Music, code : &Code ) {
     }
 }
 
-fn is_valid( index : Int, n : Int ) -> bool { index >= 0 && index < n }
-
 pub fn task2(script:&str) -> i32 {
     let code = to_code(script, false);
-    let mut p0_in : Music = Music::new();
-    let mut p0_out : Music = Music::new();
-    let mut p0_registers : HashMap<char,Int> = HashMap::new();
-    p0_registers.insert( 'p', 0 );
 
-    let mut p1_registers : HashMap<char,Int> = HashMap::new();
-    p1_registers.insert( 'p', 1 );
-
-    let n = code.len() as Int;
+    let mut p1_to_p0: Music = Music::new();
+    let mut p0_to_p1: Music = Music::new();
+    let mut p0_registers = create_registers( 0 );
+    let mut p1_registers = create_registers( 1 );
     let mut p0_index : Int = 0;
     let mut p1_index : Int = 0;
-    let mut active_p0 = true;
+    let mut is_p0_active = true;
 
     let mut answer : i32 = 0;
 
-    while is_valid( p0_index, n ) && is_valid( p1_index, n ) {
-        let index = match active_p0 { true => p0_index, _ => p1_index };
+    for _ii in 0 .. 1_000_000 {
+        let index = match is_p0_active { true => p0_index, _ => p1_index };
         let cmd = code.get(index as usize );
         if cmd.is_none() { break; }
         let command = cmd.unwrap();
         if command.is_receive {
+            
             //  we are risking deadlock
-            let p0_dead = p0_in.len() == 0;
-            let p1_dead = p0_out.len() == 0;
-            if p0_dead && p1_dead { break; } // deadlock
-            if ( p0_dead && active_p0 ) || ( p1_dead && !active_p0 ) { 
-                // change thread
-                active_p0 = !active_p0;
+            let p0_dead = p1_to_p0.len() == 0 && code.get( p0_index as usize ).unwrap().is_receive;
+            let p1_dead = p0_to_p1.len() == 0 && code.get( p1_index as usize ).unwrap().is_receive;
+            if p0_dead && p1_dead { 
+                return answer; 
+            } // deadlock
+            if ( p0_dead && is_p0_active) || ( p1_dead && !is_p0_active) {
+                // change thread to avoid deadlock
+                is_p0_active = !is_p0_active;
                 continue;
-            } 
+            }
         }
-        let di = match active_p0 {
-            true => execute( &command,&mut p0_registers, &mut p0_in, &mut p0_out),
-            _    => execute( &command,&mut p1_registers, &mut p0_out, &mut p0_in)
-        };
-        answer += match command.is_send && !active_p0 { true => 1, _ => 0 };
-        match active_p0 { true => p0_index += di, _ => p1_index += di };
+        let di;
+        if is_p0_active {
+            di  = execute(&command, &mut p0_registers, &mut p1_to_p0, &mut p0_to_p1);
+        } else {
+            di = execute(&command, &mut p1_registers, &mut p0_to_p1, &mut p1_to_p0);
+        } 
+
+        let is_p1_send = command.is_send && !is_p0_active;
+
+        // how many times did program 1 send a value?
+        answer += match is_p1_send { true => 1, _ => 0 };
+        if is_p0_active { p0_index += di } else { p1_index += di };
     }
 
     return answer;
