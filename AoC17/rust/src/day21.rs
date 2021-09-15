@@ -23,6 +23,10 @@ fn flip_horizontally( image : Image ) -> Image { image } // TODO
 
 fn equal( a : &Image, b : &Image) -> bool { false }  // TODO
 
+fn to_side( n : usize ) -> i32 {
+    ( n as f64 ).sqrt().round() as i32
+}
+
 fn to_image( data : &str ) -> Image {
     let lines : Vec<&str> = data.split_terminator( '/' ).collect();
     let mut result : Image = Image::new();
@@ -38,11 +42,11 @@ fn to_image( data : &str ) -> Image {
 
 fn from_image( image : &Image ) -> String {
     let n = image.len();
-    let n_side = n.sqrt() as i32;
+    let n_side = to_side(n);
     let mut result = String::new();
     for y in 0 .. n_side {
         for x in 0 .. n_side {
-            result.push( *image.get( &(x,y).unwrap() );
+            result.push( *image.get( &(x,y) ).unwrap() );
         }
         if result.len() > 0 { result.push( '/' ); }
     }
@@ -53,8 +57,8 @@ fn split( image : &Image, size : i32 ) -> Image2 {
     let mut result = Image2::new();
     let n = image.len();
     let piece_size = size * size;
-    let n_pieces = n / piece_size;
-    let n_pieces_side = n_pieces.sqrt() as i32;
+    let n_pieces = n / piece_size as usize;
+    let n_pieces_side = to_side( n_pieces );
     for x in 0 ..  n_pieces_side {
         for y in 0 .. n_pieces_side {
             let mut piece = Image::new();
@@ -62,7 +66,7 @@ fn split( image : &Image, size : i32 ) -> Image2 {
                 for py in 0 .. size {
                     let global_x = x * size + px;
                     let global_y = y * size + py;
-                    piece.insert( (px,py), *image.get( &(global_x, global_y) ) );
+                    piece.insert( (px,py), *image.get( &(global_x, global_y) ).unwrap() );
                 }
             }
             result.insert( (x,y),  image.clone() );
@@ -78,15 +82,22 @@ fn transform( image : &Image, map : &HashMap<String,String> ) -> Image {
     to_image( value.unwrap() )
 }
 
-fn unify( image : &Image2 ) -> Image {
-    let n = image.len();
-    let n_side = n.sqrt() as i32; // side of the image
-    let m = image.iter().next().unwrap().1.len();
-    let m_side =  m.sqrt()  as i32; // piece side size (ie. 2 or 3)
+fn unify( big_image : &Image2 ) -> Image {
+    let n = big_image.len();
+    let n_side = to_side( n ); // side of the image
+    let m = big_image.iter().next().unwrap().1.len();
+    let m_side =  to_side(m ); // piece side size (ie. 2 or 3)
     let mut image = Image::new();
     for y in 0 .. n_side {
         for x  in 0 .. n_side {
-            // TODO - finish  the algorithm
+            let piece = big_image.get( &(x,y) ).unwrap();
+            for py  in 0 .. m_side {
+                for px in 0 .. m_side {
+                    let global_x = x * m_side + px;
+                    let global_y = y * m_side + py;
+                    image.insert( (global_x, global_y), *piece.get( &(px,py) ).unwrap() );
+                }
+            }
         }
     }
     image
@@ -94,7 +105,7 @@ fn unify( image : &Image2 ) -> Image {
 
 fn create_map( data : &str ) -> HashMap<String,String> {
     // TODO
-    let map : HashMap<String,String> = HashMap:new();
+    let map : HashMap<String,String> = HashMap::new();
     map
 }
 
@@ -108,7 +119,6 @@ pub fn task12( data : &str ) -> (i32,i32) {
         let is_by_2 = n % 2 == 0;
         let is_by_3 = n % 3 == 0;
         let size = if is_by_2 { 2 } else if is_by_3 { 3 } else { panic!("not expacted") };
-        // assert_eq!( is_by_2 || is_by_3 == true );
         let image2 : Image2 = split( &image, size );
         let new_image2 : Image2 = image2.iter()
             .map( |i| ( *i.0, transform(i.1, &map ) ) ).collect();
