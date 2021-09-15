@@ -14,16 +14,17 @@ Point rotate180( const Point & p, const int n ) { return { inverse( p.first,  n 
 Point rotate270( const Point & p, const int n ) { return { p.second,               inverse( p.first,  n ) }; }
 Point horFlip  ( const Point & p, const int n ) { return { p.first,                inverse( p.second, n ) }; }
 Point verFlip  ( const Point & p, const int n ) { return { inverse( p.first,  n ), p.second }; }
-
-typedef Point (*Transformer)( const Point &, const int );
-const vector<Transformer> Rotations = { original, rotate90, rotate180, rotate270 };
-const vector<Transformer> Flips = { original, horFlip, verFlip };
  */
-fn rotate_left( image : Image ) -> Image { image } // TODO
-fn flip_vertically( image : Image ) -> Image { image } // TODO
-fn flip_horizontally( image : Image ) -> Image { image } // TODO
 
-fn equal( a : &Image, b : &Image) -> bool { false }  // TODO
+fn inverse( v : i32, n : i32 ) -> i32 { n - v - 1 }
+fn original ( p : Point, _ : i32 ) -> Point { p }
+fn rotate90 ( p : Point, n : i32 ) -> Point {  ( inverse( p.1, n ), p.0 ) }
+fn rotate180( p : Point, n : i32 ) -> Point {  ( inverse( p.0,  n ), inverse( p.1, n ) ) }
+fn rotate270( p : Point, n : i32 ) -> Point { ( p.1, inverse( p.0,  n ) ) }
+fn hor_flip ( p : Point, n : i32 ) -> Point { ( p.0, inverse( p.1, n ) ) }
+fn ver_flip ( p : Point, n : i32 ) -> Point { ( inverse( p.0, n ), p.1 ) }
+
+type Transformer = fn( Point, i32 ) -> Point;
 
 fn to_side( n : usize ) -> i32 {
     ( n as f64 ).sqrt().round() as i32
@@ -105,6 +106,20 @@ fn unify( big_image : &Image2 ) -> Image {
     image
 }
 
+fn tx_image( image : &String, tx_fx : &Transformer ) -> String {
+    let i  = to_image( image );
+    let n = to_side( i.len() );
+    let mut result = Image::new();
+    for x in 0 .. n {
+        for y  in 0 .. n {
+            let p0 = (x,y);
+            let p1 : Point = tx_fx( p0, n );
+            result.insert( p1, *i.get( &p0 ).unwrap() );
+        }
+    }
+    from_image( &result )
+}
+
 fn create_map( data : &str ) -> HashMap<String,String> {
     // ../.. => .##/##./.#.
     lazy_static! { static ref RE_LINE: Regex = Regex::new(r"^(\w+) => (\w+)$").unwrap(); }
@@ -113,8 +128,14 @@ fn create_map( data : &str ) -> HashMap<String,String> {
         .flat_map(|line| RE_LINE.captures_iter(line))
         .map(|cap| ( cap[1].to_string(), cap[2].to_string() ) )
         .collect();
-    // TODO - enhance with rotations
-    map
+
+    // enhance with rotations
+    let tx_fn : Vec<Transformer> = vec![original, rotate90, rotate180, rotate270, hor_flip, ver_flip];
+
+    map.iter()
+        .flat_map( |i| tx_fn.iter()
+            .map( move |f| ( tx_image( i.0, f ), i.1.clone() ) ) )
+        .collect()
 }
 
 pub fn task12( data : &str ) -> (i32,i32) {
