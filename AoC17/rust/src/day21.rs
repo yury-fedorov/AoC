@@ -48,10 +48,10 @@ fn from_image( image : &Image ) -> String {
     let n_side = to_side(n);
     let mut result = String::new();
     for y in 0 .. n_side {
+        if result.len() > 0 { result.push( '/' ); }
         for x in 0 .. n_side {
             result.push( *image.get( &(x,y) ).unwrap() );
         }
-        if result.len() > 0 { result.push( '/' ); }
     }
     result
 }
@@ -122,7 +122,7 @@ fn tx_image( image : &String, tx_fx : &Transformer ) -> String {
 
 fn create_map( data : &str ) -> HashMap<String,String> {
     // ../.. => .##/##./.#.
-    lazy_static! { static ref RE_LINE: Regex = Regex::new(r"^(\w+) => (\w+)$").unwrap(); }
+    lazy_static! { static ref RE_LINE: Regex = Regex::new(r"^(\S+) => (\S+)$").unwrap(); }
     let map : HashMap<String,String> = data.lines()
         .into_iter()
         .flat_map(|line| RE_LINE.captures_iter(line))
