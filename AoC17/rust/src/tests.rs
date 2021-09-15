@@ -211,15 +211,6 @@ fn test_day22() {
 }
 
 #[test]
-fn test_day23() {
-    if common::is_fast() { return } // takes HOURS and does not solve
-    use crate::day23;
-    let (a1, a2) = day23::task12( &common::input( "23/input" ) );
-    assert_eq!( -1, a1 );
-    assert_eq!( -1, a2 );
-}
-
-#[test]
 fn test_day24() {
     if common::is_fast() { return } // takes 24 seconds
     use crate::day24;
