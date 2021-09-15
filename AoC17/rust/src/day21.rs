@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+extern crate regex;
+use regex::Regex;
 
 type Point = (i32,i32);
 type Image = HashMap<Point,char>;
@@ -104,8 +106,14 @@ fn unify( big_image : &Image2 ) -> Image {
 }
 
 fn create_map( data : &str ) -> HashMap<String,String> {
-    // TODO
-    let map : HashMap<String,String> = HashMap::new();
+    // ../.. => .##/##./.#.
+    lazy_static! { static ref RE_LINE: Regex = Regex::new(r"^(\w+) => (\w+)$").unwrap(); }
+    let map : HashMap<String,String> = data.lines()
+        .into_iter()
+        .flat_map(|line| RE_LINE.captures_iter(line))
+        .map(|cap| ( cap[1].to_string(), cap[2].to_string() ) )
+        .collect();
+    // TODO - enhance with rotations
     map
 }
 
