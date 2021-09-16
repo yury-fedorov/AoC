@@ -1,9 +1,8 @@
 ﻿module Day05
 
 open System
-open System.IO
 open Xunit
-open Day02 // initial impletementation
+open Day02 // initial implementation
 
 let CodeIn = 3
 let CodeOut = 4
@@ -69,10 +68,21 @@ let ReadOp pos (code: array<int>) : Operation =
     | CodeIn -> In(GetParam 1)
     | CodeOut -> Out(GetParam 1)
 
+let Sample1 = [| 1002; 4; 3; 4; 33 |]
+
+(*  -- unexpected Input call
+[<Theory>]
+[<InlineData(0)>]
+let S1 pos = 
+    let o = ReadOp pos Sample1
+    match o with
+        | Mul (a,b,r) -> Assert.Equal( 4, a ); Assert.Equal(3, b ); Assert.Equal(4,r);
+*)
+
 // Integers can be negative: 1101,100,-1,4,0 is a valid program (find 100 + -1, store the result in position 4).
 let Sample2 = [| 1101; 100; -1; 4; 0 |]
 
-(* TODO - broken test
+(* TODO - broken test 
 [<Theory>]
 [<InlineData(0)>]
 let A pos = 
@@ -80,3 +90,4 @@ let A pos =
     match o with
     | Add (a,b,r) -> Assert.Equal( 100, a ); Assert.Equal(-1, b ); Assert.Equal(99,r);
     *)
+    
