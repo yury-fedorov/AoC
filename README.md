@@ -18,7 +18,7 @@ https://adventofcode.com/2018
 Private Leaderboard
 https://adventofcode.com/2018/leaderboard/private/view/33618
 
-## 2017 - Rust, Scala, C#
+## 2017 - Rust, Scala, C# (50 stars, rank 5483)
 https://adventofcode.com/2017
 
 Private Leaderboard
