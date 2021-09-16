@@ -85,7 +85,7 @@ let TestPart2 ed =
 [<Theory>]
 [<InlineData(1674, 14012)>]
 let Part12 ea1 ea2 =
-    let lines = File.ReadAllLines("../../../Day03.txt")
+    let lines = File.ReadAllLines("../../../../data/Day03.txt")
     let a = PathAsList lines.[0]
     let b = PathAsList lines.[1]
     let i = Intersections a b

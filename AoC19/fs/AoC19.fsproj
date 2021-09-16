@@ -6,7 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Day01.fs" />
-    <None Include="Day01.txt" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3"><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,14 +15,10 @@
 <PrivateAssets>all</PrivateAssets>
 </PackageReference>
     <Compile Include="Day02.fs" />
-    <None Include="Day02.txt" />
     <Compile Include="Day03.fs" />
-    <None Include="Day03.txt" />
     <Compile Include="Day04.fs" />
     <Compile Include="Day05.fs" />
-    <None Include="Day05.txt" />
     <Compile Include="Day06.fs" />
-    <None Include="Day06.txt" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>

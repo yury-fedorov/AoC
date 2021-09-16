@@ -70,7 +70,7 @@ let SampleRun code0 code1 =
     i |> Array.map ( fun i -> Assert.Equal(c1.[i],expC1.[i]) )
 
 
-let fileName = "../../../Day02.txt"
+let fileName = "../../../../data/Day02.txt"
 
 [<Theory>]
 [<InlineData(3716250)>]

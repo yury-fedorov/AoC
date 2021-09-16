@@ -3,7 +3,6 @@ module Day01
 open System.IO
 open Xunit
 
-
 let GetFuel(mass: int): int = (mass / 3) - 2
 
 [<Theory>]
@@ -25,7 +24,7 @@ let rec GetFuel2 (currentMass : int) (currentFuel : int) =
 [<InlineData(100756,50346)>]
 let Test2 mass expected = Assert.Equal(GetFuel2 mass 0, expected)
 
-let fileName = "../../../Day01.txt"
+let fileName = "../../../../data/Day01.txt"
 
 let GetData = File.ReadAllLines(fileName) |> Array.map int
 
