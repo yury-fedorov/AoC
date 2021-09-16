@@ -13,27 +13,27 @@ class Day02 extends AnyFunSuite {
 	}
 
 	def task02b(v:Seq[Int]) : (Int,Int) = {
-		val o = v.sorted
-		val cross = o.flatMap(x => o.map(y => (x, y)))
-		cross.find{case (a, b) => a < b &&  b % a == 0}.getOrElse( sys.error("not expected") )
+			val o = v.sorted
+			val cross = o.flatMap(x => o.map(y => (x, y)))
+			cross.find{case (a, b) => a < b &&  b % a == 0}.getOrElse( sys.error("not expected") )
 	}
 
 	def stringToSeq(str:String, sep:String) : Seq[Int] =  str.split(sep).map( _.toInt)
   
   test( "samples" ) {
- 		assert( task02a(stringToSeq("5 1 9 5", " ")) == 8)
-		assert( task02a(stringToSeq("7 5 3", " ")) == 4)
-		assert( task02a(stringToSeq("2 4 6 8", " ")) == 6)
+ 			assert( task02a(stringToSeq("5 1 9 5", " ")) == 8)
+			assert( task02a(stringToSeq("7 5 3", " ")) == 4)
+			assert( task02a(stringToSeq("2 4 6 8", " ")) == 6)
 
- 		assert( task02b(stringToSeq("5 9 2 8", " ")) == (2,8) )
- 		assert( task02b(stringToSeq("9 4 7 3", " ")) == (3,9) )
- 		assert( task02b(stringToSeq("3 8 6 5", " ")) == (3,6) )
+ 			assert( task02b(stringToSeq("5 9 2 8", " ")) == (2,8) )
+ 			assert( task02b(stringToSeq("9 4 7 3", " ")) == (3,9) )
+ 			assert( task02b(stringToSeq("3 8 6 5", " ")) == (3,6) )
   }  
 
   test ( "solutions" ) {
-		val lines = readFile("d02/input.txt")
-		val numbers = lines.map( stringToSeq( _, "\t" ) )
-		assert( numbers.map( task02a ).sum == 51833, "answer 1")
-		assert( numbers.map( task02b ).map{case (a: Int, b: Int) => b/a}.sum == 288, "answer 2")
+			val lines = readFile("d02/input.txt")
+			val numbers = lines.map( stringToSeq( _, "\t" ) )
+			assert( numbers.map( task02a ).sum == 51833, "answer 1")
+			assert( numbers.map( task02b ).map{case (a: Int, b: Int) => b/a}.sum == 288, "answer 2")
   }
 }
