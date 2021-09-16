@@ -6,16 +6,6 @@ type Point = (i32,i32);
 type Image = HashMap<Point,char>;
 type Image2 = HashMap<Point, Image>; // segment
 
-/*
-inline int inverse( const int v, const int n ) { return n - v - 1; }
-Point original ( const Point & p, const int ) { return p; }
-Point rotate90 ( const Point & p, const int n ) { return { inverse( p.second, n ), p.first }; }
-Point rotate180( const Point & p, const int n ) { return { inverse( p.first,  n ), inverse( p.second, n ) }; }
-Point rotate270( const Point & p, const int n ) { return { p.second,               inverse( p.first,  n ) }; }
-Point horFlip  ( const Point & p, const int n ) { return { p.first,                inverse( p.second, n ) }; }
-Point verFlip  ( const Point & p, const int n ) { return { inverse( p.first,  n ), p.second }; }
- */
-
 fn inverse( v : i32, n : i32 ) -> i32 { n - v - 1 }
 fn original ( p : Point, _ : i32 ) -> Point { p }
 fn rotate90 ( p : Point, n : i32 ) -> Point {  ( inverse( p.1, n ), p.0 ) }
@@ -23,6 +13,10 @@ fn rotate180( p : Point, n : i32 ) -> Point {  ( inverse( p.0,  n ), inverse( p.
 fn rotate270( p : Point, n : i32 ) -> Point { ( p.1, inverse( p.0,  n ) ) }
 fn hor_flip ( p : Point, n : i32 ) -> Point { ( p.0, inverse( p.1, n ) ) }
 fn ver_flip ( p : Point, n : i32 ) -> Point { ( inverse( p.0, n ), p.1 ) }
+fn r180_hf ( p : Point, n : i32 ) -> Point { hor_flip( rotate180(p, n), n ) }
+fn r180_vf ( p : Point, n : i32 ) -> Point { ver_flip( rotate180(p, n), n ) }
+fn r270_hf ( p : Point, n : i32 ) -> Point { hor_flip( rotate270(p, n), n ) }
+fn r270_vf ( p : Point, n : i32 ) -> Point { ver_flip( rotate270(p, n), n ) }
 
 type Transformer = fn( Point, i32 ) -> Point;
 
@@ -72,7 +66,7 @@ fn split( image : &Image, size : i32 ) -> Image2 {
                     piece.insert( (px,py), *image.get( &(global_x, global_y) ).unwrap() );
                 }
             }
-            result.insert( (x,y),  image.clone() );
+            result.insert( (x,y), piece );
         }
     }
     result
@@ -130,7 +124,8 @@ fn create_map( data : &str ) -> HashMap<String,String> {
         .collect();
 
     // enhance with rotations
-    let tx_fn : Vec<Transformer> = vec![original, rotate90, rotate180, rotate270, hor_flip, ver_flip];
+    let tx_fn : Vec<Transformer> = vec![original, rotate90, rotate180, rotate270, hor_flip, ver_flip,
+        r180_hf, r180_vf, r270_hf, r270_vf ];
 
     map.iter()
         .flat_map( |i| tx_fn.iter()
@@ -138,13 +133,13 @@ fn create_map( data : &str ) -> HashMap<String,String> {
         .collect()
 }
 
-pub fn task12( data : &str ) -> (i32,i32) {
+pub fn task( data : &str, iter_count : i32 ) -> i32 {
     let map = create_map( data );
     let init = ".#./..#/###";
     let init_image = to_image( init );
     let mut image = init_image;
-    for _ in 0 .. 2 { //  TODO 5 iterations
-        let n = ( image.len() as f64 ).sqrt() as usize;
+    for _ in 0 .. iter_count {
+        let n = to_side( image.len() );
         let is_by_2 = n % 2 == 0;
         let is_by_3 = n % 3 == 0;
         let size = if is_by_2 { 2 } else if is_by_3 { 3 } else { panic!("not expacted") };
@@ -153,6 +148,5 @@ pub fn task12( data : &str ) -> (i32,i32) {
             .map( |i| ( *i.0, transform(i.1, &map ) ) ).collect();
         image = unify( &new_image2 );
     }
-    let a1 = image.iter().filter( |i| *i.1 == '#' ).count() as i32;
-    (a1,0)
+    image.iter().filter( |i| *i.1 == '#' ).count() as i32
 }
