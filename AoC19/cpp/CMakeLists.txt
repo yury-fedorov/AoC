@@ -15,6 +15,6 @@ find_package(Catch2 REQUIRED)
 file( GLOB SOURCES day*.cpp )
 set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
-add_executable(aoc19 test.cpp ${SOURCES} )
+add_executable(aoc19 test.cpp ${SOURCES} common.cpp common.h)
 
 target_link_libraries(aoc19 PRIVATE Catch2::Catch2)

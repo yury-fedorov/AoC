@@ -1,0 +1,11 @@
+C++ 23
+- ranges (20)
+- parallel algo (17)
+- sanitizers
+- modules
+- concepts
+- CLion
+- fmt
+- span - https://stackoverflow.com/questions/45723819/what-is-a-span-and-when-should-i-use-one
+- GSL lib - https://github.com/microsoft/GSL/
+- boost?
