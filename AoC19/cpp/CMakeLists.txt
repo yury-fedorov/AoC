@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.20) # for CXX_STANDARD 23
 project(aoc19)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 23) # due to issues with range-v3
+#  set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-11") # does not work on Mac
 
 if (MSVC)
     # warning level 4 and all warnings as errors
@@ -19,21 +20,25 @@ find_package(absl REQUIRED) # Status, StatusOr
 find_package(fmt REQUIRED) # as CLang is not supporting yet std::format
 # find_package(Microsoft.GSL REQUIRED)
 
-
 include(FetchContent)
 
 # In this example we are picking a specific tag.
 # You can also pick a specific commit, if you need to.
 FetchContent_Declare(GSL
         GIT_REPOSITORY "https://github.com/microsoft/GSL"
-        GIT_TAG "v3.1.0"
-        )
+        GIT_TAG "v3.1.0" )
+
+FetchContent_Declare(range-v3
+        GIT_REPOSITORY "https://github.com/ericniebler/range-v3"
+        GIT_TAG "0.11.0" )
 
 FetchContent_MakeAvailable(GSL)
+FetchContent_MakeAvailable(range-v3)
 
 file( GLOB SOURCES day*.cpp )
 set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc19 test.cpp ${SOURCES} common.cpp common.h)
 # Microsoft.GSL::GSL
-target_link_libraries(aoc19 PRIVATE Catch2::Catch2 absl::strings absl::status GSL fmt::fmt )
+# absl::strings
+target_link_libraries(aoc19 PRIVATE Catch2::Catch2 absl::status GSL fmt::fmt range-v3 )

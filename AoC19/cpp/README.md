@@ -5,9 +5,10 @@ C++ 23
 - Abseil lib (Status, StatusOr)
 - fmt (20) - not supported by CLang - fmt library
 - GSL lib (Expects,Ensures)
+- ranges (20) - CLang 12 is not supporting it, replaced with ranges-v3 library
 
+to come (maybe)
 - parallel algo (17)
-- ranges (20)
 - concepts (GSL and 20) ?
 
 -- boost -- Google uses only limited 

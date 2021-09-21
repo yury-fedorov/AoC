@@ -1,8 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <array>
-#include "absl/strings/str_format.h"
-#include "gsl/gsl_assert"
 #include "common.h"
 
 using namespace std;
@@ -54,23 +52,50 @@ namespace day05 {
         size_t length() const noexcept { return 1 + args_.size(); }
     };
 
-    Number add( Number a, Number b ) { return a + b; }
-    Number mul( Number a, Number b ) { return a * b; }
-    Number in() { std::cout << "Input:" << std::endl; Number r {0}; std::cin >> r; return r; }
-    void out(Number a) { std::cout << a << std::endl; }
-
     Mode get_mode(char mode) {
         Expects(mode == '0' || mode == '1' );
-        return mode == '1' ? Mode::Immediate : Mode::Position; }
+        return mode == '1' ? Mode::Immediate : Mode::Position;
+    }
+
+    Execute create_execute(Command command) {
+        switch(command) {
+            case Command::End: return [](Memory& , span<const Mode> , span<const Number> )
+                { return 1'000'000; };
+            case Command::Add:
+            case Command::Mul:
+                return [command](Memory& memory, span<const Mode> mode, span<const Number> args )
+                {
+                    const auto a = get(memory, args[0], mode[0]);
+                    const auto b = get(memory, args[1], mode[1]);
+                    const auto r = (command == Command::Add) ? (a + b) : (a * b);
+                    set(memory, args[2], r);
+                    return 0;
+                };
+
+            case Command::In: return [](Memory& memory, span<const Mode>, span<const Number> args )
+                {
+                    std::cout << "Input:" << std::endl;
+                    Number r {0};
+                    std::cin >> r;
+                    set( memory, args[0], r );
+                    return 0;
+                };
+            case Command::Out: return [](Memory& memory, span<const Mode> mode, span<const Number> args )
+                {
+                    const auto v = get(memory,  args[0],  mode[0]);
+                    std::cout << v << std::endl;
+                    return 0;
+                };
+        }
+    }
 
     std::shared_ptr<Operation> create_operation( std::span<const Number> & code ) {
         const auto & modes_code = code[0];
         const auto command_code = modes_code % 100;
-        const string str_modes = absl::StrFormat( "%03d", modes_code / 100 );
+        const string str_modes = fmt::format( "{0:3}", modes_code / 100 );
         const Modes modes = { get_mode(str_modes[0]), get_mode(str_modes[1]), get_mode(str_modes[2]) };
         const Command command = static_cast<Command>(command_code);
         Arguments args;
-        Execute f = [](Memory& , span<const Mode> , span<const Number> ) { return 1'000'000; };
         switch ( command ) {
             case Command::End: break;
             case Command::Add:
@@ -82,14 +107,16 @@ namespace day05 {
                 args = { code[1] };
                 break;
         }
-        return shared_ptr<Operation>( new Operation( modes, args, f ) );
+        return shared_ptr<Operation>( new Operation( modes, args, create_execute(command) ) );
     }
 
-    long long answer1( const auto &  ) {
-        throw domain_error( "answer is not found" );
+    long answer1( const auto & code ) {
+        Memory memory = code | ranges::views::transform( [](const string & s) { return stoi(s); } )
+                | ranges::to_vector;
+        return memory.size();
     }
 
-    long long answer2( const string_view ) {
+    long answer2( const string_view ) {
         throw domain_error( "answer is not found" );
     }
 }
@@ -103,14 +130,17 @@ TEST_CASE( "Day05", "[05]" ) {
 
     const string sample = "3,0,4,0,99";
     const auto sample_code = split( sample, ',');
+    SECTION( "05-s" ) {
+        REQUIRE( answer1(sample_code) == -1 );
+    }
 
     const auto code = split( line, ',' );
 
     SECTION( "05-1" ) {
-        REQUIRE( answer1(code) == 744475 );
+        REQUIRE( answer1(code) == -1 );
     }
 
     SECTION( "05-2" ) {
-        REQUIRE( answer2(line) == 70276940 );
+        REQUIRE( answer2(line) == -1 );
     }
 }
