@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
-#include <span>
+#include <array>
+#include "absl/strings/str_format.h"
+#include "gsl/gsl_assert"
 #include "common.h"
 
 using namespace std;
@@ -8,7 +10,6 @@ using namespace std;
 namespace day05 {
 
     typedef int Number;
-    typedef std::vector<Number> Code;
 
     enum class Command {
         Add =  1,
@@ -18,26 +19,39 @@ namespace day05 {
         End = 99
     };
 
+    enum class Mode {
+        Position = 0,
+        Immediate = 1
+    };
+
+    typedef vector<Number> Memory;
+    typedef vector<Number> Arguments;
+    typedef vector<Mode> Modes;
+    typedef function<Number ( Memory& memory, span<const Mode> modes, span<const Number> args )> Execute;
+
+    Number get( const Memory & memory, Number index, Mode mode ) noexcept {
+        switch (mode) {
+            case Mode::Position: return memory[index];
+            case Mode::Immediate: return index;
+        }
+    }
+
+    void set( Memory & memory, Number index, Number value ) noexcept {
+        memory[index] = value;
+    }
+
     struct Operation {
-        const Command command_;
-        Operation( Command command ) : command_ (command ) {}
-    };
-
-    struct End : Operation {
-        End() : Operation( Command::End ) {}
-    };
-
-    struct MathOperation : Operation {
-        const Number arg0_;
-        const Number arg1_;
-        const Number result_;
-        MathOperation( Command command, Number a, Number b, Number c )
-            : Operation( command ), arg0_(a), arg1_(b), result_(c) {}
-    };
-
-    struct InputOutputOperation : Operation {
-         const Number address_;
-        InputOutputOperation(Command command, Number a) : Operation(command), address_(a) {}
+        const Modes modes_;
+        const Arguments args_;
+        const Execute execute_;
+        Operation( const Operation &) = delete;
+        Operation( const Operation &&) = delete;
+        Operation( span<const Mode> modes, span<const Number> args, Execute e ) noexcept
+            : modes_(modes.begin(), modes.end()), args_(args.begin(), args.end()), execute_(e){}
+        auto execute( Memory& memory ) const {
+            return length() + execute_(memory, modes_, args_);
+        }
+        size_t length() const noexcept { return 1 + args_.size(); }
     };
 
     Number add( Number a, Number b ) { return a + b; }
@@ -45,21 +59,30 @@ namespace day05 {
     Number in() { std::cout << "Input:" << std::endl; Number r {0}; std::cin >> r; return r; }
     void out(Number a) { std::cout << a << std::endl; }
 
-    std::shared_ptr<Operation> exec_op( const std::span<Number> & code ) {
-        Operation * result = nullptr;
-        const Command command = static_cast<Command>(code[0]);
+    Mode get_mode(char mode) {
+        Expects(mode == '0' || mode == '1' );
+        return mode == '1' ? Mode::Immediate : Mode::Position; }
+
+    std::shared_ptr<Operation> create_operation( std::span<const Number> & code ) {
+        const auto & modes_code = code[0];
+        const auto command_code = modes_code % 100;
+        const string str_modes = absl::StrFormat( "%03d", modes_code / 100 );
+        const Modes modes = { get_mode(str_modes[0]), get_mode(str_modes[1]), get_mode(str_modes[2]) };
+        const Command command = static_cast<Command>(command_code);
+        Arguments args;
+        Execute f = [](Memory& , span<const Mode> , span<const Number> ) { return 1'000'000; };
         switch ( command ) {
-            case Command::End: result = new End(); break;
+            case Command::End: break;
             case Command::Add:
             case Command::Mul:
-                result = new MathOperation( command, code[1], code[2], code[3] );
+                args = { code[1], code[2], code[3] };
                 break;
             case Command::In:
             case Command::Out:
-                result = new InputOutputOperation( command, code[1] );
+                args = { code[1] };
                 break;
         }
-        return std::shared_ptr<Operation>( result );
+        return shared_ptr<Operation>( new Operation( modes, args, f ) );
     }
 
     long long answer1( const auto &  ) {

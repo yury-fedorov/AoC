@@ -1,4 +1,6 @@
 #pragma once
+
+#include <span>
 #include <vector>
 #include <catch2/catch.hpp>
 

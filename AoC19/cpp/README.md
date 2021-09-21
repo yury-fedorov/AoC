@@ -1,11 +1,15 @@
 C++ 23
-- ranges (20)
-- parallel algo (17)
-- sanitizers
-- modules
-- concepts
+- span (20) - https://stackoverflow.com/questions/45723819/what-is-a-span-and-when-should-i-use-one
+- sanitizers (address,memory,undefined,dataflow)
 - CLion
-- fmt
-- span - https://stackoverflow.com/questions/45723819/what-is-a-span-and-when-should-i-use-one
-- GSL lib - https://github.com/microsoft/GSL/
-- boost?
+- Abseil lib (Status, StatusOr)
+- fmt (20) - not supported by CLang - fmt library
+- GSL lib (Expects,Ensures)
+
+- parallel algo (17)
+- ranges (20)
+- concepts (GSL and 20) ?
+
+-- boost -- Google uses only limited 
+-- modules (only in Visual Studio 2022 but not with CLion/CMake)
+-- Visual Studio 2022 (issues with external dependencies ie. Catch2)
