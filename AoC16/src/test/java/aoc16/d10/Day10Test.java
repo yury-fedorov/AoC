@@ -1,7 +1,6 @@
 package aoc16.d10;
 
 import aoc16.common.IOUtil;
-import org.javatuples.Pair;
 import org.junit.Test;
 
 import java.util.*;
@@ -12,52 +11,57 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-// TODO - to be rewritten with records (for better readibility)
 public class Day10Test {
 
     enum Destination { BOT, OUTPUT }
     enum Source { BOT, VALUE }
 
-    public static class BotMap extends HashMap<Integer,Pair<Pair<Destination, Integer>, Pair<Destination,Integer>>> {}
+    static record PairDI ( Destination destination, int id ) {}
+    static record PairSI ( Source source, int id ) {}
+    static record PairII (int a, int b) {}
+    static record PairDIDI(PairDI a, PairDI b) {}
+
+    public static class BotMap extends HashMap<Integer,PairDIDI> {}
     public static class ValueMap extends HashMap<Integer,Integer> {}
 
-    static Pair<Destination,Integer> out( String d, String n ) {
-        return Pair.with( d.equals( "bot" ) ? Destination.BOT : Destination.OUTPUT, Integer.parseInt(n) );
+    static PairDI out( String d, String n ) {
+        return new PairDI( d.equals( "bot" ) ? Destination.BOT : Destination.OUTPUT, Integer.parseInt(n) );
     }
 
-    static Collection< Pair<Source, Integer> > sources( ValueMap vmap, BotMap bmap, final int bot ) {
-        final var result = new ArrayList<Pair<Source,Integer>>();
+    static Collection< PairSI > sources( ValueMap vmap, BotMap bmap, final int bot ) {
+        final var result = new ArrayList<PairSI>();
         result.addAll( vmap.entrySet().stream().filter( e -> e.getValue() == bot )
-                .map( e -> Pair.with( Source.VALUE, e.getKey() )).collect(Collectors.toList()) );
+                .map( e -> new PairSI( Source.VALUE, e.getKey() )).collect(Collectors.toList()) );
         result.addAll( bmap.entrySet().stream()
-                .filter( e -> ( e.getValue().getValue0().getValue0() == Destination.BOT && e.getValue().getValue0().getValue1() == bot )
-                           || ( e.getValue().getValue1().getValue0() == Destination.BOT && e.getValue().getValue1().getValue1() == bot ) )
-                .map( e -> Pair.with( Source.BOT, e.getKey() )).collect(Collectors.toList()) );
+                .filter( e -> ( e.getValue().a().destination() == Destination.BOT && e.getValue().a().id() == bot )
+                           || ( e.getValue().b().destination() == Destination.BOT && e.getValue().b().id() == bot ) )
+                .map( e -> new PairSI( Source.BOT, e.getKey() )).collect(Collectors.toList()) );
         return result;
     }
 
-    final HashMap<Integer, Pair<Integer,Integer> > botResultMap = new HashMap<>();
+    final HashMap<Integer, PairII> botResultMap = new HashMap<>();
 
-    Pair<Integer, Integer> botOut( ValueMap vmap, BotMap bmap, final int botId ) {
+    PairII botOut( ValueMap vmap, BotMap bmap, final int botId ) {
         if ( botResultMap.containsKey( botId ) ) return botResultMap.get(botId);
         final var sources = sources( vmap, bmap, botId );
         assertEquals( "sources.size() == 2", 2, sources.size() );
         final var outValues = new ArrayList<Integer>();
         for ( final var s : sources ) {
-            if ( s.getValue0() == Source.VALUE ) outValues.add( s.getValue1() );
+            if ( s.source() == Source.VALUE ) outValues.add( s.id() );
             else {
-                final var sourceBotId = s.getValue1();
+                final var sourceBotId = s.id();
                 final var sourceBotOut = botOut( vmap, bmap, sourceBotId );
                 final var setup = bmap.get( sourceBotId );
-                if ( setup.getValue0().getValue0() == Destination.BOT && setup.getValue0().getValue1() == botId ) {
-                    outValues.add( sourceBotOut.getValue0() );
+                if ( setup.a().destination() == Destination.BOT && setup.a().id() == botId ) {
+                    outValues.add( sourceBotOut.a() );
                 } else { // eventual check
-                    outValues.add( sourceBotOut.getValue1() );
+                    outValues.add( sourceBotOut.b() );
                 }
             }
         }
         var result = ( outValues.get(0) < outValues.get(1) )
-                ? Pair.with( outValues.get(0), outValues.get(1) ) : Pair.with( outValues.get(1), outValues.get(0) );
+                ? new PairII( outValues.get(0), outValues.get(1) )
+                : new PairII( outValues.get(1), outValues.get(0) );
         botResultMap.put( botId, result );
         return result;
     }
@@ -79,7 +83,7 @@ public class Day10Test {
                 matcher = patternBot.matcher(l);
                 assertTrue( "last pattern", matcher.find() );
                 botOutMap.put( Integer.parseInt( matcher.group(1) ),
-                        Pair.with( out( matcher.group(2), matcher.group(3) ),
+                        new PairDIDI( out( matcher.group(2), matcher.group(3) ),
                                    out( matcher.group(4), matcher.group(5) ) ) );
             }
         }
@@ -93,34 +97,34 @@ public class Day10Test {
         while ( !bl.isEmpty() ) {
             final var curBot = bl.iterator().next();
             final var bo = botOut( valueBotMap, botOutMap, curBot );
-            if ( bo.getValue0() == 17 && bo.getValue1() == 61 ) {
+            if ( bo.a() == 17 && bo.b() == 61 ) {
                 answer1 = Optional.of( curBot );
                 break;
             }
             bl.remove(curBot);
             processed.add(curBot); // works also without it but in this way it is faster
             final var conf = botOutMap.get( curBot );
-            if ( conf.getValue0().getValue0() == Destination.BOT ) {
-                final var id = conf.getValue0().getValue1();
+            if ( conf.a().destination() == Destination.BOT ) {
+                final var id = conf.a().id();
                 if ( !processed.contains( id )) bl.add( id );
             }
-            if ( conf.getValue1().getValue0() == Destination.BOT ) {
-                final var id = conf.getValue1().getValue1();
+            if ( conf.b().destination() == Destination.BOT ) {
+                final var id = conf.b().id();
                 if ( !processed.contains( id )) bl.add( id );
             }
         }
         assertEquals( "answer 1", 118, answer1.get().intValue() );
 
         long answer2 = 1;
-        final Function< Pair<Destination,Integer>, Boolean> isOutput
-                = ( p ) -> p.getValue0() == Destination.OUTPUT && p.getValue1() >= 0 && p.getValue1() <= 2;
+        final Function< PairDI, Boolean> isOutput
+                = ( p ) -> p.destination() == Destination.OUTPUT && p.id() >= 0 && p.id() <= 2;
         for ( final var e : botOutMap.entrySet() ) {
             final var pp = e.getValue();
-            if ( isOutput.apply( pp.getValue0() )  ) {
-                answer2 *= botOut( valueBotMap, botOutMap, e.getKey() ).getValue0();
+            if ( isOutput.apply( pp.a() )  ) {
+                answer2 *= botOut( valueBotMap, botOutMap, e.getKey() ).a();
             }
-            if ( isOutput.apply( pp.getValue1() )  ) {
-                answer2 *= botOut( valueBotMap, botOutMap, e.getKey() ).getValue1();
+            if ( isOutput.apply( pp.b() )  ) {
+                answer2 *= botOut( valueBotMap, botOutMap, e.getKey() ).b();
             }
         }
          assertEquals( "answer 2", 143153, answer2 );
