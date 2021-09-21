@@ -1,7 +1,6 @@
 package aoc16.d04;
 
 import aoc16.common.IOUtil;
-import org.javatuples.Triplet;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -12,7 +11,9 @@ import static org.junit.Assert.assertEquals;
 
 public class Day04Test {
 
-    static Triplet<String, Integer, String> parse( String line ) {
+    static record Triplet ( String p1, int p2, String p3 ) {}
+
+    static Triplet parse( String line ) {
         final var patternString = "([a-z\\-]+)(\\d+)\\[([a-z]+)\\]$";
         final var pattern = Pattern.compile(patternString);
         final var matcher = pattern.matcher(line);
@@ -20,16 +21,16 @@ public class Day04Test {
             final var p1 = matcher.group(1);
             final var p2 = Integer.parseInt( matcher.group(2) );
             final var p3 = matcher.group(3);
-            return Triplet.with( p1, p2, p3 );
+            return new Triplet( p1, p2, p3 );
         }
         System.out.println(line);
         throw new IllegalArgumentException();
     }
 
-    static int validRoomSectorId( Triplet<String,Integer,String> p ) {
-        final var p1 = p.getValue0();
-        final var p2 = p.getValue1();
-        final var p3 = p.getValue2();
+    static int validRoomSectorId( Triplet p ) {
+        final var p1 = p.p1();
+        final var p2 = p.p2();
+        final var p3 = p.p3();
         final var frequency = new HashMap<Character,Integer>();
         for ( final var ch : p1.toCharArray() ) {
             if ( ch == '-' ) continue;
@@ -85,8 +86,8 @@ public class Day04Test {
             final var p = parse(l);
             answer1 += validRoomSectorId(p);
             if ( answer2.isEmpty() ) {
-                final var key = p.getValue1();
-                if (decode(p.getValue0(), key).contains("pole")) answer2 = Optional.of(key);
+                final var key = p.p2();
+                if (decode(p.p1(), key).contains("pole")) answer2 = Optional.of(key);
             }
         }
         assertEquals("answer 1", 278221, answer1 );
