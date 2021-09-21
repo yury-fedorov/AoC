@@ -73,6 +73,6 @@ public class Day12Test {
             final var ci = code.get(i);
             i += ci.getValue1().apply( ci.getValue0(), code, i, registers );
         }
-        return registers.get('a').intValue();
+        return registers.get('a');
     }
 }

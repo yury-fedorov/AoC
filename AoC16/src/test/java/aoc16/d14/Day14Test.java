@@ -75,8 +75,8 @@ public class Day14Test {
     @Test // very slow (almost 12 minutes)
     public void solution() throws InterruptedException {
         if (Config.isFast() ) return;
-        final Function<String, String> fh1 = (s) -> hash(s);
-        final Function<String, String> fh2 =  (s) -> hash2(s);
+        final Function<String, String> fh1 = Day14Test::hash;
+        final Function<String, String> fh2 = Day14Test::hash2;
 
         Assert.assertEquals( "test 1",  22728, solution( "abc", fh1 ) );
 
@@ -92,7 +92,7 @@ public class Day14Test {
             final var key = key(salt, i);
             executor.execute( () -> fh.apply( key ) );
         }
-        final var result = generate(salt, fh).keySet().stream().max( Integer::compare ).get().intValue();
+        final var result = generate(salt, fh).keySet().stream().max(Integer::compare).get();
         executor.shutdownNow();
         executor.awaitTermination(10, TimeUnit.SECONDS );
         return result;
@@ -106,7 +106,7 @@ public class Day14Test {
             if ( ch.isPresent() ) {
                 final String pattern = String.join("", Collections.nCopies( 5, ch.get().toString() ) );
                 for ( int j = 1; j <= 1000; j++ ) {
-                    if ( fh.apply( key(salt, i + j ) ).indexOf( pattern ) >= 0 ) {
+                    if (fh.apply(key(salt, i + j)).contains(pattern)) {
                         map.put( i, h );
                         break;
                     }

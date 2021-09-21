@@ -38,7 +38,7 @@ public class Day24Test {
                 if ( ch != SPACE && !point.equals(p0) ) passed.add( ch );
                 next.addAll( SHIFTS.stream()
                         .map( (sh) -> Point.add(point, sh) )
-                        .filter( (p) -> isIn.apply(p) )
+                        .filter(isIn::apply)
                         .filter( (p) -> !beenPoints.contains(p) )
                         .filter( (p) -> at(map, p) != WALL )
                         .collect(Collectors.toList()) );
@@ -54,7 +54,7 @@ public class Day24Test {
         final boolean isLast = l == 1;
         final var result = new ArrayList<String>(l);
         for ( int index = 0; index < l; index++ ) {
-            final Character ch = toGo.charAt(index);
+            final char ch = toGo.charAt(index);
             final String passed1 = passed + ch;
             if ( isLast ) result.add( passed1 );
             else {
@@ -106,11 +106,10 @@ public class Day24Test {
         int distance = 0;
         char prev = '?';
         for ( final var next : p.toCharArray() ) {
-            if ( prev == '?' ) prev = next;
-            else {
+            if ( prev != '?' ) {
                 distance += realDistance.get( key( prev, next ) ).getValue0();
-                prev = next;
             }
+            prev = next;
         }
         return distance;
     }

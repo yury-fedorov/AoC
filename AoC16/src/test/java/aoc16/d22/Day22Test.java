@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
@@ -32,8 +31,8 @@ public class Day22Test {
             } else System.out.println( "Bad format: " + l );
         }
         Assert.assertEquals( input.size() - 2, grid.size() );
-        final var maxX = grid.keySet().stream().mapToInt( (p) -> p.getValue0() ).max().getAsInt();
-        final var maxY = grid.keySet().stream().mapToInt( (p) -> p.getValue1() ).max().getAsInt();
+        final var maxX = grid.keySet().stream().mapToInt(Pair::getValue0).max().getAsInt();
+        final var maxY = grid.keySet().stream().mapToInt(Pair::getValue1).max().getAsInt();
         final var answer1 = new LinkedList<Pair< Pair<Integer,Integer>, Pair<Integer,Integer> >>(); // pair of nodes A->B
         for ( final var nodeA : grid.entrySet() ) {
             for ( final var nodeB : grid.entrySet() ) {

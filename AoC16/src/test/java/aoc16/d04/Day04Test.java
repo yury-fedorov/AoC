@@ -1,4 +1,4 @@
-package aoc16.d03;
+package aoc16.d04;
 
 import aoc16.common.IOUtil;
 import org.javatuples.Triplet;
@@ -16,7 +16,7 @@ public class Day04Test {
         final var patternString = "([a-z\\-]+)(\\d+)\\[([a-z]+)\\]$";
         final var pattern = Pattern.compile(patternString);
         final var matcher = pattern.matcher(line);
-        while(matcher.find()) {
+        if(matcher.find()) {
             final var p1 = matcher.group(1);
             final var p2 = Integer.parseInt( matcher.group(2) );
             final var p3 = matcher.group(3);

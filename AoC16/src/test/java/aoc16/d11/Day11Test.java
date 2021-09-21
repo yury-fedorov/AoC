@@ -67,7 +67,7 @@ public class Day11Test {
             for ( final var inLift : options ) {
                 // generators are never going down
                 if ( d == LiftDirection.DOWN &&
-                        inLift.stream().filter( (e) -> isGenerator(e) ).findAny().isPresent() ) continue;
+                        inLift.stream().anyMatch(Day11Test::isGenerator)) continue;
 
                 final var nextFloorAfter = new HashSet<>( nextFloorNow );
                 nextFloorAfter.addAll(inLift);
@@ -115,14 +115,13 @@ public class Day11Test {
                 final var state = path.getValue1(); // all flows
 
                 paths1.addAll( options( state, elevator ).stream().map( (o) -> next( path, o, history ) )
-                        .filter( (o) -> o.isPresent() ).map( (o) -> o.get() ).collect( Collectors.toList() ) );
+                        .filter(Optional::isPresent).map(Optional::get).collect( Collectors.toList() ) );
 
                 history.add( print( state, elevator ) );
             }
             step++;
-            if ( paths1.parallelStream()
-                    .filter( (p) -> p.getValue0() == MAX_FLOOR && firstNonEmptyFloor( p.getValue1() ) == MAX_FLOOR )
-                    .findAny().isPresent() )
+            if (paths1.parallelStream()
+                    .anyMatch( (p) -> p.getValue0() == MAX_FLOOR && firstNonEmptyFloor( p.getValue1() ) == MAX_FLOOR ))
                 break;
             Assert.assertFalse( "failed to find a solution: " + step, paths1.isEmpty() );
             paths = paths1;
@@ -155,7 +154,7 @@ public class Day11Test {
             if ( curFloor == fi ) fs.removeAll( elevator );
             else if ( nextFloor == fi ) fs.addAll( elevator );
             if ( fi == curFloor || fi == nextFloor )
-                Assert.assertTrue( "check",Math.abs( f.size() - fs.size() ) == elevator.size() );
+                Assert.assertEquals("check", Math.abs(f.size() - fs.size()), elevator.size());
             result.add( fs );
         }
         return result;

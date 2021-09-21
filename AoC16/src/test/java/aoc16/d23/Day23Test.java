@@ -78,6 +78,6 @@ public class Day23Test extends Day12Test {
         var registers = new HashMap<Character,Integer>();
         registers.put('a',regA);
         execute(code, registers);
-        return registers.get('a').intValue();
+        return registers.get('a');
     }
 }
