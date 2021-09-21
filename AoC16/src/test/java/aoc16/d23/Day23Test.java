@@ -3,7 +3,6 @@ package aoc16.d23;
 import aoc16.common.Config;
 import aoc16.common.IOUtil;
 import aoc16.d12.Day12Test;
-import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,7 +31,7 @@ public class Day23Test extends Day12Test {
         }
 
         @Override
-        public int apply(Matcher m, List<Pair<Matcher, Instruction>> code, int curIns, Map<Character, Integer> reg) {
+        public int apply(Matcher m, List<MatcherInstruction> code, int curIns, Map<Character, Integer> reg) {
             return instruction.apply(m, code, curIns, reg );
         }
     }
@@ -53,15 +52,15 @@ public class Day23Test extends Day12Test {
 
     private static int execute(List<String> input, int regA) {
         final var iset = new HashMap<>(initInstuctions());
-        final var INC = compile(iset, "inc a").getValue1();
-        final var DEC = compile(iset, "dec a").getValue1();
-        final var CPY = compile(iset, "cpy 1 a").getValue1();
-        final var JNZ = compile(iset, "jnz a 1").getValue1();
+        final var INC = compile(iset, "inc a").instruction();
+        final var DEC = compile(iset, "dec a").instruction();
+        final var CPY = compile(iset, "cpy 1 a").instruction();
+        final var JNZ = compile(iset, "jnz a 1").instruction();
         final Instruction TGL = ( m, c, ci, r ) -> {
             final var reg = r(m.group(1));
             final var ii = r.getOrDefault(reg, 0) + ci;
             if ( ii < c.size() ) {
-                final TogglingInstruction ti = (TogglingInstruction)c.get( ii ).getValue1();
+                final TogglingInstruction ti = (TogglingInstruction)c.get( ii ).instruction();
                 ti.toggle();
             }
             return 1; };
@@ -71,9 +70,9 @@ public class Day23Test extends Day12Test {
         final var code = compile( iset, input);
         for ( int i = 0; i < code.size(); i++ ) {
             final var cl = code.get(i);
-            final var op = cl.getValue1();
+            final var op = cl.instruction();
             // we need to replace instruction
-            code.set( i, Pair.with( cl.getValue0(), new TogglingInstruction( op, opposite.get(op) ) ) );
+            code.set( i, new MatcherInstruction( cl.matcher(), new TogglingInstruction( op, opposite.get(op) ) ) );
         }
         var registers = new HashMap<Character,Integer>();
         registers.put('a',regA);

@@ -1,7 +1,6 @@
 package aoc16.d12;
 
 import aoc16.common.IOUtil;
-import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,9 +20,11 @@ public class Day12Test {
         return isReg ? registers.getOrDefault( r(ref), 0 ) : Integer.parseInt( ref );
     }
 
+    public static record MatcherInstruction( Matcher matcher, Instruction instruction ) {}
+
     @FunctionalInterface
     public interface Instruction {
-        int apply(Matcher m, List<Pair<Matcher,Instruction>> code, int curIns, Map<Character,Integer> registers );
+        int apply(Matcher m, List<MatcherInstruction> code, int curIns, Map<Character,Integer> registers );
     }
 
     public static Map<Pattern, Instruction> initInstuctions() {
@@ -41,16 +42,16 @@ public class Day12Test {
         );
     }
 
-    public static Pair<Matcher,Instruction> compile( Map<Pattern, Instruction> instuctionSet, String line ) {
+    public static MatcherInstruction compile( Map<Pattern, Instruction> instuctionSet, String line ) {
         final var o = instuctionSet.entrySet().stream()
-                .map( (p) -> Pair.with( p.getKey().matcher( line ), p.getValue() ) )
-                .filter( (p) -> p.getValue0().find() )
+                .map( (p) -> new MatcherInstruction( p.getKey().matcher( line ), p.getValue() ) )
+                .filter( (p) -> p.matcher().find() )
                 .findAny();
         Assert.assertTrue( "Bad syntax: " + line, o.isPresent() );
         return o.get();
     }
 
-    public static List<Pair<Matcher,Instruction>> compile( Map<Pattern, Instruction> instuctionSet, List<String> input ) {
+    public static List<MatcherInstruction> compile( Map<Pattern, Instruction> instuctionSet, List<String> input ) {
         return input.stream().map( (l) -> compile( instuctionSet, l ) ).collect(Collectors.toList());
     }
 
@@ -68,10 +69,10 @@ public class Day12Test {
     }
 
     // TODO - faster registers is simple array with index (register - 'a')
-    public static int  execute(List<Pair<Matcher,Instruction>> code, HashMap<Character, Integer> registers) {
+    public static int  execute(List<MatcherInstruction> code, HashMap<Character, Integer> registers) {
         for ( int i = 0; i < code.size(); ) {
             final var ci = code.get(i);
-            i += ci.getValue1().apply( ci.getValue0(), code, i, registers );
+            i += ci.instruction().apply( ci.matcher(), code, i, registers );
         }
         return registers.get('a');
     }
