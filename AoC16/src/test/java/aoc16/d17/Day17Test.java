@@ -3,7 +3,6 @@ package aoc16.d17;
 import aoc16.common.Config;
 import aoc16.common.Md5Util;
 import aoc16.common.Point;
-import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,28 +45,31 @@ public class Day17Test {
 
     final static int MAX_COOR = 4 - 1;
 
+    static record PathPoint(String path, Point point ) {}
+    static record DirPoint(Direction direction, Optional<Point> point ) {}
+
     static List<String> allPaths(final String passcode ) {
         final var result = new LinkedList<String>();
         final var px = Point.with(MAX_COOR,MAX_COOR);
 
-        var prev = new LinkedList<Pair<String,Point>>();
-        prev.add( Pair.with( "", Point.with(0,0) ) );
+        var prev = new LinkedList<PathPoint>();
+        prev.add( new PathPoint( "", Point.with(0,0) ) );
 
         while ( !prev.isEmpty() ) {
-            final var next = new LinkedList<Pair<String,Point>>();
+            final var next = new LinkedList<PathPoint>();
             for ( final var start : prev ) {
-                final var path = start.getValue0();
-                final var p0 = start.getValue1();
+                final var path = start.path();
+                final var p0 = start.point();
                 final var options = openDoors(passcode + path ).stream()
-                        .map( (d) -> Pair.with( d, move( p0, d ) ) )
-                        .filter( (p) -> p.getValue1().isPresent() )
-                        .map( (p) -> Pair.with( p.getValue0()._symbol, p.getValue1().get() ) )
+                        .map( (d) -> new DirPoint( d, move( p0, d ) ) )
+                        .filter( (p) -> p.point().isPresent() )
+                        .map( (p) -> new PathPoint( ( (Character)( p.direction()._symbol) ).toString(), p.point().get() ) )
                         .collect(Collectors.toList());
 
                 for ( final var p : options ) {
-                    final var path1 = path + p.getValue0();
-                    if ( p.getValue1().equals(px) ) result.add( path1 );
-                    else next.add( Pair.with( path1, p.getValue1() ) );
+                    final var path1 = path + p.path();
+                    if ( p.point().equals(px) ) result.add( path1 );
+                    else next.add( new PathPoint( path1, p.point() ) );
                 }
             }
             prev = next;
@@ -75,12 +77,14 @@ public class Day17Test {
         return result;
     }
 
-    static Pair<String,Integer> answers( String passcode ) {
+    static record PathLength( String path, int length ) {}
+
+    static PathLength answers( String passcode ) {
         final var all =  allPaths( passcode );
-        return Pair.with(all.get(0), all.get(all.size()-1).length());
+        return new PathLength(all.get(0), all.get(all.size()-1).length());
     }
 
-    static String shortestPath( String passcode ) { return answers( passcode ).getValue0(); }
+    static String shortestPath( String passcode ) { return answers( passcode ).path(); }
 
     @Test
     public void test() {
@@ -94,7 +98,7 @@ public class Day17Test {
     public void solution() {
         final var INPUT = "gdjjyniy";
         final var a = answers(INPUT);
-        Assert.assertEquals( "answer 1", "DUDDRLRRRD", a.getValue0() );
-        Assert.assertEquals( "answer 2", 578, a.getValue1().intValue() );
+        Assert.assertEquals( "answer 1", "DUDDRLRRRD", a.path() );
+        Assert.assertEquals( "answer 2", 578, a.length() );
     }
 }

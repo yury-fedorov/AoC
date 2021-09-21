@@ -2,7 +2,6 @@ package aoc16.d24;
 
 import aoc16.common.IOUtil;
 import aoc16.common.Point;
-import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +20,9 @@ public class Day24Test {
 
     static char at( List<String> map, Point p ) { return map.get( p.y() ).charAt( p.x() ); }
 
-    static Pair<Integer, Collection<Character>> realDistance( List<String> map, Point p0, Point p1 ) {
+    static record DistancePassed( int distance, Collection<Character> passed ) {}
+
+    static DistancePassed realDistance( List<String> map, Point p0, Point p1 ) {
         final var beenPoints = new HashSet<Point>();
         final var passed = new HashSet<Character>();
         var frontLine = new HashSet<Point>();
@@ -32,7 +33,7 @@ public class Day24Test {
         for ( ; !frontLine.isEmpty(); d++ ) {
             var next = new HashSet<Point>();
             for ( final var point : frontLine ) {
-                if ( point.equals( p1 ) ) return Pair.with( d, passed );
+                if ( point.equals( p1 ) ) return new DistancePassed( d, passed );
                 final char ch = at(map, point);
                 Assert.assertNotEquals( "walls are not expected", ch, WALL );
                 if ( ch != SPACE && !point.equals(p0) ) passed.add( ch );
@@ -46,7 +47,7 @@ public class Day24Test {
             beenPoints.addAll(frontLine);
             frontLine = next;
         }
-        return Pair.with(d, passed);
+        return new DistancePassed(d, passed);
     }
 
     public static Collection<String> paths( StringBuilder toGo, String passed ) {
@@ -66,7 +67,9 @@ public class Day24Test {
         return result;
     }
 
-    static Pair<Character,Character> key( char a, char b ) { return a < b ? Pair.with( a, b ) : Pair.with( b, a );  }
+    static record AB (char a, char b) {}
+
+    static AB key( char a, char b ) { return a < b ? new AB( a, b ) : new AB( b, a );  }
 
     @Test
     public void solution() {
@@ -80,16 +83,16 @@ public class Day24Test {
                 if ( ch != WALL && ch != SPACE ) m.put( ch, Point.with(x,y) );
             }
         }
-        final var manhattanDistances = new HashMap<Pair<Character,Character>,Integer>();
+        final var manhattanDistances = new HashMap<AB,Integer>();
         for ( final var a : m.keySet() ) {
             for ( final var b : m.keySet() ) {
                 if ( a >= b ) continue;
-                manhattanDistances.put( Pair.with(a,b), Point.distance( m.get(a), m.get(b) ) );
+                manhattanDistances.put( new AB(a,b), Point.distance( m.get(a), m.get(b) ) );
             }
         }
-        final var realDistance = new HashMap<Pair<Character,Character>, Pair<Integer,Collection<Character>> >();
+        final var realDistance = new HashMap<AB, DistancePassed >();
         for ( final var k : manhattanDistances.keySet() ) {
-            realDistance.put(k, realDistance(map, m.get( k.getValue0() ), m.get( k.getValue1() ) ) );
+            realDistance.put(k, realDistance(map, m.get( k.a() ), m.get( k.b() ) ) );
         }
         final var toGo = new StringBuilder( '0' );
         for ( final char ch : m.keySet() ) if ( ch != '0' ) toGo.append( ch );
@@ -102,12 +105,12 @@ public class Day24Test {
         Assert.assertEquals( "answer 2",  744, answer2 );
     }
 
-    private int distance(HashMap<Pair<Character, Character>, Pair<Integer, Collection<Character>>> realDistance, String p) {
+    private int distance(HashMap<AB, DistancePassed> realDistance, String p) {
         int distance = 0;
         char prev = '?';
         for ( final var next : p.toCharArray() ) {
             if ( prev != '?' ) {
-                distance += realDistance.get( key( prev, next ) ).getValue0();
+                distance += realDistance.get( key( prev, next ) ).distance();
             }
             prev = next;
         }
