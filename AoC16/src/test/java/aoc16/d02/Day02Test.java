@@ -26,15 +26,15 @@ public class Day02Test {
     final static Map<Character,Direction> TO_DIR = Map.of(
             'U', Direction.UP, 'D', Direction.DOWN, 'L', Direction.LEFT, 'R', Direction.RIGHT );
 
-    static char at( char [][] keypad, Point p ) { return keypad[p.y][p.x]; }
+    static char at( char [][] keypad, Point p ) { return keypad[p.y()][p.x()]; }
 
     static int bound( char [][] keypad, int v ) { return Math.min( Math.max( 0, v ), keypad.length -1 ); }
 
     static Point move( char [][] keypad, Point p, Direction d ) {
         final int dx = d == Direction.LEFT ? -1 : d == Direction.RIGHT ? 1 : 0;
         final int dy = d == Direction.UP   ? -1 : d == Direction.DOWN  ? 1 : 0;
-        int x1 = bound( keypad, p.x + dx );
-        int y1 = bound( keypad, p.y + dy );
+        int x1 = bound( keypad, p.x() + dx );
+        int y1 = bound( keypad, p.y() + dy );
         return at( keypad, Point.with(x1,y1) ) == ' ' ? p : Point.with( x1, y1 );
     }
 

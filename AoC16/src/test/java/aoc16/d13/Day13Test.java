@@ -26,8 +26,8 @@ public class Day13Test {
                 if ( dx == 0 && dy == 0 ) continue;
                 if ( dx != 0 && dy != 0 ) continue;
                 final var p0d = Point.with( x + dx, y + dy );
-                if ( p0d.x < 0 || p0d.y < 0 ) continue;
-                if ( isWall( p0d.x, p0d.y, favoriteNumber ) ) continue;
+                if ( p0d.x() < 0 || p0d.y() < 0 ) continue;
+                if ( isWall( p0d.x(), p0d.y(), favoriteNumber ) ) continue;
                 result.add( p0d );
             }
         }
@@ -43,7 +43,7 @@ public class Day13Test {
         for ( int result = 1; true; result++ ) {
             final var nextToPrev = new HashSet<Point>();
             for ( final var psp : prevStep ) {
-                for ( final var np : next( psp.x, psp.y, favoriteNumber ) ) {
+                for ( final var np : next( psp.x(), psp.y(), favoriteNumber ) ) {
                     if ( !path.contains( np ) )
                         nextToPrev.add( np );
                 }
@@ -62,7 +62,7 @@ public class Day13Test {
         for ( int result = 1; result <= maxDistance; result++ ) {
             final var nextToPrev = new HashSet<Point>();
             for ( final var psp : prevStep ) {
-                for ( final var np : next( psp.x, psp.y, favoriteNumber ) ) {
+                for ( final var np : next( psp.x(), psp.y(), favoriteNumber ) ) {
                     if ( !path.contains( np ) )
                         nextToPrev.add( np );
                 }

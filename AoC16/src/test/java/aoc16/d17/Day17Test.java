@@ -38,8 +38,8 @@ public class Day17Test {
     static String md5(String text ) { return new Md5Util().md5(text).toLowerCase(); }
 
     static Optional<Point> move(Point p0, Direction d ) {
-        final var p = Point.with( p0.x + d._dx, p0.y + d._dy );
-        if ( p.x < 0 || p.y < 0 || p.x > MAX_COOR || p.y > MAX_COOR )
+        final var p = Point.with( p0.x() + d._dx, p0.y() + d._dy );
+        if ( p.x() < 0 || p.y() < 0 || p.x() > MAX_COOR || p.y() > MAX_COOR )
             return Optional.empty();
         return Optional.of(p);
     }

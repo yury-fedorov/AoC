@@ -19,14 +19,14 @@ public class Day24Test {
 
     static Point size( List<String> map ) { return Point.with( map.get(0).length(), map.size() ); }
 
-    static char at( List<String> map, Point p ) { return map.get( p.y ).charAt( p.x ); }
+    static char at( List<String> map, Point p ) { return map.get( p.y() ).charAt( p.x() ); }
 
     static Pair<Integer, Collection<Character>> realDistance( List<String> map, Point p0, Point p1 ) {
         final var beenPoints = new HashSet<Point>();
         final var passed = new HashSet<Character>();
         var frontLine = new HashSet<Point>();
         final var s = size(map);
-        final Function<Point,Boolean> isIn = (p) -> p.x >= 0 && p.y >= 0 && p.x < s.x && p.y < s.y;
+        final Function<Point,Boolean> isIn = (p) -> p.x() >= 0 && p.y() >= 0 && p.x() < s.x() && p.y() < s.y();
         frontLine.add( p0 );
         int d = 0;
         for ( ; !frontLine.isEmpty(); d++ ) {
@@ -73,9 +73,9 @@ public class Day24Test {
         final var map = IOUtil.input("d24");
         final var s = size(map);
         final var m = new HashMap<Character, Point>();
-        for ( var y = 0; y < s.y; y++ ) {
+        for ( var y = 0; y < s.y(); y++ ) {
             final var l = map.get(y);
-            for ( var x = 0; x < s.x; x++ ) {
+            for ( var x = 0; x < s.x(); x++ ) {
                 final var ch = l.charAt(x);
                 if ( ch != WALL && ch != SPACE ) m.put( ch, Point.with(x,y) );
             }
