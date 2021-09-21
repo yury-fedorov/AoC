@@ -1,7 +1,6 @@
 package aoc16.d11;
 
 import aoc16.common.Config;
-import org.javatuples.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,8 +46,10 @@ public class Day11Test {
 
     static int nextFloor( int floor, LiftDirection d ) { return floor + ( d == LiftDirection.UP ? 1 : -1 ); }
 
-    static Collection< Pair< LiftDirection, Collection<Integer> > > options( List<Collection<Integer>> floors, final int floor ) {
-        final var results = new LinkedList< Pair< LiftDirection, Collection<Integer> > >();
+    static record DirectionOptions ( LiftDirection direction, Collection<Integer> options ) {}
+
+    static Collection< DirectionOptions > options( List<Collection<Integer>> floors, final int floor ) {
+        final var results = new LinkedList< DirectionOptions >();
         final var options = new ArrayList< Collection<Integer> >(); // resource optimal
         final var floorNow = floors.get(floor);
         for ( final var a : floorNow ) {
@@ -71,7 +72,7 @@ public class Day11Test {
 
                 final var nextFloorAfter = new HashSet<>( nextFloorNow );
                 nextFloorAfter.addAll(inLift);
-                if ( !isFried( nextFloorAfter ) ) results.add( Pair.with( d, inLift ) );
+                if ( !isFried( nextFloorAfter ) ) results.add( new DirectionOptions( d, inLift ) );
             }
         }
         return results;
@@ -91,28 +92,30 @@ public class Day11Test {
         Assert.assertEquals( "answer 2", 55, solve(floors2) );
     }
 
-    static Optional<Pair<Integer, List< Collection<Integer>>>> next(
-            Pair< Integer, List< Collection<Integer>> > now,
-            Pair< LiftDirection, Collection<Integer> > option,
+    static record FloorState( int floor, List< Collection<Integer> > state ) {}
+
+    static Optional<FloorState> next(
+            FloorState now,
+            DirectionOptions option,
             Set<String> history ) {
-        final int curFloor = now.getValue0();
-        final var state = now.getValue1();
-        final var nextFloor = nextFloor( curFloor, option.getValue0() );
-        final var newState = move( state, curFloor, nextFloor, option.getValue1() );
+        final int curFloor = now.floor();
+        final var state = now.state();
+        final var nextFloor = nextFloor( curFloor, option.direction() );
+        final var newState = move( state, curFloor, nextFloor, option.options() );
         if ( !history.contains( print( newState, nextFloor ) ) ) // we do not repeat the history
-            return Optional.of( Pair.with( nextFloor, newState ) );
+            return Optional.of( new FloorState( nextFloor, newState ) );
         return Optional.empty();
     }
 
     private int solve(List<Collection<Integer>> floors) {
-        var paths = Set.of( Pair.with( 0, floors) );
+        var paths = Set.of( new FloorState( 0, floors) );
         int step = 0;
         final var history = new HashSet<String>();
         while ( !paths.isEmpty() ) {
-            final var paths1 = new HashSet< Pair<Integer, List< Collection<Integer>>> >();
+            final var paths1 = new HashSet< FloorState >();
             for ( final var path : paths ) {
-                final int elevator = path.getValue0();
-                final var state = path.getValue1(); // all flows
+                final int elevator = path.floor();
+                final var state = path.state(); // all flows
 
                 paths1.addAll( options( state, elevator ).stream().map( (o) -> next( path, o, history ) )
                         .filter(Optional::isPresent).map(Optional::get).collect( Collectors.toList() ) );
@@ -121,7 +124,7 @@ public class Day11Test {
             }
             step++;
             if (paths1.parallelStream()
-                    .anyMatch( (p) -> p.getValue0() == MAX_FLOOR && firstNonEmptyFloor( p.getValue1() ) == MAX_FLOOR ))
+                    .anyMatch( (p) -> p.floor() == MAX_FLOOR && firstNonEmptyFloor( p.state() ) == MAX_FLOOR ))
                 break;
             Assert.assertFalse( "failed to find a solution: " + step, paths1.isEmpty() );
             paths = paths1;
