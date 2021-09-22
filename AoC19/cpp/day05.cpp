@@ -26,14 +26,21 @@ namespace day05 {
         Immediate = 1
     };
 
+    enum class JumpType {
+        Next, // no jump
+        Absolute
+    };
+
     typedef vector<Number> Memory;
     typedef vector<Number> Arguments;
     typedef vector<Mode> Modes;
-    typedef function<Number ( Memory& memory, span<const Mode> modes, span<const Number> args )> Execute;
+    typedef pair<JumpType,int> Jump;
+    typedef function<Jump ( Memory& memory, span<const Mode> modes, span<const Number> args )> Execute;
 
     Number get( const Memory & memory, Number index, Mode mode ) noexcept {
         switch (mode) {
-            case Mode::Position: return memory[index];
+            case Mode::Position:
+                return ( index >= 0 && index < static_cast<Number>( memory.size() ) ) ? memory[index] : 0;
             case Mode::Immediate: return index;
         }
         assert( false ); // "unexpected mode type"
@@ -52,9 +59,8 @@ namespace day05 {
         Operation( const Operation &&) = delete;
         Operation( span<const Mode> modes, span<const Number> args, Execute e ) noexcept
             : modes_(modes.begin(), modes.end()), args_(args.begin(), args.end()), execute_(e){}
-        auto execute( Memory& memory ) const {
-            const auto result = execute_(memory, modes_, args_);
-            return result != 0 ? result : length();
+        Jump execute( Memory& memory ) const {
+            return execute_(memory, modes_, args_);
         }
         size_t length() const noexcept { return 1 + args_.size(); }
     };
@@ -65,14 +71,15 @@ namespace day05 {
     }
 
     Execute create_execute(Command command) {
+        const Jump NextOp = {JumpType::Next, 0};
         switch(command) {
             case Command::End: return [](Memory& , span<const Mode> , span<const Number> )
-                { return 1'000'000; };
+                { return Jump(JumpType::Absolute, 1'000'000 ); };
             case Command::Add:
             case Command::Mul:
             case Command::Equals:
             case Command::LessThan:
-                return [command](Memory& memory, span<const Mode> mode, span<const Number> args )
+                return [&](Memory& memory, span<const Mode> mode, span<const Number> args )
                 {
                     const auto a = get(memory, args[0], mode[0]);
                     const auto b = get(memory, args[1], mode[1]);
@@ -85,35 +92,36 @@ namespace day05 {
                         default: assert(false); // not expected
                     }
                     const auto ra = get( memory, args[2], mode[2] );
+                    // const auto ra = args[2];
                     set(memory, ra, r);
-                    return 0;
+                    return NextOp;
                 };
             case Command::JumpIfFalse:
             case Command::JumpIfTrue:
-                return [command](Memory& memory, span<const Mode> mode, span<const Number> args )
+                return [&](Memory& memory, span<const Mode> mode, span<const Number> args )
                 {
                     const auto a = get(memory, args[0], mode[0]);
                     const auto b = get(memory, args[1], mode[1]);
                     const bool is_jump = (command == Command::JumpIfFalse) ? a == 0 : a != 0;
-                    return is_jump ? b : 0;
+                    return is_jump ? Jump( JumpType::Absolute, b ) : NextOp;
                 };
 
-            case Command::In: return [](Memory& memory, span<const Mode>, span<const Number> args )
+            case Command::In: return [&](Memory& memory, span<const Mode>, span<const Number> args )
                 {
                     std::cout << "Input:" << std::endl;
                     Number r {0};
                     std::cin >> r;
                     set( memory, args[0], r );
-                    return 0;
+                    return NextOp;
                 };
-            case Command::Out: return [](Memory& memory, span<const Mode> mode, span<const Number> args )
+            case Command::Out: return [&](Memory& memory, span<const Mode> mode, span<const Number> args )
                 {
                     const auto v = get(memory,  args[0],  mode[0]);
                     std::cout << v << std::endl;
-                    return 0;
+                    return NextOp;
                 };
         }
-        throw runtime_error("unexpected command type");
+        throw runtime_error( fmt::format( "unexpected command type: {}", command ) );
     }
 
     std::shared_ptr<Operation> create_operation( std::span<const Number> & code ) {
@@ -157,8 +165,8 @@ namespace day05 {
         while ( cur >= 0 && cur < static_cast<int>( memory.size() ) )  {
             span<const Number> frame = memory_span.subspan( cur );
             const auto o = create_operation( frame );
-            const auto delta = o->execute(memory);
-            cur += delta;
+            const auto jump = o->execute(memory);
+            cur = ( jump.first == JumpType::Absolute ) ? jump.second : ( cur + o->length() );
         }
         return 666;
     }
