@@ -84,7 +84,8 @@ namespace day05 {
                         case Command::LessThan: r = a < b ? 1 : 0; break;
                         default: assert(false); // not expected
                     }
-                    set(memory, args[2], r);
+                    const auto ra = get( memory, args[2], mode[2] );
+                    set(memory, ra, r);
                     return 0;
                 };
             case Command::JumpIfFalse:
