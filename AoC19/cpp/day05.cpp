@@ -32,6 +32,8 @@ namespace day05 {
             case Mode::Position: return memory[index];
             case Mode::Immediate: return index;
         }
+        assert( false ); // "unexpected mode type"
+        return -1;
     }
 
     void set( Memory & memory, Number index, Number value ) noexcept {
@@ -88,6 +90,7 @@ namespace day05 {
                     return 0;
                 };
         }
+        throw runtime_error("unexpected command type");
     }
 
     std::shared_ptr<Operation> create_operation( std::span<const Number> & code ) {

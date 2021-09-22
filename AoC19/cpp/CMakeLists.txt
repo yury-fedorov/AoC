@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.20) # for CXX_STANDARD 23
+cmake_minimum_required(VERSION 3.18) # 3.20 for CXX_STANDARD 23, 3.18 for Ubuntu
 project(aoc19)
 
-set(CMAKE_CXX_STANDARD 23) # due to issues with range-v3
+set(CMAKE_CXX_STANDARD 20) # due to issues with range-v3
 #  set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-11") # does not work on Mac
 
 if (MSVC)
@@ -16,8 +16,8 @@ set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fs
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,memory,undefined,dataflow")
 
 find_package(Catch2 REQUIRED) # for testing
-find_package(absl REQUIRED) # Status, StatusOr
-find_package(fmt REQUIRED) # as CLang is not supporting yet std::format
+# find_package(absl REQUIRED) # Status, StatusOr
+# find_package(fmt REQUIRED) # as CLang is not supporting yet std::format
 # find_package(Microsoft.GSL REQUIRED)
 
 include(FetchContent)
@@ -32,8 +32,14 @@ FetchContent_Declare(range-v3
         GIT_REPOSITORY "https://github.com/ericniebler/range-v3"
         GIT_TAG "0.11.0" )
 
+FetchContent_Declare(fmt
+        GIT_REPOSITORY "https://github.com/fmtlib/fmt"
+        GIT_TAG "8.0.1" )
+
+
 FetchContent_MakeAvailable(GSL)
 FetchContent_MakeAvailable(range-v3)
+FetchContent_MakeAvailable(fmt)
 
 file( GLOB SOURCES day*.cpp )
 set(CMAKE_CXX_CPPCHECK "cppcheck")
@@ -41,4 +47,6 @@ set(CMAKE_CXX_CPPCHECK "cppcheck")
 add_executable(aoc19 test.cpp ${SOURCES} common.cpp common.h)
 # Microsoft.GSL::GSL
 # absl::strings
-target_link_libraries(aoc19 PRIVATE Catch2::Catch2 absl::status GSL fmt::fmt range-v3 )
+# absl::status 
+# fmt::fmt
+target_link_libraries(aoc19 PRIVATE Catch2::Catch2 GSL fmt range-v3 )
