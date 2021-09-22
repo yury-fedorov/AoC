@@ -1,5 +1,6 @@
 #include <fstream>
 #include <set>
+#include <string_view>
 #include "common.h"
 
 using namespace std;
@@ -12,7 +13,7 @@ namespace day06 {
     int count( const Data & data, const string & obj ) noexcept {
         if ( obj == Com ) return 0;
         const auto r = r::find_if(data, [&obj](const auto & _){ return _.second == obj; } );
-        assert( data.end() == r ); // must not ever happen
+        if ( data.end() == r ) return 0; // detached?
         if ( r->first == Com ) return 1;
         return 1 + count( data, r->first );
     }
@@ -41,7 +42,7 @@ TEST_CASE( "Day06", "[06]" ) {
 
     const auto code = split( line, ',' );
     SECTION( "06-1" ) {
-        REQUIRE( answer1(data) == -1 );
+        REQUIRE( answer1(data) == 312697 );
     }
 
     SECTION( "06-2" ) {
