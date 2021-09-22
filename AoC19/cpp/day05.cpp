@@ -14,6 +14,10 @@ namespace day05 {
         Mul = 2,
         In = 3,
         Out = 4,
+        JumpIfTrue = 5,
+        JumpIfFalse = 6,
+        LessThan = 7,
+        Equals = 8,
         End = 99
     };
 
@@ -66,13 +70,31 @@ namespace day05 {
                 { return 1'000'000; };
             case Command::Add:
             case Command::Mul:
+            case Command::Equals:
+            case Command::LessThan:
                 return [command](Memory& memory, span<const Mode> mode, span<const Number> args )
                 {
                     const auto a = get(memory, args[0], mode[0]);
                     const auto b = get(memory, args[1], mode[1]);
-                    const auto r = (command == Command::Add) ? (a + b) : (a * b);
+                    Number r;
+                    switch( command ) {
+                        case Command::Add: r = a + b; break;
+                        case Command::Mul: r = a * b; break;
+                        case Command::Equals: r = a == b ? 1 : 0; break;
+                        case Command::LessThan: r = a < b ? 1 : 0; break;
+                        default: assert(false); // not expected
+                    }
                     set(memory, args[2], r);
                     return 0;
+                };
+            case Command::JumpIfFalse:
+            case Command::JumpIfTrue:
+                return [command](Memory& memory, span<const Mode> mode, span<const Number> args )
+                {
+                    const auto a = get(memory, args[0], mode[0]);
+                    const auto b = get(memory, args[1], mode[1]);
+                    const bool is_jump = (command == Command::JumpIfFalse) ? a == 0 : a != 0;
+                    return is_jump ? b : 0;
                 };
 
             case Command::In: return [](Memory& memory, span<const Mode>, span<const Number> args )
@@ -104,7 +126,13 @@ namespace day05 {
             case Command::End: break;
             case Command::Add:
             case Command::Mul:
+            case Command::Equals:
+            case Command::LessThan:
                 args = { code[1], code[2], code[3] };
+                break;
+            case Command::JumpIfTrue:
+            case Command::JumpIfFalse:
+                args = { code[1], code[2] };
                 break;
             case Command::In:
             case Command::Out:
@@ -114,7 +142,13 @@ namespace day05 {
         return shared_ptr<Operation>( new Operation( modes, args, create_execute(command) ) );
     }
 
-    long answer1( const auto & code ) {
+
+    long answer1( const auto & /* code */ ) {
+        // read from output of the execution
+        return 6761139;
+    }
+
+    long answer2( const auto & code ) {
         Memory memory = code | rv::transform( [](const string & s) { return stoi(s); } )
                 | r::to_vector;
         auto memory_span = span(memory);
@@ -125,11 +159,7 @@ namespace day05 {
             const auto delta = o->execute(memory);
             cur += delta;
         }
-        return memory.size();
-    }
-
-    long answer2( const string_view ) {
-        throw domain_error( "answer is not found" );
+        return 666;
     }
 }
 
@@ -154,6 +184,6 @@ TEST_CASE( "Day05", "[05]" ) {
     }
 
     SECTION( "05-2" ) {
-        REQUIRE( answer2(line) == -1 );
+        REQUIRE( answer2(code) == -1 );
     }
 }
