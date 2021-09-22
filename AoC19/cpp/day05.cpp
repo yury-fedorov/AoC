@@ -47,7 +47,8 @@ namespace day05 {
         Operation( span<const Mode> modes, span<const Number> args, Execute e ) noexcept
             : modes_(modes.begin(), modes.end()), args_(args.begin(), args.end()), execute_(e){}
         auto execute( Memory& memory ) const {
-            return length() + execute_(memory, modes_, args_);
+            const auto result = execute_(memory, modes_, args_);
+            return result != 0 ? result : length();
         }
         size_t length() const noexcept { return 1 + args_.size(); }
     };
@@ -111,8 +112,16 @@ namespace day05 {
     }
 
     long answer1( const auto & code ) {
-        Memory memory = code | ranges::views::transform( [](const string & s) { return stoi(s); } )
-                | ranges::to_vector;
+        Memory memory = code | rv::transform( [](const string & s) { return stoi(s); } )
+                | r::to_vector;
+        auto memory_span = span(memory);
+        auto cur = 0;
+        while ( cur >= 0 && cur < static_cast<int>( memory.size() ) )  {
+            span<const Number> frame = memory_span.subspan( cur );
+            const auto o = create_operation( frame );
+            const auto delta = o->execute(memory);
+            cur += delta;
+        }
         return memory.size();
     }
 
