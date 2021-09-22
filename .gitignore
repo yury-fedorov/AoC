@@ -18,3 +18,7 @@ AoC17/fs/obj/
 /AoC20/cmake_install.cmake
 /AoC20/CMakeCache.txt
 /AoC20/Makefile
+/AoC19/cpp/_deps/
+/AoC19/cpp/aoc19.dir/
+/AoC19/cpp/CMakeFiles/
+/AoC19/cpp/x64/

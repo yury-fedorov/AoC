@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18) # 3.20 for CXX_STANDARD 23, 3.18 for Ubuntu
+cmake_minimum_required(VERSION 3.17) # 3.20 for CXX_STANDARD 23, 3.18 for Ubuntu, 3.17 for Windows
 project(aoc19)
 
 set(CMAKE_CXX_STANDARD 20) # due to issues with range-v3
@@ -15,7 +15,7 @@ endif()
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,memory,undefined,dataflow")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,memory,undefined,dataflow")
 
-find_package(Catch2 REQUIRED) # for testing
+# find_package(Catch2 REQUIRED) # for testing
 # find_package(absl REQUIRED) # Status, StatusOr
 # find_package(fmt REQUIRED) # as CLang is not supporting yet std::format
 # find_package(Microsoft.GSL REQUIRED)
@@ -36,10 +36,14 @@ FetchContent_Declare(fmt
         GIT_REPOSITORY "https://github.com/fmtlib/fmt"
         GIT_TAG "8.0.1" )
 
+FetchContent_Declare(Catch2
+        GIT_REPOSITORY "https://github.com/catchorg/Catch2"
+        GIT_TAG "v2.13.7" )
 
 FetchContent_MakeAvailable(GSL)
 FetchContent_MakeAvailable(range-v3)
 FetchContent_MakeAvailable(fmt)
+FetchContent_MakeAvailable(Catch2)
 
 file( GLOB SOURCES day*.cpp )
 set(CMAKE_CXX_CPPCHECK "cppcheck")

@@ -96,8 +96,8 @@ namespace day05 {
     std::shared_ptr<Operation> create_operation( std::span<const Number> & code ) {
         const auto & modes_code = code[0];
         const auto command_code = modes_code % 100;
-        const string str_modes = fmt::format( "{0:3}", modes_code / 100 );
-        const Modes modes = { get_mode(str_modes[0]), get_mode(str_modes[1]), get_mode(str_modes[2]) };
+        const string str_modes = fmt::format( "{:03d}", modes_code / 100 );
+        const Modes modes = { get_mode(str_modes[2]), get_mode(str_modes[1]), get_mode(str_modes[0]) };
         const Command command = static_cast<Command>(command_code);
         Arguments args;
         switch ( command ) {
@@ -140,16 +140,17 @@ TEST_CASE( "Day05", "[05]" ) {
     string line;
     getline(f, line);
 
+    /*
     const string sample = "3,0,4,0,99";
     const auto sample_code = split( sample, ',');
     SECTION( "05-s" ) {
         REQUIRE( answer1(sample_code) == -1 );
     }
+    */
 
     const auto code = split( line, ',' );
-
     SECTION( "05-1" ) {
-        REQUIRE( answer1(code) == -1 );
+        REQUIRE( answer1(code) == 6761139 ); // last output lines on '1' input (described in task)
     }
 
     SECTION( "05-2" ) {
