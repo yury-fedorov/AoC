@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <array>
+#include <queue>
 #include "common.h"
 
 using namespace std;
@@ -32,16 +32,17 @@ namespace day05 {
     };
 
     typedef vector<Number> Memory;
+    typedef queue<Number> Queue;
     typedef vector<Number> Arguments;
     typedef vector<Mode> Modes;
     typedef pair<JumpType,int> Jump;
-    typedef function<Jump ( Memory& memory, span<const Mode> modes, span<const Number> args )> Execute;
+    typedef function<Jump ( Memory& memory, Queue& in, Queue& out,
+                            span<const Mode> modes, span<const Number> args )> Execute;
 
-    Number get( const Memory & memory, Number index, Mode mode ) noexcept {
+    Number get( const Memory & memory, Number value, Mode mode ) noexcept {
         switch (mode) {
-            case Mode::Position:
-                return ( index >= 0 && index < static_cast<Number>( memory.size() ) ) ? memory[index] : 0;
-            case Mode::Immediate: return index;
+            case Mode::Position:  return memory[value];
+            case Mode::Immediate: return value;
         }
         assert( false ); // "unexpected mode type"
         return -1;
@@ -59,8 +60,8 @@ namespace day05 {
         Operation( const Operation &&) = delete;
         Operation( span<const Mode> modes, span<const Number> args, Execute e ) noexcept
             : modes_(modes.begin(), modes.end()), args_(args.begin(), args.end()), execute_(e){}
-        Jump execute( Memory& memory ) const {
-            return execute_(memory, modes_, args_);
+        Jump execute( Memory& memory, Queue& in, Queue& out ) const {
+            return execute_(memory, in, out, modes_, args_);
         }
         size_t length() const noexcept { return 1 + args_.size(); }
     };
@@ -70,16 +71,17 @@ namespace day05 {
         return mode == '1' ? Mode::Immediate : Mode::Position;
     }
 
+    constexpr Jump NextOp = {JumpType::Next, 0};
+
     Execute create_execute(Command command) {
-        const Jump NextOp = {JumpType::Next, 0};
         switch(command) {
-            case Command::End: return [](Memory& , span<const Mode> , span<const Number> )
+            case Command::End: return [](Memory&, Queue&, Queue&, span<const Mode> , span<const Number> )
                 { return Jump(JumpType::Absolute, 1'000'000 ); };
             case Command::Add:
             case Command::Mul:
             case Command::Equals:
             case Command::LessThan:
-                return [&](Memory& memory, span<const Mode> mode, span<const Number> args )
+                return [command](Memory& memory, Queue&, Queue&, span<const Mode> mode, span<const Number> args )
                 {
                     const auto a = get(memory, args[0], mode[0]);
                     const auto b = get(memory, args[1], mode[1]);
@@ -91,14 +93,13 @@ namespace day05 {
                         case Command::LessThan: r = a < b ? 1 : 0; break;
                         default: assert(false); // not expected
                     }
-                    const auto ra = get( memory, args[2], mode[2] );
-                    // const auto ra = args[2];
+                    const auto ra = args[2];
                     set(memory, ra, r);
                     return NextOp;
                 };
             case Command::JumpIfFalse:
             case Command::JumpIfTrue:
-                return [&](Memory& memory, span<const Mode> mode, span<const Number> args )
+                return [command](Memory& memory, Queue&, Queue&, span<const Mode> mode, span<const Number> args )
                 {
                     const auto a = get(memory, args[0], mode[0]);
                     const auto b = get(memory, args[1], mode[1]);
@@ -106,18 +107,15 @@ namespace day05 {
                     return is_jump ? Jump( JumpType::Absolute, b ) : NextOp;
                 };
 
-            case Command::In: return [&](Memory& memory, span<const Mode>, span<const Number> args )
+            case Command::In: return [](Memory& memory, Queue& in, Queue&, span<const Mode>, span<const Number> args )
                 {
-                    std::cout << "Input:" << std::endl;
-                    Number r {0};
-                    std::cin >> r;
-                    set( memory, args[0], r );
+                    set( memory, args[0], in.front() );
+                    in.pop();
                     return NextOp;
                 };
-            case Command::Out: return [&](Memory& memory, span<const Mode> mode, span<const Number> args )
+            case Command::Out: return [](Memory& memory, Queue&, Queue& out, span<const Mode> mode, span<const Number> args )
                 {
-                    const auto v = get(memory,  args[0],  mode[0]);
-                    std::cout << v << std::endl;
+                    out.push( get(memory,  args[0],  mode[0]) );
                     return NextOp;
                 };
         }
@@ -126,8 +124,9 @@ namespace day05 {
 
     std::shared_ptr<Operation> create_operation( std::span<const Number> & code ) {
         const auto & modes_code = code[0];
-        const auto command_code = modes_code % 100;
-        const string str_modes = fmt::format( "{:03d}", modes_code / 100 );
+        const auto mc = div(modes_code, 100); // quot - modes, rem - command
+        const auto command_code = mc.rem;
+        const string str_modes = fmt::format( "{:03d}", mc.quot );
         const Modes modes = { get_mode(str_modes[2]), get_mode(str_modes[1]), get_mode(str_modes[0]) };
         const Command command = static_cast<Command>(command_code);
         Arguments args;
@@ -151,25 +150,26 @@ namespace day05 {
         return shared_ptr<Operation>( new Operation( modes, args, create_execute(command) ) );
     }
 
-
-    long answer1( const auto & /* code */ ) {
-        // read from output of the execution
-        return 6761139;
-    }
-
-    long answer2( const auto & code ) {
+    Number solution( const auto & code, Number input ) {
         Memory memory = code | rv::transform( [](const string & s) { return stoi(s); } )
-                | r::to_vector;
+                        | r::to_vector;
         auto memory_span = span(memory);
+        Queue in;
+        in.push( input );
+        Queue out;
         auto cur = 0;
         while ( cur >= 0 && cur < static_cast<int>( memory.size() ) )  {
             span<const Number> frame = memory_span.subspan( cur );
             const auto o = create_operation( frame );
-            const auto jump = o->execute(memory);
+            const auto jump = o->execute(memory, in, out);
             cur = ( jump.first == JumpType::Absolute ) ? jump.second : ( cur + o->length() );
         }
-        return 666;
+        return out.back();
     }
+
+    Number answer1( const auto & code ) { return solution(code, 1); }
+
+    Number answer2( const auto & code ) { return solution(code, 5); }
 }
 
 TEST_CASE( "Day05", "[05]" ) {
@@ -179,20 +179,18 @@ TEST_CASE( "Day05", "[05]" ) {
     string line;
     getline(f, line);
 
-    /*
     const string sample = "3,0,4,0,99";
     const auto sample_code = split( sample, ',');
     SECTION( "05-s" ) {
-        REQUIRE( answer1(sample_code) == -1 );
+        assert( solution(sample_code, 1 ) == 1 );
     }
-    */
 
     const auto code = split( line, ',' );
     SECTION( "05-1" ) {
-        REQUIRE( answer1(code) == 6761139 ); // last output lines on '1' input (described in task)
+        REQUIRE( answer1(code) == 6761139 );
     }
 
     SECTION( "05-2" ) {
-        REQUIRE( answer2(code) == -1 );
+        REQUIRE( answer2(code) == 9217546 );
     }
 }
