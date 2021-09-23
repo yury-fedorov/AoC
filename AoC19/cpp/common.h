@@ -12,4 +12,6 @@
 namespace r = ranges; // standard is std::ranges
 namespace rv = ranges::views;
 
+inline bool is_fast_only() noexcept { return true; } // to filter out slow tests
+
 std::vector<std::string> split(const std::string& s, char delimiter);
