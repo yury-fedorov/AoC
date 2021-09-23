@@ -1,4 +1,5 @@
 #include <fstream>
+#include <map>
 #include <set>
 #include <string_view>
 #include "common.h"
@@ -11,11 +12,18 @@ namespace day06 {
     constexpr string_view Com = "COM";
 
     int count( const Data & data, const string & obj ) noexcept {
-        if ( obj == Com ) return 0;
+        // version without caching takes 24 seconds
+        static map<string,int> cache; // XXX: simplified implementation, would not work for different data
+        const auto i = cache.find(obj);
+        if ( i != cache.end() ) { return i->second; }
+
+        int result = 0;
         const auto r = r::find_if(data, [&obj](const auto & _){ return _.second == obj; } );
-        if ( data.end() == r ) return 0; // detached?
-        if ( r->first == Com ) return 1;
-        return 1 + count( data, r->first );
+        if ( data.end() != r ) {
+            result = 1 + count( data, r->first );
+        }
+        cache.insert( { obj, result } );
+        return result;
     }
 
     int answer1( const auto & data ) {
@@ -67,7 +75,7 @@ TEST_CASE( "Day06", "[06]" ) {
 
     const auto code = split( line, ',' );
     SECTION( "06-1" ) {
-        if ( !is_fast_only() ) { REQUIRE( answer1(data) == 312697 ); } // takes 24 seconds
+        REQUIRE( answer1(data) == 312697 );
     }
 
     SECTION( "06-2" ) {
