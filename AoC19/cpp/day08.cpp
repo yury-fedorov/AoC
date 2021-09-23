@@ -24,9 +24,13 @@ namespace day08 {
             { return LevelDataPair( level, count_on_level(image, level * count_on_one_level, count_on_one_level ) ); } )
             | r::to_vector;
         const auto min_zero = r::min_element(data,
-            [](const LevelDataPair & a, const LevelDataPair & b){ return a.first < b.first; });
+            [](const LevelDataPair & a, const LevelDataPair & b){ return a.second.at('0') < b.second.at('0'); });
         const LevelData & m = min_zero->second;
         return m.at('1') * m.at('2');
+    }
+
+    int answer2(const auto &  ) {
+        return  0;
     }
 }
 
@@ -38,12 +42,11 @@ TEST_CASE( "Day08", "[08]" ) {
     getline(f, line);
 
     SECTION( "08-1" ) {
-        REQUIRE( answer1(line) == 70597 ); // 1116 -- too low
+        REQUIRE( answer1(line) == 1584 );
     }
-/*
+
     SECTION( "08-2" ) {
-        REQUIRE( answer2(data) == -2 );
+        REQUIRE( answer2(line) == -2 );
     }
-*/
 }
 
