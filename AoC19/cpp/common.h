@@ -1,7 +1,11 @@
 #pragma once
 
 #include <algorithm>
+#include <fstream>
+#include <map>
+#include <set>
 #include <span>
+#include <string_view>
 #include <vector>
 #include <catch2/catch.hpp>
 
