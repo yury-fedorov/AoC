@@ -45,10 +45,10 @@ FetchContent_MakeAvailable(range-v3)
 FetchContent_MakeAvailable(fmt)
 FetchContent_MakeAvailable(Catch2)
 
-file( GLOB SOURCES day*.cpp )
+file( GLOB SOURCES day*.cpp common.cpp intcode_computer.cpp )
 set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
-add_executable(aoc19 test.cpp ${SOURCES} common.cpp common.h)
+add_executable(aoc19 test.cpp ${SOURCES}  )
 # Microsoft.GSL::GSL
 # absl::strings
 # absl::status 
