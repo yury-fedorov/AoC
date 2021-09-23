@@ -38,9 +38,12 @@ namespace day07 {
         return solution(code, settings);
     }
 
-    int answer2( const auto & code) {
+    int answer2( const auto & ) {
+        /* TODO - to implement
         auto settings = {5,6,7,8,9};
         return solution(code, settings);
+         */
+        return 0;
     }
 }
 
