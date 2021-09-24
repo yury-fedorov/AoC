@@ -48,13 +48,13 @@ namespace intcode_computer {
     }
 
     struct Operation {
+        const Command command_;
         const Modes modes_;
         const Arguments args_;
         const Execute execute_;
-        Operation( const Operation &) = delete;
-        Operation( const Operation &&) = delete;
-        Operation( span<const Mode> modes, span<const Number> args, Execute e ) noexcept
-                : modes_(modes.begin(), modes.end()), args_(args.begin(), args.end()), execute_(e){}
+        Operation( Command command, span<const Mode> modes, span<const Number> args, Execute e ) noexcept
+                : command_(command), modes_(modes.begin(), modes.end()),
+                    args_(args.begin(), args.end()), execute_(e){}
         Jump execute( Memory& memory, Queue& in, Queue& out ) const {
             return execute_(memory, in, out, modes_, args_);
         }
@@ -142,7 +142,7 @@ namespace intcode_computer {
                 args = { code[1] };
                 break;
         }
-        return shared_ptr<Operation>( new Operation( modes, args, create_execute(command) ) );
+        return shared_ptr<Operation>( new Operation( command, modes, args, create_execute(command) ) );
     }
 
     Memory load( const std::string & code )
@@ -151,14 +151,16 @@ namespace intcode_computer {
         return vs | rv::transform( [](const string & s) { return stoi(s); } ) | r::to_vector;
     }
 
-    void run( Memory memory, Queue& in, Queue& out ) {
+    bool run( Memory memory, Queue& in, Queue& out ) {
         auto cur = 0;
         auto memory_span = span(memory);
         while ( cur >= 0 && cur < static_cast<int>( memory.size() ) )  {
             span<const Number> frame = memory_span.subspan( cur );
             const auto o = create_operation( frame );
+            if ( o->command_ == Command::End ) return true;
             const auto jump = o->execute(memory, in, out);
             cur = ( jump.first == JumpType::Absolute ) ? jump.second : ( cur + o->length() );
         }
+        return false;
     }
 }

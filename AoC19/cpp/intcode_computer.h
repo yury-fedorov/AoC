@@ -7,6 +7,6 @@ namespace intcode_computer {
     typedef std::vector<Number> Memory;
     typedef std::queue<Number> Queue;
     Memory load( const std::string & code );
-    void run( Memory memory, Queue& in, Queue& out );
+    bool run( Memory memory, Queue& in, Queue& out ); // if halted - true
 }
 

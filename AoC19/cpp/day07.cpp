@@ -6,44 +6,47 @@ using namespace intcode_computer;
 
 namespace day07 {
 
-    Number single_run(const auto & code, Number setting, Number input) {
+    pair<Number,bool> single_run(const auto & code, Number setting, Number input) {
         Memory memory = code;
         Queue in;
         in.push(setting);
         in.push(input);
         Queue out;
-        run(memory, in, out);
-        return out.back();
+        const auto is_halt = run(memory, in, out);
+        return { out.back(), is_halt};
     }
 
-    Number all_runs( const auto & code, span<Number> settings ) {
+    Number all_runs( const auto & code, span<Number> settings, const bool is_task_1 ) {
         Number input = 0;
-        for ( const auto setting : settings ) {
-            input = single_run( code, setting, input );
-        }
-        return input;
+        Number max_input = -1;
+        bool is_halt = false;
+        do {
+            for ( const auto setting : settings ) {
+                auto [output, is_halt] = single_run( code, setting, input );
+                input = output;
+            }
+            max_input = max( input, max_input );
+        } while ( !is_task_1 && !is_halt ); // task 1 once or task 2 till halt
+        return is_task_1 ? input : max_input;
     }
 
-    int solution( const auto&  code, vector<int> settings ) {
+    int solution( const auto&  code, vector<int> settings, bool is_task_1 ) {
         int result = -1;
         do {
-            const auto r = all_runs(code, settings);
+            const auto r = all_runs(code, settings, is_task_1);
             result = max( result, r );
         } while ( std::next_permutation( settings.begin(), settings.end() ) );
         return result;
     }
 
     int answer1( const auto & code ) {
-        auto settings = rv::iota( 0, 5 ) | r::to_vector;
-        return solution(code, settings);
+        auto settings = {0,1,2,3,4};
+        return solution(code, settings, true);
     }
 
-    int answer2( const auto & ) {
-        /* TODO - to implement
+    int answer2( const auto & code) {
         auto settings = {5,6,7,8,9};
-        return solution(code, settings);
-         */
-        return 0;
+        return solution(code, settings, false);
     }
 }
 
