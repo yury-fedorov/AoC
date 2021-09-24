@@ -6,21 +6,21 @@ using namespace intcode_computer;
 
 namespace day09 {
 
-    Number single_run(const auto & code, Number setting, Number input) {
+    Number single_run(const auto & code, Number input) {
         Memory memory = code;
         Queue in;
-        in.push(setting);
         in.push(input);
         Queue out;
         run(memory, in, out);
         return out.back();
     }
 
-    int answer1( const auto &  ) {
-        return 0;
+    Number answer1( const auto & code ) {
+        // TODO to debug: return single_run(code, 1);
+        return code.size() ? 1 : 0;
     }
 
-    int answer2( const auto & ) {
+    Number answer2( const auto & ) {
         return 0;
     }
 }

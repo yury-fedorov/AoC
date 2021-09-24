@@ -6,7 +6,7 @@ using namespace intcode_computer;
 
 namespace day07 {
 
-    pair<Number,bool> single_run(const auto & code, Number setting, Number input) {
+    pair<Number,bool> single_run(const Memory & code, Number setting, Number input) {
         Memory memory = code;
         Queue in;
         in.push(setting);
@@ -16,7 +16,7 @@ namespace day07 {
         return { out.back(), is_halt};
     }
 
-    Number all_runs( const auto & code, span<Number> settings, const bool is_task_1 ) {
+    Number all_runs( const Memory & code, span<Number> settings, const bool is_task_1 ) {
         Number input = 0;
         Number max_input = -1;
         bool is_halt = false;
@@ -30,23 +30,26 @@ namespace day07 {
         return is_task_1 ? input : max_input;
     }
 
-    int solution( const auto&  code, vector<int> settings, bool is_task_1 ) {
-        int result = -1;
+    Number solution( const Memory&  code, vector<Number> settings, bool is_task_1 ) {
+        Number result = -1;
         do {
-            const auto r = all_runs(code, settings, is_task_1);
+            const Number r = all_runs(code, settings, is_task_1);
             result = max( result, r );
         } while ( std::next_permutation( settings.begin(), settings.end() ) );
         return result;
     }
 
-    int answer1( const auto & code ) {
-        auto settings = {0,1,2,3,4};
+    Number answer1( const Memory & code ) {
+        vector<Number> settings = {0,1,2,3,4};
         return solution(code, settings, true);
     }
 
-    int answer2( const auto & code) {
-        auto settings = {5,6,7,8,9};
+    Number answer2( const Memory & code) {
+        return code.size() ? 1 : 0;
+        /* TODO - to debug
+        vector<Number> settings = {5,6,7,8,9};
         return solution(code, settings, false);
+        */
     }
 }
 
