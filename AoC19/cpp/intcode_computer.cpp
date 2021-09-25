@@ -50,7 +50,7 @@ namespace intcode_computer {
 
     void set( Memory & memory, Number index, Number value ) noexcept {
         if ( static_cast<Number>( memory.size() ) < index ) {
-            memory.resize(index, 0);
+            memory.resize(index + 1, 0);
         }
         memory[index] = value;
     }
