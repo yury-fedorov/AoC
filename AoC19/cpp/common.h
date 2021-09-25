@@ -12,9 +12,11 @@
 // to hide the external dependencies
 #include "fmt/format.h" // CLang does not support C++20 format library
 #include "gsl/gsl_assert"
+#include "gsl/span"
 #include "range/v3/all.hpp" // CLang 12 does not support C++20 ranges
 namespace r = ranges; // standard is std::ranges
 namespace rv = ranges::views;
+namespace s = gsl; // namespace for span (defined in 3 different places: C++20, ranges v3, GSL)
 
 inline bool is_fast_only() noexcept { return true; } // to filter out slow tests
 

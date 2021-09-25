@@ -5,8 +5,9 @@ using namespace std;
 
 namespace day08 {
     using LevelData = map<char,int>;
+    using Image = string;
 
-    LevelData count_on_level( const auto & image, int from, int count ) {
+    LevelData count_on_level( const Image & image, int from, int count ) {
         LevelData result;
         const auto indexes = rv::iota( from, from +  count );
         auto chars = indexes | rv::transform( [&image](const int index){ return image[index]; } ) | r::to_vector;
@@ -18,7 +19,7 @@ namespace day08 {
     constexpr int height = 6;
     constexpr int count_on_one_level = width * height;
 
-    auto answer1(const auto & image ) {
+    auto answer1(const Image & image ) {
         const int count_level = image.size() / count_on_one_level;
         const vector< LevelData > data = rv::iota( 0, count_level )
             | rv::transform( [&image](const int level)
@@ -30,7 +31,7 @@ namespace day08 {
         return m.at('1') * m.at('2');
     }
 
-    char at( const auto & image, int index ) {
+    char at( const Image & image, int index ) {
         constexpr char transparent = '2';
         constexpr char black = '0';
         constexpr char white = '1';
@@ -47,7 +48,7 @@ namespace day08 {
         return '?';
     }
 
-    vector<string> answer2(const auto & image ) {
+    vector<string> answer2(const Image & image ) {
         const auto image_as_line = rv::iota( 0, count_on_one_level )
                 | rv::transform( [&image](const int index) { return at( image, index); } )
                 | r::to_vector;
@@ -66,15 +67,15 @@ TEST_CASE( "Day08", "[08]" ) {
     using namespace day08;
 
     ifstream f("../data/day08.txt");
-    string line;
-    getline(f, line);
+    string image;
+    getline(f, image);
 
     SECTION( "08-1" ) {
-        REQUIRE( answer1(line) == 1584 );
+        REQUIRE( answer1(image) == 1584 );
     }
 
     SECTION( "08-2" ) {
-        const auto a2 = answer2(line);
+        const auto a2 = answer2(image);
         r::for_each( a2, [](const auto &  l) { cout << l << endl; } ); // prints KCGEC
         REQUIRE( true );
     }

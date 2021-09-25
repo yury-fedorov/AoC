@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17) # 3.20 for CXX_STANDARD 23, 3.18 for Ubuntu, 3.17 for Windows
 project(aoc19)
 
-set(CMAKE_CXX_STANDARD 20) # due to issues with range-v3
+set(CMAKE_CXX_STANDARD 17) # due to issues with range-v3
 #  set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-11") # does not work on Mac
 
 if (MSVC)

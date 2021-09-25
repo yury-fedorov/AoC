@@ -16,7 +16,7 @@ namespace day07 {
         return { out.back(), is_halt};
     }
 
-    Number all_runs( const Memory & code, span<Number> settings, const bool is_task_1 ) {
+    Number all_runs( const Memory & code, s::span<Number> settings, const bool is_task_1 ) {
         Number input = 0;
         Number max_input = -1;
         bool is_halt = false;

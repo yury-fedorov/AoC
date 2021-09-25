@@ -22,7 +22,7 @@ namespace day06 {
         return result;
     }
 
-    int answer1( const auto & data ) {
+    int answer1( const Data & data ) {
         set<string> all;
         r::for_each( data, [&all](const auto & _) { all.insert( _.first ); all.insert( _.second ); } );
         const auto v = all | rv::transform( [&data](const auto & _) { return count(data, _); } ) | r::to_vector;
@@ -40,7 +40,7 @@ namespace day06 {
         return result;
     }
 
-    auto answer2( const auto & data ) {
+    auto answer2( const Data & data ) {
         auto you_path = path( data, "YOU" );
         auto san_path = path( data, "SAN" );
 
