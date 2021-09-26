@@ -52,8 +52,9 @@ namespace intcode_computer {
         size_t length() const noexcept { return 1 + args_.size(); }
     };
 
-    // using OnStep = function<  >
+    using OnExecuted = std::function< void ( std::shared_ptr<Operation> ) >;
     Memory load( const std::string & code );
-    bool run( Memory memory, Queue& in, Queue& out ); // if halted - true
+    bool run( Memory memory, Queue& in, Queue& out,
+              std::optional<OnExecuted> on_executed = std::optional<OnExecuted>() ); // if halted - true
 }
 

@@ -123,7 +123,8 @@ namespace intcode_computer {
         return vs | rv::transform( [](const string & s) { return stoll(s); } ) | r::to_vector;
     }
 
-    bool run( Memory memory, Queue& in, Queue& out ) {
+    bool run( Memory memory, Queue& in, Queue& out, std::optional<OnExecuted> on_executed ) {
+        const OnExecuted on_exec = on_executed.value_or( [](shared_ptr<Operation>){} );
         auto cur = 0;
         Number relative_base = 0;
         auto memory_span = s::span(memory);
@@ -132,6 +133,7 @@ namespace intcode_computer {
             const auto o = create_operation( frame );
             if ( o->command_ == Command::End ) return true;
             const auto jump = o->execute(memory, in, out, relative_base);
+            on_exec(o);
             cur = ( jump.first == JumpType::Absolute ) ? jump.second : ( cur + o->length() );
         }
         return false;
