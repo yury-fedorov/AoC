@@ -61,6 +61,7 @@ namespace day10 {
     }
 
     int answer1( const Map & map ) {
+        return map.size(); // TODO - fixme now signal
         const int y_size = map.size();
         const int x_size = map[0].size();
         Positions all_asteriods;
