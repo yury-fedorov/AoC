@@ -72,8 +72,7 @@ namespace day10 {
             }
         }
         const auto seen = all_asteriods
-            | rv::transform([&]( const auto & a ) { return count_seen( all_asteriods, a ); } )
-            | r::to_vector;
+            | rv::transform([&]( const auto & a ) { return count_seen( all_asteriods, a ); } );
         return r::max( seen );
     }
 
@@ -93,7 +92,7 @@ TEST_CASE( "Day10", "[10]" ) {
     }
 
     SECTION( "10-1" ) {
-        REQUIRE( answer1(map) == -1 );
+        REQUIRE( answer1(map) == -1 ); // 26 is not the right answer
     }
 
     SECTION( "10-2" ) {

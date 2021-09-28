@@ -25,8 +25,8 @@ namespace day06 {
     int answer1( const Data & data ) {
         set<string> all;
         r::for_each( data, [&all](const auto & _) { all.insert( _.first ); all.insert( _.second ); } );
-        const auto v = all | rv::transform( [&data](const auto & _) { return count(data, _); } ) | r::to_vector;
-        return r::accumulate(v, 0);
+        const auto v = all | rv::transform( [&data](const auto & _) { return count(data, _); } );
+        return std::accumulate(v.begin(), v.end(), 0);
     }
 
     vector<string> path( const Data & data, string obj ) noexcept {

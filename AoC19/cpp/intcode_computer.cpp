@@ -120,7 +120,8 @@ namespace intcode_computer {
     Memory load( const std::string & code )
     {
         const auto vs = split( code, ',' );
-        return vs | rv::transform( [](const string & s) { return stoll(s); } ) | r::to_vector;
+        const auto r = vs | rv::transform( [](const string & s) { return stoll(s); } );
+        return  std::vector<Number>( r.begin(), r.end() );
     }
 
     bool run( Memory memory, Queue& in, Queue& out, std::optional<OnExecuted> on_executed ) {

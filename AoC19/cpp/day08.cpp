@@ -10,7 +10,7 @@ namespace day08 {
     LevelData count_on_level( const Image & image, int from, int count ) {
         LevelData result;
         const auto indexes = rv::iota( from, from +  count );
-        auto chars = indexes | rv::transform( [&image](const int index){ return image[index]; } ) | r::to_vector;
+        auto chars = indexes | rv::transform( [&image](const int index){ return image[index]; } );
         r::for_each( chars, [&result](const char ch) { result[ch]++; } );
         return result;
     }
@@ -21,10 +21,9 @@ namespace day08 {
 
     auto answer1(const Image & image ) {
         const int count_level = image.size() / count_on_one_level;
-        const vector< LevelData > data = rv::iota( 0, count_level )
+        const auto data = rv::iota( 0, count_level )
             | rv::transform( [&image](const int level)
-                { return count_on_level(image, level * count_on_one_level, count_on_one_level ); } )
-            | r::to_vector;
+                { return count_on_level(image, level * count_on_one_level, count_on_one_level ); } );
         const auto min_zero = r::min_element(data,
             [](const LevelData & a, const LevelData & b){ return a.at('0') < b.at('0'); });
         const LevelData & m = *min_zero;
@@ -50,16 +49,15 @@ namespace day08 {
 
     vector<string> answer2(const Image & image ) {
         const auto image_as_line = rv::iota( 0, count_on_one_level )
-                | rv::transform( [&image](const int index) { return at( image, index); } )
-                | r::to_vector;
-        return rv::iota(0, height)
+                | rv::transform( [&image](const int index) { return at( image, index); } );
+        const auto r = std::views::iota(0, height)
                 | rv::transform( [&image_as_line](const  int line)
                     {
                         const auto i0 = image_as_line.begin() + ( line * width );
                         const auto i1 = i0 + width;
                         return string( i0, i1 );
-                    } )
-                | r::to_vector;
+                    } );
+        return std::vector<string>( r.begin(), r.end() );
     }
 }
 
