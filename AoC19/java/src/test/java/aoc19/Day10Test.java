@@ -1,6 +1,5 @@
 package aoc19;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
