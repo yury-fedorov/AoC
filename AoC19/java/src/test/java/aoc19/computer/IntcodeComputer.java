@@ -1,17 +1,29 @@
 package aoc19.computer;
 
 import aoc19.computer.operation.Factory;
+import aoc19.computer.operation.NothingOnEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 public class IntcodeComputer {
 
-    public static List<Long> loadMemory( String code ) {
-        return Arrays.stream(code.split("," )).map( Long::valueOf ).collect( Collectors.toList() );
+    public static ArrayList<Long> loadMemory( String code ) {
+        return new ArrayList<>( Arrays.stream(code.split("," )).map( Long::valueOf ).collect( Collectors.toList() ) );
+    }
+
+    public static boolean run(ArrayList<Long> memory, long in, Queue<Long> out ) {
+        var inQueue = new LinkedBlockingQueue<Long>();
+        inQueue.add(in);
+        return IntcodeComputer.run( memory, inQueue, out, new NothingOnEvent());
+    }
+
+    public static boolean run(ArrayList<Long> memory, Queue<Long> in, Queue<Long> out ) {
+        return IntcodeComputer.run( memory, in, out, new NothingOnEvent());
     }
 
     public static boolean run(ArrayList<Long> memory, Queue<Long> in, Queue<Long> out, OnEvent onExecuted ) {

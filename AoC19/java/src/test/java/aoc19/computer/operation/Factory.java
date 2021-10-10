@@ -21,8 +21,11 @@ public class Factory {
         final int m0 = (int) ( mcq % 10 );
         final int m1 = (int) ( ( mcq /  10 ) % 10 );
         final int m2 = (int) ( ( mcq / 100 ) % 10 );
-        final var modes =  List.of( getMode( m2 ), getMode( m1 ), getMode( m0 ) );
-        final Command command = Arrays.stream(Command.values()).filter( c -> c.code == commandCode ).findFirst().get();
+        final var modes = List.of( getMode( m0 ), getMode( m1 ), getMode( m2 ) );
+        final var optCommand = Arrays.stream(Command.values()).filter( c -> c.code == commandCode ).findFirst();
+        if ( optCommand.isEmpty() )
+            throw new IllegalStateException( "Unknown operation code: " + commandCode );
+        final Command command = optCommand.get();
         List<Long> args;
         switch ( command ) {
             case End: return new End();

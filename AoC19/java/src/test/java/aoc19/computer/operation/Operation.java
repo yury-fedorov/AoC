@@ -30,7 +30,7 @@ public abstract class Operation {
     }
 
     public static void set(ArrayList<Long> memory, long index, long value ) {
-        if ( memory.size() < index ) {
+        if ( memory.size() <= index ) {
             final int newSize = (int)index + 1;
             memory.ensureCapacity(newSize);
             while ( memory.size() < newSize ) memory.add(0L);
