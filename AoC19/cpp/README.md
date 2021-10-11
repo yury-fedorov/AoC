@@ -1,4 +1,4 @@
-C++ 23
+C++ 20
 - span (20) - https://stackoverflow.com/questions/45723819/what-is-a-span-and-when-should-i-use-one
 - sanitizers (address,memory,undefined,dataflow)
 - CLion
