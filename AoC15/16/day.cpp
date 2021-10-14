@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <optional>
 #include <regex>
 #include <catch2/catch.hpp>
 
