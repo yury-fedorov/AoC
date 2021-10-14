@@ -7,6 +7,7 @@
 #include <regex>
 #include <assert.h>
 #include <cmath>
+#include <optional>
 #include <catch2/catch.hpp>
 
 using namespace std;

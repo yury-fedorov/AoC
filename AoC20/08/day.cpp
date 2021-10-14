@@ -5,6 +5,7 @@
 #include <fstream>
 #include <regex>
 #include <assert.h>
+#include <optional>
 #include <catch2/catch.hpp>
 
 using namespace std;
