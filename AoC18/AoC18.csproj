@@ -5,7 +5,7 @@
     <!-- a lot of warnings -->
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <LangVersion>9</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
