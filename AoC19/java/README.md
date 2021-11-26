@@ -1,6 +1,4 @@
 Java 17 (LTS preview) - due to debug and possibility to run everywhere
-
-- Day 12: The N-Body Problem
 - Day 14: Space Stoichiometry
 - Day 16: Flawed Frequency Transmission - task 2 not resolved (too slow)
 - Day 18: Many-Worlds Interpretation (paths)
