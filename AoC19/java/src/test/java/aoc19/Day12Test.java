@@ -12,7 +12,7 @@ public class Day12Test {
     // records cannot be inhereted but a lot of functionality further are similar, common abstraction is wanted
     record Position( int x, int y, int z){}
     record Velocity( int x, int y, int z){}
-    class Moon { 
+    static class Moon {
         Position position; 
         Velocity velocity; 
         Moon(Position p, Velocity v) { position = p; velocity = v; } 
@@ -32,13 +32,14 @@ public class Day12Test {
         return moons.stream().mapToLong( Day12Test::totalMoonEnergy ).sum();
     }
     static long totalMoonEnergy(Moon m) {
-        var potentialEnergy = Math.abs(m.position.x) + Math.abs(m.position.y) + Math.abs(m.position.z);
-        var kineticEnergy = Math.abs(m.velocity.x) + Math.abs(m.velocity.y) + Math.abs(m.velocity.z);
+        final long potentialEnergy = Math.abs(m.position.x) + Math.abs(m.position.y) + Math.abs(m.position.z);
+        final long kineticEnergy = Math.abs(m.velocity.x) + Math.abs(m.velocity.y) + Math.abs(m.velocity.z);
         return potentialEnergy * kineticEnergy;
     }
 
     static final int [][] DEMO = { {-1,0,2}, {2,-10,-7}, {4,-8,8}, {3,5,-1} };
-    static final int [][] TASK = { {6,-2,-7}, {-6,-7,-4}, {9,11, 0}, {-3,-4, 6} };
+    static final int [][] DEMO1 = { {-8,-10,0}, {5,5,10}, {2,-7,3}, {9,-8,-3} };
+    static final int [][] TASK = { {6,-2,-7}, {-6,-7,-4}, {-9,11, 0}, {-3,-4, 6} };
 
     static final Velocity VELOCITY_ZERO = new Velocity(0,0,0);
 
@@ -47,28 +48,99 @@ public class Day12Test {
             .collect(Collectors.toList());
     }
 
-    @Test
-    public void solution() {
+    static long answer1( List<Moon> moons, int steps ) {
+        for ( var step = 0; step < steps; step++ ) {
+            moonsMakeStep(moons);
+        }
+        return totalSystemEnergy(moons);
+    }
 
-        final var moons = init(DEMO);
-        final var STEPS = 10; // 1_000;
-        for ( var step = 0; step < 10; step++ ) {
-            for ( int i = 0; i < moons.size(); i++ ) {
-                for ( int j = i + 1; j < moons.size(); j++ ) {
-                    var a = moons.get(i);
-                    var b = moons.get(j);
-                    var dv = velocity(a.position, b.position);
-                    a.velocity = sum( a.velocity, dv ); // no way
-                    b.velocity = sum( b.velocity, inverse(dv)); // no way
-                }
-            }
-    
-            for ( var m : moons ) {
-                m.position = move( m.position, m.velocity );
+    enum Dimension { X, Y, Z }
+    record State( int position, int velocity ) {}
+
+    static State state(Moon m, Dimension d) {
+        return switch (d) {
+            case X -> new State(m.position.x, m.velocity.x);
+            case Y -> new State(m.position.y, m.velocity.y);
+            case Z -> new State(m.position.z, m.velocity.z); };
+    }
+
+    static String state(List<Moon> moons, Dimension d) {
+        final var result = new StringBuilder();
+        for ( var m : moons ) {
+            result.append('*').append( state(m, d) );
+        }
+        return result.toString();
+    }
+
+    static int answer2( List<Moon> moons, Dimension d ) {
+        var history = new HashMap<String,Integer>();
+        for ( var step = 0; true; step++ ) {
+            final var ms = state(moons, d);
+            var prevStep = history.getOrDefault( ms, -1 );
+            if ( prevStep >= 0 ) return step - prevStep;
+            history.put( ms, step );
+            moonsMakeStep(moons);
+        }
+    }
+
+    public static final List<Integer> PRIMES = List.of(2,3,5,7,11,13,17,19,23);
+
+    static long commonDenominator( long x, long y ) {
+        final var mi0 = Math.min( x, y );
+        long result = 1;
+        for ( int prime : PRIMES ) {
+            while ( true ) {
+                if ( ( x % prime ) != 0 ) break;
+                if ( ( y % prime ) != 0 ) break;
+                x /= prime;
+                y /= prime;
+                result *= prime;
             }
         }
+        return result;
+    }
 
-        assertEquals( "answer 1", 0, totalSystemEnergy(moons) ); // 4967 - too low
-        assertEquals( "answer 2", 0, 2 );
+    private static void moonsMakeStep(List<Moon> moons) {
+        for (int i = 0; i < moons.size(); i++ ) {
+            for (int j = i + 1; j < moons.size(); j++ ) {
+                var a = moons.get(i);
+                var b = moons.get(j);
+                var dv = velocity(a.position, b.position);
+                a.velocity = sum( a.velocity, dv ); // no way
+                b.velocity = sum( b.velocity, inverse(dv)); // no way
+            }
+        }
+        for ( var m : moons) {
+            m.position = move( m.position, m.velocity );
+        }
+    }
+
+    static long answer2( int [][] input) {
+        final long x = answer2(init(input), Dimension.X);
+        final long y = answer2(init(input), Dimension.Y);
+        final long z = answer2(init(input), Dimension.Z);
+        final long cd1 = commonDenominator(x,y);
+        long xy = ( x / cd1 ) * y;
+        final long cd2 = commonDenominator(xy,z);
+        return ( xy / cd2 ) * z;
+    }
+
+    @Test
+    public void demo() {
+        assertEquals( "answer 1", 179, answer1(init(DEMO), 10) );
+        assertEquals( "answer 2", 2772, answer2(DEMO) );
+    }
+
+    @Test
+    public void demo1() {
+        assertEquals( "answer 1", 1940, answer1(init(DEMO1), 100) );
+        assertEquals( "answer 2", 4_686_774_924L, answer2(DEMO1) );
+    }
+
+    @Test
+    public void solution() {
+        assertEquals( "answer 1", 7098, answer1(init(TASK), 1000) );
+        assertEquals( "answer 2", 400128139852752L, answer2(TASK) );
     }
 }
