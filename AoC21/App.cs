@@ -5,6 +5,7 @@ public class App {
             var cd = System.IO.Directory.GetCurrentDirectory();
             while (!cd.EndsWith("AoC21") ) {
                 var pd = System.IO.Directory.GetParent(cd);
+                if (pd == null) throw new Exception("failed to identify the directory");
                 cd = pd.FullName;
             }
             return cd;
