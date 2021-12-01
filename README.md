@@ -1,4 +1,8 @@
 # Advent of Code
+
+## 2021 - C# 10 (.NET 6)
+https://adventofcode.com/2021
+
 ## 2020 - C++ 17 (50 stars, rank 3550)
 https://adventofcode.com/2020
 
