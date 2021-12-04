@@ -1,8 +1,22 @@
 ﻿namespace AoC21;
 
+public static class LinqExt {
+    /// <summary>
+    /// Break a list of items into chunks of a specific size
+    /// </summary>
+    public static IEnumerable<List<T>> Chunk<T>(this IEnumerable<T> source, int chunksize)
+    {
+        while (source.Any())
+        {
+            yield return source.Take(chunksize).ToList();
+            source = source.Skip(chunksize);
+        }
+    }
+}
+
 public class Day04Test
 {
-    record Board( List<int []> Rows ) {}
+    record Board( List< List<int> > Rows ) {}
 
     static IEnumerable<int> ReadBoardRow( string line ) {
         var matches = Regex.Matches(line, @"(\d+)\s*");
@@ -44,19 +58,9 @@ public class Day04Test
         var lines = await App.ReadLines(file);
         var numbers = lines.Take(1).Single().Split(',').Select(int.Parse).ToArray();
         var boardLines = lines.Skip(2).ToList();
-        boardLines.Add( string.Empty );
-
-        var boards = new List<Board>();
-        var rows = new List<int []>(); 
-
-        foreach( var line in boardLines ) {
-            var row = ReadBoardRow( line ).ToArray();
-            if ( row.Length > 1 ) rows.Add(row);
-            else if ( rows.Any() ) {
-                boards.Add( new Board( rows ) );
-                rows = new List<int []>(); 
-            }
-        }
+        
+        var boards = boardLines.Select( _ => ReadBoardRow(_).ToList() ).Where( _ => _.Any() )
+            .Chunk( 5 ).Select( rows =>  new Board( rows.ToList() ) ).ToList();
 
         var results = boards.Select( b => Bingo( b, numbers ) ).Where( _ => _.HasValue ).Select( _ => _.Value ).ToList();
         Answer( boards, numbers, results.Min() ).Should().Be(46920, "answer 1");
