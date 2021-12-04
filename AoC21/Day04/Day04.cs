@@ -28,6 +28,17 @@ public class Day04Test
         return null;
     }
 
+    static int Answer( List<Board> boards, int [] numbers, int filter ) {
+        var winner = boards.Select( b => ( b, Bingo( b, numbers ) ) ).Where( _ => _.Item2 == filter ).Single();
+        int winningIndex = winner.Item2.Value;
+        int winningNumber = numbers[winningIndex];
+        var allOnBoard = winner.Item1.Rows.SelectMany( _ => _ ).ToHashSet();
+        var allDrawn = Enumerable.Range(0, winningIndex + 1).Select( _ => numbers[_] ).ToHashSet();
+        allOnBoard.ExceptWith(allDrawn); // substract from allOnBoard
+        var sumRemaining = allOnBoard.Sum();       
+        return ( winningNumber * sumRemaining );
+    }
+
     [TestCase("Day04/input.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
@@ -48,29 +59,7 @@ public class Day04Test
         }
 
         var results = boards.Select( b => Bingo( b, numbers ) ).Where( _ => _.HasValue ).Select( _ => _.Value ).ToList();
-        {
-            var minIterations = results.Min();
-            var winner = boards.Select( b => ( b, Bingo( b, numbers ) ) ).Where( _ => _.Item2 == minIterations ).Single();
-            int winningIndex = winner.Item2.Value;
-            int winningNumber = numbers[winningIndex];
-            var allOnBoard = winner.Item1.Rows.SelectMany( _ => _ ).ToHashSet();
-            var allDrawn = Enumerable.Range(0, winningIndex + 1).Select( _ => numbers[_] ).ToHashSet();
-            allOnBoard.ExceptWith(allDrawn); // substract from allOnBoard
-            var sumRemaining = allOnBoard.Sum();       
-            ( winningNumber * sumRemaining ).Should().Be(46920, "answer 1");
-        }
-
-        {
-            var maxIterations = results.Max();
-            var looser = boards.Select( b => ( b, Bingo( b, numbers ) ) ).Where( _ => _.Item2 == maxIterations ).Single();
-            
-            int looserIndex = looser.Item2.Value;
-            int looserWinningNumber = numbers[looserIndex];
-            var allOnBoard = looser.Item1.Rows.SelectMany( _ => _ ).ToHashSet();
-            var allDrawn = Enumerable.Range(0, looserIndex + 1).Select( _ => numbers[_] ).ToHashSet();
-            allOnBoard.ExceptWith(allDrawn); // substract from allOnBoard
-            var sumRemaining = allOnBoard.Sum();       
-            ( looserWinningNumber * sumRemaining ).Should().Be(12635, "answer 2");
-        }
+        Answer( boards, numbers, results.Min() ).Should().Be(46920, "answer 1");
+        Answer( boards, numbers, results.Max() ).Should().Be(12635, "answer 2");
     }
 }
