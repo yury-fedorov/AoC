@@ -18,8 +18,8 @@ public class Day08Test
     static bool Is1478(string d) => Is1(d) || Is7(d) || Is4(d) || Is8(d);
 
     static bool Contains( string probe, string known, int? count = null ) {
-        var a = probe.ToCharArray().ToHashSet();
-        a.IntersectWith(known.ToCharArray());
+        var a = probe.ToHashSet();
+        a.IntersectWith(known);
         return a.Count == ( count ?? known.Length );
     }
 
