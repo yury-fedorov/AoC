@@ -20,8 +20,7 @@ public class Day08Test
     static bool Contains( string probe, string known, int? count = null ) {
         if ( count == null ) count = known.Length;
         var a = probe.ToCharArray().ToHashSet();
-        var b = known.ToCharArray().ToHashSet();
-        a.IntersectWith(b);
+        a.IntersectWith(known.ToCharArray());
         return a.Count == count;
     }
 
@@ -62,9 +61,8 @@ public class Day08Test
         var lines = await App.ReadLines(file);
         var pairs = lines.Select( ParseLine ).ToArray();
 
-        // In the output values, how many times do digits 1, 4, 7, or 8 appear?
         var a1 = pairs.SelectMany( _ => _.Four ).Where( IsEasy ).Count();
-        a1.Should().Be(488, "answer 1");
+        a1.Should().Be(488, "answer 1"); // In the output values, how many times do digits 1, 4, 7, or 8 appear?
 
         var a2 = pairs.Select( _ => ReadCode( _.Left.ToList(), _.Four ) ).Sum();
         a2.Should().Be(1040429, "answer 2");
