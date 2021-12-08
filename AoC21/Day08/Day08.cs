@@ -11,12 +11,11 @@ public class Day08Test
         return ( ParseList( sides[0]), ParseList( sides[1] ) );
     }
 
-    static bool is1(string digit) => digit.Length == 2;  // bgc cg gbdfcae gcbe
-    static bool is7(string digit) => digit.Length == 3;
-    static bool is4(string digit) => digit.Length == 4;
-    static bool is8(string digit) => digit.Length == 7;
-
-    static bool IsEasy(string d) =>  is1(d) || is7(d) || is4(d) || is8(d);
+    static bool Is1(string digit) => digit.Length == 2;
+    static bool Is7(string digit) => digit.Length == 3;
+    static bool Is4(string digit) => digit.Length == 4;
+    static bool Is8(string digit) => digit.Length == 7;
+    static bool IsEasy(string d) => Is1(d) || Is7(d) || Is4(d) || Is8(d);
 
     static bool Contains( string probe, string known, int? count = null ) {
         if ( count == null ) count = known.Length;
@@ -28,41 +27,24 @@ public class Day08Test
 
     static int ReadCode( List<string> Left, string [] Four ) {
         var digits = new Dictionary<string,char> ();
-        var one = Left.Where( is1 ).Single();
-        var four = Left.Where( is4 ).Single();
-        var seven = Left.Where( is7 ).Single();
+        var one = Left.Single( Is1 );
+        var four = Left.Single( Is4 );
+        var seven = Left.Single( Is7 );
         digits.Add( one, '1' );
         digits.Add( seven, '7' );
         digits.Add( four, '4' );
-        digits.Add( Left.Where( is8 ).Single(), '8' );
-        // beacf afbd bcead cgefa ecdbga efb gbfdeac ecgfbd acbdfe fb | bf efb bgecdfa egcfa
-        // fb - 1
-        // efb - 7 (e above)
-        // afbd - 4 (ad specific for 4 from 1)
-        // gbfdeac - 8 (does not help)
+        digits.Add( Left.Single( Is8 ), '8' );
 
-        // 0, 6, 9 - 6
-        // 2, 3, 5 - 5
-        var sixParts = Left.Where( _ => _.Length == 6 ).ToList();
-        var fiveParts = Left.Where( _ => _.Length == 5 ).ToList();
+        var sixParts = Left.Where( _ => _.Length == 6 ).ToList(); // 0, 6, 9
+        var fiveParts = Left.Where( _ => _.Length == 5 ).ToList(); // 2, 3, 5 
 
-        // 9 - contains 1 and 4 and 6 elements
         var nine = sixParts.Single( _ => Contains( _, one ) && Contains( _, four ) );
-        // 0 - contains 1 and NOT 4 and 6 elements
         var zero = sixParts.Single( _ => Contains( _, one ) && !Contains( _, four ) );
-        // 6 - all rest of 6 elements
-        sixParts.Remove( nine );
-        sixParts.Remove( zero );
-        var six = sixParts.Single();
+        var six = sixParts.Single( _ => _ != nine && _ != zero );
 
-        // 3 - contains 7 and 5 elements
         var three = fiveParts.Single( _ => Contains(_, seven ) );
-        // 5 - contains 3 elements of 4 and 5 elements
         var five = fiveParts.Single( _ => Contains( _, four, 3 ) && !Contains(_, seven ) );
-        // 2  - all rest of 5 elements
-        fiveParts.Remove( three );
-        fiveParts.Remove( five );
-        var two = fiveParts.Single();
+        var two = fiveParts.Single( _ => _ != three && _ != five );
 
         digits.Add( nine, '9' );
         digits.Add( zero, '0' );
@@ -85,6 +67,6 @@ public class Day08Test
         a1.Should().Be(488, "answer 1");
 
         var a2 = pairs.Select( _ => ReadCode( _.Left.ToList(), _.Four ) ).Sum();
-        a2.Should().Be(0, "answer 2");
+        a2.Should().Be(1040429, "answer 2");
     }
 }
