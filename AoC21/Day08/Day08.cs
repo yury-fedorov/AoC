@@ -15,7 +15,7 @@ public class Day08Test
     static bool Is7(string digit) => digit.Length == 3;
     static bool Is4(string digit) => digit.Length == 4;
     static bool Is8(string digit) => digit.Length == 7;
-    static bool IsEasy(string d) => Is1(d) || Is7(d) || Is4(d) || Is8(d);
+    static bool Is1478(string d) => Is1(d) || Is7(d) || Is4(d) || Is8(d);
 
     static bool Contains( string probe, string known, int? count = null ) {
         var a = probe.ToCharArray().ToHashSet();
@@ -53,7 +53,7 @@ public class Day08Test
         var lines = await App.ReadLines(file);
         var pairs = lines.Select( ParseLine ).ToArray();
 
-        var a1 = pairs.SelectMany( _ => _.Four ).Where( IsEasy ).Count();
+        var a1 = pairs.SelectMany( _ => _.Four ).Where( Is1478 ).Count();
         a1.Should().Be(488, "answer 1"); // In the output values, how many times do digits 1, 4, 7, or 8 appear?
 
         var a2 = pairs.Select( _ => ReadCode( _.Left.ToList(), _.Four ) ).Sum();
