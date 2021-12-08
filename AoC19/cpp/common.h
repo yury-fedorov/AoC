@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <numeric>
 #include <fstream>
 #include <map>
 #include <set>
@@ -11,9 +12,9 @@
 #include <catch2/catch.hpp>
 
 // to hide the external dependencies
-#include "fmt/format.h" // CLang does not support C++20 format library
-#include "gsl/gsl_assert"
-#include "gsl/span"
+// #include "fmt/format.h" // CLang does not support C++20 format library
+// #include "gsl/gsl_assert"
+// #include "gsl/span"
 // #include "range/v3/all.hpp" // CLang 12 does not support C++20 ranges
 namespace r = std::ranges; // standard is std::ranges
 namespace rv = std::ranges::views;

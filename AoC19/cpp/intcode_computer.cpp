@@ -23,7 +23,7 @@ namespace intcode_computer {
     }
 
     Mode get_mode(char mode) {
-        Expects(mode == '0' || mode == '1' );
+        assert(mode == '0' || mode == '1' );
         return mode == '1' ? Mode::Immediate : Mode::Position;
     }
 
@@ -85,14 +85,14 @@ namespace intcode_computer {
                     return NextOp;
                 };
         }
-        throw runtime_error( fmt::format( "unexpected command type: {}", command ) );
+        throw runtime_error( std::format( "unexpected command type: {}", command ) );
     }
 
     std::shared_ptr<Operation> create_operation( s::span<const Number> & code ) {
         const auto & modes_code = code[0];
         const auto mc = div(modes_code, 100LL); // quot - modes, rem - command
         const auto command_code = mc.rem;
-        const string str_modes = fmt::format( "{:03d}", mc.quot );
+        const string str_modes = std::format( "{:03d}", mc.quot );
         const Modes modes = { get_mode(str_modes[2]), get_mode(str_modes[1]), get_mode(str_modes[0]) };
         const Command command = static_cast<Command>(command_code);
         Arguments args;
