@@ -18,10 +18,9 @@ public class Day08Test
     static bool IsEasy(string d) => Is1(d) || Is7(d) || Is4(d) || Is8(d);
 
     static bool Contains( string probe, string known, int? count = null ) {
-        if ( count == null ) count = known.Length;
         var a = probe.ToCharArray().ToHashSet();
         a.IntersectWith(known.ToCharArray());
-        return a.Count == count;
+        return a.Count == ( count ?? known.Length );
     }
 
     static int ReadCode( List<string> Left, string [] Four ) {
