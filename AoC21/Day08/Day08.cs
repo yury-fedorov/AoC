@@ -25,14 +25,10 @@ public class Day08Test
     }
 
     static int ReadCode( List<string> Left, string [] Four ) {
-        var digits = new Dictionary<string,char> ();
         var one = Left.Single( Is1 );
         var four = Left.Single( Is4 );
         var seven = Left.Single( Is7 );
-        digits.Add( one, '1' );
-        digits.Add( seven, '7' );
-        digits.Add( four, '4' );
-        digits.Add( Left.Single( Is8 ), '8' );
+        var eight = Left.Single( Is8 );
 
         var sixParts = Left.Where( _ => _.Length == 6 ).ToList(); // 0, 6, 9
         var fiveParts = Left.Where( _ => _.Length == 5 ).ToList(); // 2, 3, 5 
@@ -45,12 +41,9 @@ public class Day08Test
         var five = fiveParts.Single( _ => Contains( _, four, 3 ) && !Contains(_, seven ) );
         var two = fiveParts.Single( _ => _ != three && _ != five );
 
-        digits.Add( nine, '9' );
-        digits.Add( zero, '0' );
-        digits.Add( six, '6' );
-        digits.Add( three, '3' );
-        digits.Add( five, '5' );
-        digits.Add( two, '2' );
+        var seq = new [] { zero, one, two, three, four, five, six, seven, eight, nine };
+        IDictionary<string,char> digits = seq.Zip( Enumerable.Range( 0, 10 ).Select( n => (char)('0' + n) ) )
+            .ToDictionary( _ => _.Item1, _ => _.Item2 );
 
         var number = String.Concat( Four.Select( d => digits[d] ) );
         return int.Parse(number);
