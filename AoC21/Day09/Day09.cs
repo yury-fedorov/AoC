@@ -28,9 +28,8 @@ public class Day09Test
             if ( basin.ContainsKey(p) ) continue;
             var h0 = Height(map, p);
             basin.Add( p, h0 );
-            var close = Adjusent(map, p).Select( a => ( a, Height(map, a) ) ) // point, height
-                .Where( ph => ph.Item2 < 9 && ph.Item2 >= h0 && !basin.ContainsKey( ph.Item1 ) ).ToList();
-            close.ForEach( _ => next.Push( _.Item1 ) );
+            Adjusent(map, p).Select( a => ( a, Height(map, a) ) ) // point, height
+                .Where( ph => ph.Item2 < 9 && ph.Item2 >= h0 ).ToList().ForEach( _ => next.Push( _.Item1 ) );
         }
         return basin.Count;
     }
