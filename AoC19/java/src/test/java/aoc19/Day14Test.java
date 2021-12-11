@@ -6,8 +6,7 @@ import java.util.*;
 import java.util.regex.*;
 import java.util.stream.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class Day14Test {
     final static String ORE = "ORE";
@@ -16,7 +15,7 @@ public class Day14Test {
     final static Pattern LINE = Pattern.compile( "^(.+) => (\\d+) (\\w+)$" );
     final static Pattern INPUT = Pattern.compile( "(\\d+) (\\w+)" );
 
-    record Portion( int quantity, String chemical ) {}
+    record Portion( double quantity, String chemical ) {}
     record Receipt( List<Portion> input, Portion output ) {}
 
     static Receipt parse( String line ) {
@@ -42,7 +41,27 @@ public class Day14Test {
     public void solution() {
         final var reactions = IOUtil.input("day14");
         final var react = reactions.stream().map( Day14Test::parse ).collect(Collectors.toList());
-        assertEquals( "answer 1", 0, 1);
+        final var required = new ArrayList<Portion>();
+        double oreQuantity = 0;
+        required.add( new Portion( 1, FUEL ) );
+        while ( !required.isEmpty() ) {
+            var portion = required.remove(0);
+            var options = react.stream().filter( r -> r.output.chemical.equals( portion.chemical ) ).toList();
+            assertFalse( options.isEmpty() );
+            if ( options.size() == 1 ) {
+                var r = options.get(0);
+                var k = portion.quantity / (double)r.output.quantity;  // what we need / what we have
+                for (  var i : r.input ) {
+                    if ( i.chemical.equals( ORE ) ) {
+                        // the initial component
+                        oreQuantity += k * i.quantity;
+                    } else {
+                        required.add( new Portion( k * i.quantity, i.chemical ) );
+                    }
+                }
+            } else fail( "not implemented yet" );
+        }
+        assertEquals( "answer 1", oreQuantity, -1.0, 0.001); // 331686 is too low, 421639 low
         assertEquals( "answer 2", 0, 2 );
     }
 }
