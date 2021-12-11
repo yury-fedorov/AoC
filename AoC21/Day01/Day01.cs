@@ -1,4 +1,6 @@
-﻿namespace AoC21;
+﻿using LanguageExt;
+
+namespace AoC21;
 
 public class Day01Test
 {
