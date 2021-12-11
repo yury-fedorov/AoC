@@ -37,10 +37,38 @@ public class Day14Test {
         return new Receipt( input, new Portion(oq, oc) );
     }
 
+    // list of chemicals used for output
+    static Set<String> to( List<Receipt> react, String output ) {
+        var options = react.stream().filter( r -> r.output.chemical.equals( output ) ).toList();
+        if ( options.isEmpty() ) return new HashSet<String>();
+        var set = options.get(0).input.stream().map( p -> p.chemical ).toList();
+        var result = new HashSet<String>();
+        result.addAll(set);
+        for ( var c : set ) {
+            result.addAll( to( react, c ) );
+        }
+        return result;
+    }
+
+    static boolean isPart( List<Receipt> react, String output, String part ) {
+        return to( react, output ).contains( part );
+    }
+
+    /*
+    static String latest( List<Receipt> react, Collection<String> set ) {
+        // any which does not contain any other
+        var map = set.stream().map( c ->  )
+        for ( var c : set ) {
+            map.add( c, to( react, c ) );
+        }
+        map.
+    }
+    */
+
     @Test
     public void solution() {
         final var reactions = IOUtil.input("day14-sample");
-        final var react = reactions.stream().map( Day14Test::parse ).collect(Collectors.toList());
+        final var react = reactions.stream().map( Day14Test::parse ).toList();
 
         final var required = new ArrayList<Portion>();
         int oreQuantity = 0;
