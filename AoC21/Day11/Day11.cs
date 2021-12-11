@@ -2,7 +2,6 @@
 
 public class Day11Test
 {
-    // static int CountFlashes( int [][] map ) => map.Select( l => l.Count( _ => _ == 0 ) ).Sum();
     record Point( int X, int Y ) {}
 
     static IEnumerable<Point> Adjusent( int [][] map, Point point ) {
