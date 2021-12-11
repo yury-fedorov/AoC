@@ -39,10 +39,10 @@ public class Day14Test {
 
     @Test
     public void solution() {
-        final var reactions = IOUtil.input("day14");
+        final var reactions = IOUtil.input("day14-sample");
         final var react = reactions.stream().map( Day14Test::parse ).collect(Collectors.toList());
         final var required = new ArrayList<Portion>();
-        double oreQuantity = 0;
+        int oreQuantity = 0;
         required.add( new Portion( 1, FUEL ) );
         while ( !required.isEmpty() ) {
             var portion = required.remove(0);
@@ -50,7 +50,7 @@ public class Day14Test {
             assertFalse( options.isEmpty() );
             if ( options.size() == 1 ) {
                 var r = options.get(0);
-                var k = portion.quantity / (double)r.output.quantity;  // what we need / what we have
+                int k = (int)Math.ceil( portion.quantity / (double)r.output.quantity );  // what we need / what we have
                 for (  var i : r.input ) {
                     if ( i.chemical.equals( ORE ) ) {
                         // the initial component
@@ -61,7 +61,7 @@ public class Day14Test {
                 }
             } else fail( "not implemented yet" );
         }
-        assertEquals( "answer 1", oreQuantity, -1.0, 0.001); // 331686 is too low, 421639 low
+        assertEquals( "answer 1", oreQuantity, -1 ); // 331686 is too low, 421639 low, 1380560 - not right
         assertEquals( "answer 2", 0, 2 );
     }
 }
