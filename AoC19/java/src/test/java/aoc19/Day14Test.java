@@ -15,7 +15,7 @@ public class Day14Test {
     final static Pattern LINE = Pattern.compile( "^(.+) => (\\d+) (\\w+)$" );
     final static Pattern INPUT = Pattern.compile( "(\\d+) (\\w+)" );
 
-    record Portion( double quantity, String chemical ) {}
+    record Portion( int quantity, String chemical ) {}
     record Receipt( List<Portion> input, Portion output ) {}
 
     static Receipt parse( String line ) {
@@ -54,38 +54,44 @@ public class Day14Test {
         return to( react, output ).contains( part );
     }
 
-    /*
-    static String latest( List<Receipt> react, Collection<String> set ) {
+    static List<String> latest( List<Receipt> react, Collection<String> set ) {
         // any which does not contain any other
-        var map = set.stream().map( c ->  )
+        // var map = new HashMap< String, Set<String> > ();
+        var mapCount = new HashMap< String, Integer > ();
         for ( var c : set ) {
-            map.add( c, to( react, c ) );
+            var s = to( react, c );
+            // map.put( c, s );
+            var count = mapCount.getOrDefault( c, 0 ) + 1;
+            mapCount.put( c, count );
         }
-        map.
+        var max = mapCount.values().stream().mapToInt( v -> v ).max().getAsInt();
+        return mapCount.keySet().stream().filter( k -> mapCount.get(k) == max ).toList();
     }
-    */
 
     @Test
     public void solution() {
         final var reactions = IOUtil.input("day14-sample");
         final var react = reactions.stream().map( Day14Test::parse ).toList();
 
-        final var required = new ArrayList<Portion>();
+        final var required = new HashMap<String,Integer>();
         int oreQuantity = 0;
-        required.add( new Portion( 1, FUEL ) );
+        required.put( FUEL, 1 );
         while ( !required.isEmpty() ) {
-            var portion = required.remove(0);
-            var options = react.stream().filter( r -> r.output.chemical.equals( portion.chemical ) ).toList();
+            var latest = latest(react, required.keySet() );
+            var chemical = latest.get(0);
+            int portion = required.remove( chemical );
+            var options = react.stream().filter( r -> r.output.chemical.equals( chemical ) ).toList();
             assertFalse( options.isEmpty() );
             if ( options.size() == 1 ) {
                 var r = options.get(0);
-                int k = (int)Math.ceil( portion.quantity / (double)r.output.quantity );  // what we need / what we have
+                int k = (int)Math.ceil( portion / (double)r.output.quantity );  // what we need / what we have
                 for (  var i : r.input ) {
                     if ( i.chemical.equals( ORE ) ) {
                         // the initial component
-                        oreQuantity += k * i.quantity;
+                        oreQuantity += ( k * i.quantity );
                     } else {
-                        required.add( new Portion( k * i.quantity, i.chemical ) );
+                        var qty = required.getOrDefault( i.chemical, 0 ) + ( k * i.quantity );
+                        required.put( i.chemical, qty );
                     }
                 }
             } else fail( "not implemented yet" );
