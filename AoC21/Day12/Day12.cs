@@ -39,24 +39,33 @@ public class Day12Test
     }
 
     static IEnumerable< List<string> > AllPaths( Path [] graph, List<string> path, bool isPart1 ) {
-        var options = Next(graph, path, isPart1);
-        foreach ( var last in options ) {
-            var path1 = Compose( path, last );
-            if ( last == END ) yield return path1;
-            else { 
-                var paths = AllPaths(graph, path1, isPart1);
-                foreach ( var p in paths ) yield return p;
+        var result = new List< List< string> > ();
+        var partial = new List< List< string> > ();
+        while ( true ) {
+            var options = Next(graph, path, isPart1);
+            foreach ( var last in options ) {
+                var path1 = Compose( path, last );
+                if ( last == END ) { result.Add( path1 ); }
+                else if ( last == START ) {}
+                else { 
+                    partial.Add( path1 );
+                }
             }
+            if ( !partial.Any() ) break;
+            path = partial.Last();
+            partial.RemoveAt(partial.Count() - 1);
         }
+        return result;
     }
 
-    [TestCase("Day12/input.txt")]
-    // [TestCase("Day12/sample.txt")]
+    // [TestCase("Day12/input.txt")]
+     [TestCase("Day12/sample.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var graph = lines.Select( ParsePath ).ToArray();
         var start = new List<string>{ START };
-        AllPaths(graph, start, true ).Count().Should().Be(5920, "answer 1");
-        // AllPaths(graph, start, false ).Count().Should().Be(-2, "answer 2");
+        // AllPaths(graph, start, true ).Count().Should().Be(5920, "answer 1");
+        // 
+        AllPaths(graph, start, false ).Count().Should().Be(-2, "answer 2");
     }
 }
