@@ -1,4 +1,4 @@
-﻿namespace AoC21;
+namespace AoC21;
 
 public class Day12Test
 {
@@ -14,11 +14,13 @@ public class Day12Test
     static bool IsLower( string place ) => place.Any( ch => ch >= 'a' && ch <= 'z' );
 
     static bool IsValid2( IEnumerable<string> path ) {
-        var doubled = path.Where( IsLower ).GroupBy(_ => _).Where( _ => _.Count() > 1 ).Select( _ => _.Key ).ToList();
+        var doubled = path.Where( IsLower ).GroupBy(_ => _).Where( _ => _.Count() > 1 ).ToDictionary(_ => _.Key, _ => _.Count());
         var n = doubled.Count();
         if ( n > 1 ) return false;
         if ( n == 0 ) return true;
-        var dd = doubled.First();
+        var p = doubled.Single();
+        if (p.Value > 2) return false;
+        var dd = p.Key;
         return dd != START && dd != END;
     }
 
@@ -58,14 +60,13 @@ public class Day12Test
         return result;
     }
 
-    // [TestCase("Day12/input.txt")]
-     [TestCase("Day12/sample.txt")]
+     [TestCase("Day12/input.txt")]
+     // [TestCase("Day12/sample.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var graph = lines.Select( ParsePath ).ToArray();
         var start = new List<string>{ START };
-        // AllPaths(graph, start, true ).Count().Should().Be(5920, "answer 1");
-        // 
-        AllPaths(graph, start, false ).Count().Should().Be(-2, "answer 2");
+        AllPaths(graph, start, true ).Count().Should().Be(5920, "answer 1"); 
+        AllPaths(graph, start, false ).Count().Should().Be(155477, "answer 2");
     }
 }
