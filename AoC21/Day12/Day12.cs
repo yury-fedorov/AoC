@@ -66,7 +66,8 @@ public class Day12Test
         var lines = await App.ReadLines(file);
         var graph = lines.Select( ParsePath ).ToArray();
         var start = new List<string>{ START };
-        AllPaths(graph, start, true ).Count().Should().Be(5920, "answer 1"); 
+        AllPaths(graph, start, true ).Count().Should().Be(5920, "answer 1");
+        if ( App.IsFast ) return; // takes 7 seconds
         AllPaths(graph, start, false ).Count().Should().Be(155477, "answer 2");
     }
 }
