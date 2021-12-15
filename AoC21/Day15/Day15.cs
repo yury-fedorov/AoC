@@ -35,33 +35,56 @@ public class Day15Test
         return true;
     }
 
-    //
+    static long TotalCost(int [][] map)
+    {
+        var end = new Point(map.First().Length - 1, map.Length - 1);
+
+        var costMap = new Dictionary<Point, Cost>();
+        var start = new Point(0, 0);
+        var startPath = new List<Point> { start };
+        costMap.Add(start, new Cost(TotalCost(map, startPath), startPath));
+
+        var ongoingPaths = new Queue<List<Point>>();
+        ongoingPaths.Enqueue(startPath);
+
+        while (ongoingPaths.Any())
+        {
+            startPath = ongoingPaths.Dequeue();
+            start = startPath.Last();
+            var nextCosts = Adjusent(map, start).Where(_ => WasNotHere(startPath, _))
+                .Select(_ => Compose(startPath, _))
+                .Select(_ => new Cost(TotalCost(map, _), _));
+
+            nextCosts.Where(cost => Best(costMap, cost)).Where(c => c.Path.Last() != end).ToList().ForEach(c => ongoingPaths.Enqueue(c.Path));
+        }
+
+        return costMap[end].TotalCost;
+    }
+
+    static int Map2( int[][] map, Point p )
+    {
+        var sizeX = map.First().Length;
+        var sizeY = map.Length;
+        int indexX = p.X / sizeX;
+        int indexY = p.Y / sizeY;
+        var shift = indexX + indexY;
+        var value = map[p.Y % sizeY][p.X % sizeX];
+        var shiftedValue = value + shift;
+        return shiftedValue <= 9 ? shiftedValue : shiftedValue - 9; // 10 -> 1, 11 -> 2
+    }
+
     [TestCase("Day15/input.txt")]
     // [TestCase("Day15/sample.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var map = lines.Select( _ => _.ToCharArray().Select( ch => ch - '0' ).ToArray() ).ToArray();
-
-        var end = new Point( map.First().Length - 1, map.Length - 1 );
+        // TotalCost(map).Should().Be(537, "answer 1"); // 41 seconds
         
-        var costMap = new Dictionary<Point,Cost>();
-        var start = new Point(0,0);
-        var startPath = new List<Point> { start };
-        costMap.Add( start, new Cost( TotalCost(map, startPath), startPath ) );
-
-        var ongoingPaths = new Queue< List<Point> >();
-        ongoingPaths.Enqueue( startPath );
-
-        while ( ongoingPaths.Any() ) {
-            startPath = ongoingPaths.Dequeue();
-            start = startPath.Last();
-            var nextCosts = Adjusent( map, start ).Where( _ => WasNotHere(startPath, _) )
-                .Select( _ => Compose( startPath, _ ) )
-                .Select( _ => new Cost( TotalCost(map, _), _ ) );
-
-            nextCosts.Where( cost => Best( costMap, cost ) ).Where( c => c.Path.Last() != end ).ToList().ForEach( c => ongoingPaths.Enqueue(c.Path) );
-        }
-
-        costMap[end].TotalCost.Should().Be(537, "answer 1"); // 41 seconds
+        var sizeX = map.First().Length;
+        var sizeY = map.Length;
+        var sizeX1 = 5 * sizeX;
+        var sizeY1 = 5 * sizeY;
+        var map5x = Enumerable.Range(0, sizeY1).Select(y => Enumerable.Range(0, sizeX1).Select(x => Map2(map, new Point(x, y))).ToArray()).ToArray();
+        TotalCost(map5x).Should().Be(-1, "answer 2"); //
     }
 }
