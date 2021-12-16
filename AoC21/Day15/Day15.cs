@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 
 namespace AoC21;
 
@@ -103,6 +103,6 @@ public class Day15Test
         var sizeX1 = 5 * sizeX;
         var sizeY1 = 5 * sizeY;
         var map5x = Enumerable.Range(0, sizeY1).Select(y => Enumerable.Range(0, sizeX1).Select(x => Map2(map, new Point(x, y))).ToArray()).ToArray();
-        TotalCost(map5x).Should().Be(-1, "answer 2"); //
+        // TotalCost(map5x).Should().Be(-1, "answer 2"); //
     }
 }
