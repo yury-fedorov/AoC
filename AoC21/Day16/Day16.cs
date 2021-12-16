@@ -34,12 +34,21 @@ public class Day16Test
     [TestCase("D2FE28", "110100101111111000101000")]
     public void TestHexString(string hex, string binary) => FromHexToBinaryString(hex).Should().Be(binary);
 
-    static int FromBinary(string binary) => Convert.ToInt32(binary, 2);
+    static long FromBinary(string binary) {
+        try 
+        {
+            return Convert.ToInt64(binary, 2);
+        } 
+        catch (Exception) 
+        {
+            throw new Exception( $"bad format: {binary}" );
+        }
+    } 
 
     static AbstractPackage ReadVersionType( string input, int offset ) {
         var binVersion = input.Substring(offset,3);
         var binType = input.Substring(offset+3, 3);
-        return new AbstractPackage() { Version = FromBinary(binVersion), TypeId = FromBinary(binType) };
+        return new AbstractPackage() { Version = (int)FromBinary(binVersion), TypeId = (int)FromBinary(binType) };
     }
 
     static bool IsLiteral(AbstractPackage header) => header.TypeId == TypeLiteral;
@@ -54,7 +63,7 @@ public class Day16Test
         // If the length type ID is 0, then the next 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet.
         var isTotalLength = lengthTypeId == '0';
         var nextFieldLength = isTotalLength ? 15 : 11;
-        var originalLength = FromBinary(input.Substring(lengthTypeIdOffset, nextFieldLength));
+        var originalLength = (int)FromBinary(input.Substring(lengthTypeIdOffset, nextFieldLength));
         var length = originalLength;
         var subpackages = new List<AbstractPackage>();
         var bodyOffset = lengthTypeIdOffset + nextFieldLength;
@@ -147,13 +156,56 @@ public class Day16Test
         SumVersion(package).Should().Be(sum);
     }
 
+    static long Function( int typeId, long x, long y ) => typeId switch
+        {
+            0 => x + y,
+            1 => x * y,
+            2 => Math.Min(x,y),
+            3 => Math.Max(x,y),
+            5 => x > y ? 1 : 0,
+            6 => x < y ? 1 : 0,
+            7 => x == y ? 1 : 0
+        };
+
+    static long Seed(int typeId)  => typeId switch
+        {
+            0 => 0,
+            1 => 1,
+            2 => long.MaxValue,
+            3 => long.MinValue,
+            _ => 0
+        };
+
+    static long Evaluate( AbstractPackage package ) {
+        if ( IsLiteral(package) ) return FromBinary( string.Concat( ( package as LiteralPackage ).Value ) );
+        var operation = package as OperatorPackage;
+        var args = operation.SubPackages.Select( Evaluate ).ToArray();
+        var type = operation.TypeId;
+        if ( type >= 5 ) return Function( type, args[0], args[1] );
+        return args.Aggregate( Seed(operation.TypeId),  (long acc, long value) => Function( operation.TypeId, acc, value ) );
+    }
+
+    [TestCase("C200B40A82",3)]
+    [TestCase("04005AC33890",54)]
+    [TestCase("880086C3E88112",7)]
+    [TestCase("CE00C43D881120",9)]
+    [TestCase("D8005AC2A8F0",1)]
+    [TestCase("F600BC2D8F",0)]
+    [TestCase("9C005AC2F8F0",0)]
+    [TestCase("9C0141080250320F1802104A08",1)]
+    public void TestEvaluate(string hex, long value) {
+        var binInput = FromHexToBinaryString(hex);
+        var package = ReadPackage(binInput, 0);
+        Evaluate(package).Should().Be(value);
+    }
+
     [TestCase("Day16/input.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var hexInput = lines.First();
         var binInput = FromHexToBinaryString(hexInput);
-
         var package = ReadPackage(binInput, 0);
-        SumVersion(package).Should().Be(977, "answer 1"); // 15107 too high
+        SumVersion(package).Should().Be(977, "answer 1");
+        Evaluate(package).Should().Be(101501020883L, "answer 2"); // 39908822234 too low
     }
 }
