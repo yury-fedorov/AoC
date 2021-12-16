@@ -1,3 +1,5 @@
+﻿using System.Collections.Concurrent;
+
 namespace AoC21;
 
 public class Day15Test
@@ -19,6 +21,8 @@ public class Day15Test
 
     static long TotalCost( int[][] map, IEnumerable<Point> path ) => path.Skip(1).Select( p => RiskAt(map, p) ).Sum();
 
+    static long TotalCost( int[][] map, Cost cost0, Point last ) => cost0.TotalCost + RiskAt(map, last);
+
     static bool WasNotHere( IEnumerable<Point> path, Point point ) => !path.Contains( point );
 
     static List<Point> Compose( IEnumerable<Point> path, Point point ) 
@@ -35,27 +39,41 @@ public class Day15Test
         return true;
     }
 
+    static IEnumerable<Cost> Next( int [][] map, Cost startCost) {
+        var startPath = startCost.Path;
+        var start = startPath.Last();
+        return Adjusent(map, start).Where(_ => WasNotHere(startPath, _))
+            .Select(_ => new Cost(TotalCost(map, startCost, _), Compose(startPath, _) )).ToList();
+    }
+
     static long TotalCost(int [][] map)
     {
         var end = new Point(map.First().Length - 1, map.Length - 1);
 
-        var costMap = new Dictionary<Point, Cost>();
+        var costMap = new ConcurrentDictionary<Point, Cost>();
         var start = new Point(0, 0);
         var startPath = new List<Point> { start };
-        costMap.Add(start, new Cost(TotalCost(map, startPath), startPath));
+        var startCost = new Cost(TotalCost(map, startPath), startPath);
+        costMap.TryAdd(start, startCost);
 
-        var ongoingPaths = new Queue<List<Point>>();
-        ongoingPaths.Enqueue(startPath);
+        var ongoingPaths = new ConcurrentQueue<Cost>();
+        ongoingPaths.Enqueue(startCost);
+        var tasks = new List< Task< IEnumerable<Cost> > >();
 
-        while (ongoingPaths.Any())
+        while ( true )
         {
-            startPath = ongoingPaths.Dequeue();
-            start = startPath.Last();
-            var nextCosts = Adjusent(map, start).Where(_ => WasNotHere(startPath, _))
-                .Select(_ => Compose(startPath, _))
-                .Select(_ => new Cost(TotalCost(map, _), _));
-
-            nextCosts.Where(cost => Best(costMap, cost)).Where(c => c.Path.Last() != end).ToList().ForEach(c => ongoingPaths.Enqueue(c.Path));
+            if ( ongoingPaths.TryDequeue(out startCost) ) {
+                var cost = startCost;
+                var l = () => Next( map, cost );
+                tasks.Add( Task.Run( l ) );
+            }  else {
+                if ( !tasks.Any() ) break;
+                Task.WaitAll( tasks.ToArray() );
+                tasks.SelectMany( t => t.Result )
+                .Where(cost => Best(costMap, cost)).Where(c => c.Path.Last() != end)
+                .ToList().ForEach( r => ongoingPaths.Enqueue(r) );
+                tasks.Clear();
+            }
         }
 
         return costMap[end].TotalCost;
@@ -68,7 +86,7 @@ public class Day15Test
         int indexX = p.X / sizeX;
         int indexY = p.Y / sizeY;
         var shift = indexX + indexY;
-        var value = map[p.Y % sizeY][p.X % sizeX];
+        var value = RiskAt( map, new Point( p.X % sizeX, p.Y % sizeY ) );
         var shiftedValue = value + shift;
         return shiftedValue <= 9 ? shiftedValue : shiftedValue - 9; // 10 -> 1, 11 -> 2
     }
