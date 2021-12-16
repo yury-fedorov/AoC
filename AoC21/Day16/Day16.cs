@@ -1,6 +1,4 @@
-using LanguageExt;
-
-namespace AoC21;
+﻿namespace AoC21;
 
 public class Day16Test
 {
@@ -50,6 +48,7 @@ public class Day16Test
     {
         var header = ReadVersionType(input, offset);
         if (IsLiteral(header)) return ReadLiteralPackage(input, offset);
+        // 3 - version, 3 - type id, 1 - length type id, 15/11 - length, body
         var lengthTypeIdOffset = offset + 7;
         var lengthTypeId = input[offset + 6];
         // If the length type ID is 0, then the next 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet.
@@ -83,7 +82,7 @@ public class Day16Test
         }
         var headerOffset = bodyOffset - offset;
         return new OperatorPackage() { Version = header.Version, TypeId = header.TypeId, SubPackages = subpackages, 
-            Length = isTotalLength ? ( headerOffset + length ) : ( headerOffset + subpackages.Select( _ => _.Length ).Sum() ) };
+            Length = isTotalLength ? ( headerOffset + originalLength ) : ( headerOffset + subpackages.Select( _ => _.Length ).Sum() ) };
     }
 
     static LiteralPackage ReadLiteralPackage( string input, int offset )
@@ -153,18 +152,8 @@ public class Day16Test
         var lines = await App.ReadLines(file);
         var hexInput = lines.First();
         var binInput = FromHexToBinaryString(hexInput);
-        var answer1 = 0;
-        var offset = 0;
-        try
-        {
-            while (true)
-            {
-                var package = ReadPackage(binInput, offset);
-                offset += package.Length;
-                answer1 += SumVersion(package);
-            }
-        }
-        catch (Exception e) { }
-        answer1.Should().Be(0, "answer 1"); // 15107 too high
+
+        var package = ReadPackage(binInput, 0);
+        SumVersion(package).Should().Be(977, "answer 1"); // 15107 too high
     }
 }
