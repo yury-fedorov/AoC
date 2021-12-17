@@ -1,4 +1,4 @@
-﻿namespace AoC21;
+namespace AoC21;
 
 public class Day17Test
 {
@@ -26,7 +26,7 @@ public class Day17Test
         var v0 = velocity;
         var p = new Point(0,0);
         var path = new List<Point>();
-        while ( p.X <= target.Max.X &&  p.Y <= target.Max.Y ) {
+        while ( p.X <= target.Max.X &&  p.Y >= target.Min.Y ) {
             path.Add(p);
             if ( IsIn(target, p) ) return ( true, path, v0, path.Select( p => p.Y ).Max() );
             p = new Point( p.X + velocity.X, p.Y + velocity.Y );
@@ -42,9 +42,10 @@ public class Day17Test
     public async Task Test(string targetArea) {
         var area = ParseArea(targetArea);
         var rx = Enumerable.Range( 1, area.Max.X ).ToArray();
-        var ry = Enumerable.Range( area.Min.Y, (area.Max.X - area.Min.Y) ).ToArray();
+        var ry = Enumerable.Range( area.Min.Y, (2 * area.Max.X - area.Min.Y) ).ToArray();
         var options = rx.SelectMany( x => ry.Select( y => IsInArea( area, new Point(x,y) ) )
             .Where( _ => _.In ) ).ToList();     
-        options.Select( _ => _.MaxY ).Max().Should().Be(0, "answer 1");
+        options.Select( _ => _.MaxY ).Max().Should().Be(15400, "answer 1");
+        options.Count().Should().Be(5844, "answer 2");
     }
 }
