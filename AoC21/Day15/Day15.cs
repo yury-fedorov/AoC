@@ -105,13 +105,14 @@ public class Day15Test
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var map = lines.Select( _ => _.ToCharArray().Select( ch => ch - '0' ).ToArray() ).ToArray();
-        // TotalCost(map).Should().Be(537, "answer 1"); // 41 seconds
+        TotalCost(map).Should().Be(537, "answer 1"); // 2 seconds
+        if (App.IsFast) return;
         
         var sizeX = map.First().Length;
         var sizeY = map.Length;
         var sizeX1 = 5 * sizeX;
         var sizeY1 = 5 * sizeY;
         var map5x = Enumerable.Range(0, sizeY1).Select(y => Enumerable.Range(0, sizeX1).Select(x => Map2(map, new Point(x, y))).ToArray()).ToArray();
-        TotalCost(map5x).Should().Be(-1, "answer 2"); //
+        TotalCost(map5x).Should().Be(2881, "answer 2"); // Duration: 6 m 34 s
     }
 }
