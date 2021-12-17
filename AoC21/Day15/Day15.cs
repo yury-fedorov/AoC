@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace AoC21;
 
@@ -46,6 +46,14 @@ public class Day15Test
             .Select(_ => new Cost(TotalCost(map, startCost, _), Compose(startPath, _) )).ToList();
     }
 
+    static long Priority(Cost cost) {
+        var last = cost.Path.Last();
+        var n = cost.Path.Count();
+        return -( last.X + last.Y ) // more we ahead on the field, more we are close to at least one solution
+        + n // the longer the queue, the less it is interesting
+        + ( cost.TotalCost / n ); // less total normalized cost - better the solution
+    }
+
     static long TotalCost(int [][] map)
     {
         var end = new Point(map.First().Length - 1, map.Length - 1);
@@ -56,13 +64,14 @@ public class Day15Test
         var startCost = new Cost(TotalCost(map, startPath), startPath);
         costMap.TryAdd(start, startCost);
 
-        var ongoingPaths = new ConcurrentQueue<Cost>();
-        ongoingPaths.Enqueue(startCost);
+        var ongoingPaths = new PriorityQueue<Cost,long>();
+        ongoingPaths.Enqueue(startCost, Priority(startCost) );
         var tasks = new List< Task< IEnumerable<Cost> > >();
 
         while ( true )
         {
-            if ( ongoingPaths.TryDequeue(out startCost) ) {
+            if ( ongoingPaths.Count > 0 ) {
+                startCost = ongoingPaths.Dequeue();
                 var cost = startCost;
                 var l = () => Next( map, cost );
                 tasks.Add( Task.Run( l ) );
@@ -71,7 +80,7 @@ public class Day15Test
                 Task.WaitAll( tasks.ToArray() );
                 tasks.SelectMany( t => t.Result )
                 .Where(cost => Best(costMap, cost)).Where(c => c.Path.Last() != end)
-                .ToList().ForEach( r => ongoingPaths.Enqueue(r) );
+                .ToList().ForEach( r => ongoingPaths.Enqueue(r, Priority(r)) );
                 tasks.Clear();
             }
         }
@@ -103,6 +112,6 @@ public class Day15Test
         var sizeX1 = 5 * sizeX;
         var sizeY1 = 5 * sizeY;
         var map5x = Enumerable.Range(0, sizeY1).Select(y => Enumerable.Range(0, sizeX1).Select(x => Map2(map, new Point(x, y))).ToArray()).ToArray();
-        // TotalCost(map5x).Should().Be(-1, "answer 2"); //
+        TotalCost(map5x).Should().Be(-1, "answer 2"); //
     }
 }
