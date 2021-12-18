@@ -2,18 +2,26 @@
 
 public class Day18Test
 {
-    record Option( Pair? Pair, int? Value ) { public bool IsValue => Value != null; }
-    record Pair( Option Left, Option Right ) { public bool IsSimple => Left.IsValue && Right.IsValue; }
+    class Option{
+        public Pair? Pair; 
+        public int? Value;
+        public bool IsValue => Value != null; 
+    }
+    class Pair { 
+        public Option Left;
+        public Option Right;
+        public bool IsSimple => Left.IsValue && Right.IsValue; 
+    }
     static long Magnitude(Option pair) => pair.Value != null ? pair.Value.Value 
         : pair.Pair != null ? Magnitude( pair.Pair ) : throw new Exception( "bad pair");
     static long Magnitude(Pair pair) => ( 3 * Magnitude( pair.Left ) ) + ( 2 * Magnitude( pair.Right ) );
 
-    static Option MakeO(int value) => new Option(null, value);
-    static Option MakeO(Pair pair) => new Option(pair, null);
-    static Pair Make(int Left, int Right) => new Pair(MakeO(Left), MakeO(Right));
-    static Pair Make(Pair Left, int Right) => new Pair(MakeO(Left), MakeO(Right));
-    static Pair Make(int Left, Pair Right) => new Pair(MakeO(Left), MakeO(Right));
-    static Pair Make(Pair Left, Pair Right) => new Pair(MakeO(Left), MakeO(Right));
+    static Option MakeO(int value) => new Option { Value = value };
+    static Option MakeO(Pair pair) => new Option { Pair = pair };
+    static Pair Make(int Left, int Right) => new Pair { Left = MakeO(Left), Right = MakeO(Right) };
+    static Pair Make(Pair Left, int Right) => new Pair { Left = MakeO(Left), Right = MakeO(Right) };
+    static Pair Make(int Left, Pair Right) => new Pair { Left = MakeO(Left), Right = MakeO(Right) };
+    static Pair Make(Pair Left, Pair Right) => new Pair { Left = MakeO(Left), Right = MakeO(Right) };
 
     [TestCase("[9,1]", 29)]
     [TestCase("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]", 3488)]
@@ -77,7 +85,7 @@ public class Day18Test
                     break;
                 case Phase.Term2:
                     if ( ch == ']' && level == 0 )
-                        return new Pair( ParseOption(leftTerm), ParseOption(term) );
+                        return new Pair { Left = ParseOption(leftTerm), Right = ParseOption(term) };
                     level += dLevel;
                     term += ch;
                     break;
