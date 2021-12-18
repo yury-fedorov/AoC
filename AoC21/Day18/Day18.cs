@@ -179,11 +179,10 @@ public class Day18Test
             throw new Exception( "parent was not found" );
         }
         return tree;
-    } 
+    }
 
-    static Pair SumPairs( Pair left, Pair right ) {
-        Pair result = Make( left, right );
-        // reduce a snailfish number
+    // reduce a snailfish number
+    static Pair ReduceSnailfish( Pair result ) {
         while ( true ) {
             // the leftmost such pair explodes
             //  To explode a pair, the pair's left value is added to the first regular number to the left of the exploding pair 
@@ -208,6 +207,16 @@ public class Day18Test
         } 
         return result;
     }
+
+    [TestCase("[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]")]
+    [TestCase("[7,[6,[5,[4,[3,2]]]]]", "[7,[6,[5,[7,0]]]]")]
+    [TestCase("[[6,[5,[4,[3,2]]]],1]", "[[6,[5,[7,0]]],3]")]
+    [TestCase("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")]
+    [TestCase("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")]
+    [TestCase("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[7,0]]]]")]
+    public void TestReduce(string start, string end) => ToString( ReduceSnailfish( ParsePair( start ) ) ).Should().Be( end ); 
+
+    static Pair SumPairs( Pair left, Pair right ) => ReduceSnailfish( Make( left, right ) );
 
     // [TestCase("Day18/input.txt")]
     [TestCase("Day18/sample.txt")]
