@@ -1,4 +1,4 @@
-﻿namespace AoC21;
+namespace AoC21;
 
 public class Day18Test
 {
@@ -112,9 +112,26 @@ public class Day18Test
         return LeftMost10OrAbove( pair.Left ) ?? LeftMost10OrAbove( pair.Right );
     }
 
-    static Object? LeftMostExploding( Pair tree ) => null; // it is always a pair
+    static Object? LeftMostExploding( Pair tree, int level = 4 )
+    {
+        if (MaxNested(tree) < level) return null; // no way
+        if (level == 0 ) return tree.IsSimple ? tree : null;
+        for ( var dl = 0; dl < 2; dl++ )
+        {
+            if (tree.Left is Pair lp)
+            {
+                var ml = LeftMostExploding(lp, level - dl);
+                if (ml != null) return ml;
+            }
+            if (tree.Right is Pair rp)
+            {
+                var ml = LeftMostExploding(rp, level - dl );
+                if (ml != null) return ml;
+            }
+        }
+        return null;
+    }
 
-    // XXX: navigation
     record ParentResult( Object Parent, bool IsLeft ) {}
 
     static ParentResult? Parent( Object tree, Object obj ) {
@@ -132,13 +149,11 @@ public class Day18Test
         return null; // if tree is a number and does not match the object (checked already) - no solution
     }
 
-    static bool IsLeft(Pair parent, Object node) => parent.Left == node;
-    static bool IsRight(Pair parent, Object node) => parent.Right == node;
-
     // left / right access by enum
     // inverse left to right and back
     static Number? FindValue( Pair tree, bool isLeft ) {
-        if ( isLeft ) {
+        if (tree == null) return null;
+        if ( !isLeft ) {
             if ( tree.Left is Number leftNumber ) return leftNumber;
             var left = FindValue( tree.Left.Pair, isLeft );
             if ( left != null ) return left;
@@ -161,7 +176,9 @@ public class Day18Test
             if ( parent.IsLeft != isOnLeft ) {  // exploding node is the right node of the parent
                 // left side down could be value or tree
                 // first down as it is closer then up
-                var down = FindValue( ( isOnLeft ? parentPair.Left : parentPair.Right ).Pair, isOnLeft );
+                var obj = parentPair.Get(isOnLeft);
+                if (obj is Number number) return number;
+                var down = FindValue( obj.Pair, isOnLeft );
                 if ( down != null ) return down;
             }
             // if we did not find somewhere withing the direct parent of exploding
@@ -178,6 +195,9 @@ public class Day18Test
             if ( tree == oldObj ) return newObj;
             throw new Exception( "parent was not found" );
         }
+        Pair parentPair = parent.Parent.Pair;
+        if (parentPair.Left == oldObj) parentPair.Left = newObj;
+        else parentPair.Right = newObj;
         return tree;
     }
 
@@ -189,21 +209,27 @@ public class Day18Test
             // (if any), and the pair's right value is added to the first regular number to the right of the exploding pair 
             // (if any). Exploding pairs will always consist of two regular numbers.
             var exploding = LeftMostExploding(result); // option that is always a pair
-            if ( exploding == null ) break;
-            Pair pair = exploding.Pair;
-            var leftOption = FirstOn(result, exploding, true );
-            if ( leftOption != null ) leftOption.IntValue += ((Number)pair.Left).IntValue;
-            var rightOption = FirstOn(result, exploding, false );
-            if ( rightOption != null ) rightOption.IntValue += ((Number)pair.Right).IntValue;
-            // Then, the entire exploding pair is replaced with the regular number 0.
-            result = (Pair)Replace(result, exploding, MakeO(0));
-        }
-        while (true) {
+            if ( exploding != null )
+            {
+                Pair pair = exploding.Pair;
+                var leftOption = FirstOn(result, exploding, true);
+                if (leftOption != null) leftOption.IntValue += ((Number)pair.Left).IntValue;
+                var rightOption = FirstOn(result, exploding, false);
+                if (rightOption != null) rightOption.IntValue += ((Number)pair.Right).IntValue;
+                // Then, the entire exploding pair is replaced with the regular number 0.
+                result = (Pair)Replace(result, exploding, MakeO(0));
+                continue;
+            }
+
             // the leftmost such regular number splits
             Number ? value = LeftMost10OrAbove(result);
-            if ( value == null ) break;
-            int intValue = value.IntValue;
-            result = (Pair)Replace(result, value, Split(intValue));
+            if (value != null)
+            {
+                int intValue = value.IntValue;
+                result = (Pair)Replace(result, value, Split(intValue));
+                continue;
+            }
+            else break;
         } 
         return result;
     }
@@ -211,19 +237,25 @@ public class Day18Test
     [TestCase("[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]")]
     [TestCase("[7,[6,[5,[4,[3,2]]]]]", "[7,[6,[5,[7,0]]]]")]
     [TestCase("[[6,[5,[4,[3,2]]]],1]", "[[6,[5,[7,0]]],3]")]
-    [TestCase("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")]
-    [TestCase("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")]
     [TestCase("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[7,0]]]]")]
+    [TestCase("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")]
+    [TestCase("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]", "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")]
     public void TestReduce(string start, string end) => ToString( ReduceSnailfish( ParsePair( start ) ) ).Should().Be( end ); 
 
     static Pair SumPairs( Pair left, Pair right ) => ReduceSnailfish( Make( left, right ) );
 
-    // [TestCase("Day18/input.txt")]
-    [TestCase("Day18/sample.txt")]
+    [TestCase("Day18/input.txt")]
+    // [TestCase("Day18/sample.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var values = lines.Select( ParsePair ).ToArray();
         var result = values.Skip(1).Aggregate( values.First(), SumPairs );
-        Magnitude(result).Should().Be(0, "answer 1");
+        Magnitude(result).Should().Be(4184, "answer 1");
+
+        var indexRange = Enumerable.Range(0, values.Length).ToArray();
+        var ii = indexRange.SelectMany(a => indexRange.Select(b => (a, b)).Where(_ => _.Item1 != _.Item2)).ToArray();
+        var vv = ii.Select(_ => (ParsePair(lines[_.Item1]), ParsePair(lines[_.Item2]))).ToArray();
+        var a2 = vv.Select(_ => Magnitude(SumPairs( _.Item1, _.Item2))).Max();
+        a2.Should().Be(4731, "answer 2");
     }
 }
