@@ -4,20 +4,9 @@ public class Day20Test
 {
     record Point ( int X, int Y ) {}
 
-    static IEnumerable<Point> Adjusent( Point point ) {
-        // TODO - rewrite with 2 Range
-        yield return new Point( point.X - 1, point.Y - 1 );
-        yield return new Point( point.X, point.Y - 1 );
-        yield return new Point( point.X + 1, point.Y - 1 );
+    static IEnumerable<Point> Adjusent( Point p ) => Enumerable.Range(-1,3)
+        .SelectMany( dy => Enumerable.Range(-1,3).Select( dx => new Point(p.X + dx,p.Y + dy) ) );
 
-        yield return new Point( point.X - 1, point.Y );
-        yield return new Point( point.X, point.Y );
-        yield return new Point( point.X + 1, point.Y );
-
-        yield return new Point( point.X - 1, point.Y + 1 );
-        yield return new Point( point.X, point.Y + 1);
-        yield return new Point( point.X + 1, point.Y + 1 );
-    }
     static bool IsOn( HashSet<Point> binaryMap, Point point, Range r, bool isOn ) {
         if ( r.Min.X <= point.X && point.X <= r.Max.X && r.Min.Y <= point.Y && point.Y <= r.Max.Y )
             return binaryMap.Contains(point);
@@ -54,17 +43,18 @@ public class Day20Test
         var r0 = MinMax1(input, 0);
         var r = MinMax1( input );
         var isNewOn = (Point p) => IsNewOn( algorithm, Index( input, p, r0, isOn ) );
+        var eternalPoint = new Point(int.MinValue, int.MinValue);
         for ( int step = 0; step < steps; step++ ) {
             input = Points(r).Where( isNewOn ).ToHashSet();
             r0 = Extend(r0, 1);
             r = Extend(r,1);
-            isOn = !isOn;
+            isOn = isNewOn( eternalPoint );
         }
         return input.Count();
     }
 
     [TestCase("Day20/input.txt")]
-    // [TestCase("Day20/sample.txt")]
+    //  [TestCase("Day20/sample.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var algorithm = lines.First();
@@ -74,7 +64,7 @@ public class Day20Test
         var input = Enumerable.Range( 0, ys )
             .SelectMany( y => Enumerable.Range( 0, xs ).Select( x => new Point(x,y) ) )
             .Where( p => map[p.Y][p.X] == '#' ).ToHashSet();
-
+        if (App.IsFast) return; // 3 seconds
         Run(input, algorithm, 2).Should().Be(5057, "answer 1");
         Run(input, algorithm, 50).Should().Be(18502, "answer 2"); 
     }
