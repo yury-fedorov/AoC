@@ -75,7 +75,6 @@ public class Day21Test
             dice = result.Dice;
         }
         var a1 = 3* times * score.Min();
-
         a1.Should().Be(798147, "answer 1");
 
         var a2 = Fast(player1, player2, 0, 0, true, 21);
