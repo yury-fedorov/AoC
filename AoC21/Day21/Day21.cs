@@ -59,6 +59,8 @@ public class Day21Test
     [TestCase(7,5)] // my case
     // [TestCase(4,8)] // sample
     public void TestGame(int player1, int player2) {
+        if ( App.IsFast ) return;
+
         var dice = 1;
         var score = new [] {0, 0};
         var space = new [] {player1, player2};
