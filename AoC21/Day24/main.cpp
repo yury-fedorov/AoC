@@ -268,23 +268,23 @@ long run( Input & input ) {
 }
 
 int main() {
-    for ( long i = 999'999'999'999'99L; i >= 111'111'111'111'11L; i-- ) {    
-        long a = i;
+    for ( long long i = 999'999'999'999'99L; i >= 111'111'111'111'11L; i-- ) {    
+        auto a = i;
         Input input;
         auto is_good = true;
         while ( a && is_good ) {
-            auto r = div( a, 10 );
-            a = r.quot;
-            auto next = r.rem;
+            auto next = a % 10;
+            a /= 10;
             is_good = next > 0;
             input.push(next);
         }
+        if (!is_good) continue;
         auto z = run( input );
         if (z == 0 ) {
             std::cout << std::endl << "Found " << i << std::endl;
             return 0;
         }
-        std::cout << '.'; 
+        // std::cout << '.'; 
     }
     return 1;
 }
