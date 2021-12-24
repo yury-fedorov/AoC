@@ -1,0 +1,3 @@
+/Users/fedoy/projects/AoC/AoC21/Day24/CMakeFiles/aoc21-day24.dir
+/Users/fedoy/projects/AoC/AoC21/Day24/CMakeFiles/edit_cache.dir
+/Users/fedoy/projects/AoC/AoC21/Day24/CMakeFiles/rebuild_cache.dir

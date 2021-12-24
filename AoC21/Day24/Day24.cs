@@ -103,24 +103,37 @@ public class Day24Test
 
     [TestCase("Day24/input.txt")]
     public async Task Test(string file) {
+        //  if ( App.IsFast ) return; 
         var lines = await App.ReadLines(file);
         const long min = 111_111_111_111_11L;
         const long max = 999_999_999_999_99L; 
+        // var max = 99994761016988L;
         var input = new Input( min );
         var code = lines.Select( _ => ParseOperation(_, input) ).ToArray();
         long a1 = 0; 
+        int j = 200;
         for ( var i = max; i >= min; i-- ) {
+            if ( i.ToString().Contains('0') ) continue;
             input.Reset( i );
             var memory = new Dictionary<char,long>();
             var result = Run( code, memory );
+            var di = i - result.Z;
+            Console.WriteLine( $"{i} {result.Z} {di}" );
             if ( result.IsValid && result.Z == 0 ) {
                 a1 = i;
                 break;
             }
+            i = di;
+            if ( j-- < 0 ) break;
         }
-
+       //  var a = 99999999999970L;
+       // var b = 5238982983L;
+       // a1 = a - b; // 99994761016987L - too high
+       // 99994761016967 5238942352
         a1.Should().Be(-1, "answer 1");
 
         // Count<Triple>(zip3, f ).Should().Be(1346, "answer 2");
+
+
     }
 }
