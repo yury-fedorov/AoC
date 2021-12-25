@@ -1,4 +1,4 @@
-namespace AoC21;
+﻿namespace AoC21;
 
 public class Day23Test
 {
@@ -163,7 +163,7 @@ public class Day23Test
         return energy;
     }
 
-    record A(List<Point> Position,  List<Log>, int Energy ) { }
+    // record A(List<Point> Position,  List<Log>, int Energy ) { }
 
     [Test]
     public void Test() {
