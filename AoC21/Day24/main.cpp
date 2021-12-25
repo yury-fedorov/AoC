@@ -1,12 +1,11 @@
-#include <stack>
-#include <cstdlib>
 #include <iostream>
+#include <string>
 
 // typedef std::stack<long> Input;
 typedef std::string Input;
 typedef long long Int;
 
-static inline void mul( Int & a, Int b ) {
+inline void mul( Int & a, Int b ) {
     switch( b ) {
         case 0: a = 0; break;
         case 1: break;
@@ -88,8 +87,11 @@ Int run( Input & input ) {
     w = next(); // inp w
     // mul x 0
     x = z; // add x z
-    if (x<0) return -1; x %= 26; // mod x 26
-    z /= 26; // div z 26
+
+    if (x<0) return -1;
+	x %= 26; // mod x 26
+
+	z /= 26; // div z 26
     x -= 3; // add x -3
     // x = x == w ? 1 : 0; // eql x w
     // x = x == 0 ? 1 : 0; // eql x 0
