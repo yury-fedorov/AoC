@@ -1,5 +1,3 @@
-using LanguageExt.ClassInstances;
-
 namespace AoC21;
 
 public class Day22Test
@@ -147,17 +145,6 @@ public class Day22Test
     // 2,758,514,936,282,235
     // 9,223,372,036,854,775,807
 
-    /*
-    static Cube Union(Cube a, Cube b) => new Cube(
-        new Point( Math.Min( a.Min.X, b.Min.X ), 
-                   Math.Min( a.Min.Y, b.Min.Y ), 
-                   Math.Min( a.Min.Z, b.Min.Z ) ),
-        new Point( Math.Max( a.Max.X, b.Max.X ), 
-                   Math.Max( a.Max.Y, b.Max.Y ), 
-                   Math.Max( a.Max.Z, b.Max.Z ) )
-    );
-    */
-
     record Area(Range X, Range Y)
     {
         public long GetArea() => X.Length * Y.Length;
@@ -209,12 +196,17 @@ public class Day22Test
 
         var zset = new HashSet<int>();
         instructions.ForEach( _ => { zset.Add( _.Cube.Min.Z ); zset.Add( _.Cube.Max.Z ); } );
-        long onCount = 0;
-        var zmin = zset.Min();
-        var zmax = zset.Max();
+        ;
+        var rz = new List<Range>( zset.Select( z => new Range(z,z) ) );
+        var oz  = zset.OrderBy(_ => _).ToList();
+        oz.Zip( oz.Skip(1) ).Select( _ => new Range( _.Item1 + 1, _.Item2 - 1 ) )
+            .Where( r => r.Min <= r.Max ).ToList().ForEach( r => rz.Add(r) );
 
-        for (int z = zmin; z <= zmax; z++)
+        long onCount = 0;
+
+        foreach( var rzi in rz )
         {
+            var z = rzi.Min;
             var xset = new HashSet<int>();
             var yset = new HashSet<int>();
             foreach (var i in instructions)
@@ -235,7 +227,7 @@ public class Day22Test
                 var c = i.Cube;
                 areas.Where( a => IsInside( c, a, z ) ).ToList().ForEach( a => setOn[a] = i.On );
             }
-            onCount += setOn.Where(_ => _.Value).Sum(_ => _.Key.GetArea());
+            onCount += rzi.Length * setOn.Where(_ => _.Value).Sum(_ => _.Key.GetArea());
         }
         onCount.Should().Be(-2, "answer 2");
     }
