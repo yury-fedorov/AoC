@@ -1,4 +1,4 @@
-﻿namespace AoC21;
+namespace AoC21;
 
 public class Day23Test
 {
@@ -112,10 +112,12 @@ public class Day23Test
 
     record PositionLog( List<PodState> Position, List<Log> Log ) {}
 
-    static readonly int MaxTotalEnergy = 5 * Energy( Pod.D, 6 + 4 + 4 );  // int.MaxValue;
+    static readonly int MaxTotalEnergy = 47549;
+    
+    //5 * Energy( Pod.D, 6 + 4 + 4 );  // int.MaxValue;
 
     static float Priority( IEnumerable<PodState> position, IEnumerable<Log> log ) 
-        => 32f / Math.Max( 0.1f, log.Count() ) + TotalEnergy(log) / (float)MaxTotalEnergy;
+        => 32f / Math.Max( 0.1f, log.Count() ); //+ TotalEnergy(log) / (float)MaxTotalEnergy;
 
     static int MinTotalEnergy( IEnumerable<PodState> position_, IEnumerable<Log> log_ ) {
         var queue = new PriorityQueue<PositionLog, float>();
@@ -184,6 +186,7 @@ public class Day23Test
             Step( Pod.A, 0,0, 2,2 ), Step( Pod.A, 1,0, 2,1 )
         };
         TotalEnergy(a1log).Should().Be(15237, "answer 1");
+        
         // if ( App.IsFast ) return;
         // solution
         var c2 = Init( Pod.B, Pod.D, Pod.D, Pod.D, 2 );
@@ -192,5 +195,37 @@ public class Day23Test
         var c8 = Init( Pod.D, Pod.A, Pod.C, Pod.C, 8 );
         IEnumerable<PodState> input = c2.Union( c4 ).Union( c6 ).Union( c8 ).ToList();
         MinTotalEnergy(input, new Log [] {} ).Should().Be(0, "answer 2");
+        
+        return;
+        // solved analytically
+        var a2log = new [] { 
+            Step( Pod.A, 4,1, 0,0 ), 
+            Step( Pod.A, 6,1, 1,0 ), // opening C
+            Step( Pod.B, 6,2, 3,0 ),
+            Step( Pod.A, 6,3, 10,0 ),
+            Step( Pod.B, 6,4, 9,0 ),
+            Step( Pod.C, 4,2, 6,4 ), // opening B
+            Step( Pod.B, 4,3, 7,0 ),
+            Step( Pod.C, 4,4, 6,3 ),
+            Step( Pod.B, 7,0, 4,4 ), // closing B
+            Step( Pod.B, 3,0, 4,3 ),
+            Step( Pod.B, 9,0, 4,2 ),
+            Step( Pod.B, 2,1, 4,1 ), // B closed
+            Step( Pod.D, 8,1, 5,0 ), // opening D
+            Step( Pod.A, 8,2, 9,0 ),
+            Step( Pod.C, 8,3, 6,2 ),
+            Step( Pod.C, 8,4, 6,1 ), //  D open
+
+            Step( Pod.D, 5,0, 8,4 ), // closing D
+            Step( Pod.D, 2,2, 8,3 ),
+            Step( Pod.D, 2,3, 8,2 ),
+            Step( Pod.D, 2,4, 8,1 ),
+
+            Step( Pod.A, 1,0, 2,4 ), // closing A
+            Step( Pod.A, 0,0, 2,3 ),
+            Step( Pod.A, 9,0, 2,2 ),
+            Step( Pod.A, 10,0, 2,1 )
+        };
+        TotalEnergy(a2log).Should().Be(0, "answer 2"); // 47549 it is too high
     }
 }
