@@ -1,4 +1,4 @@
-﻿namespace AoC21;
+namespace AoC21;
 
 public class Day22Test
 {
@@ -52,6 +52,10 @@ public class Day22Test
             .Select( z => new Point( x, y, z ) ) ) );
 
     static bool Within( Range r, int x ) => x >= r.Min &&  x <= r.Max;
+
+    static bool Within( Range r, Range small ) 
+        => Within( r, small.Min ) && Within( r, small.Max );
+
     static Range? Intersect( Range a, Range b ) {
         var isAOnLeft = a.Min <= b.Min;  // a starts on the left
         var a1 = isAOnLeft ? a : b;
@@ -138,20 +142,53 @@ public class Day22Test
     // 2,758,514,936,282,235
     // 9,223,372,036,854,775,807
 
+    /*
+    static Cube Union(Cube a, Cube b) => new Cube(
+        new Point( Math.Min( a.Min.X, b.Min.X ), 
+                   Math.Min( a.Min.Y, b.Min.Y ), 
+                   Math.Min( a.Min.Z, b.Min.Z ) ),
+        new Point( Math.Max( a.Max.X, b.Max.X ), 
+                   Math.Max( a.Max.Y, b.Max.Y ), 
+                   Math.Max( a.Max.Z, b.Max.Z ) )
+    );
+    */
+
+    record Area( Range X, Range Y ) {}
+
+    static bool IsInside( Cube cube, Area area, int z ) 
+        => Within( new Range( cube.Min.Z, cube.Max.Z ), z ) 
+        && Within( new Range( cube.Min.X, cube.Max.X ), area.X )
+        && Within( new Range( cube.Min.Y, cube.Max.Y ), area.Y );
+
+    static IEnumerable<Area> Areas( HashSet<int> xset, HashSet<int> yset ) {
+        var result = new List<Area>();
+        xset.SelectMany( x => yset.Select( y => new Point(x,y) ) )
+            .ToList().ForEach();
+        return result;
+    }
+
     [TestCase("Day22/input.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var instructions = lines.Select( ParseRange ).ToList();
         /*
+        // valid but slow answer 1
         var setOn = new HashSet<Point>();
         instructions.ForEach( i => Execute1( i.On, i.Cube, setOn ) );
         setOn.Count().Should().Be(603661, "answer 1");
         */
-        var regions = new [] { instructions.First() };
-        foreach ( var i in instructions ) {
-            // ??? when many small regions applied on a big one
-            // if big contains entire small -> 
-        }
+        // var regions = new [] { instructions.First() };
+        var xset = new HashSet<int>();
+        var yset = new HashSet<int>();
+        var zset = new HashSet<int>();
+        instructions.ForEach( _ => { 
+            xset.Add( _.Cube.Min.X ); xset.Add( _.Cube.Max.X );
+            yset.Add( _.Cube.Min.Y ); yset.Add( _.Cube.Max.Y );
+            zset.Add( _.Cube.Min.Z ); zset.Add( _.Cube.Max.Z ); 
+        } );
+        Console.WriteLine( $"{ xset.Count } { xset.Max() - xset.Min() }" );
+        Console.WriteLine( $"{ yset.Count } { yset.Max() - yset.Min() }" );
+        Console.WriteLine( $"{ zset.Count } { zset.Max() - zset.Min() }" );
         0.Should().Be(-2, "answer 2");
     }
 }
