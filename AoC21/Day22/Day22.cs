@@ -193,6 +193,8 @@ public class Day22Test
         setOn.Count().Should().Be(603661, "answer 1");
         */
         // var regions = new [] { instructions.First() };
+        
+        if ( App.IsFast ) return;
 
         var zset = new HashSet<int>();
         instructions.ForEach( _ => { zset.Add( _.Cube.Min.Z ); zset.Add( _.Cube.Max.Z ); } );
@@ -229,6 +231,6 @@ public class Day22Test
             }
             onCount += rzi.Length * setOn.Where(_ => _.Value).Sum(_ => _.Key.GetArea());
         }
-        onCount.Should().Be(-2, "answer 2");
+        onCount.Should().Be(-2, "answer 2"); // 10967303699759701 - too high - 2 h 50 m
     }
 }
