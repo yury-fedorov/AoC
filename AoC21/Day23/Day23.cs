@@ -1,4 +1,4 @@
-﻿namespace AoC21;
+namespace AoC21;
 
 public class Day23Test
 {
@@ -111,8 +111,11 @@ public class Day23Test
         => OpenCaves(position).Select( p => EmptyOnTopOpenCave( position, p ) ).Where( _ => _ != null ).Cast<Point>();
 
     static int MinTotalEnergy( IEnumerable<PodState> position, IEnumerable<Log> log ) {
+
+
         var isEnd = IsFinalPosition( position );
-        if ( isEnd ) return TotalEnergy(log);
+        var totalEnergySoFar = TotalEnergy(log);
+        if (isEnd) return totalEnergySoFar;
 
         // all from hall or from top of caves could be moved only to "opened" caves
         var toCaves =  MovableToCaves(position);
@@ -135,20 +138,32 @@ public class Day23Test
 
         var optionLog = XHall.SelectMany( x => 
             topOnCaves.Where( from => IsPathFree( position, from.Location, new Point( x, 0 ) ) )
-            .Select( s => new Log( s.Pod, s.Location, new Point( x, 0 ) ) ) );
+            .Select( s => new Log( s.Pod, s.Location, new Point( x, 0 ) ) ) ).ToList();
 
         if ( !optionLog.Any() ) return int.MaxValue; // now solution here
-        
-        return optionLog.Select( l => {  
+
+        var p = new PriorityQueue<Log, int>();
+        optionLog.ForEach( l =>  p.Enqueue(l, l.Energy) );
+        int energy = int.MaxValue;
+        while (p.Count > 0)
+        {
+            var l = p.Dequeue();
+            var knownEnergy = totalEnergySoFar + l.Energy;
+            if (energy <= knownEnergy) continue;
+
             var p1 = new List<PodState>(position);
             var log1 = new List<Log>(log);
-            var c = p1.Single( _ => _.Location == l.From );
-            p1.Remove( c ); // it is not anymore inside position
-            log1.Add( l );
-            p1.Add( new PodState( c.Pod, l.To, PodPhase.MovedToHall ) );
-            return MinTotalEnergy( p1, log1 );
-         } ).Min();
+            var c = p1.Single(_ => _.Location == l.From);
+            p1.Remove(c); // it is not anymore inside position
+            log1.Add(l);
+            p1.Add(new PodState(c.Pod, l.To, PodPhase.MovedToHall));
+            var ei = MinTotalEnergy(p1, log1);
+            energy = Math.Min( energy, ei );
+        }
+        return energy;
     }
+
+    record A(List<Point> Position,  List<Log>, int Energy ) { }
 
     [Test]
     public void Test() {
@@ -159,6 +174,7 @@ public class Day23Test
             Step( Pod.A, 0,0, 2,2 ), Step( Pod.A, 1,0, 2,1 )
         };
         TotalEnergy(a1log).Should().Be(15237, "answer 1");
+        //
         if ( App.IsFast ) return;
         // solution
         var c2 = Init( Pod.B, Pod.D, Pod.D, Pod.D, 2 );
