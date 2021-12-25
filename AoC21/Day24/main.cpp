@@ -306,6 +306,7 @@ Int run( Input & input ) {
     // y *= x; // mul y x
     mul(y, x);
     z += y; // add z y
+
     w = next(); // inp w
     // mul x 0
     x = z; // add x z
@@ -316,7 +317,7 @@ Int run( Input & input ) {
     // x = x == 0 ? 1 : 0; // eql x 0
     x = x != w ? 1 : 0;
     // mul y 0
-    y += 25; // add y 25
+    y = 25; // add y 25
     // y *= x; // mul y x
     mul(y, x);
     y++; // add y 1
