@@ -5,8 +5,8 @@ public class Day25Test
     record Point( int X, int Y ) {}
     enum Hord { East = '>', South = 'v' }
 
-    //  [TestCase("Day25/input.txt")]
-    [TestCase("Day25/sample.txt")]
+    [TestCase("Day25/input.txt")]
+    // [TestCase("Day25/sample.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var arrayMap = lines.Select( _ => _.ToCharArray() ).ToArray();
@@ -23,7 +23,7 @@ public class Day25Test
         var hordOrder = new [] { Hord.East, Hord.South };
 
         int step = 0;
-        for ( ; true; step++ ) {
+        while(true) {
             bool isMoved = false;
             
             foreach ( var hord in hordOrder ) {
@@ -36,12 +36,13 @@ public class Day25Test
                     map1.Add( isFreeSpace ? p1 : p, hord );
                     isMoved |= isFreeSpace;
                 }
+                map.Where( _ => _.Value != hord ).ToList().ForEach(_ => map1.Add( _.Key, _.Value ) );
                 map = map1;
             }
-
+            step++;
             if (!isMoved) break;
         }
 
-        step.Should().Be(0, "answer 1");
+        step.Should().Be(598, "answer 1");
     }
 }
