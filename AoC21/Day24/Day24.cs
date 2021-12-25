@@ -1,4 +1,4 @@
-﻿namespace AoC21;
+namespace AoC21;
 
 public class Day24Test
 {
@@ -54,7 +54,7 @@ public class Day24Test
         public override bool Execute( IDictionary<char,long> memory ) {
             var value2 = Arg2.Get( memory );
             var value1 = memory.TryGetValue(Register, out var arg1 ) ? arg1 : 0;
-            if ( !Valid( value1, value2 ) ) return false;
+            // if ( !Valid( value1, value2 ) ) return false;
             var result = Calculate( value1, value2 );
             memory[Register] = result;
             return true;
@@ -96,35 +96,49 @@ public class Day24Test
         return new Operation2Args( register, arg2, valid, calculate);
     }
 
-    static ( bool IsValid, long Z ) Run( Operation[] code, IDictionary<char,long> memory ) {
-        var isValid = code.All( o => o.Execute(memory) );
-        return (isValid, memory.TryGetValue('z', out var result ) ? result : 0 );
+    static long Run( Operation[] code, IDictionary<char,long> memory )
+    {
+        foreach (var o in code) o.Execute(memory);
+        // var isValid = code.All( o => o.Execute(memory) );
+        return memory.TryGetValue('z', out var result ) ? result : 0;
     }
 
     [TestCase("Day24/input.txt")]
     public async Task Test(string file) {
-        //  if ( App.IsFast ) return; 
+        if ( App.IsFast ) return; 
         var lines = await App.ReadLines(file);
         const long min = 111_111_111_111_11L;
-        const long max = 999_999_999_999_99L; 
+        const long max = 99999353748738L;
+            // 999_999_999_999_99L; 
         // var max = 99994761016988L;
         var input = new Input( min );
         var code = lines.Select( _ => ParseOperation(_, input) ).ToArray();
         long a1 = 0; 
-        int j = 200;
-        for ( var i = max; i >= min; i-- ) {
-            if ( i.ToString().Contains('0') ) continue;
+        int j = 2000;
+        for ( var i = max; i >= min; i-- )
+        {
+            var i_s = i.ToString().ToCharArray();
+            var zi = System.Array.IndexOf(i_s, '0');
+            if (zi >= 0)
+            {
+                for (var y = zi; y < i_s.Length; y++)
+                {
+                    i_s[y] = '0';
+                }
+                i = long.Parse(string.Concat(i_s)) - 1;
+                continue;
+            }
             input.Reset( i );
             var memory = new Dictionary<char,long>();
             var result = Run( code, memory );
-            var di = i - result.Z;
-            Console.WriteLine( $"{i} {result.Z} {di}" );
-            if ( result.IsValid && result.Z == 0 ) {
+            // var di = i - result.Z;
+            // Console.WriteLine( $"{i} {result.Z} {di}" );
+            if ( result == 0 ) {
                 a1 = i;
                 break;
             }
-            i = di;
-            if ( j-- < 0 ) break;
+            // i = di;
+            // if ( j-- < 0 ) break;
         }
        //  var a = 99999999999970L;
        // var b = 5238982983L;
@@ -133,7 +147,5 @@ public class Day24Test
         a1.Should().Be(-1, "answer 1");
 
         // Count<Triple>(zip3, f ).Should().Be(1346, "answer 2");
-
-
     }
 }
