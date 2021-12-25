@@ -1,3 +1,5 @@
+using LanguageExt.ClassInstances;
+
 namespace AoC21;
 
 public class Day22Test
@@ -19,7 +21,10 @@ public class Day22Test
             Axis.Z => new Range( Min.Z, Max.Z )
         };
     }
-    record Range( int Min, int Max ) {}
+    record Range( int Min, int Max )
+    {
+        public int Length => Max - Min + 1;
+    }
 
     static ( bool On, Cube Cube ) ParseRange( string line ) {
         // on x=-36..10,y=-44..1,z=-18..28
@@ -153,17 +158,40 @@ public class Day22Test
     );
     */
 
-    record Area( Range X, Range Y ) {}
+    record Area(Range X, Range Y)
+    {
+        public long GetArea() => X.Length * Y.Length;
+    }
 
     static bool IsInside( Cube cube, Area area, int z ) 
         => Within( new Range( cube.Min.Z, cube.Max.Z ), z ) 
         && Within( new Range( cube.Min.X, cube.Max.X ), area.X )
         && Within( new Range( cube.Min.Y, cube.Max.Y ), area.Y );
 
-    static IEnumerable<Area> Areas( HashSet<int> xset, HashSet<int> yset ) {
+    static List<Area> Areas( HashSet<int> xset, HashSet<int> yset ) {
         var result = new List<Area>();
-        xset.SelectMany( x => yset.Select( y => new Point(x,y) ) )
-            .ToList().ForEach();
+        result.AddRange(xset.SelectMany(x => yset
+            .Select(y => new Area( new Range(x,x), new Range(y,y)))) );
+        var xx = xset.Zip( xset.Skip(1) ).ToList();
+        var yy = yset.Zip( yset.Skip(1) ).ToList();
+        foreach (var xxi in xx)
+        {
+            yset.Select( y => new Area(new Range(xxi.Item1 + 1, xxi.Item2 - 1), new Range(y, y)))
+                .Where( a => a.X.Min <= a.X.Max ).ToList().ForEach( a => result.Add(a) );
+
+            foreach (var yr in yy)
+            {
+                xx.Select(xr => new Area(new Range(xr.Item1 + 1, xr.Item2 - 1), 
+                                                  new Range(yr.Item1 + 1, yr.Item2 - 1)))
+                    .Where(a => a.X.Min <= a.X.Max && a.Y.Min <= a.Y.Max).ToList().ForEach(a => result.Add(a));
+            }
+        }
+        foreach (var yyi in yy)
+        {
+            xset.Select(x => new Area(new Range(x, x), new Range(yyi.Item1 + 1, yyi.Item2 - 1) ))
+                .Where(a => a.Y.Min <= a.Y.Max).ToList().ForEach(a => result.Add(a));
+        }
+
         return result;
     }
 
@@ -178,17 +206,37 @@ public class Day22Test
         setOn.Count().Should().Be(603661, "answer 1");
         */
         // var regions = new [] { instructions.First() };
-        var xset = new HashSet<int>();
-        var yset = new HashSet<int>();
+
         var zset = new HashSet<int>();
-        instructions.ForEach( _ => { 
-            xset.Add( _.Cube.Min.X ); xset.Add( _.Cube.Max.X );
-            yset.Add( _.Cube.Min.Y ); yset.Add( _.Cube.Max.Y );
-            zset.Add( _.Cube.Min.Z ); zset.Add( _.Cube.Max.Z ); 
-        } );
-        Console.WriteLine( $"{ xset.Count } { xset.Max() - xset.Min() }" );
-        Console.WriteLine( $"{ yset.Count } { yset.Max() - yset.Min() }" );
-        Console.WriteLine( $"{ zset.Count } { zset.Max() - zset.Min() }" );
-        0.Should().Be(-2, "answer 2");
+        instructions.ForEach( _ => { zset.Add( _.Cube.Min.Z ); zset.Add( _.Cube.Max.Z ); } );
+        long onCount = 0;
+        var zmin = zset.Min();
+        var zmax = zset.Max();
+
+        for (int z = zmin; z <= zmax; z++)
+        {
+            var xset = new HashSet<int>();
+            var yset = new HashSet<int>();
+            foreach (var i in instructions)
+            {
+                var c = i.Cube;
+                if (z >= c.Min.Z && z <= c.Max.Z)
+                {
+                    xset.Add(c.Min.X); xset.Add(c.Max.X);
+                    yset.Add(c.Min.Y); yset.Add(c.Max.Y);
+                }
+            }
+            var areas = Areas(xset, yset);
+
+            var setOn = new Dictionary<Area,bool>();
+            // calculate
+            foreach (var i in instructions)
+            {
+                var c = i.Cube;
+                areas.Where( a => IsInside( c, a, z ) ).ToList().ForEach( a => setOn[a] = i.On );
+            }
+            onCount += setOn.Where(_ => _.Value).Sum(_ => _.Key.GetArea());
+        }
+        onCount.Should().Be(-2, "answer 2");
     }
 }
