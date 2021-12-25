@@ -110,60 +110,70 @@ public class Day23Test
     static IEnumerable<Point> EmptyOnTopOpenCaves( IEnumerable<PodState> position ) 
         => OpenCaves(position).Select( p => EmptyOnTopOpenCave( position, p ) ).Where( _ => _ != null ).Cast<Point>();
 
-    static int MinTotalEnergy( IEnumerable<PodState> position, IEnumerable<Log> log ) {
+    record PositionLog( List<PodState> Position, List<Log> Log ) {}
 
+    static readonly int MaxTotalEnergy = 5 * Energy( Pod.D, 6 + 4 + 4 );  // int.MaxValue;
 
-        var isEnd = IsFinalPosition( position );
-        var totalEnergySoFar = TotalEnergy(log);
-        if (isEnd) return totalEnergySoFar;
+    static float Priority( IEnumerable<PodState> position, IEnumerable<Log> log ) 
+        => 32f / Math.Max( 0.1f, log.Count() ) + TotalEnergy(log) / (float)MaxTotalEnergy;
 
-        // all from hall or from top of caves could be moved only to "opened" caves
-        var toCaves =  MovableToCaves(position);
-        if ( toCaves.Any() ) {
-            // move everything we can to the final caves
-            var p1 = new List<PodState>(position);
-            var log1 = new List<Log>(log);
-            // sequence does not matter
-            foreach ( var c in toCaves ) {
-                p1.Remove( c ); // it is not anymore inside position
-                var to = EmptyOnTopOpenCave( p1, c.Pod);
-                log1.Add( new Log( c.Pod, c.Location, to ) );
-                p1.Add( new PodState( c.Pod, to, PodPhase.InCave ) );
+    static int MinTotalEnergy( IEnumerable<PodState> position_, IEnumerable<Log> log_ ) {
+        var queue = new PriorityQueue<PositionLog, float>();
+        queue.Enqueue( new PositionLog(position_.ToList(), log_.ToList()), Priority(position_, log_) );
+        int result = MaxTotalEnergy;
+        while ( queue.Count > 0 ) {
+            var n = queue.Dequeue();
+            var position = n.Position;
+            var log = n.Log;
+            var isEnd = IsFinalPosition( position );
+            var totalEnergySoFar = TotalEnergy(log);
+            if ( isEnd ) {
+                result = Math.Min( result, totalEnergySoFar );
+                continue;
             }
-            return MinTotalEnergy( p1, log1 );
+            if ( totalEnergySoFar >= result ) continue; // this is already a not good one
+
+            // all from hall or from top of caves could be moved only to "opened" caves
+            var toCaves =  MovableToCaves(position);
+            if ( toCaves.Any() ) {
+                // move everything we can to the final caves
+                var p1 = new List<PodState>(position);
+                var log1 = new List<Log>(log);
+                // sequence does not matter
+                foreach ( var c in toCaves ) {
+                    p1.Remove( c ); // it is not anymore inside position
+                    var to = EmptyOnTopOpenCave( p1, c.Pod);
+                    log1.Add( new Log( c.Pod, c.Location, to ) );
+                    p1.Add( new PodState( c.Pod, to, PodPhase.InCave ) );
+                }
+                queue.Enqueue( new PositionLog(p1, log1), Priority(p1, log1) );
+                continue;
+            }
+
+            // 4 toppest pods on the top of caves to other "open" caves or to hall
+            var topOnCaves = ActiveTopCaves(position).ToList();
+
+            var optionLog = XHall.SelectMany( x => 
+                topOnCaves.Where( from => IsPathFree( position, from.Location, new Point( x, 0 ) ) )
+                .Select( s => new Log( s.Pod, s.Location, new Point( x, 0 ) ) ) ).ToList();
+
+            if ( !optionLog.Any() ) continue; // no solution here
+
+            foreach( var l in optionLog )
+            {
+                var knownEnergy = totalEnergySoFar + l.Energy;
+                if (result <= knownEnergy) continue; // too much energy
+                var p1 = new List<PodState>(position);
+                var log1 = new List<Log>(log);
+                var c = p1.Single(_ => _.Location == l.From);
+                p1.Remove(c); // it is not anymore inside position
+                log1.Add(l);
+                p1.Add(new PodState(c.Pod, l.To, PodPhase.MovedToHall));
+                queue.Enqueue( new PositionLog( p1, log1 ), Priority(p1, log1) );
+            }
         }
-        
-        // 4 toppest pods on the top of caves to other "open" caves or to hall
-        var topOnCaves = ActiveTopCaves(position).ToList();
-
-        var optionLog = XHall.SelectMany( x => 
-            topOnCaves.Where( from => IsPathFree( position, from.Location, new Point( x, 0 ) ) )
-            .Select( s => new Log( s.Pod, s.Location, new Point( x, 0 ) ) ) ).ToList();
-
-        if ( !optionLog.Any() ) return int.MaxValue; // now solution here
-
-        var p = new PriorityQueue<Log, int>();
-        optionLog.ForEach( l =>  p.Enqueue(l, l.Energy) );
-        int energy = int.MaxValue;
-        while (p.Count > 0)
-        {
-            var l = p.Dequeue();
-            var knownEnergy = totalEnergySoFar + l.Energy;
-            if (energy <= knownEnergy) continue;
-
-            var p1 = new List<PodState>(position);
-            var log1 = new List<Log>(log);
-            var c = p1.Single(_ => _.Location == l.From);
-            p1.Remove(c); // it is not anymore inside position
-            log1.Add(l);
-            p1.Add(new PodState(c.Pod, l.To, PodPhase.MovedToHall));
-            var ei = MinTotalEnergy(p1, log1);
-            energy = Math.Min( energy, ei );
-        }
-        return energy;
+        return result;
     }
-
-    // record A(List<Point> Position,  List<Log>, int Energy ) { }
 
     [Test]
     public void Test() {
@@ -174,8 +184,7 @@ public class Day23Test
             Step( Pod.A, 0,0, 2,2 ), Step( Pod.A, 1,0, 2,1 )
         };
         TotalEnergy(a1log).Should().Be(15237, "answer 1");
-        //
-        if ( App.IsFast ) return;
+        // if ( App.IsFast ) return;
         // solution
         var c2 = Init( Pod.B, Pod.D, Pod.D, Pod.D, 2 );
         var c4 = Init( Pod.A, Pod.C, Pod.B, Pod.C, 4 );
