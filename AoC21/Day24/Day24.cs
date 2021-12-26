@@ -7,9 +7,9 @@ public class Day24Test
     }
 
     public class Constant : Expression {
-        readonly long _value;
-        public Constant(long value) => _value = value;
-        public long Get( IDictionary<char,long> memory ) => _value;
+        public readonly long Value;
+        public Constant(long value) => Value = value;
+        public long Get( IDictionary<char,long> memory ) => Value;
     }
 
     public class Variable : Expression {
@@ -40,7 +40,7 @@ public class Day24Test
 
     public class Operation2Args : Operation {
 
-        readonly Expression Arg2;
+        public readonly Expression Arg2;
         readonly Func<long,long,long> Calculate;
         readonly Func<long,long,bool> Valid;
 
@@ -103,19 +103,118 @@ public class Day24Test
         return memory.TryGetValue('z', out var result ) ? result : 0;
     }
 
+    // fast solution
+    static int X( long z, long w, long xk ) => ( ( z % 26 ) + xk ) != w ? 1 : 0;
+    
+    static long ZShort(long z, long w, CodeConst k ) {
+        var vx = X(z, w, k.X);
+        return ( z / k.Z ) * ( ( 25 * vx ) + 1 ) + ( ( w + k.Y ) * vx );
+    }
+    static long RunShort( List<CodeConst> cc, Input input ) {
+        long z = 0;
+        foreach( var k in cc ) {
+            z = ZShort( z, input.Next(), k );
+        }
+        return z;
+    }
+
+    // inverse formula
+
+    // attempting to execute mod with a<0 or b<=0 will cause the program to crash
+    // mod z 26
+    static bool IsGood( long z, long w, long X ) => z >= 0 && ( ( (z % 26) + X ) != w );
+    
+    // w to z
+    static Dictionary<long, long> Solutions_W_Z0( CodeConst k, long z1 ) {
+        Func<long,long> w2z = (w) => ( z1 - ( w + k.Y ) ) * k.Z /  26;
+        var wToZ0 = Enumerable.Range( 1, 9 ).ToDictionary( _ => (long)_, _ => w2z(_) );
+        return wToZ0.Where( _ => { var w = _.Key; var z = _.Value; return IsGood( z, w, k.X ); } )
+            .ToDictionary( _ => _.Key, _ => _.Value );
+    }
+
+    /*
+    65984919997939
+    11211619541713
+    */
+
+    record CodeConst( long X, long Y, long Z ) {}  // div z Z (line 5), add x X (line 6), add y Y (line 16)
+
     [TestCase("Day24/input.txt")]
     public async Task Test(string file) {
-        if ( App.IsFast ) return; 
+        // if ( App.IsFast ) return; 
         var lines = await App.ReadLines(file);
+
         const long min = 111_111_111_111_11L;
+        var input = new Input( min );
+        var code = lines.Select( _ => ParseOperation(_, input) ).ToArray();
+        
         const long max = 99999353748738L;
             // 999_999_999_999_99L; 
         // var max = 99994761016988L;
-        var input = new Input( min );
-        var code = lines.Select( _ => ParseOperation(_, input) ).ToArray();
-        long a1 = 0; 
-        int j = 2000;
-        for ( var i = max; i >= min; i-- )
+        var cc = new List<CodeConst>();
+        const int Digits = 14;
+        var CodePeriod = lines.Length / Digits; // composed of 14 equals chunks
+
+        Func<Operation2Args,long> getConst = (o) => ( o.Arg2 as Constant ).Value;
+
+        for ( var i = 0; i < Digits; i++ ) {
+            var offset = i * CodePeriod;
+            var inp = code[offset];
+            if ( !(inp is Inp) ) throw new Exception("unexpected code format");
+            var z  = code[offset +  4] as Operation2Args;
+            var x  = code[offset +  5] as Operation2Args;
+            var y  = code[offset + 15] as Operation2Args;
+
+            cc.Add( new CodeConst( getConst( x ), getConst( y ), getConst( z ) ) );
+        }
+        cc.ForEach( k => Console.WriteLine( $"{k.X} {k.Y} {k.Z}" ) );
+        /*
+ 12 7 1
+ 11 15 1
+ 12 2 1
+ -3 15 26
+ 10 14 1
+ -9 2 26
+ 10 15 1
+ -7 1 26
+ -11 15 26
+ -4 15 26
+ 14 12 1
+ 11 2 1
+ -8 13 26
+ -10 13 26
+        */
+        var memory = new Dictionary<char,long>();
+        input.Reset(min);
+        var z1 = Run( code, memory );
+        input.Reset(min);
+        var z2 = RunShort( cc, input );
+
+        z1.Should().Be(z2, "check");
+
+
+        var solutions = new Dictionary< ( int Digit, long W, long Z1 ), long >(); // value -> Z0 (previous) to bind
+        var digit = 13;
+        Solutions_W_Z0( cc[digit], 0 ).ToList().ForEach( _ => solutions.Add( (digit, _.Key, 0 ), _.Value ) );
+
+        for ( --digit; digit >= 0; digit-- ) {
+            var k = cc[digit];
+            var d1 = digit + 1;
+            var z1list = solutions.Where( _ => _.Key.Digit == d1 ).Select( p => p.Value ).ToList();
+            foreach( var z1i in z1list ) {
+                Solutions_W_Z0( k, z1i ).ToList().ForEach( _ => solutions.Add( (digit, _.Key, z1i ), _.Value ) );
+            }
+        }
+
+        // we need to assemble the found solutions
+        solutions.Where(  t => t.Key.Digit == 0 && t.Value == 0 ).ToList()
+            .ForEach( t => Console.WriteLine( $"{t.Key.W} {t.Key.Z1}" ) );
+        
+        0.Should().Be(-1, "answer 2");
+        return;
+
+        long a2 = 0; 
+        for ( var i = min; i < max; i++ )
         {
             var i_s = i.ToString().ToCharArray();
             var zi = System.Array.IndexOf(i_s, '0');
@@ -129,23 +228,18 @@ public class Day24Test
                 continue;
             }
             input.Reset( i );
-            var memory = new Dictionary<char,long>();
-            var result = Run( code, memory );
+            //  memory = new Dictionary<char,long>();
+            //var result = Run( code, memory );
             // var di = i - result.Z;
             // Console.WriteLine( $"{i} {result.Z} {di}" );
+            var result = RunShort( cc, input );
             if ( result == 0 ) {
-                a1 = i;
+                a2 = i;
                 break;
             }
-            // i = di;
-            // if ( j-- < 0 ) break;
         }
-       //  var a = 99999999999970L;
-       // var b = 5238982983L;
-       // a1 = a - b; // 99994761016987L - too high
-       // 99994761016967 5238942352
-        a1.Should().Be(-1, "answer 1");
 
-        // Count<Triple>(zip3, f ).Should().Be(1346, "answer 2");
+        // 99994761016987L - too high
+        a2.Should().Be(-1, "answer 2");
     }
 }
