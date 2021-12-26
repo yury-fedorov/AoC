@@ -12,7 +12,7 @@ public class Day22Test
             var r = Range(a);
             return r.Max - r.Min + 1;
         } 
-        public long Count => AxisList.Aggregate( 1L, (a,e) => a * Size( e ) );
+        public long Volume => AxisList.Aggregate( 1L, (a,e) => a * Size( e ) );
         public Range Range( Axis a ) => a switch {
             Axis.X => new Range( Min.X, Max.X ),
             Axis.Y => new Range( Min.Y, Max.Y ),
@@ -24,13 +24,15 @@ public class Day22Test
         public int Length => Max - Min + 1;
     }
 
-    static ( bool On, Cube Cube ) ParseRange( string line ) {
+    record CubeOn(bool On, Cube Cube) {}
+
+    static CubeOn ParseRange( string line ) {
         // on x=-36..10,y=-44..1,z=-18..28
         var xyz = line.Split(',').Select(_ => _.Split('=')[1].Split("..").Select(int.Parse).ToArray()).ToArray();
         var cube = new Cube( new Point( xyz[0][0], xyz[1][0], xyz[2][0] ), 
             new Point( xyz[0][1], xyz[1][1], xyz[2][1] ) );
         var on = line.Contains( "on"  );
-        return (on, cube);
+        return new CubeOn(on, cube);
     }
 
     static Range? Limit( Range r ) {
@@ -54,11 +56,12 @@ public class Day22Test
             .SelectMany( y => Enumerable.Range( r.Min.Z, r.Size( Axis.Z ) )
             .Select( z => new Point( x, y, z ) ) ) );
 
-    static bool Within( Range r, int x ) => x >= r.Min &&  x <= r.Max;
-
+    //  static bool Within( Range r, int x ) => x >= r.Min &&  x <= r.Max;
+/*
     static bool Within( Range r, Range small ) 
         => Within( r, small.Min ) && Within( r, small.Max );
-
+*/
+/*
     static Range? Intersect( Range a, Range b ) {
         var isAOnLeft = a.Min <= b.Min;  // a starts on the left
         var a1 = isAOnLeft ? a : b;
@@ -71,9 +74,26 @@ public class Day22Test
         } else return null;
         return new Range( b1.Min, Math.Min( a1.Max, b1.Max ) );
     }
+    */
 
-    record RangeOn( Range Range, bool On ) {}
+    static Range? Intersect( Range a, Range b ) {
+        var min = Math.Max(a.Min, b.Min);
+        var max = Math.Min(a.Max, b.Max);
+        return min <= max ? new Range(min, max) : null;
+    }
 
+    static Range? Intersect( Cube a, Cube b, Axis axis ) => Intersect( a.Range(axis), b.Range(axis) );
+
+    static Cube? Intersect( Cube a, Cube b ) {
+        var rx = Intersect( a, b, Axis.X);
+        var ry = Intersect( a, b, Axis.Y);
+        var rz = Intersect( a, b, Axis.Z );
+        if ( rx == null || ry == null || rz == null ) return null;
+        return new Cube( new Point( rx.Min, ry.Min, rz.Min ), new Point( rx.Max, ry.Max, rz.Max ) );
+    }
+
+    // record RangeOn( Range Range, bool On ) {}
+/*
     static IEnumerable<RangeOn> Cut(RangeOn a, RangeOn b) {
         var i = Intersect( a.Range, b.Range ); // what is in b
         if ( i != null ) {
@@ -88,16 +108,21 @@ public class Day22Test
             yield return new RangeOn(rr, isBOnRight ? b.On : a.On );
         }
     }
+*/
 
+    /*
     static bool IsInside( Range big, Range small ) => big.Min <= small.Min && big.Max >= small.Max;
+
 
     static bool IsInside( Cube big, Cube small ) {
         if ( small.Count > big.Count ) return false; // does not fit
         return AxisList.All( a => IsInside( big.Range(a), small.Range(a) ) );
     }
+    
 
     static bool IsNotTouching( Cube a, Cube b ) => AxisList.Any( ax => Intersect( a.Range(ax), b.Range(ax) ) == null );
-
+    */
+    /*
     static IEnumerable<Cube> Split( Cube before, Cube newCube, bool newOn ) {
         if ( IsInside(before, newCube) ) {
             if ( newOn )
@@ -132,6 +157,7 @@ public class Day22Test
 
         return result;
     }
+    */
 
     static void Execute1( bool on, Cube range, HashSet<Point> setOn ) {
         var limitedCube = Limit(range);
@@ -145,6 +171,7 @@ public class Day22Test
     // 2,758,514,936,282,235
     // 9,223,372,036,854,775,807
 
+    /*
     record Area(Range X, Range Y)
     {
         public long GetArea() => X.Length * Y.Length;
@@ -181,21 +208,25 @@ public class Day22Test
 
         return result;
     }
+    */
 
     [TestCase("Day22/input.txt")]
+    // [TestCase("Day22/sample.txt")]
     public async Task Test(string file) {
         var lines = await App.ReadLines(file);
         var instructions = lines.Select( ParseRange ).ToList();
-        /*
-        // valid but slow answer 1
-        var setOn = new HashSet<Point>();
-        instructions.ForEach( i => Execute1( i.On, i.Cube, setOn ) );
-        setOn.Count().Should().Be(603661, "answer 1");
-        */
+        if ( !App.IsFast )  {
+            // valid but slow answer 1
+            var setOn = new HashSet<Point>();
+            instructions.ForEach( i => Execute1( i.On, i.Cube, setOn ) );
+            setOn.Count().Should().Be(603661, "answer 1");
+        }
+        
         // var regions = new [] { instructions.First() };
         
-        if ( App.IsFast ) return;
+        // if ( App.IsFast ) return;
 
+        /* not working
         var zset = new HashSet<int>();
         instructions.ForEach( _ => { zset.Add( _.Cube.Min.Z ); zset.Add( _.Cube.Max.Z ); } );
         ;
@@ -231,6 +262,29 @@ public class Day22Test
             }
             onCount += rzi.Length * setOn.Where(_ => _.Value).Sum(_ => _.Key.GetArea());
         }
-        onCount.Should().Be(-2, "answer 2"); // 10967303699759701 - too high - 2 h 50 m
+        */
+        var cubes = new List<CubeOn>();
+
+        foreach(var i in instructions) {
+            var add = new List<CubeOn>();
+            foreach ( var c in cubes ) {
+                var ci = Intersect( c.Cube, i.Cube );
+                if ( ci != null ) {
+                    var s1 = i.On; // instrucion
+                    var s2 = c.On; // cube
+                    bool sign = ( s1 == s2 ) ? !s1 : s1; 
+                    // both on or off -> inverse instruction
+                    // instruction on, was off -> on
+                    // instruction off, was on -> off
+                    add.Add( new CubeOn( sign, ci ) );
+                }
+            }
+
+            cubes.AddRange( add );
+            if ( i.On ) cubes.Add(i);
+        }
+
+        long a2 = cubes.Sum( c => c.Cube.Volume * (c.On ? 1 : -1) );
+        a2.Should().Be(1237264238382479L, "answer 2"); 
     }
 }
