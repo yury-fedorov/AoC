@@ -68,8 +68,9 @@ public class Day23Test
     static IEnumerable<PodState> MovableToCaves( IEnumerable<PodState> position ) {
         var openCaves = OpenCaves(position);
         // in hall or on the top of another cave
-        return position.Where( _ => openCaves.Contains( _.Pod ) 
-            &&  IsPathFree( position, _.Location, EmptyOnTopOpenCave( position, _.Pod ) ) );
+        return position.Where( _ => _.Phase != PodPhase.InCave 
+                && openCaves.Contains( _.Pod ) 
+                &&  IsPathFree( position, _.Location, EmptyOnTopOpenCave( position, _.Pod ) ) );
     }
 
     static Point? EmptyOnTopOpenCave( IEnumerable<PodState> position, Pod cave ) {
@@ -104,18 +105,13 @@ public class Day23Test
                 if ( allPoints.Contains(p) ) return false;
             } while ( p != to );
         }
-        return true;
+        return !allPoints.Contains(to);
     }  
-
-    static IEnumerable<Point> EmptyOnTopOpenCaves( IEnumerable<PodState> position ) 
-        => OpenCaves(position).Select( p => EmptyOnTopOpenCave( position, p ) ).Where( _ => _ != null ).Cast<Point>();
 
     record PositionLog( List<PodState> Position, List<Log> Log ) {}
 
     static readonly int MaxTotalEnergy = 47549;
     
-    //5 * Energy( Pod.D, 6 + 4 + 4 );  // int.MaxValue;
-
     static float Priority( IEnumerable<PodState> position, IEnumerable<Log> log ) 
         => 32f / Math.Max( 0.1f, log.Count() ); //+ TotalEnergy(log) / (float)MaxTotalEnergy;
 
@@ -136,7 +132,7 @@ public class Day23Test
             if ( totalEnergySoFar >= result ) continue; // this is already a not good one
 
             // all from hall or from top of caves could be moved only to "opened" caves
-            var toCaves =  MovableToCaves(position);
+            var toCaves =  MovableToCaves(position).ToList();
             if ( toCaves.Any() ) {
                 // move everything we can to the final caves
                 var p1 = new List<PodState>(position);
@@ -187,17 +183,17 @@ public class Day23Test
         };
         TotalEnergy(a1log).Should().Be(15237, "answer 1");
         
-        // if ( App.IsFast ) return;
+        if ( App.IsFast ) return; // 1 min 15 sec
         // solution
         var c2 = Init( Pod.B, Pod.D, Pod.D, Pod.D, 2 );
         var c4 = Init( Pod.A, Pod.C, Pod.B, Pod.C, 4 );
         var c6 = Init( Pod.A, Pod.B, Pod.A, Pod.B, 6 );
         var c8 = Init( Pod.D, Pod.A, Pod.C, Pod.C, 8 );
         IEnumerable<PodState> input = c2.Union( c4 ).Union( c6 ).Union( c8 ).ToList();
-        MinTotalEnergy(input, new Log [] {} ).Should().Be(0, "answer 2");
+        MinTotalEnergy(input, new Log [] {} ).Should().Be(47509, "answer 2");
         
         return;
-        // solved analytically
+        // solved analytically (approximation)
         var a2log = new [] { 
             Step( Pod.A, 4,1, 0,0 ), 
             Step( Pod.A, 6,1, 1,0 ), // opening C
