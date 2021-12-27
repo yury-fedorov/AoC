@@ -121,19 +121,6 @@ public class Day24Test
         return z;
     }
 
-    static List<long> ZList(List<CodeConst> cc, Input input)
-    {
-        long z = 0;
-        var result = new List<long> {0};
-        foreach( var k in cc )
-        {
-            if (z < 0) return null;
-            z = ZShort( z, input.Next(), k );
-            result.Add(z);
-        }
-        return result;
-    }
-
     // inverse formula
 
     // attempting to execute mod with a<0 or b<=0 will cause the program to crash
@@ -154,16 +141,6 @@ public class Day24Test
                     solutions.Add( new WZ01( w, z0, z1 ) );
                 }
             }
-            /*
-            // conditions for mod operations
-            // z >= 0 &&  and ( z < 26 ) = w - X
-            var z = w - k.X;
-            if (z is < 0 or >= 26) continue;
-            if (ZShort(z, w, k) == z1)
-            {
-                solutions.Add( new WZ01( w, z, z1 ) );
-            }
-            */
         }
         return solutions;
     }
@@ -215,13 +192,6 @@ public class Day24Test
         }
 
         var options = FilterAnswers(raw, digit, z0).ToList();
-        if (!options.Any())
-        {
-            // partial solution
-            var s = string.Concat(solution.Select(w => (char)((int)(w) + '0'  )));
-            solutions.Add(s);
-            return;
-        }
         var filter = isMax ? options.Max(_ => _.W) : options.Min(_ => _.W);
         foreach (var ii in options.Where( _ => _.W == filter ) )
         {
@@ -244,19 +214,13 @@ public class Day24Test
     
     [TestCase("Day24/input.txt")]
     public async Task Test(string file) {
-        // if ( App.IsFast ) return; 
-        var lines = await App.ReadLines(file);
-
-        const long PA1  = 65984919997939L;
-        const long PA2 = 11211619541713L;
-        
+        if ( App.IsFast ) return; // 1 min 13 sec
+        var lines = await App.ReadLines(file);        
         const long min = 111_111_111_111_11L;
         var input = new Input( min );
         var code = lines.Select( _ => ParseOperation(_, input) ).ToArray();
 
         const long max = 99999353748738L;
-            // 999_999_999_999_99L; 
-        // var max = 99994761016988L;
         var cc = new List<CodeConst>();
         const int Digits = 14;
         var CodePeriod = lines.Length / Digits; // composed of 14 equals chunks
@@ -273,45 +237,12 @@ public class Day24Test
 
             cc.Add( new CodeConst( getConst( x ), getConst( y ), getConst( z ) ) );
         }
-        // cc.ForEach( k => Console.WriteLine( $"{k.X} {k.Y} {k.Z}" ) );
-        /*
- 12 7 1
- 11 15 1
- 12 2 1
- -3 15 26
- 10 14 1
- -9 2 26
- 10 15 1
- -7 1 26
- -11 15 26
- -4 15 26
- 14 12 1
- 11 2 1
- -8 13 26
- -10 13 26
-        */
-        /*
-        var memory = new Dictionary<char,long>();
-        input.Reset(PA1);
-        var z1min = Run( code, memory );
-        input.Reset(PA1A);
-        var z2min = RunShort( cc, input );
 
-        z1min.Should().Be(z2min, "check");
-        
-        input.Reset(PA1);
-        var pa11 = ZList( cc, input );
-        input.Reset(PA2);
-        var pa12 = ZList( cc, input );
-        */
         var solutions = new Dictionary< SolutionKey, List<long> > (); // value -> Z0 (previous) to bind
         var digit = 13;
         Solutions_W_Z0( cc[digit], 0 ).ToList()
             .ForEach( _ => solutions.Add( new SolutionKey(digit, _.Key, 0 ), _.Value.Values.ToList() ) );
         
-        // var test = solutions.First();
-        // var testZ = ZShort(test.Value, test.Key.W, cc[digit]);
-
         for ( --digit; digit >= 0; digit-- ) {
             var k = cc[digit];
             var d1 = digit + 1;
@@ -321,27 +252,13 @@ public class Day24Test
                 .ToHashSet();
             foreach( var z1 in z1list )
             {
-                /*
-                var r = Solutions_W_Z0(k, z1i);
-                if (r.Any())
-                {
-                    r.ToList().ForEach( _ => solutions[new SolutionKey(digit, _.Key.W, _.Key.Z1  )] = _.Value );
-                    break; // we try to stop on the first that has further solutions
-                }
-                */
-                var si = Solutions(k, z1).ToHashSet();
-                var sig = si.GroupBy(_ => new SolutionKey(digit, _.W, _.Z1)).ToList();
+                var sig = Solutions(k, z1).GroupBy(_ => new SolutionKey(digit, _.W, _.Z1)).ToList();
                 sig.ForEach( _ => solutions[_.Key] = _.Select( _ => _.Z0 ).Distinct().ToList() );
             }
         }
 
-        /*
-        // we need to assemble the found solutions
-        var minMaxW = FilterAnswers(solutions, 0, 0L).ToList();
-        //  var minW = minMaxW.Select(_ => _.W).Min();
-        var maxW = minMaxW.Select(_ => _.W).Max();
-        var z0max = minMaxW.Single(_ => _.W == maxW);
-        */
+        const long PA1  = 65984919997939L;
+        const long PA2 = 11211619541713L;
 
         var finalSolutions = new List<string>();
         ReadSolutions( 0, solutions, new List<long>(), finalSolutions, true);
@@ -364,37 +281,6 @@ public class Day24Test
             if (input.IsValid && RunShort(cc, input) == 0L) break;
             a2++;
         }
-        a2.Should().Be(PA2, "answer 2");
-        
-        return;
-
-        // long a2 = 0; 
-        for ( var i = min; i < max; i++ )
-        {
-            var i_s = i.ToString().ToCharArray();
-            var zi = System.Array.IndexOf(i_s, '0');
-            if (zi >= 0)
-            {
-                for (var y = zi; y < i_s.Length; y++)
-                {
-                    i_s[y] = '0';
-                }
-                i = long.Parse(string.Concat(i_s)) - 1;
-                continue;
-            }
-            input.Reset( i );
-            //  memory = new Dictionary<char,long>();
-            //var result = Run( code, memory );
-            // var di = i - result.Z;
-            // Console.WriteLine( $"{i} {result.Z} {di}" );
-            var result = RunShort( cc, input );
-            if ( result == 0 ) {
-                a2 = i;
-                break;
-            }
-        }
-
-        // 99994761016987L - too high
-        a2.Should().Be(-1, "answer 2");
+        a2.Should().Be(PA2, "answer 2");        
     }
 }
