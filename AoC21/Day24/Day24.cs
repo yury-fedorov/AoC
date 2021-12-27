@@ -122,32 +122,76 @@ public class Day24Test
 
     // attempting to execute mod with a<0 or b<=0 will cause the program to crash
     // mod z 26
-    static bool IsGood( long z, long w, long X ) => z >= 0 && ( ( (z % 26) + X ) != w );
-    
+    static bool IsGood( long z, long w, long X ) => z >= 0 && ( ( (z % 26) + X ) == w );
+
     // w to z
-    static Dictionary<long, long> Solutions_W_Z0( CodeConst k, long z1 ) {
-        Func<long,long> w2z = (w) => ( z1 - ( w + k.Y ) ) * k.Z /  26;
-        var wToZ0 = Enumerable.Range( 1, 9 ).ToDictionary( _ => (long)_, _ => w2z(_) );
-        return wToZ0.Where( _ => { var w = _.Key; var z = _.Value; return IsGood( z, w, k.X ); } )
-            .ToDictionary( _ => _.Key, _ => _.Value );
+    static Dictionary<long, Sequence> Solutions_W_Z0( CodeConst k, long z1 )
+    {
+        var wToZ0 = Enumerable.Range( 1, 9 )
+            .Select(w =>
+            {
+                var z = w - k.X;
+                var ok = IsGood(z, w, k.X) && ( ZShort( z, w, k ) == z1 );
+                return ( (long)w, z, ok);
+            } ).ToList();
+        return wToZ0.Where( _ => _.Item3 ).ToDictionary( _ => _.Item1, _ => new Sequence(  _.Item2 ) );
     }
 
-    /*
-    65984919997939
-    11211619541713
-    */
-
+    static readonly Dictionary< (long W, long Z1), Sequence> NoAnswer = new ();
+    static Dictionary< (long W, long Z1), Sequence> Solutions_W_Z0(CodeConst k, Sequence z1)
+        => z1.Values.Select(_ => ( _, Solutions_W_Z0(k, _) ) ).Where( _ => _.Item2.Any() )
+            .Select(_ =>
+            {
+                var z1 = _.Item1;
+                var d = _.Item2;
+                return d.Select(_ => ((_.Key, z1), _.Value)).ToDictionary( _ => _.Item1, _ => _.Item2 );
+            }).DefaultIfEmpty(NoAnswer).FirstOrDefault();
+    
     record CodeConst( long X, long Y, long Z ) {}  // div z Z (line 5), add x X (line 6), add y Y (line 16)
+
+    record SolutionKey(int Digit, long W, long Z1) { }
+
+    static void ReadSolutions(long z0, IDictionary<SolutionKey, Sequence> raw, List<long> solution,
+        List<string> solutions)
+    {
+        int digit = solution.Count;
+        if (digit >= 14)
+        {
+            // the end
+            var s = string.Concat(solution.Select(w => (char)('9' - w)));
+            solutions.Add(s);
+            return;
+        }
+        var i = raw
+            .Where(  t => t.Key.Digit == digit && t.Value.Contain( z0 ) )
+            .ToList();
+        foreach (var ii in i)
+        {
+            var s = new List<long>( solution ); 
+            s.Add( ii.Key.W );
+            ReadSolutions( ii.Key.Z1, raw, s, solutions );
+        }
+    }
+    
+    // we have always sequence of period 26 due to: (z%26) + k.X == w 
+    record Sequence( long V0 ) {
+        const int Size = 4000; // approximation
+        public IEnumerable<long> Values => Enumerable.Range( 0, Size).Select( k => V0 + ( 26 * k ) );
+        public bool Contain(long test) => Values.Contains(test);
+    }
 
     [TestCase("Day24/input.txt")]
     public async Task Test(string file) {
         // if ( App.IsFast ) return; 
         var lines = await App.ReadLines(file);
 
+        const long PA1 = 65984919997939L;
+        const long PA2 = 11211619541713L;
+        
         const long min = 111_111_111_111_11L;
         var input = new Input( min );
         var code = lines.Select( _ => ParseOperation(_, input) ).ToArray();
-        
+
         const long max = 99999353748738L;
             // 999_999_999_999_99L; 
         // var max = 99994761016988L;
@@ -167,7 +211,7 @@ public class Day24Test
 
             cc.Add( new CodeConst( getConst( x ), getConst( y ), getConst( z ) ) );
         }
-        cc.ForEach( k => Console.WriteLine( $"{k.X} {k.Y} {k.Z}" ) );
+        // cc.ForEach( k => Console.WriteLine( $"{k.X} {k.Y} {k.Z}" ) );
         /*
  12 7 1
  11 15 1
@@ -191,24 +235,40 @@ public class Day24Test
         var z2 = RunShort( cc, input );
 
         z1.Should().Be(z2, "check");
+        
+        input.Reset(PA1);
+        var pa11 = RunShort( cc, input );
+        input.Reset(PA2);
+        var pa12 = RunShort( cc, input );
 
-
-        var solutions = new Dictionary< ( int Digit, long W, long Z1 ), long >(); // value -> Z0 (previous) to bind
+        var solutions = new Dictionary< SolutionKey, Sequence >(); // value -> Z0 (previous) to bind
         var digit = 13;
-        Solutions_W_Z0( cc[digit], 0 ).ToList().ForEach( _ => solutions.Add( (digit, _.Key, 0 ), _.Value ) );
+        Solutions_W_Z0( cc[digit], 0 ).ToList()
+            .ForEach( _ => solutions.Add( new SolutionKey(digit, _.Key, 0 ), _.Value ) );
+        
+        // var test = solutions.First();
+        // var testZ = ZShort(test.Value, test.Key.W, cc[digit]);
 
         for ( --digit; digit >= 0; digit-- ) {
             var k = cc[digit];
             var d1 = digit + 1;
-            var z1list = solutions.Where( _ => _.Key.Digit == d1 ).Select( p => p.Value ).ToList();
-            foreach( var z1i in z1list ) {
-                Solutions_W_Z0( k, z1i ).ToList().ForEach( _ => solutions.Add( (digit, _.Key, z1i ), _.Value ) );
+            var z1list = solutions.Where( _ => _.Key.Digit == d1 )
+                .Select( p => p.Value )
+                .ToHashSet();
+            foreach( var z1i in z1list )
+            {
+                var r = Solutions_W_Z0(k, z1i);
+                if (r.Any())
+                {
+                    r.ToList().ForEach( _ => solutions[new SolutionKey(digit, _.Key.W, _.Key.Z1  )] = _.Value );
+                    break; // we try to stop on the first that has further solutions
+                }
             }
         }
 
         // we need to assemble the found solutions
-        solutions.Where(  t => t.Key.Digit == 0 && t.Value == 0 ).ToList()
-            .ForEach( t => Console.WriteLine( $"{t.Key.W} {t.Key.Z1}" ) );
+        var finalSolutions = new List<string>();
+        ReadSolutions( 0, solutions, new List<long>(), finalSolutions);
         
         0.Should().Be(-1, "answer 2");
         return;
