@@ -110,12 +110,28 @@ public class Day24Test
         var vx = X(z, w, k.X);
         return ( z / k.Z ) * ( ( 25 * vx ) + 1 ) + ( ( w + k.Y ) * vx );
     }
-    static long RunShort( List<CodeConst> cc, Input input ) {
+    
+    static long? RunShort( List<CodeConst> cc, Input input ) {
         long z = 0;
-        foreach( var k in cc ) {
+        foreach( var k in cc )
+        {
+            if (z < 0) return null;
             z = ZShort( z, input.Next(), k );
         }
         return z;
+    }
+
+    static List<long> ZList(List<CodeConst> cc, Input input)
+    {
+        long z = 0;
+        var result = new List<long> {0};
+        foreach( var k in cc )
+        {
+            if (z < 0) return null;
+            z = ZShort( z, input.Next(), k );
+            result.Add(z);
+        }
+        return result;
     }
 
     // inverse formula
@@ -123,6 +139,34 @@ public class Day24Test
     // attempting to execute mod with a<0 or b<=0 will cause the program to crash
     // mod z 26
     static bool IsGood( long z, long w, long X ) => z >= 0 && ( ( (z % 26) + X ) == w );
+
+    record WZ01(long W, long Z0, long Z1) { }
+
+    static IEnumerable<WZ01> Solutions(CodeConst k, long z1)
+    {
+        var solutions = new List<WZ01>();
+        foreach (var w in Enumerable.Range(1, 9))
+        {
+            foreach (var z0 in Enumerable.Range(0, (int)ZMax))
+            {
+                if (ZShort(z0, w, k) == z1)
+                {
+                    solutions.Add( new WZ01( w, z0, z1 ) );
+                }
+            }
+            /*
+            // conditions for mod operations
+            // z >= 0 &&  and ( z < 26 ) = w - X
+            var z = w - k.X;
+            if (z is < 0 or >= 26) continue;
+            if (ZShort(z, w, k) == z1)
+            {
+                solutions.Add( new WZ01( w, z, z1 ) );
+            }
+            */
+        }
+        return solutions;
+    }
 
     // w to z
     static Dictionary<long, Sequence> Solutions_W_Z0( CodeConst k, long z1 )
@@ -150,26 +194,40 @@ public class Day24Test
     record CodeConst( long X, long Y, long Z ) {}  // div z Z (line 5), add x X (line 6), add y Y (line 16)
 
     record SolutionKey(int Digit, long W, long Z1) { }
+    
+    static IEnumerable<SolutionKey> FilterAnswers( IDictionary<SolutionKey, List<long>> raw,
+        int digit, long z0 ) =>  raw
+        .Where(  t => t.Key.Digit == digit && t.Value.Contains( z0 ) )
+        .Select( t => t.Key )
+        .Distinct()
+        .ToList();
 
-    static void ReadSolutions(long z0, IDictionary<SolutionKey, Sequence> raw, List<long> solution,
-        List<string> solutions)
+    static void ReadSolutions(long z0, IDictionary<SolutionKey, List<long>> raw, List<long> solution,
+        List<string> solutions, bool isMax )
     {
         int digit = solution.Count;
         if (digit >= 14)
         {
             // the end
-            var s = string.Concat(solution.Select(w => (char)('9' - w)));
+            var s = string.Concat(solution.Select(w => (char)((int)(w) + '0'  )));
             solutions.Add(s);
             return;
         }
-        var i = raw
-            .Where(  t => t.Key.Digit == digit && t.Value.Contain( z0 ) )
-            .ToList();
-        foreach (var ii in i)
+
+        var options = FilterAnswers(raw, digit, z0).ToList();
+        if (!options.Any())
+        {
+            // partial solution
+            var s = string.Concat(solution.Select(w => (char)((int)(w) + '0'  )));
+            solutions.Add(s);
+            return;
+        }
+        var filter = isMax ? options.Max(_ => _.W) : options.Min(_ => _.W);
+        foreach (var ii in options.Where( _ => _.W == filter ) )
         {
             var s = new List<long>( solution ); 
-            s.Add( ii.Key.W );
-            ReadSolutions( ii.Key.Z1, raw, s, solutions );
+            s.Add( ii.W );
+            ReadSolutions( ii.Z1, raw, s, solutions, isMax );
         }
     }
     
@@ -180,12 +238,16 @@ public class Day24Test
         public bool Contain(long test) => Values.Contains(test);
     }
 
+    private const long ZMax = 10_000;
+
+    static bool IsValidZ(long z) => z >= 0 && z <= ZMax;
+    
     [TestCase("Day24/input.txt")]
     public async Task Test(string file) {
         // if ( App.IsFast ) return; 
         var lines = await App.ReadLines(file);
 
-        const long PA1 = 65984919997939L;
+        const long PA1  = 65984919997939L;
         const long PA2 = 11211619541713L;
         
         const long min = 111_111_111_111_11L;
@@ -228,23 +290,24 @@ public class Day24Test
  -8 13 26
  -10 13 26
         */
+        /*
         var memory = new Dictionary<char,long>();
-        input.Reset(min);
-        var z1 = Run( code, memory );
-        input.Reset(min);
-        var z2 = RunShort( cc, input );
+        input.Reset(PA1);
+        var z1min = Run( code, memory );
+        input.Reset(PA1A);
+        var z2min = RunShort( cc, input );
 
-        z1.Should().Be(z2, "check");
+        z1min.Should().Be(z2min, "check");
         
         input.Reset(PA1);
-        var pa11 = RunShort( cc, input );
+        var pa11 = ZList( cc, input );
         input.Reset(PA2);
-        var pa12 = RunShort( cc, input );
-
-        var solutions = new Dictionary< SolutionKey, Sequence >(); // value -> Z0 (previous) to bind
+        var pa12 = ZList( cc, input );
+        */
+        var solutions = new Dictionary< SolutionKey, List<long> > (); // value -> Z0 (previous) to bind
         var digit = 13;
         Solutions_W_Z0( cc[digit], 0 ).ToList()
-            .ForEach( _ => solutions.Add( new SolutionKey(digit, _.Key, 0 ), _.Value ) );
+            .ForEach( _ => solutions.Add( new SolutionKey(digit, _.Key, 0 ), _.Value.Values.ToList() ) );
         
         // var test = solutions.First();
         // var testZ = ZShort(test.Value, test.Key.W, cc[digit]);
@@ -253,27 +316,59 @@ public class Day24Test
             var k = cc[digit];
             var d1 = digit + 1;
             var z1list = solutions.Where( _ => _.Key.Digit == d1 )
-                .Select( p => p.Value )
+                .SelectMany( p => p.Value )
+                .Where( IsValidZ )
                 .ToHashSet();
-            foreach( var z1i in z1list )
+            foreach( var z1 in z1list )
             {
+                /*
                 var r = Solutions_W_Z0(k, z1i);
                 if (r.Any())
                 {
                     r.ToList().ForEach( _ => solutions[new SolutionKey(digit, _.Key.W, _.Key.Z1  )] = _.Value );
                     break; // we try to stop on the first that has further solutions
                 }
+                */
+                var si = Solutions(k, z1).ToHashSet();
+                var sig = si.GroupBy(_ => new SolutionKey(digit, _.W, _.Z1)).ToList();
+                sig.ForEach( _ => solutions[_.Key] = _.Select( _ => _.Z0 ).Distinct().ToList() );
             }
         }
 
+        /*
         // we need to assemble the found solutions
+        var minMaxW = FilterAnswers(solutions, 0, 0L).ToList();
+        //  var minW = minMaxW.Select(_ => _.W).Min();
+        var maxW = minMaxW.Select(_ => _.W).Max();
+        var z0max = minMaxW.Single(_ => _.W == maxW);
+        */
+
         var finalSolutions = new List<string>();
-        ReadSolutions( 0, solutions, new List<long>(), finalSolutions);
+        ReadSolutions( 0, solutions, new List<long>(), finalSolutions, true);
+        var a1 = finalSolutions.Select(long.Parse).Max();
+        while(true)
+        {
+            input.Reset(a1);
+            if ( input.IsValid && RunShort(cc, input) == 0L) break;
+            a1--;
+        }
+        a1.Should().Be(PA1, "answer 1");
         
-        0.Should().Be(-1, "answer 2");
+        
+        finalSolutions.Clear();
+        ReadSolutions( 0, solutions, new List<long>(), finalSolutions, false);
+        var a2 = finalSolutions.Select(long.Parse).Min();
+        while(true)
+        {
+            input.Reset(a2);
+            if (input.IsValid && RunShort(cc, input) == 0L) break;
+            a2++;
+        }
+        a2.Should().Be(PA2, "answer 2");
+        
         return;
 
-        long a2 = 0; 
+        // long a2 = 0; 
         for ( var i = min; i < max; i++ )
         {
             var i_s = i.ToString().ToCharArray();
