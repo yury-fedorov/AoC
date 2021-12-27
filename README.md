@@ -1,6 +1,6 @@
 # Advent of Code
 
-## 2021 - C# 10 (.NET 6)
+## 2021 - C# 10, .NET 6 (50 stars, rank 7127)
 https://adventofcode.com/2021
 
 Private Leaderboard
