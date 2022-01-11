@@ -47,7 +47,6 @@ public class Day19Test
 
     static MatchResult? Match(Scanner a, Scanner b)
         => RotateOptions.Select(r => Match(a, b, r)).OrderByDescending(mr => mr.Intersect.Count).First();
-    // .FirstOrDefault(mr => mr.Set.Count >= SharedPoints);
 
     static readonly bool[] TRUE_FALSE = new[] { true, false };
     static readonly Coordinate[] XYZ = new[] { Coordinate.X, Coordinate.Y, Coordinate.Z };
@@ -110,16 +109,6 @@ public class Day19Test
         var lines = await App.ReadLines(file);
         var scanners = ParseInput(lines);
         var bindings = new List<Binding>();
-        /*
-        foreach ( var ai in Enumerable.Range( 0, scanners.Count ) ) {
-            foreach ( var bi in Enumerable.Range( 0, scanners.Count ) ) {
-                if ( bi <= ai ) continue;
-                
-                if ( mr != null && mr.Set.Count >= SharedPoints) 
-                    bindings.Add( new Binding( ai, bi, mr ) );
-            }
-        }
-        */
         // normalized coordinates
         var map = new Dictionary<int, Scanner>() { { 0, scanners[0] } };
         // to convert
