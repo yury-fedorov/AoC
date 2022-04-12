@@ -32,7 +32,6 @@
                 <version>3.8.0</version>
                 <configuration>
                     <release>17</release>
-                    <compilerArgs>--enable-preview</compilerArgs>
                     <source>17</source>
                     <target>17</target>
                 </configuration>
