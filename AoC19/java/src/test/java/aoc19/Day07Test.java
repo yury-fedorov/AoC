@@ -25,21 +25,25 @@ public class Day07Test {
     static long allRuns( ArrayList<Long> code, List<Long> settings, boolean isTask1 ) {
         long input = 0;
         long maxInput = Long.MIN_VALUE;
-        do {
-            boolean isHalt = false;
-            for ( var setting : settings ) {
-                var result = singleRun( code, setting, input );
-                input = result.result;
-                isHalt = result.isHalt;
-            }
-            maxInput = Math.max( input, maxInput );
-            if (isHalt) break; // halt
-        } while ( !isTask1 ); // task 2 till halt
-        return isTask1 ? input : maxInput;
+        try {
+            do {
+                boolean isHalt = false;
+                for ( var setting : settings ) {
+                    var result = singleRun( code, setting, input );
+                    input = result.result;
+                    isHalt = result.isHalt;
+                }
+                maxInput = Math.max( input, maxInput );
+                if (isHalt) break; // halt
+            } while ( !isTask1 ); // task 2 till halt
+        } catch (Exception e) {
+            // ie. when there is no input
+        }
+        return maxInput;
     }
 
     static long solution( ArrayList<Long> code, List<Long> settings, boolean isTask1 ) {
-        long result = -1L;
+        long result = Long.MIN_VALUE;
         var i = new PermutationIterator(settings);
         while (i.hasNext()) {
             var curSettings = i.next();
@@ -63,6 +67,6 @@ public class Day07Test {
     public void solution() {
         final var code = IntcodeComputer.loadMemory(IOUtil.input("day07").get(0));
         assertEquals( "answer 1", 70597L, answer1(code) );
-        // TODO - assertEquals( "answer 2", -2L, answer2(code) );
+        assertEquals( "answer 2", -2L, answer2(code) );
     }
 }
