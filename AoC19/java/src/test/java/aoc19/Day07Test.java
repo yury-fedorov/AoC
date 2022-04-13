@@ -25,20 +25,16 @@ public class Day07Test {
     static long allRuns( ArrayList<Long> code, List<Long> settings, boolean isTask1 ) {
         long input = 0;
         long maxInput = Long.MIN_VALUE;
-        try {
-            do {
-                boolean isHalt = false;
-                for ( var setting : settings ) {
-                    var result = singleRun( code, setting, input );
-                    input = result.result;
-                    isHalt = result.isHalt;
-                }
-                maxInput = Math.max( input, maxInput );
-                if (isHalt) break; // halt
-            } while ( !isTask1 ); // task 2 till halt
-        } catch (Exception e) {
-            // ie. when there is no input
-        }
+        do {
+            boolean isHalt = false;
+            for ( var setting : settings ) {
+                var result = singleRun( code, setting, input );
+                input = result.result;
+                isHalt = result.isHalt;
+            }
+            maxInput = Math.max( input, maxInput );
+            if (isHalt) break; // halt
+        } while ( !isTask1 ); // task 2 till halt
         return maxInput;
     }
 
