@@ -1,7 +1,6 @@
 package aoc19;
 
 import aoc19.computer.IntcodeComputer;
-import aoc19.computer.operation.NothingOnEvent;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -19,7 +18,7 @@ public class Day09Test {
         final var  memory = IntcodeComputer.loadMemory(code);
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
-        IntcodeComputer.run( memory, in, out, new NothingOnEvent());
+        IntcodeComputer.run( memory, in, out );
         var asArray = new ArrayList<Long>( out );
         assertEquals( "copy of itself", IntcodeComputer.loadMemory(code), asArray );
     }
@@ -30,7 +29,7 @@ public class Day09Test {
         final var  memory = IntcodeComputer.loadMemory(code);
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
-        IntcodeComputer.run( memory, in, out, new NothingOnEvent());
+        IntcodeComputer.run( memory, in, out );
         assertEquals(1, out.size());
         assertEquals( 1125899906842624L, out.remove().longValue() );
     }
@@ -41,7 +40,7 @@ public class Day09Test {
         final var  memory = IntcodeComputer.loadMemory(code);
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
-        IntcodeComputer.run( memory, in, out, new NothingOnEvent());
+        IntcodeComputer.run( memory, in, out);
         assertEquals(1, out.size());
         long number = out.remove().longValue();
         int digits = 0;
@@ -59,7 +58,7 @@ public class Day09Test {
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
         in.add(1l);
-        IntcodeComputer.run( memory, in, out, new NothingOnEvent());
+        IntcodeComputer.run( memory, in, out);
         assertEquals( "answer 1", -1l, out.remove().longValue() ); //1102 too low
     }
 }
