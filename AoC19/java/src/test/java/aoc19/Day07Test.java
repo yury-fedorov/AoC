@@ -11,31 +11,54 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static org.junit.Assert.assertEquals;
 
 public class Day07Test {
-    record SingleRunResult( long result, boolean isHalt ) {}
 
-    static SingleRunResult singleRun(ArrayList<Long> code, long setting, long input) {
+    // possible to be used only for task 1
+    static long singleRun(ArrayList<Long> code, long setting, long input) {
         var in = new LinkedBlockingQueue<Long>();
         in.add(setting);
         in.add(input);
         var out = new LinkedBlockingQueue<Long>();
-        final var isHalt = IntcodeComputer.run(code, in, out);
-        return new SingleRunResult( out.poll(), isHalt );
+        IntcodeComputer.run(code, in, out);
+        return out.poll();
     }
 
-    static long allRuns( ArrayList<Long> code, List<Long> settings, boolean isTask1 ) {
+    static long allRuns1( ArrayList<Long> code, List<Long> settings ) {
         long input = 0;
-        long maxInput = Long.MIN_VALUE;
+        for ( var setting : settings ) {
+            input = singleRun( code, setting, input );
+        }
+        return input;
+    }
+
+    static long allRuns2( ArrayList<Long> code, List<Long> settings ) {
+        boolean isHalt = false;
+        var ampList = new ArrayList<IntcodeComputer>();
+        for ( var setting : settings ) {
+            var in = new LinkedBlockingQueue<Long>();
+            var out = new LinkedBlockingQueue<Long>();
+            in.add(setting);
+            var amp = new IntcodeComputer(code, in, out);
+            ampList.add(amp);
+        }
+        ampList.get(0).in(0); // the very first input is zero
+        var n = settings.size();
+        var lastAmp = ampList.get( n - 1 );
         do {
-            boolean isHalt = false;
-            for ( var setting : settings ) {
-                var result = singleRun( code, setting, input );
-                input = result.result;
-                isHalt = result.isHalt;
+            for ( var i = 0; i < n; i++ ) {
+                var amp = ampList.get(i);
+                isHalt = amp.run() == IntcodeComputer.RunPhase.HALT;
+                if ( !isHalt ) {
+                    var nextIndex = ( i + 1 ) % n;
+                    var nextAmp = ampList.get(nextIndex);
+                    if ( amp.isOut() )
+                    {
+                        var out = amp.out();
+                        nextAmp.in(out);
+                    }
+                }
             }
-            maxInput = Math.max( input, maxInput );
-            if (isHalt) break; // halt
-        } while ( !isTask1 ); // task 2 till halt
-        return maxInput;
+        } while ( !isHalt );
+        return lastAmp.out();
     }
 
     static long solution( ArrayList<Long> code, List<Long> settings, boolean isTask1 ) {
@@ -43,7 +66,7 @@ public class Day07Test {
         var i = new PermutationIterator(settings);
         while (i.hasNext()) {
             var curSettings = i.next();
-            final long r = allRuns(code, curSettings, isTask1);
+            final long r = isTask1 ? allRuns1(code, curSettings) : allRuns2(code, curSettings);
             result = Math.max( result, r );
         }
         return result;

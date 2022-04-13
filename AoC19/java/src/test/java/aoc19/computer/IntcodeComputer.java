@@ -33,7 +33,31 @@ public class IntcodeComputer {
         return false;
     }
 
-    public IntcodeComputer(  ) {
-    }
+    int _cur = 0;
+    long _relativeBase = 0;
+    final ArrayList<Long> _memory;
+    final Queue<Long> _in;
+    final Queue<Long> _out;
 
+    public IntcodeComputer( ArrayList<Long> memory, Queue<Long> in, Queue<Long> out  ) {
+        _memory = memory;
+        _in = in;
+        _out = out;
+    }
+    public void in( long data ) { _in.add(data); }
+    public long out() { return _out.poll(); }
+
+    public boolean isOut() { return !_out.isEmpty(); }
+
+    public enum RunPhase { HALT, NEED_FOR_INPUT }
+    public RunPhase run() {
+        while ( true )  {
+            final var o = Factory.createOperation( _memory, _cur );
+            if ( o.command == Command.End ) return RunPhase.HALT;
+            if ( o.command == Command.In && _in.isEmpty() ) return RunPhase.NEED_FOR_INPUT;
+            final var jump = o.execute(_memory, _in, _out, _relativeBase);
+            _relativeBase = jump.relativeBase();
+            _cur = ( jump.jump() == Jump.Absolute ) ? (int)jump.shift() : ( _cur + o.length() );
+        }
+    }
 }
