@@ -14,23 +14,15 @@ public class IntcodeComputer {
         return new ArrayList<>( Arrays.stream(code.split("," )).map( Long::valueOf ).collect( Collectors.toList() ) );
     }
 
-    public static boolean run(ArrayList<Long> memory, long in, Queue<Long> out ) {
+    public static RunPhase run(ArrayList<Long> memory, long in, Queue<Long> out ) {
         var inQueue = new LinkedBlockingQueue<Long>();
         inQueue.add(in);
         return IntcodeComputer.run( memory, inQueue, out );
     }
 
-    public static boolean run(ArrayList<Long> memory, Queue<Long> in, Queue<Long> out ) {
-        int cur = 0;
-        long relativeBase = 0;
-        while ( cur >= 0 && cur < memory.size() )  {
-            final var o = Factory.createOperation( memory, cur );
-            if ( o.command == Command.End ) return true;
-            final var jump = o.execute(memory, in, out, relativeBase);
-            relativeBase = jump.relativeBase();
-            cur = ( jump.jump() == Jump.Absolute ) ? (int)jump.shift() : ( cur + o.length() );
-        }
-        return false;
+    public static RunPhase run(ArrayList<Long> memory, Queue<Long> in, Queue<Long> out ) {
+        var c = new IntcodeComputer(memory, in, out);
+        return c.run();
     }
 
     int _cur = 0;
@@ -40,7 +32,7 @@ public class IntcodeComputer {
     final Queue<Long> _out;
 
     public IntcodeComputer( ArrayList<Long> memory, Queue<Long> in, Queue<Long> out  ) {
-        _memory = memory;
+        _memory = memory; // (ArrayList<Long>)memory.clone();
         _in = in;
         _out = out;
     }

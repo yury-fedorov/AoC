@@ -28,7 +28,9 @@ public class Factory {
         final Command command = optCommand.get();
         List<Long> args;
         switch ( command ) {
-            case End: return new End();
+            case End:
+                args = List.of();
+                break;
             case Add:
             case Mul:
             case Equals:
