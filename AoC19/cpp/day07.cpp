@@ -43,14 +43,6 @@ namespace day07 {
         vector<Number> settings = {0,1,2,3,4};
         return solution(code, settings, true);
     }
-
-    Number answer2( const Memory & code) {
-        return code.size() ? 1 : 0;
-        /* TODO - to debug
-        vector<Number> settings = {5,6,7,8,9};
-        return solution(code, settings, false);
-        */
-    }
 }
 
 TEST_CASE( "Day07", "[07]" ) {
@@ -63,9 +55,5 @@ TEST_CASE( "Day07", "[07]" ) {
 
     SECTION( "07-1" ) {
         REQUIRE( answer1(data) == 70597 );
-    }
-
-    SECTION( "07-2" ) {
-        REQUIRE( answer2(data) == -2 );
     }
 }
