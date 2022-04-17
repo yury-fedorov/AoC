@@ -74,7 +74,7 @@ public class Day14Test {
     }
 
     // reduce required using rest
-    static void useRest( Map<String, Integer> rest, Map<String, Integer> required) {
+    static void useRest( Map<String, Long> rest, Map<String, Long> required) {
         var scope = new HashSet<>(rest.keySet());
         scope.retainAll( required.keySet() );
         for ( var chemical : scope ) {
@@ -95,14 +95,14 @@ public class Day14Test {
         final var reactions = IOUtil.input(input);
         final var react = reactions.stream().map( Day14Test::parse ).toList();
 
-        final var rest = new HashMap<String,Integer>();
-        final var required = new HashMap<String,Integer>();
+        final var rest = new HashMap<String,Long>();
+        final var required = new HashMap<String,Long>();
         int oreQuantity = 0;
-        required.put( FUEL, 1 );
+        required.put( FUEL, 1L );
         while ( !required.isEmpty() ) {
             var latest = latest(react, required.keySet() );
             var chemical = latest.get(0);
-            int requiredQty = required.remove( chemical ); // how much we need
+            var requiredQty = required.remove( chemical ); // how much we need
             var options = react.stream().filter( r -> r.output.chemical.equals( chemical ) ).toList();
             assertFalse( options.isEmpty() );
             if ( options.size() == 1 ) {
@@ -112,7 +112,7 @@ public class Day14Test {
                 var diffQty = producedQty - requiredQty;
                 if ( diffQty > 0 ) {
                     // what we do not really need from output
-                    var qty = rest.getOrDefault( r.output.chemical, 0 ) + diffQty;
+                    var qty = rest.getOrDefault( r.output.chemical, 0L ) + diffQty;
                     rest.put( r.output.chemical, qty );
                 }
                 for (  var i : r.input ) {
@@ -121,7 +121,7 @@ public class Day14Test {
                         // the initial component
                         oreQuantity += qtyInput;
                     } else {
-                        var qty = required.getOrDefault( i.chemical, 0 ) + qtyInput;
+                        var qty = required.getOrDefault( i.chemical, 0L ) + qtyInput;
                         required.put( i.chemical, qty );
                         useRest(rest, required);
                     }
