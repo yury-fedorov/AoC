@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.util.*;
 import java.util.regex.*;
-import java.util.stream.*;
 
 import static org.junit.Assert.*;
 
@@ -40,7 +39,7 @@ public class Day14Test {
     // list of chemicals used for output
     static Set<String> to( List<Receipt> react, String output ) {
         var options = react.stream().filter( r -> r.output.chemical.equals( output ) ).toList();
-        if ( options.isEmpty() ) return new HashSet<String>();
+        if ( options.isEmpty() ) return new HashSet<>();
         var set = options.get(0).input.stream().map( p -> p.chemical ).toList();
         var result = new HashSet<String>();
         result.addAll(set);
@@ -56,7 +55,6 @@ public class Day14Test {
 
     static List<String> latest( List<Receipt> react, Collection<String> set ) {
         // any which does not contain any other
-        // var map = new HashMap< String, Set<String> > ();
         var mapCount = new HashMap< String, Integer > ();
         for ( var c : set ) {
             var s = to( react, c );
@@ -70,34 +68,67 @@ public class Day14Test {
 
     @Test
     public void solution() {
-        final var reactions = IOUtil.input("day14-sample");
+        solution1("day14-sample", 31); // sample
+        solution1("day14-sample2", 165); // sample
+        solution1("day14", 741927);
+    }
+
+    // reduce required using rest
+    static void useRest( Map<String, Integer> rest, Map<String, Integer> required) {
+        var scope = new HashSet<>(rest.keySet());
+        scope.retainAll( required.keySet() );
+        for ( var chemical : scope ) {
+            var restQty = rest.remove(chemical);
+            var requiredQty = required.remove(chemical);
+            var newRequired = requiredQty - restQty;
+            if ( newRequired > 0 ) {
+                // all rest is consumed to reduce required
+                required.put(chemical, newRequired);
+            } else if ( newRequired < 0 ) {
+                // rest was big enough, no more required but some rest
+                rest.put(chemical, -newRequired);
+            }
+        }
+    }
+
+    public void solution1(String input, int expectedOreQuantity) {
+        final var reactions = IOUtil.input(input);
         final var react = reactions.stream().map( Day14Test::parse ).toList();
 
+        final var rest = new HashMap<String,Integer>();
         final var required = new HashMap<String,Integer>();
         int oreQuantity = 0;
         required.put( FUEL, 1 );
         while ( !required.isEmpty() ) {
             var latest = latest(react, required.keySet() );
             var chemical = latest.get(0);
-            int portion = required.remove( chemical );
+            int requiredQty = required.remove( chemical ); // how much we need
             var options = react.stream().filter( r -> r.output.chemical.equals( chemical ) ).toList();
             assertFalse( options.isEmpty() );
             if ( options.size() == 1 ) {
                 var r = options.get(0);
-                int k = (int)Math.ceil( portion / (double)r.output.quantity );  // what we need / what we have
+                int k = (int)Math.ceil( requiredQty / (double)r.output.quantity );  // what we need / what we have
+                int producedQty = k * r.output.quantity; // could be more then needed
+                var diffQty = producedQty - requiredQty;
+                if ( diffQty > 0 ) {
+                    // what we do not really need from output
+                    var qty = rest.getOrDefault( r.output.chemical, 0 ) + diffQty;
+                    rest.put( r.output.chemical, qty );
+                }
                 for (  var i : r.input ) {
+                    var qtyInput = ( k * i.quantity );
                     if ( i.chemical.equals( ORE ) ) {
                         // the initial component
-                        oreQuantity += ( k * i.quantity );
+                        oreQuantity += qtyInput;
                     } else {
-                        var qty = required.getOrDefault( i.chemical, 0 ) + ( k * i.quantity );
+                        var qty = required.getOrDefault( i.chemical, 0 ) + qtyInput;
                         required.put( i.chemical, qty );
+                        useRest(rest, required);
                     }
                 }
             } else fail( "not implemented yet" );
         }
-        assertEquals( "answer 1", oreQuantity, -1 ); // 331686 is too low, 421639 low, 1380560 - not right
-
-        assertEquals( "answer 2", 0, 2 );
+        assertEquals( "answer 1", expectedOreQuantity, oreQuantity );
+        // TODO assertEquals( "answer 2", 0, 2 );
     }
 }
