@@ -1,11 +1,13 @@
 package aoc19;
 
 import aoc19.computer.IntcodeComputer;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 // all green, including tests
@@ -15,8 +17,12 @@ public class Day02Test {
         final var memory = IntcodeComputer.loadMemory(code);
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
-        IntcodeComputer.run( memory, in, out);
-        assertEquals( "post run memory", IntcodeComputer.loadMemory(memoryAfter), memory);
+        var c = new IntcodeComputer(memory,in,out);
+        c.run();
+        Assert.assertArrayEquals( "post run memory",
+                IntcodeComputer.loadMemory(memoryAfter).toArray(),
+                c.getMemory().toArray() );
+
     }
 
     long run( String code, int noun, int verb ) {
@@ -25,8 +31,9 @@ public class Day02Test {
         memory.set(2,(long)verb);
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
-        IntcodeComputer.run( memory, in, out);
-        return memory.get(0).longValue();
+        var c = new IntcodeComputer(memory,in,out);
+        c.run();
+        return c.get(0);
     }
 
     @Test

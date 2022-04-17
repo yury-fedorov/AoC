@@ -32,7 +32,7 @@ public class IntcodeComputer {
     final Queue<Long> _out;
 
     public IntcodeComputer( ArrayList<Long> memory, Queue<Long> in, Queue<Long> out  ) {
-        _memory = memory; // (ArrayList<Long>)memory.clone();
+        _memory = new ArrayList<>(memory);
         _in = in;
         _out = out;
     }
@@ -40,6 +40,9 @@ public class IntcodeComputer {
     public long out() { return _out.poll(); }
 
     public boolean isOut() { return !_out.isEmpty(); }
+
+    public long get(int index) { return _memory.get(index); }
+    public ArrayList<Long> getMemory() { return _memory; }
 
     public enum RunPhase { HALT, NEED_FOR_INPUT }
     public RunPhase run() {
