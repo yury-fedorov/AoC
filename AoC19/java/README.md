@@ -1,5 +1,4 @@
-Java 17 (LTS preview) - due to debug and possibility to run everywhere
-- Day 14: Space Stoichiometry
+Java 17 (LTS) - due to debug and possibility to run everywhere
 - Day 16: Flawed Frequency Transmission - task 2 not resolved (too slow)
 - Day 18: Many-Worlds Interpretation (paths)
 - Day 20: Donut Maze
