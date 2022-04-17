@@ -68,9 +68,26 @@ public class Day14Test {
 
     @Test
     public void solution() {
-        solution1("day14-sample", 31); // sample
-        solution1("day14-sample2", 165); // sample
-        solution1("day14", 741927);
+        testSolution1("day14-sample", 31); // sample
+        testSolution1("day14-sample2", 165); // sample
+        final int expectedOreOneFuel = 741927;
+        final String file = "day14";
+        testSolution1(file, expectedOreOneFuel);
+        final long amountOre = 1000000000000L; // trillion
+        long amountFuel = (long)Math.ceil(amountOre / expectedOreOneFuel);
+        long min = amountFuel;
+        long max = amountFuel * 2;
+        while(min < max) {
+            amountFuel = (min+max) / 2;
+            var ore = solution(file, amountFuel);
+            if ( ore < amountOre ) min = amountFuel;
+            else if ( ore > amountOre ) max = --amountFuel;
+        }
+        assertEquals( "answer 2", 2371699, amountFuel );
+    }
+
+    static void testSolution1(String input, int expectedOreQuantity) {
+        assertEquals( "answer 1", expectedOreQuantity, solution1(input) );
     }
 
     // reduce required using rest
@@ -90,15 +107,15 @@ public class Day14Test {
             }
         }
     }
-
-    public void solution1(String input, int expectedOreQuantity) {
+    static long solution1(String input) { return solution(input, 1L); }
+    static long solution(String input, long requiredFuelAmount) {
         final var reactions = IOUtil.input(input);
         final var react = reactions.stream().map( Day14Test::parse ).toList();
 
         final var rest = new HashMap<String,Long>();
         final var required = new HashMap<String,Long>();
-        int oreQuantity = 0;
-        required.put( FUEL, 1L );
+        long oreQuantity = 0L;
+        required.put( FUEL, requiredFuelAmount );
         while ( !required.isEmpty() ) {
             var latest = latest(react, required.keySet() );
             var chemical = latest.get(0);
@@ -107,8 +124,8 @@ public class Day14Test {
             assertFalse( options.isEmpty() );
             if ( options.size() == 1 ) {
                 var r = options.get(0);
-                int k = (int)Math.ceil( requiredQty / (double)r.output.quantity );  // what we need / what we have
-                int producedQty = k * r.output.quantity; // could be more then needed
+                long k = (long)Math.ceil( requiredQty / (double)r.output.quantity );  // what we need / what we have
+                long producedQty = k * r.output.quantity; // could be more then needed
                 var diffQty = producedQty - requiredQty;
                 if ( diffQty > 0 ) {
                     // what we do not really need from output
@@ -128,7 +145,6 @@ public class Day14Test {
                 }
             } else fail( "not implemented yet" );
         }
-        assertEquals( "answer 1", expectedOreQuantity, oreQuantity );
-        // TODO assertEquals( "answer 2", 0, 2 );
+        return oreQuantity;
     }
 }
