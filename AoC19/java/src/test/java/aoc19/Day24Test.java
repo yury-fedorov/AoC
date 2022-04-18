@@ -8,12 +8,9 @@ public class Day24Test {
     public final static int SIZE = 5; // field dimension (x or y)
 
     record Point( int x, int y ) {
-        public long getBiodiversityRating(int maxX) {
-            var index = ( maxX * y ) + x;
-            return (long)Math.pow( 2, index );
-        }
         public long getBiodiversityRating() {
-            return getBiodiversityRating(SIZE);
+            var index = ( SIZE * y ) + x;
+            return (long)Math.pow( 2, index );
         }
     }
 
