@@ -15,7 +15,7 @@ public class Day24Test {
     public final static char BUG = '#';
     public final static char SPACE = '.'; // empty space
 
-    record Point( int x, int y ) {
+    record Point( int x, int y, int level ) {
         public long getBiodiversityRating() {
             var index = ( SIZE * y ) + x;
             return (long)Math.pow( 2, index );
@@ -33,7 +33,7 @@ public class Day24Test {
         var result = new StringBuilder( SIZE * SIZE );
         for (int y = 0; y < SIZE; y++ ) {
             for (int x = 0; x < SIZE; x++ ) {
-                result.append( map.get( new Point(x,y) ) );
+                result.append( map.get( new Point(x,y,0) ) );
             }
         }
         return result.toString();
@@ -53,16 +53,16 @@ public class Day24Test {
 
     @Test
     public void solution() {
-        assertEquals( 1, new Point(0,0).getBiodiversityRating() );
-        assertEquals( 2, new Point(1,0).getBiodiversityRating() );
-        assertEquals( 4, new Point(2,0).getBiodiversityRating() );
-        assertEquals( 32768, new Point(0,3).getBiodiversityRating() );
+        assertEquals( 1, new Point(0,0,0).getBiodiversityRating() );
+        assertEquals( 2, new Point(1,0,0).getBiodiversityRating() );
+        assertEquals( 4, new Point(2,0,0).getBiodiversityRating() );
+        assertEquals( 32768, new Point(0,3, 0).getBiodiversityRating() );
 
         final var input = IOUtil.input("day24");
         var map = new HashMap<Point,Character>();
         for (int x = 0; x < SIZE; x++ ) {
             for (int y = 0; y < SIZE; y++ ) {
-                map.put( new Point(x,y), input.get(y).charAt(x) );
+                map.put( new Point(x,y,0), input.get(y).charAt(x) );
             }
         }
         final var history = new HashSet<String>();
@@ -72,7 +72,7 @@ public class Day24Test {
             var map1 = new HashMap<Point,Character>();
             for (int x = 0; x < SIZE; x++ ) {
                 for (int y = 0; y < SIZE; y++ ) {
-                    final var p = new Point(x,y);
+                    final var p = new Point(x,y,0);
                     final var bugs = countBugs(map, p);
                     final var isBug = map.get(p) == BUG;
                     final var isBug1 = isBug ? bugs == 1 : ( bugs == 1 || bugs == 2 );
