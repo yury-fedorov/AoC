@@ -3,6 +3,7 @@ package aoc19;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -28,6 +29,28 @@ public class Day24Test {
                 .sum();
     }
 
+    static String mapToString(Map<Point,Character> map) {
+        var result = new StringBuilder( SIZE * SIZE );
+        for (int y = 0; y < SIZE; y++ ) {
+            for (int x = 0; x < SIZE; x++ ) {
+                result.append( map.get( new Point(x,y) ) );
+            }
+        }
+        return result.toString();
+    }
+
+    static boolean isAdjacent( Point a, Point b ) {
+        var dx = Math.abs(a.x - b.x);
+        var dy = Math.abs(a.y - b.y);
+        return (dx + dy) == 1 || ( dx == 1 && dy == 1 );
+    }
+
+    static long countBugs( Map<Point,Character> map, Point point ) {
+        return map.entrySet().stream()
+                .filter( e -> e.getValue() == BUG && isAdjacent(point, e.getKey()) )
+                .count();
+    }
+
     @Test
     public void solution() {
         assertEquals( 1, new Point(0,0).getBiodiversityRating() );
@@ -41,6 +64,28 @@ public class Day24Test {
             for (int y = 0; y < SIZE; y++ ) {
                 map.put( new Point(x,y), input.get(y).charAt(x) );
             }
+        }
+        var history = new HashSet<String>();
+        history.add(mapToString(map));
+        while (true) {
+            // adjust map
+            var map1 = new HashMap<Point,Character>();
+            for (int x = 0; x < SIZE; x++ ) {
+                for (int y = 0; y < SIZE; y++ ) {
+                    var p = new Point(x,y);
+                    var bugs = countBugs(map, p);
+                    var isBug = map.get(p) == BUG;
+                    if ( isBug ) {
+                        map1.put(p, bugs == 1 ? BUG : SPACE );
+                    } else {
+                        map1.put(p, bugs == 1 || bugs == 2 ? BUG : SPACE );
+                    }
+                }
+            }
+            map = map1;
+            var s = mapToString(map);
+            var isAdded = history.add(s);
+            if ( !isAdded ) break;
         }
 
         var rating = getBiodiversityRating(map);
