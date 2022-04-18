@@ -72,14 +72,12 @@ public class Day24Test {
             var map1 = new HashMap<Point,Character>();
             for (int x = 0; x < SIZE; x++ ) {
                 for (int y = 0; y < SIZE; y++ ) {
-                    var p = new Point(x,y);
-                    var bugs = countBugs(map, p);
-                    var isBug = map.get(p) == BUG;
-                    if ( isBug ) {
-                        map1.put(p, bugs == 1 ? BUG : SPACE );
-                    } else {
-                        map1.put(p, bugs == 1 || bugs == 2 ? BUG : SPACE );
-                    }
+                    final var p = new Point(x,y);
+                    final var bugs = countBugs(map, p);
+                    final var isBug = map.get(p) == BUG;
+                    final var isBug1 = isBug ? bugs == 1 : ( bugs == 1 || bugs == 2 );
+                    map1.put(p, isBug1 ? BUG : SPACE );
+   
                 }
             }
             map = map1;
