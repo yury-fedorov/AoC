@@ -2,9 +2,7 @@ package aoc19;
 
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,10 +33,20 @@ public class Day24Test {
         return (dx + dy) == 1;
     }
 
+    static List<Point> getAdjacent(Point a) {
+        var result = new ArrayList<Point>();
+        // TODO to implement
+        return result;
+    }
+
     static long countBugs( Map<Point,Character> map, Point point ) {
         return map.entrySet().stream()
                 .filter( e -> e.getValue() == BUG && isAdjacent(point, e.getKey()) )
                 .count();
+    }
+
+    static long countBugs( Map<Point,Character> map ) {
+        return map.entrySet().stream().filter( e -> e.getValue() == BUG ).count();
     }
 
     @Test
@@ -55,6 +63,7 @@ public class Day24Test {
                 map.put( new Point(x,y,0), input.get(y).charAt(x) );
             }
         }
+        var originalMap = (HashMap<Point,Character>)map.clone();
         final var history = new HashSet<Long>();
         history.add(getBiodiversityRating(map));
         while (true) {
@@ -78,5 +87,11 @@ public class Day24Test {
 
         final var rating = getBiodiversityRating(map);
         assertEquals( "answer 1", 18407158, rating );
+
+        map = originalMap;
+        for ( int t = 0; t < 200; t++ ) {
+
+        }
+        assertEquals( "answer 2", -2, countBugs(map) );
     }
 }
