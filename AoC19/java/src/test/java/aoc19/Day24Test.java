@@ -42,7 +42,7 @@ public class Day24Test {
     static boolean isAdjacent( Point a, Point b ) {
         var dx = Math.abs(a.x - b.x);
         var dy = Math.abs(a.y - b.y);
-        return (dx + dy) == 1 || ( dx == 1 && dy == 1 );
+        return (dx + dy) == 1;
     }
 
     static long countBugs( Map<Point,Character> map, Point point ) {
