@@ -58,14 +58,14 @@ public class Day24Test {
         assertEquals( 4, new Point(2,0).getBiodiversityRating() );
         assertEquals( 32768, new Point(0,3).getBiodiversityRating() );
 
-        var input = IOUtil.input("day24");
+        final var input = IOUtil.input("day24");
         var map = new HashMap<Point,Character>();
         for (int x = 0; x < SIZE; x++ ) {
             for (int y = 0; y < SIZE; y++ ) {
                 map.put( new Point(x,y), input.get(y).charAt(x) );
             }
         }
-        var history = new HashSet<String>();
+        final var history = new HashSet<String>();
         history.add(mapToString(map));
         while (true) {
             // adjust map
@@ -77,17 +77,15 @@ public class Day24Test {
                     final var isBug = map.get(p) == BUG;
                     final var isBug1 = isBug ? bugs == 1 : ( bugs == 1 || bugs == 2 );
                     map1.put(p, isBug1 ? BUG : SPACE );
-   
                 }
             }
             map = map1;
-            var s = mapToString(map);
-            var isAdded = history.add(s);
+            final var s = mapToString(map);
+            final var isAdded = history.add(s);
             if ( !isAdded ) break;
         }
 
-        var rating = getBiodiversityRating(map);
-
-        assertEquals( "answer 1", -1, rating );
+        final var rating = getBiodiversityRating(map);
+        assertEquals( "answer 1", 18407158, rating );
     }
 }
