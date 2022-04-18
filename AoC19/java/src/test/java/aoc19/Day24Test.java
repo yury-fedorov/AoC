@@ -38,12 +38,42 @@ public class Day24Test {
         return p.x == 2 && p.y == 2;
     }
 
+    static List<Point> border(int level, boolean isXFixed, int fixed ) {
+        final var result = new ArrayList<Point>(SIZE);
+        for ( int v = 0; v < SIZE; v++ ) {
+            result.add( isXFixed ? new Point(fixed, v, level) : new Point(v, fixed, level) );
+        }
+        return result;
+    }
+
     static List<Point> getAdjacent(Map<Point,Character> map, Point point) {
         final var result = new ArrayList<Point>();
         final var sameLevel = map.keySet().stream()
                 .filter( p -> isAdjacent(point, p) ).toList();
         result.addAll(sameLevel.stream().filter( p -> !isCenter(p)).toList());
-        // TODO to implement
+        final var isCenterGate = sameLevel.size() > result.size(); // level in +1
+        final var isBorderGate = sameLevel.size() < 4; // level out -1
+        if ( isBorderGate ) {
+            final var levelOut = point.level - 1;
+            if ( point.x == 0 ) result.add( new Point( 2, 3, levelOut  ) );
+            if ( point.y == 0 ) result.add( new Point( 3, 2, levelOut  ) );
+            if ( point.x == 4 ) result.add( new Point( 4, 3, levelOut  ) );
+            if ( point.y == 4 ) result.add( new Point( 3, 4, levelOut  ) );
+        } else if ( isCenterGate ) {
+            final var levelIn = point.level + 1;
+            final var X_FIXED = true;
+            final var Y_FIXED = false;
+            if ( point.x == 1 ) {
+                // left from center - right border of inner map
+                result.addAll( border(levelIn, X_FIXED, 0 ) );
+            } else if ( point.x == 3 ) {
+                result.addAll( border(levelIn, X_FIXED, 4 ) );
+            } else if ( point.y == 1 ) {
+                result.addAll( border(levelIn, Y_FIXED, 0 ) );
+            } else if ( point.y == 3 ) {
+                result.addAll( border(levelIn, Y_FIXED, 4 ) );
+            }
+        }
         return result;
     }
 
