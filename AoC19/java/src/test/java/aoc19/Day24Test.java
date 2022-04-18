@@ -15,6 +15,7 @@ public class Day24Test {
     public final static char BUG = '#';
     public final static char SPACE = '.'; // empty space
 
+    // level is required only for the part 2
     record Point( int x, int y, int level ) {
         public long getBiodiversityRating() {
             var index = ( SIZE * y ) + x;
@@ -28,17 +29,6 @@ public class Day24Test {
                 .mapToLong( e -> e.getKey().getBiodiversityRating() )
                 .sum();
     }
-
-    static String mapToString(Map<Point,Character> map) {
-        var result = new StringBuilder( SIZE * SIZE );
-        for (int y = 0; y < SIZE; y++ ) {
-            for (int x = 0; x < SIZE; x++ ) {
-                result.append( map.get( new Point(x,y,0) ) );
-            }
-        }
-        return result.toString();
-    }
-
     static boolean isAdjacent( Point a, Point b ) {
         var dx = Math.abs(a.x - b.x);
         var dy = Math.abs(a.y - b.y);
@@ -65,8 +55,8 @@ public class Day24Test {
                 map.put( new Point(x,y,0), input.get(y).charAt(x) );
             }
         }
-        final var history = new HashSet<String>();
-        history.add(mapToString(map));
+        final var history = new HashSet<Long>();
+        history.add(getBiodiversityRating(map));
         while (true) {
             // adjust map
             var map1 = new HashMap<Point,Character>();
@@ -81,8 +71,8 @@ public class Day24Test {
                 }
             }
             map = map1;
-            final var s = mapToString(map);
-            final var isAdded = history.add(s);
+            final var hash = getBiodiversityRating(map);
+            final var isAdded = history.add(hash);
             if ( !isAdded ) break;
         }
 
