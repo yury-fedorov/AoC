@@ -50,7 +50,10 @@ public class Day24Test {
         final var result = new ArrayList<Point>();
         final var sameLevel = map.keySet().stream()
                 .filter( p -> isAdjacent(point, p) ).toList();
-        result.addAll(sameLevel.stream().filter( p -> !isCenter(p)).toList());
+        result.addAll(sameLevel.stream()
+                .filter( p -> !isCenter(p))
+                .map( p -> new Point( p.x, p.y, point.level ) )
+                .toList());
         final var isCenterGate = sameLevel.size() > result.size(); // level in +1
         final var isBorderGate = sameLevel.size() < 4; // level out -1
         if ( isBorderGate ) {
@@ -92,8 +95,10 @@ public class Day24Test {
     static HashMap<Point,Character> lifeCircle( Map<Point,Character> map, boolean isPart1 ) {
         var map1 = new HashMap<Point,Character>();
         // note they grow slower then one level per iteration
-        final var minLevel = map.keySet().stream().mapToInt(p -> p.level).min().getAsInt() - 1;
-        final var maxLevel = map.keySet().stream().mapToInt(p -> p.level).min().getAsInt() + 1;
+        final var minLevel = map.isEmpty() ? 0 :
+                map.keySet().stream().mapToInt(p -> p.level).min().getAsInt() - 1;
+        final var maxLevel = map.isEmpty() ? 0 :
+                map.keySet().stream().mapToInt(p -> p.level).max().getAsInt() + 1;
 
         for ( var level = minLevel; level <= maxLevel; level++ ) {
             if ( isPart1 && level != 0 ) continue;
@@ -126,21 +131,23 @@ public class Day24Test {
             }
         }
         var originalMap = (HashMap<Point,Character>)map.clone();
-        final var history = new HashSet<Long>();
-        history.add(getBiodiversityRating(map));
-        while (true) {
-            map = lifeCircle(map, true);
-            final var hash = getBiodiversityRating(map);
-            final var isAdded = history.add(hash);
-            if ( !isAdded ) break;
+        if (true) {
+            final var history = new HashSet<Long>();
+            history.add(getBiodiversityRating(map));
+            while (true) {
+                map = lifeCircle(map, true);
+                final var hash = getBiodiversityRating(map);
+                final var isAdded = history.add(hash);
+                if ( !isAdded ) break;
+            }
+            final var rating = getBiodiversityRating(map);
+            assertEquals( "answer 1", 18407158, rating );
         }
-        final var rating = getBiodiversityRating(map);
-        assertEquals( "answer 1", 18407158, rating );
 
         map = originalMap;
         for ( int t = 0; t < 200; t++ ) {
             map = lifeCircle(map, false);
         }
-        assertEquals( "answer 2", -2, countBugs(map) );
+        assertEquals( "answer 2", -2, countBugs(map) ); // 99 not right
     }
 }
