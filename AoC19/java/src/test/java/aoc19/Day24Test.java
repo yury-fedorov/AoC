@@ -34,14 +34,21 @@ public class Day24Test {
         return (dx + dy) == 1;
     }
 
-    static List<Point> getAdjacent(Point p) {
-        var result = new ArrayList<Point>();
+    public static boolean isCenter( Point p ) {
+        return p.x == 2 && p.y == 2;
+    }
+
+    static List<Point> getAdjacent(Map<Point,Character> map, Point point) {
+        final var result = new ArrayList<Point>();
+        final var sameLevel = map.keySet().stream()
+                .filter( p -> isAdjacent(point, p) ).toList();
+        result.addAll(sameLevel.stream().filter( p -> !isCenter(p)).toList());
         // TODO to implement
         return result;
     }
 
     static long countBugs( Map<Point,Character> map, Point point, boolean isPart1 ) {
-        var list = isPart1 ? List.of() : getAdjacent(point);
+        var list = isPart1 ? List.of() : getAdjacent(map, point);
         Predicate<Point> isAdj = isPart1 ? p -> isAdjacent(point, p) : p -> list.contains(p);
         return map.entrySet().stream()
                 .filter( e -> e.getValue() == BUG && isAdj.test(e.getKey()) )
@@ -63,6 +70,7 @@ public class Day24Test {
             for (int x = 0; x < SIZE; x++ ) {
                 for (int y = 0; y < SIZE; y++ ) {
                     final var p = new Point(x,y,level);
+                    if ( !isPart1 && isCenter(p) ) continue; // point is not defined in part 2
                     final var bugs = countBugs(map, p, isPart1);
                     final var isBug = map.getOrDefault(p, SPACE) == BUG;
                     final var isBug1 = isBug ? bugs == 1 : ( bugs == 1 || bugs == 2 );
