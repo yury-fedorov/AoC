@@ -70,9 +70,10 @@ public class Day24Test {
         while (true) {
             // adjust map
             var map1 = new HashMap<Point,Character>();
+            int level = 0;
             for (int x = 0; x < SIZE; x++ ) {
                 for (int y = 0; y < SIZE; y++ ) {
-                    final var p = new Point(x,y,0);
+                    final var p = new Point(x,y,level);
                     final var bugs = countBugs(map, p);
                     final var isBug = map.get(p) == BUG;
                     final var isBug1 = isBug ? bugs == 1 : ( bugs == 1 || bugs == 2 );
