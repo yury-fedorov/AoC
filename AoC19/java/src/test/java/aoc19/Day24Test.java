@@ -3,6 +3,7 @@ package aoc19;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,20 +34,43 @@ public class Day24Test {
         return (dx + dy) == 1;
     }
 
-    static List<Point> getAdjacent(Point a) {
+    static List<Point> getAdjacent(Point p) {
         var result = new ArrayList<Point>();
         // TODO to implement
         return result;
     }
 
-    static long countBugs( Map<Point,Character> map, Point point ) {
+    static long countBugs( Map<Point,Character> map, Point point, boolean isPart1 ) {
+        var list = isPart1 ? List.of() : getAdjacent(point);
+        Predicate<Point> isAdj = isPart1 ? p -> isAdjacent(point, p) : p -> list.contains(p);
         return map.entrySet().stream()
-                .filter( e -> e.getValue() == BUG && isAdjacent(point, e.getKey()) )
+                .filter( e -> e.getValue() == BUG && isAdj.test(e.getKey()) )
                 .count();
     }
 
     static long countBugs( Map<Point,Character> map ) {
         return map.entrySet().stream().filter( e -> e.getValue() == BUG ).count();
+    }
+
+    static HashMap<Point,Character> lifeCircle( Map<Point,Character> map, boolean isPart1 ) {
+        var map1 = new HashMap<Point,Character>();
+        // note they grow slower then one level per iteration
+        final var minLevel = map.keySet().stream().mapToInt(p -> p.level).min().getAsInt() - 1;
+        final var maxLevel = map.keySet().stream().mapToInt(p -> p.level).min().getAsInt() + 1;
+
+        for ( var level = minLevel; level <= maxLevel; level++ ) {
+            if ( isPart1 && level != 0 ) continue;
+            for (int x = 0; x < SIZE; x++ ) {
+                for (int y = 0; y < SIZE; y++ ) {
+                    final var p = new Point(x,y,level);
+                    final var bugs = countBugs(map, p, isPart1);
+                    final var isBug = map.getOrDefault(p, SPACE) == BUG;
+                    final var isBug1 = isBug ? bugs == 1 : ( bugs == 1 || bugs == 2 );
+                    map1.put(p, isBug1 ? BUG : SPACE );
+                }
+            }
+        }
+        return map1;
     }
 
     @Test
@@ -67,30 +91,17 @@ public class Day24Test {
         final var history = new HashSet<Long>();
         history.add(getBiodiversityRating(map));
         while (true) {
-            // adjust map
-            var map1 = new HashMap<Point,Character>();
-            int level = 0;
-            for (int x = 0; x < SIZE; x++ ) {
-                for (int y = 0; y < SIZE; y++ ) {
-                    final var p = new Point(x,y,level);
-                    final var bugs = countBugs(map, p);
-                    final var isBug = map.get(p) == BUG;
-                    final var isBug1 = isBug ? bugs == 1 : ( bugs == 1 || bugs == 2 );
-                    map1.put(p, isBug1 ? BUG : SPACE );
-                }
-            }
-            map = map1;
+            map = lifeCircle(map, true);
             final var hash = getBiodiversityRating(map);
             final var isAdded = history.add(hash);
             if ( !isAdded ) break;
         }
-
         final var rating = getBiodiversityRating(map);
         assertEquals( "answer 1", 18407158, rating );
 
         map = originalMap;
         for ( int t = 0; t < 200; t++ ) {
-
+            map = lifeCircle(map, false);
         }
         assertEquals( "answer 2", -2, countBugs(map) );
     }
