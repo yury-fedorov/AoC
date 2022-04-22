@@ -32,7 +32,7 @@ public class Day24Test {
     static boolean isAdjacent( Point a, Point b ) {
         var dx = Math.abs(a.x - b.x);
         var dy = Math.abs(a.y - b.y);
-        return (dx + dy) == 1;
+        return a.level == b.level && (dx + dy) == 1;
     }
 
     public static boolean isCenter( Point p ) {
@@ -87,6 +87,9 @@ public class Day24Test {
         }
         return result;
     }
+
+    static int toIndex(Point p) { return p.y * SIZE + p.x + 1; } // used for example
+    static char toIndex1(Point p) { return (char)('A' + toIndex(p)); }
 
     static long countBugs( Map<Point,Character> map, Point point, boolean isPart1 ) {
         var list = isPart1 ? List.of() : getAdjacent(map, point);
@@ -147,11 +150,27 @@ public class Day24Test {
 
     @Test
     public void demoPart2() {
+        /*
+    Tile 19 has four adjacent tiles: 14, 18, 20, and 24.
+    Tile G has four adjacent tiles: B, F, H, and L.
+    Tile D has four adjacent tiles: 8, C, E, and I.
+    Tile E has four adjacent tiles: 8, D, 14, and J.
+    Tile 14 has eight adjacent tiles: 9, E, J, O, T, Y, 15, and 19.
+    Tile N has eight adjacent tiles: I, O, S, and five tiles within the sub-grid marked ?.
+        */
+        // 1-25 level -1
+        // A-Y level 0
+
         var map = loadMap("day24-sample");
         var loi = formatMap(map,0);
         for ( int t = 0; t < 10; t++ ) {
             map = lifeCircle(map, false);
         }
+
+        final var T_19 = new Point(3,3,-1 );
+        assertEquals( 19, toIndex( T_19 ) );
+        final var a19 = getAdjacent(map,T_19);
+
         var l0 = formatMap(map, 0);
         var minMax = getMinMaxLevel(map);
         assertEquals( "number of levels after 10 minutes ", 11, minMax.max - minMax.min + 1 );
@@ -194,6 +213,6 @@ public class Day24Test {
         for ( int t = 0; t < 200; t++ ) {
             map = lifeCircle(map, false);
         }
-        assertEquals( "answer 2", -2, countBugs(map) ); // 99 not right
+        assertEquals( "answer 2", -2, countBugs(map) ); // 99 not right, 1066 - is too low
     }
 }
