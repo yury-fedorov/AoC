@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -58,10 +60,17 @@ public class Day24Test {
         final var isBorderGate = sameLevel.size() < 4; // level out -1
         if ( isBorderGate ) {
             final var levelOut = point.level - 1;
-            if ( point.x == 0 ) result.add( new Point( 2, 3, levelOut  ) );
-            if ( point.y == 0 ) result.add( new Point( 3, 2, levelOut  ) );
-            if ( point.x == 4 ) result.add( new Point( 4, 3, levelOut  ) );
-            if ( point.y == 4 ) result.add( new Point( 3, 4, levelOut  ) );
+            /*
+            01234
+            1.x.
+            2x0x
+            3.x.
+            4
+             */
+            if ( point.x == 0 ) result.add( new Point( 1, 2, levelOut  ) );
+            if ( point.y == 0 ) result.add( new Point( 2, 1, levelOut  ) );
+            if ( point.x == 4 ) result.add( new Point( 3, 2, levelOut  ) );
+            if ( point.y == 4 ) result.add( new Point( 2, 3, levelOut  ) );
         } else if ( isCenterGate ) {
             final var levelIn = point.level + 1;
             final var X_FIXED = true;
@@ -92,14 +101,35 @@ public class Day24Test {
         return map.entrySet().stream().filter( e -> e.getValue() == BUG ).count();
     }
 
+    static IntStream mapToLevel(Map<Point,Character> map) {
+        return map.entrySet().stream().filter( e -> e.getValue() == BUG ).mapToInt( e -> e.getKey().level);
+    }
+
+    record MinMax(int min, int max) {}
+
+    static MinMax getMinMaxLevel(Map<Point,Character> map) {
+        final var minLevel = mapToLevel( map ).min().orElse(0);
+        final var maxLevel = mapToLevel( map ).max().orElse(0);
+        return new MinMax( minLevel, maxLevel );
+    }
+
+    static String formatMap(Map<Point,Character> map, int level) {
+        var result = new StringBuilder( SIZE * SIZE );
+        for (int y = 0; y < SIZE; y++ ) {
+            for (int x = 0; x < SIZE; x++ ) {
+                result.append( map.get( new Point(x,y,level) ) );
+            }
+            result.append( System.lineSeparator() );
+        }
+        return result.toString();
+    }
+
     static HashMap<Point,Character> lifeCircle( Map<Point,Character> map, boolean isPart1 ) {
         var map1 = new HashMap<Point,Character>();
+        var minMaxLevel = getMinMaxLevel(map);
+        var minLevel = minMaxLevel.min - 1;
+        var maxLevel = minMaxLevel.max + 1;
         // note they grow slower then one level per iteration
-        final var minLevel = map.isEmpty() ? 0 :
-                map.keySet().stream().mapToInt(p -> p.level).min().getAsInt() - 1;
-        final var maxLevel = map.isEmpty() ? 0 :
-                map.keySet().stream().mapToInt(p -> p.level).max().getAsInt() + 1;
-
         for ( var level = minLevel; level <= maxLevel; level++ ) {
             if ( isPart1 && level != 0 ) continue;
             for (int x = 0; x < SIZE; x++ ) {
@@ -117,20 +147,37 @@ public class Day24Test {
     }
 
     @Test
-    public void solution() {
-        assertEquals( 1, new Point(0,0,0).getBiodiversityRating() );
-        assertEquals( 2, new Point(1,0,0).getBiodiversityRating() );
-        assertEquals( 4, new Point(2,0,0).getBiodiversityRating() );
-        assertEquals( 32768, new Point(0,3, 0).getBiodiversityRating() );
+    public void demoPart2() {
+        var map = loadMap("day24-sample");
+        var loi = formatMap(map,0);
+        for ( int t = 0; t < 10; t++ ) {
+            map = lifeCircle(map, false);
+        }
+        var l0 = formatMap(map, 0);
+        var minMax = getMinMaxLevel(map);
+        assertEquals( "number of levels after 10 minutes ", 11, minMax.max - minMax.min + 1 );
+        assertEquals("number of bugs after 10 minutes", 99, countBugs(map));
+    }
 
-        final var input = IOUtil.input("day24");
+    static HashMap<Point,Character> loadMap(String file) {
+        final var input = IOUtil.input(file);
         var map = new HashMap<Point,Character>();
         for (int x = 0; x < SIZE; x++ ) {
             for (int y = 0; y < SIZE; y++ ) {
                 map.put( new Point(x,y,0), input.get(y).charAt(x) );
             }
         }
-        var originalMap = (HashMap<Point,Character>)map.clone();
+        return map;
+    }
+
+    @Test
+    public void solution() {
+        assertEquals( 1, new Point(0,0,0).getBiodiversityRating() );
+        assertEquals( 2, new Point(1,0,0).getBiodiversityRating() );
+        assertEquals( 4, new Point(2,0,0).getBiodiversityRating() );
+        assertEquals( 32768, new Point(0,3, 0).getBiodiversityRating() );
+
+        var map = loadMap("day24");
         if (true) {
             final var history = new HashSet<Long>();
             history.add(getBiodiversityRating(map));
@@ -144,7 +191,7 @@ public class Day24Test {
             assertEquals( "answer 1", 18407158, rating );
         }
 
-        map = originalMap;
+        map = loadMap("day24");
         for ( int t = 0; t < 200; t++ ) {
             map = lifeCircle(map, false);
         }
