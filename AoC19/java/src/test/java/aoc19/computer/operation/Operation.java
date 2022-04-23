@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import static aoc19.computer.Mode.Relative;
+
 public abstract class Operation {
-    public static record ExecResult (Jump jump, long shift, long relativeBase ) {}
+    public record ExecResult (Jump jump, long shift, long relativeBase ) {}
     public final Command command;
     final List<Mode> modes;
     final List<Long> args;
@@ -19,17 +21,20 @@ public abstract class Operation {
     public abstract ExecResult execute(ArrayList<Long> memory, Queue<Long> in, Queue<Long> out, long relativeBase);
     public int length() { return 1 + args.size(); }
 
-    public static long get( List<Long> memory, long value, Mode mode, long relativeBase ) {
+    public static long get( List<Long> memory, long index, Mode mode, long relativeBase ) {
         switch (mode) {
-            case Position:
-                return value >= memory.size() ? 0 : memory.get( (int)value );
-            case Immediate: return value;
-            case Relative:  return relativeBase + value;
+            case Position:  return index >= memory.size() ? 0 : memory.get( (int)index );
+            case Immediate: return index;
+            case Relative:  {
+                index = relativeBase + index;
+                return index >= memory.size() ? 0 : memory.get( (int)index );
+            }
             default: throw new IllegalStateException( "unmanaged mode" );
         }
     }
 
-    public static void set(ArrayList<Long> memory, long index, long value ) {
+    public static void set(ArrayList<Long> memory, long index, long value, Mode mode, long relativeBase ) {
+        if ( mode == Relative ) index += relativeBase;
         if ( memory.size() <= index ) {
             final int newSize = (int)index + 1;
             memory.ensureCapacity(newSize);

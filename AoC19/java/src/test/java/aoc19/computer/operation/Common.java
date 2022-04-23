@@ -29,7 +29,7 @@ public class Common extends Operation{
         }
         if ( r.isPresent() ) {
             final var ra = args.get(2);
-            set(memory, ra, r.get());
+            set(memory, ra, r.get(), modes.get(2), relativeBase);
             return new ExecResult( Jump.Next, 0, relativeBase );
         } else if (  isJump.isPresent() ) {
             return new ExecResult( isJump.get() ? Jump.Absolute : Jump.Next, b, relativeBase );

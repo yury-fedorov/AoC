@@ -14,7 +14,7 @@ public class InOutRel extends Operation {
     @Override
     public ExecResult execute(ArrayList<Long> memory, Queue<Long> in, Queue<Long> out, long relativeBase) {
         final var a0 = args.get(0);
-        if ( command == Command.In ) { set(memory, a0, in.poll() ); }
+        if ( command == Command.In ) { set(memory, a0, in.poll(), modes.get(0), relativeBase ); }
         else {
             final var a = get(memory, a0, modes.get(0), relativeBase);
             switch ( command ) {
