@@ -153,7 +153,6 @@ public class Day24Test {
     public void demoPart2() {
         /*
     Tile G has four adjacent tiles: B, F, H, and L.
-    Tile E has four adjacent tiles: 8, D, 14, and J.
     Tile 14 has eight adjacent tiles: 9, E, J, O, T, Y, 15, and 19.
     Tile N has eight adjacent tiles: I, O, S, and five tiles within the sub-grid marked ?.
         */
@@ -179,7 +178,18 @@ public class Day24Test {
         final var aD = getAdjacent(map, T_D);
         assertEquals(4, aD.size());
         final var T_8 = new Point(2,1, -1);
+        assertEquals( 8, toIndex( T_8 ) );
         assertTrue( "contains 8", aD.contains( T_8 ) );
+
+        // Tile E has four adjacent tiles: 8, D, 14, and J.
+        final var T_E = new Point(4,0,0);
+        assertEquals( 'E', toIndexA( T_E ) );
+        final var aE = getAdjacent(map, T_E);
+        assertEquals(4, aE.size());
+        final var T_14 = new Point(3,2, -1);
+        assertEquals( 14, toIndex( T_14 ) );
+        assertTrue( "contains 8", aE.contains( T_8 ) );
+        assertTrue( "contains 14", aE.contains( T_14 ) );
 
         var l0 = formatMap(map, 0);
         var minMax = getMinMaxLevel(map);
