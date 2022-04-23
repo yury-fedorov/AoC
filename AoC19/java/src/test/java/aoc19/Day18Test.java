@@ -1,5 +1,6 @@
 package aoc19;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -17,6 +18,7 @@ public class Day18Test {
 
     record Point( int x, int y ) {}
 
+    @Ignore( "to be implemented" ) // TODO
     @Test
     public void solution() {
         final var input = IOUtil.input("day18");
