@@ -5,8 +5,6 @@ Java 17 (LTS) - due to debug and possibility to run everywhere
 - Day 22: Slam Shuffle (cards)
 
 Intcode
-- 07/2 - ready but to debug
-- 09 - ready but to debug (test fails)
 - Day 11: Space Police - intcode - to implement
 - Day 13: Care Package - intcode - to implement
 - Day 15: Oxygen System - intcode - to read

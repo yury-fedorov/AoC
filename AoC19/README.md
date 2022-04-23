@@ -1,9 +1,10 @@
 # Which Days in Which Languages
 
-## Java (5.5+1.5)
-2 (duplicates F#), 5 (only Java),
-7.1 (duplicate, second missing), 9 (suspended),
-10, 12, 14, 16.1 (second missing), 24
+## Java (7+1.5)
+2 (duplicates F#), 
+5,
+7 (duplicates first part in C++), 
+9, 10, 12, 14, 16.1 (second missing), 24
 
 ## F# (3+1)
 1-4 (2 also in Java)
