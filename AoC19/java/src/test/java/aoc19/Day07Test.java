@@ -41,21 +41,17 @@ public class Day07Test {
             ampList.add(amp);
         }
         ampList.get(0).in(0); // the very first input is zero
-        var n = settings.size();
-        var lastAmp = ampList.get( n - 1 );
+        final var n = settings.size();
+        final var lastIndex = n - 1;
+        final var lastAmp = ampList.get( lastIndex );
         do {
             for ( var i = 0; i < n; i++ ) {
                 var amp = ampList.get(i);
                 isHalt = amp.run() == IntcodeComputer.RunPhase.HALT;
-                if ( !isHalt ) {
-                    var nextIndex = ( i + 1 ) % n;
-                    var nextAmp = ampList.get(nextIndex);
-                    if ( amp.isOut() )
-                    {
-                        var out = amp.out();
-                        nextAmp.in(out);
-                    }
-                }
+                if ( isHalt && i == lastIndex ) break;
+                final var nextIndex = ( i + 1 ) % n;
+                final var nextAmp = ampList.get(nextIndex);
+                if ( amp.isOut() ) nextAmp.in( amp.out() );
             }
         } while ( !isHalt );
         return lastAmp.out();
@@ -86,6 +82,6 @@ public class Day07Test {
     public void solution() {
         final var code = IntcodeComputer.loadMemory(IOUtil.input("day07").get(0));
         assertEquals( "answer 1", 70597L, answer1(code) );
-        // TODO assertEquals( "answer 2", -2L, answer2(code) );
+        assertEquals( "answer 2", 30872528L, answer2(code) );
     }
 }
