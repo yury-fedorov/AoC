@@ -12,7 +12,7 @@ https://adventofcode.com/2020
 Private Leaderboard
 https://adventofcode.com/2020/leaderboard/private/view/33618
 
-## 2019 - Java, C++ 20, F#
+## 2019 - Java, F#, C++ 20
 https://adventofcode.com/2019
 
 Private Leaderboard

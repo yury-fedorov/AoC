@@ -3,7 +3,6 @@ Java 17 (LTS) - due to debug and possibility to run everywhere
 - Day 18: Many-Worlds Interpretation (paths)
 - Day 20: Donut Maze
 - Day 22: Slam Shuffle (cards)
-- Day 24: Planet of Discord (life game)
 
 Intcode
 - 07/2 - ready but to debug

@@ -228,23 +228,22 @@ public class Day24Test {
         assertEquals( 32768, new Point(0,3, 0).getBiodiversityRating() );
 
         var map = loadMap("day24");
-        if (true) {
-            final var history = new HashSet<Long>();
-            history.add(getBiodiversityRating(map));
-            while (true) {
-                map = lifeCircle(map, true);
-                final var hash = getBiodiversityRating(map);
-                final var isAdded = history.add(hash);
-                if ( !isAdded ) break;
-            }
-            final var rating = getBiodiversityRating(map);
-            assertEquals( "answer 1", 18407158, rating );
+        final var history = new HashSet<Long>();
+        history.add(getBiodiversityRating(map));
+        while (true) {
+            map = lifeCircle(map, true);
+            final var hash = getBiodiversityRating(map);
+            final var isAdded = history.add(hash);
+            if ( !isAdded ) break;
         }
+        final var rating = getBiodiversityRating(map);
+        assertEquals( "answer 1", 18407158, rating );
 
+        if ( Config.isFast() ) return; // takes 81 seconds
         map = loadMap("day24");
         for ( int t = 0; t < 200; t++ ) {
             map = lifeCircle(map, false);
         }
-        assertEquals( "answer 2", -2, countBugs(map) ); // 99 not right, 1066 - is too low
+        assertEquals( "answer 2", 1998, countBugs(map) );
     }
 }
