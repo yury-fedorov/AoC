@@ -40,6 +40,12 @@ public class Day24Test {
         return p.x == 2 && p.y == 2;
     }
 
+    public static boolean isCenterBorder( Point p ) {
+        final var dx = Math.abs(2 - p.x);
+        final var dy = Math.abs(2 - p.y);
+        return ( dx == 0 && dy == 1 ) || ( dx == 1 & dy == 0 );
+    }
+
     static List<Point> border(int level, boolean isXFixed, int fixed ) {
         final var result = new ArrayList<Point>(SIZE);
         for ( int v = 0; v < SIZE; v++ ) {
@@ -56,8 +62,8 @@ public class Day24Test {
                 .filter( p -> !isCenter(p))
                 .map( p -> new Point( p.x, p.y, point.level ) )
                 .toList());
-        final var isCenterGate = sameLevel.size() > result.size(); // level in +1
-        final var isBorderGate = sameLevel.size() < 4; // level out -1
+        final var isCenterGate = isCenterBorder(point); // level in +1
+        final var isBorderGate = !isCenterGate && sameLevel.size() < 4; // level out -1
         if ( isBorderGate ) {
             final var levelOut = point.level - 1;
             /*
@@ -153,7 +159,6 @@ public class Day24Test {
     public void demoPart2() {
         /*
     Tile G has four adjacent tiles: B, F, H, and L.
-    Tile 14 has eight adjacent tiles: 9, E, J, O, T, Y, 15, and 19.
     Tile N has eight adjacent tiles: I, O, S, and five tiles within the sub-grid marked ?.
         */
         // 1-25 level -1
@@ -190,6 +195,13 @@ public class Day24Test {
         assertEquals( 14, toIndex( T_14 ) );
         assertTrue( "contains 8", aE.contains( T_8 ) );
         assertTrue( "contains 14", aE.contains( T_14 ) );
+
+        // Tile 14 has eight adjacent tiles: 9, E, J, O, T, Y, 15, and 19.
+        final var a14 = getAdjacent(map, T_14);
+        assertEquals(8, a14.size());
+        final var T_O = new Point(4,2, 0);
+        assertEquals( 'O', toIndexA( T_O ) );
+        assertTrue( "contains O", a14.contains( T_O ) );
 
         var l0 = formatMap(map, 0);
         var minMax = getMinMaxLevel(map);
