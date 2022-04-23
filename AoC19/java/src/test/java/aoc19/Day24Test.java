@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class Day24Test {
 
@@ -89,7 +90,7 @@ public class Day24Test {
     }
 
     static int toIndex(Point p) { return p.y * SIZE + p.x + 1; } // used for example
-    static char toIndex1(Point p) { return (char)('A' + toIndex(p)); }
+    static char toIndexA(Point p) { return (char)('A' + toIndex(p) - 1); }
 
     static long countBugs( Map<Point,Character> map, Point point, boolean isPart1 ) {
         var list = isPart1 ? List.of() : getAdjacent(map, point);
@@ -151,9 +152,7 @@ public class Day24Test {
     @Test
     public void demoPart2() {
         /*
-    Tile 19 has four adjacent tiles: 14, 18, 20, and 24.
     Tile G has four adjacent tiles: B, F, H, and L.
-    Tile D has four adjacent tiles: 8, C, E, and I.
     Tile E has four adjacent tiles: 8, D, 14, and J.
     Tile 14 has eight adjacent tiles: 9, E, J, O, T, Y, 15, and 19.
     Tile N has eight adjacent tiles: I, O, S, and five tiles within the sub-grid marked ?.
@@ -167,9 +166,20 @@ public class Day24Test {
             map = lifeCircle(map, false);
         }
 
+        // Tile 19 has four adjacent tiles: 14, 18, 20, and 24.
         final var T_19 = new Point(3,3,-1 );
         assertEquals( 19, toIndex( T_19 ) );
         final var a19 = getAdjacent(map,T_19);
+        assertEquals(4, a19.size());
+        assertTrue("all points on the same level", a19.stream().allMatch(p -> p.level == -1) );
+
+        // Tile D has four adjacent tiles: 8, C, E, and I.
+        final var T_D = new Point(3,0, 0);
+        assertEquals( 'D', toIndexA( T_D ) );
+        final var aD = getAdjacent(map, T_D);
+        assertEquals(4, aD.size());
+        final var T_8 = new Point(2,1, -1);
+        assertTrue( "contains 8", aD.contains( T_8 ) );
 
         var l0 = formatMap(map, 0);
         var minMax = getMinMaxLevel(map);
