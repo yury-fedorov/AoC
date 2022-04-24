@@ -5,9 +5,8 @@ Java 17 (LTS) - due to debug and possibility to run everywhere
 - Day 22: Slam Shuffle (cards)
 
 Intcode
-- Day 11: Space Police - intcode - to implement
-- Day 13: Care Package - intcode - to implement
-- Day 15: Oxygen System - intcode - to read
+- Day 13: Care Package - second part - to implement
+- Day 15: Oxygen System
 - Day 17: Set and Forget
 - Day 19: Tractor Beam
 - Day 21: Springdroid Adventure
