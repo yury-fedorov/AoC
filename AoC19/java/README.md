@@ -5,7 +5,6 @@ Java 17 (LTS) - due to debug and possibility to run everywhere
 - Day 22: Slam Shuffle (cards)
 
 Intcode
-- Day 15: Oxygen System
 - Day 17: Set and Forget
 - Day 19: Tractor Beam
 - Day 21: Springdroid Adventure
