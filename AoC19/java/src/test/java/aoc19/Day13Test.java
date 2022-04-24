@@ -23,26 +23,22 @@ public class Day13Test {
         final var memory2 = (ArrayList<Long>)memory.clone();
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
-        IntcodeComputer.run( memory, in, out);
-        final var a = new ArrayList<>(out);
-        final var n = a.size() / 3;
+        var comp = new IntcodeComputer(memory, in, out);
+        comp.run();
         final var map = new HashMap<Point,Long>();
-        for ( int i = 0; i < n; i++ ) {
-            final var base = i * 3;
-            var x = a.get( base );
-            var y = a.get( base + 1 );
-            var tileId = a.get( base + 2 );
-            map.put( new Point(x,y), tileId );
+        Optional<Command> command;
+        while( (command = readOut(comp, out)).isPresent() ) {
+            var c = command.get();
+            map.put( c.point, c.tileId );
         }
         assertEquals( "answer 1", 309L, map.values().stream().filter( t -> t == BLOCK ).count() );
 
         memory2.set(0, 2L);
         in.clear();
         out.clear();
-        final var comp = new IntcodeComputer(memory2, in, out);
+        comp = new IntcodeComputer(memory2, in, out);
         var ballX = 0L; // ball x position
         var paddleX = 0L; // paddle x position
-        Optional<Command> command;
         while ( comp.run() != IntcodeComputer.RunPhase.HALT ) {
             while ( (command = readOut(comp, out)).isPresent() ) {
                 var c = command.get();
