@@ -15,6 +15,7 @@ public class Day25Test {
 
     @Test
     public void solution()  {
+
         assertEquals("answer 1", -1, 0 );
     }
 
@@ -23,6 +24,45 @@ public class Day25Test {
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
         final var comp = new IntcodeComputer(code, in, out);
+// hand made based on the map
+        final var navigation = """
+south
+east
+take boulder
+west
+north
+west
+take hypercube
+west
+take space law space brochure
+west
+north
+take shell
+west
+take mug
+south
+take festive hat
+north
+east
+south
+east
+east
+east
+east
+north
+west
+north
+take whirled peas
+west
+west
+take astronaut ice cream
+south
+inv
+""";
+        for ( var c : navigation.toCharArray() ) {
+            in.add( (long)c );
+        }
+        // A loud, robotic voice says "Alert! Droids on this ship are lighter than the detected value!" and you are ejected back to the checkpoint.
 
         while ( comp.run() != IntcodeComputer.RunPhase.HALT ) {
             out(out);
