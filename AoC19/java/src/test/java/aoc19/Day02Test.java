@@ -4,13 +4,10 @@ import aoc19.computer.IntcodeComputer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-// all green, including tests
 public class Day02Test {
 
     void run( String code, String memoryAfter ) {
