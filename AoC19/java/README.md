@@ -7,5 +7,7 @@ Java 17 (LTS) - due to debug and possibility to run everywhere
 Intcode
 - Day 17: Set and Forget
 - Day 19: Tractor Beam
-- Day 21: Springdroid Adventure
 - Day 25: Cryostasis
+
+Review?
+- Day 21: Springdroid Adventure (may do better assembly?)
