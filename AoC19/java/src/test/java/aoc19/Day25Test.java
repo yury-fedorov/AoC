@@ -6,6 +6,8 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -62,6 +64,7 @@ inv
         for ( var c : navigation.toCharArray() ) {
             in.add( (long)c );
         }
+        final var things = getThings(navigation);
         // A loud, robotic voice says "Alert! Droids on this ship are lighter than the detected value!" and you are ejected back to the checkpoint.
 
         while ( comp.run() != IntcodeComputer.RunPhase.HALT ) {
@@ -74,6 +77,13 @@ inv
             in.add(10L);
         }
         out(out);
+    }
+
+    static List<String> getThings(String navigation) {
+        return Arrays.stream(navigation.split( "\n" ))
+                .filter(s -> s.contains("take "))
+                .map( s -> s.substring( 5) )
+                .toList();
     }
 
     static void out( Queue<Long> out ) {
