@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.assertEquals;
@@ -17,7 +16,6 @@ public class Day23Test {
         final var code = IntcodeComputer.loadMemory(IOUtil.input("day23").get(0));
         final var COMPUTER_COUNT = 50;
         final var compList = new ArrayList<IntcodeComputer>(COMPUTER_COUNT);
-        final var outList = new ArrayList<Queue<Long>>(COMPUTER_COUNT);
         for ( var address = 0L; address < COMPUTER_COUNT; address++ ) {
             final var memory = new ArrayList<>(code);
             final var in = new LinkedBlockingQueue<Long>();
@@ -25,35 +23,56 @@ public class Day23Test {
             in.add(address);
             final var comp = new IntcodeComputer(memory, in, out);
             compList.add(comp);
-            outList.add(out);
         }
 
         Optional<Long> answer1 = Optional.empty();
-        while ( answer1.isEmpty() ) {
+        Optional<Long> answer2 = Optional.empty();
+
+        Optional<Long> natX = Optional.empty();
+        Optional<Long> natY = Optional.empty();
+
+        Optional<Long> previousNatY = Optional.empty();
+
+        while ( answer2.isEmpty() ) {
+            boolean isNetworkIdle = true;
             for ( var address = 0; address < COMPUTER_COUNT; address++ ) {
                 final var comp = compList.get(address);
-                final var out = outList.get(address);
-                final var r = comp.run();
-                if ( r == IntcodeComputer.RunPhase.NEED_FOR_INPUT ) {
+                if ( comp.inSize() == 0 ) {
                     comp.in(-1 );
+                } else {
+                    isNetworkIdle = false;
                 }
-                while ( out.size() >= 3 ) {
-                    final var receiver = out.poll();
-                    final var x = out.poll();
-                    final var y = out.poll();
+                comp.run();
+                while ( comp.outSize() >= 3 ) {
+                    isNetworkIdle = false;
+                    final var receiver = comp.out();
+                    final var x = comp.out();
+                    final var y = comp.out();
                     if ( receiver == 255 ) {
                         if ( answer1.isEmpty() ) answer1 = Optional.of(y);
+                        natX = Optional.of(x);
+                        natY = Optional.of(y);
                         break;
                     } else if ( receiver >= 0 && receiver < COMPUTER_COUNT ) {
-                        final var rc = compList.get( receiver.intValue() );
+                        final var rc = compList.get( (int)receiver );
                         rc.in(x);
                         rc.in(y);
                     }
                 }
-                if ( answer1.isPresent() ) break;
+            }
+            if ( isNetworkIdle ) {
+                if ( previousNatY.isPresent() && previousNatY.get().equals( natY.get() ) ) {
+                    answer2 = natY;
+                } else {
+                    final var c0 = compList.get(0);
+                    c0.in(natX.get().longValue());
+                    c0.in(natY.get().longValue());
+                    previousNatY = natY;
+                }
             }
         }
 
         assertEquals("answer 1", 23259, answer1.get().longValue() );
+        assertEquals("answer 2", 15742, answer2.get().longValue() );
     }
 }

@@ -39,7 +39,8 @@ public class IntcodeComputer {
     public void in( long data ) { _in.add(data); }
     public long out() { return _out.poll(); }
 
-    public boolean isOut() { return !_out.isEmpty(); }
+    public int inSize() { return _in.size(); }
+    public int outSize() { return _out.size(); }
 
     public long get(int index) { return _memory.get(index); }
     public ArrayList<Long> getMemory() { return _memory; }

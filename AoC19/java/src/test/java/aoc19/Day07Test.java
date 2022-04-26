@@ -51,7 +51,7 @@ public class Day07Test {
                 if ( isHalt && i == lastIndex ) break;
                 final var nextIndex = ( i + 1 ) % n;
                 final var nextAmp = ampList.get(nextIndex);
-                if ( amp.isOut() ) nextAmp.in( amp.out() );
+                if ( amp.outSize() > 0 ) nextAmp.in( amp.out() );
             }
         } while ( !isHalt );
         return lastAmp.out();

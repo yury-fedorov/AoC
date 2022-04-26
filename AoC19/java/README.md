@@ -8,5 +8,4 @@ Intcode
 - Day 17: Set and Forget
 - Day 19: Tractor Beam
 - Day 21: Springdroid Adventure
-- Day 23: Category Six
 - Day 25: Cryostasis
