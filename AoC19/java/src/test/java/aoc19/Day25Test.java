@@ -10,18 +10,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
 public class Day25Test {
 
     @Test
-    public void solution()  {
-
-        assertEquals("answer 1", -1, 0 );
+    public void solution() throws IOException  {
+        assertEquals("answer 1", 33624080, readCode() );
     }
 
-    public static void main(String [] a) throws IOException {
+    // public static void main(String [] a) throws IOException {
+    static long readCode() throws IOException {
         final var code = IntcodeComputer.loadMemory(IOUtil.input("day25").get(0));
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
@@ -71,11 +72,21 @@ inv
             comp.run();
             var lastOut = readOut(out).toString();
             if ( !lastOut.contains( "Droids on this ship are") ) {
-                break;
                 // Oh, hello! You should be able to get in by typing 33624080 on the keypad at the main airlock.
+                // Create a Pattern object
+                final var r = Pattern.compile(
+                        "You should be able to get in by typing (\\d+) on the keypad at the main airlock");
+
+                // Now create matcher object.
+                final var m = r.matcher(lastOut);
+
+                if (m.find()) {
+                    final var answer = m.group(1);
+                    return Long.parseLong(answer);
+                }
             }
         }
-
+        // this part is not necessary, if the solution is found automatically
         while ( comp.run() != IntcodeComputer.RunPhase.HALT ) {
             out(out);
             final var br = new BufferedReader(new InputStreamReader(System.in));
@@ -86,6 +97,7 @@ inv
             in.add(10L);
         }
         out(out);
+        return -1;
     }
 
     static void toIn( Queue<Long> in, CharSequence commands ) {
