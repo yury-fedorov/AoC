@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 
+import static aoc19.computer.AsciiUtil.*;
 import static org.junit.Assert.assertEquals;
 
 public class Day25Test {
@@ -100,30 +100,11 @@ inv
         return -1;
     }
 
-    static void toIn( Queue<Long> in, CharSequence commands ) {
-        for ( var c : commands.toString().toCharArray() ) {
-            in.add( (long)c );
-        }
-    }
-
     static List<String> getThings(String navigation) {
         return Arrays.stream(navigation.split( "\n" ))
                 .filter(s -> s.contains("take "))
                 .map( s -> s.substring( 5) )
                 .toList();
-    }
-
-    static CharSequence readOut(Queue<Long> out ) {
-        final var text = new StringBuilder();
-        while ( !out.isEmpty() ) {
-            final long c = out.poll();
-            text.append((char)c);
-        }
-        return text;
-    }
-
-    static void out( Queue<Long> out ) {
-        System.out.println( readOut(out) );
     }
 
     static CharSequence generate( List<String> things, long flags ) {

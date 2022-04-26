@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static aoc19.computer.AsciiUtil.toIn;
 import static org.junit.Assert.assertEquals;
 
 public class Day21Test {
@@ -48,9 +49,7 @@ RUN
         final var memory = IntcodeComputer.loadMemory(IOUtil.input("day21").get(0));
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
-        for ( var c : code.toCharArray() ) {
-            in.add((long)c);
-        }
+        toIn(in, code);
 
         final var comp = new IntcodeComputer(memory, in, out);
         comp.run();
