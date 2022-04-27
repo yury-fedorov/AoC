@@ -1,10 +1,12 @@
 # Which Days in Which Languages
 
-## Java (12+1.5)
+## Java (13.5+1.5)
 2 (duplicates F#), 
 5,
 7 (duplicates first part in C++), 
-9, 10, 11, 12, 13, 14, 15, 16.1 (second missing), 21, 23, 24, 25.1
+9, 10, 11, 12, 13, 14, 15, 
+16.1 (second missing), 17.1, 
+19, 21, 23, 24, 25.1
 
 ## F# (3+1)
 1-4 (2 also in Java)

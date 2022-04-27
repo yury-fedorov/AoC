@@ -28,6 +28,7 @@ public class Day19Test {
 
         assertEquals( "answer 1", 131, answer1);
 
+        if (Config.isFast()) return; // takes 2-3 minutes
         final var SIZE = 100L;
         long answer2 = 0;
         for ( var y = 0L; true; y++ ) {
@@ -46,7 +47,7 @@ public class Day19Test {
                 break;
             }
         }
-        assertEquals( "answer 2", -2, answer2 );
+        assertEquals( "answer 2", 15231022, answer2 );
     }
 
     static final ArrayList<Long> PROGRAM = IntcodeComputer.loadMemory(IOUtil.input("day19").get(0));
