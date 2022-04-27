@@ -28,7 +28,7 @@ public class Day19Test {
 
         assertEquals( "answer 1", 131, answer1);
 
-        if (Config.isFast()) return; // takes 2-3 minutes
+        if (Config.isFast()) return; // takes 168 sec
         final var SIZE = 100L;
         long answer2 = 0;
         for ( var y = 0L; true; y++ ) {
