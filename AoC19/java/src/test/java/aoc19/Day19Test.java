@@ -3,6 +3,10 @@ package aoc19;
 import aoc19.computer.IntcodeComputer;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static aoc19.computer.AsciiUtil.out;
@@ -15,27 +19,75 @@ public class Day19Test {
 
         final var N = 50;
         var answer1 = 0L;
-        for ( var y = 0; y < N; y++ ) {
-            for ( var x = 0; x < N; x++ ) {
-                final var r = get( x, y );
-                answer1 += r == 1 ? 1 : 0;
+        for ( var y = 0L; y < N; y++ ) {
+            for ( var x = 0L; x < N; x++ ) {
+                final var r = isTractorBeam( new Point( x, y ) );
+                answer1 += r ? 1 : 0;
             }
         }
 
         assertEquals( "answer 1", 131, answer1);
-        assertEquals( "answer 2", -2, 0 );
+
+        final var SIZE = 100L;
+        long answer2 = 0;
+        for ( var y = 0L; true; y++ ) {
+            final var r0 = getBeamLine(y);
+            if (r0.isEmpty()) continue;
+            final var l0 = r0.get().max - r0.get().min + 1;
+            if ( l0 < SIZE ) continue;
+            final var r1 = getBeamLine(y+SIZE-1);
+            if (r1.isEmpty()) continue;
+            // min r0 max r0
+            //     min r1 max r1
+            if ( r0.get().max - r1.get().min >= ( SIZE - 1 ) ) {
+                // found
+                final var x0 = r1.get().min;
+                answer2 = (10000 * x0) + y;
+                break;
+            }
+        }
+        assertEquals( "answer 2", -2, answer2 );
     }
 
-    static long get( long x, long y ) {
-        final var  memory = IntcodeComputer.loadMemory(IOUtil.input("day19").get(0));
+    static final ArrayList<Long> PROGRAM = IntcodeComputer.loadMemory(IOUtil.input("day19").get(0));
+    record Point( long x, long y ) {}
+    static final Map<Point,Boolean> MAP = new HashMap<>();
+
+    static boolean isTractorBeam( Point p ) {
+        final var cp = MAP.getOrDefault(p, null);
+        if ( cp != null ) return cp;
+        final var  memory = new ArrayList<>(PROGRAM);
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
         final var c = new IntcodeComputer(memory, in, out);
-        c.in( x );
-        c.in( y );
-        var r = c.run();
-        if ( c.outSize() == 0 )
-            throw new RuntimeException( "Bad pair!" );
-        return c.out();
+        c.in( p.x );
+        c.in( p.y );
+        c.run();
+        final var r = c.out();
+        final var isBeam = r == 1;
+        MAP.put(p, isBeam);
+        return isBeam;
+    }
+
+    record Range( long min, long max ) {}
+
+    static Optional<Range> getBeamLine( long line ) {
+        final var y = line;
+        Optional<Long> min = Optional.empty();
+        Optional<Long> max = Optional.empty();
+        final var maxX = 3 * line;
+        for ( var x = 0L; x < maxX; x++ ) {
+            final var p = new Point(x, y);
+            final var isBeam = isTractorBeam(p);
+            if ( min.isEmpty() && isBeam ) {
+                min = Optional.of(x);
+                max = Optional.of(x);
+            }
+            else if ( min.isPresent() && isBeam ) max = Optional.of(x);
+            else if ( max.isPresent() && !isBeam ) break;
+        }
+        if ( min.isPresent() && max.isPresent() )
+            return Optional.of( new Range(min.get(), max.get()) );
+        return Optional.empty();
     }
 }
