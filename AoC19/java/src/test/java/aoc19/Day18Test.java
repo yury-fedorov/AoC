@@ -62,6 +62,7 @@ public class Day18Test {
                 final var s1 = calculator.nextStep( Optional.of(s), getPoint(s.event, mapKey, mapDoor ) );
                 next1.addAll(s1);
             }
+            next = next1;
         }
 
         // How many steps is the shortest path that collects all of the keys?
