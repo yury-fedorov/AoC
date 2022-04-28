@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static aoc19.computer.AsciiUtil.out;
 import static aoc19.computer.AsciiUtil.readOut;
 import static org.junit.Assert.assertEquals;
 
