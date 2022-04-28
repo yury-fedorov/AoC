@@ -32,6 +32,7 @@ public class Day17Test {
         }
 
         assertEquals( "answer 1", 4600, answer1);
+        System.out.println(mapAsString);
         assertEquals( "answer 2", -2, 0 );
     }
 
