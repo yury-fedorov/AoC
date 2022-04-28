@@ -42,77 +42,49 @@ public class Day18Test {
                 map.put( p, m );
             }
         }
-        var path = new PathStep(null, ' ', 0 );
-        var next = Set.of( start );
-        var distance = 0;
-        final var distanceMap = new HashMap<Point,Integer>();
-        final var nextDoors = new HashMap<Character, Integer>();
-        final var nextKeys = new HashMap<Character, Integer>();
+        final var calculator = new PathCalculator(
+                Collections.unmodifiableSet(walkable),
+                Collections.unmodifiableMap(mapKey),
+                Collections.unmodifiableMap(mapDoor) );
+
+        var answer1 = Integer.MAX_VALUE;
+        final var ALL_KEYS = mapKey.size();
+        var next = calculator.nextStep(Optional.empty(), start);
         while ( !next.isEmpty() ) {
-            final var next1 = new HashSet<Point>();
-            for ( var n : next ) {
-                boolean isNext = true;
-                final var doorId = getIdByPoint(mapDoor, n);
-                final var keyId = getIdByPoint(mapKey, n);
-                if ( doorId.isPresent() ) {
-                    // this is a door (we stop here)
-                    nextDoors.put( doorId.get(), distance );
-                    isNext = false; // we stop analyses here (at least for now)
-                } else if ( keyId.isPresent() ) {
-                    // this is a key
-                    nextKeys.put( keyId.get(), distance );
-                }
-                if ( isNext ) {
-                    distanceMap.put(n, distance);
-                    final var n1 = next(n, walkable, distanceMap);
-                    next1.addAll(n1);
-                }
+            final var minDistance = next.stream().filter( s -> s.keys().size() == ALL_KEYS )
+                    .mapToInt( s -> s.totalDistance() ).min();
+            if ( minDistance.isPresent() ) {
+                answer1 = minDistance.getAsInt();
+                break; // TODO - not sure that we can stop here
             }
-            next = next1;
-            distance++;
+            var next1 = new ArrayList<Step>();
+            for ( var s : next ) {
+                final var s1 = calculator.nextStep( Optional.of(s), getPoint(s.event, mapKey, mapDoor ) );
+                next1.addAll(s1);
+            }
         }
-        // logic is we need to analyse all paths to next keys or doors for which we already have keys
-        // on every option the analysis is repeated (so we need to keep the state (which keys collected,
-        // which doors opened, where we stay, distance walked so far)
-        var openableDoors = path.keys().stream().map( k -> keyToDoor(k) ).toList();
-        openableDoors.removeAll( path.openedDoors() );
-        openableDoors.retainAll( nextDoors.keySet() );
-        // this is the set of doors to analyze
 
         // How many steps is the shortest path that collects all of the keys?
-        assertEquals("answer 1", -1, 0);
+        assertEquals("answer 1", -1, answer1);
         assertEquals("answer 2", -2, 0);
     }
 
-    /* TODO - remove
-    // this is enough to keep the history of a given path
-    // we add a key once it is gathered
-    // we add a door once it is opened
-    record Path ( List<Character> sequence, int distance ) {
-        List<Character> keys() { return sequence.stream().filter( c -> isKey(c) ).toList(); }
+    static Point getPoint( char event, Map<Character,Point> keys, Map<Character,Point> doors ) {
+        return keys.getOrDefault( event, doors.get(event) );
     }
-     */
 
     // optimized in space, simple recursive processing (tree)
-    record PathStep( PathStep previous, char event, int distance ) {
+    record Step( Optional<Step> previous, char event, int distance ) {
         // boolean isKey() { return Day18Test.isKey(event); }
-        int totalDistance() {
-            int result = 0;
-            var current = this;
-            while ( current != null ) {
-                result += current.distance;
-                current = current.previous;
-            }
-            return result;
-        }
+        int totalDistance() { return distance + (previous.isPresent() ? previous.get().totalDistance() : 0); }
         List<Character> keys() { return getList( c -> isKey(c) ); }
         List<Character> openedDoors() { return getList( c -> isDoor(c) ); }
         private List<Character> getList( Predicate<Character> isGood ) {
             var result = new ArrayList<Character>();
-            var current = this;
-            while ( current != null ) {
-                if ( isGood.test( current.event ) ) result.add( current.event );
-                current = current.previous;
+            var current = Optional.of( this );
+            while ( current.isPresent() ) {
+                if ( isGood.test( current.get().event ) ) result.add( current.get().event );
+                current = current.get().previous;
             }
             return result;
         }
@@ -125,7 +97,7 @@ public class Day18Test {
                 .findFirst();
     }
 
-    static List<Point> next( Point from, Set<Point> walkable, Map<Point,Integer> distance ) {
+    static List<Point> nextPoint( Point from, Set<Point> walkable, Map<Point,Integer> distance ) {
         var result = new ArrayList<Point>(4);
         result.add( new Point( from.x - 1, from.y ) );
         result.add( new Point( from.x + 1, from.y ) );
@@ -136,5 +108,58 @@ public class Day18Test {
         return result;
     }
 
-    static Set<Character>
+    record PathCalculator( Set<Point> walkable, Map<Character, Point> keys, Map<Character, Point> doors ) {
+        List<Step> nextStep( Optional<Step> prev, Point start ) {
+            var next = Set.of( start );
+            var distance = 0;
+            final var distanceMap = new HashMap<Point,Integer>();
+            final var nextDoors = new HashMap<Character, Integer>();
+            final var nextKeys = new HashMap<Character, Integer>();
+            while ( !next.isEmpty() ) {
+                final var next1 = new HashSet<Point>();
+                for ( var n : next ) {
+                    boolean isNext = true;
+                    final var doorId = getIdByPoint(doors, n);
+                    final var keyId = getIdByPoint(keys, n);
+                    if ( doorId.isPresent() ) {
+                        // this is a door (we stop here)
+                        nextDoors.put( doorId.get(), distance );
+                        isNext = false; // we stop analyses here (at least for now)
+                    } else if ( keyId.isPresent() ) {
+                        // this is a key
+                        nextKeys.put( keyId.get(), distance );
+                    }
+                    if ( isNext ) {
+                        distanceMap.put(n, distance);
+                        final var n1 = nextPoint(n, walkable, distanceMap);
+                        next1.addAll(n1);
+                    }
+                }
+                next = next1;
+                distance++;
+            }
+
+            final var result = new ArrayList<Step>();
+            for ( var ke : nextKeys.entrySet() ) {
+                result.add( new Step( prev, ke.getKey(), ke.getValue() ) );
+            }
+
+            if ( prev.isPresent() ) {
+                // logic is we need to analyse all paths to next keys or doors for which we already have keys
+                // on every option the analysis is repeated (so we need to keep the state (which keys collected,
+                // which doors opened, where we stay, distance walked so far)
+                var path = prev.get();
+                var openableDoors = new ArrayList<Character>( path.keys().stream().map( k -> keyToDoor(k) ).toList() );
+                openableDoors.removeAll( path.openedDoors() );
+                openableDoors.retainAll( nextDoors.keySet() );
+                // this is the set of doors to analyze
+
+                for ( var od : openableDoors ) {
+                    result.add( new Step( prev, od, nextDoors.get(od) ) );
+                }
+            }
+
+            return result;
+        }
+    }
 }
