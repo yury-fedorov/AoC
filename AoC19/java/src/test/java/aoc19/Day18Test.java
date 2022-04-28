@@ -14,6 +14,7 @@ public class Day18Test {
     static final char START = '@';
     static boolean isKey(char c) { return Character.isLowerCase(c); }
     static boolean isDoor(char c) { return Character.isUpperCase(c); }
+    static char keyToDoor(char key) { return Character.toUpperCase(key); }
 
     record Point( int x, int y ) {}
 
@@ -41,6 +42,7 @@ public class Day18Test {
                 map.put( p, m );
             }
         }
+        var path = new PathStep(null, ' ', 0 );
         var next = Set.of( start );
         var distance = 0;
         final var distanceMap = new HashMap<Point,Integer>();
@@ -72,6 +74,10 @@ public class Day18Test {
         // logic is we need to analyse all paths to next keys or doors for which we already have keys
         // on every option the analysis is repeated (so we need to keep the state (which keys collected,
         // which doors opened, where we stay, distance walked so far)
+        var openableDoors = path.keys().stream().map( k -> keyToDoor(k) ).toList();
+        openableDoors.removeAll( path.openedDoors() );
+        openableDoors.retainAll( nextDoors.keySet() );
+        // this is the set of doors to analyze
 
         // How many steps is the shortest path that collects all of the keys?
         assertEquals("answer 1", -1, 0);
@@ -129,4 +135,6 @@ public class Day18Test {
         result.removeAll( distance.keySet() );
         return result;
     }
+
+    static Set<Character>
 }
