@@ -84,5 +84,6 @@ public class Day16Test {
         }
         assertEquals( "answer 1", List.of(8, 4, 4, 8, 7, 7, 2, 4), s.subList(0,8) );
         if ( isPart2 ) assertEquals( "answer 2", List.of(0), s2.subList( intOffset, intOffset + 8 ) );
+        else assertTrue("part 2 to optimize", false);
     }
 }
