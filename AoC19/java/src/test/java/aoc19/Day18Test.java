@@ -110,6 +110,16 @@ public class Day18Test {
 
     record PathCalculator( Set<Point> walkable, Map<Character, Point> keys, Map<Character, Point> doors ) {
         List<Step> nextStep( Optional<Step> prev, Point start ) {
+            final var doorsNow = new HashMap<>( doors );
+            final var keysNow = new HashMap<>( keys );
+            if ( prev.isPresent() ) {
+                for ( var od : prev.get().openedDoors() ) {
+                    doorsNow.remove(od);
+                }
+                for ( var k : prev.get().keys() ) {
+                    keysNow.remove(k);
+                }
+            }
             var next = Set.of( start );
             var distance = 0;
             final var distanceMap = new HashMap<Point,Integer>();
@@ -119,8 +129,8 @@ public class Day18Test {
                 final var next1 = new HashSet<Point>();
                 for ( var n : next ) {
                     boolean isNext = true;
-                    final var doorId = getIdByPoint(doors, n);
-                    final var keyId = getIdByPoint(keys, n);
+                    final var doorId = getIdByPoint(doorsNow, n);
+                    final var keyId = getIdByPoint(keysNow, n);
                     if ( doorId.isPresent() ) {
                         // this is a door (we stop here)
                         nextDoors.put( doorId.get(), distance );
