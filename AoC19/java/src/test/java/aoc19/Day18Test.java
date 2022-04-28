@@ -3,6 +3,7 @@ package aoc19;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import static org.junit.Assert.assertEquals;
 
@@ -68,9 +69,47 @@ public class Day18Test {
             next = next1;
             distance++;
         }
+        // logic is we need to analyse all paths to next keys or doors for which we already have keys
+        // on every option the analysis is repeated (so we need to keep the state (which keys collected,
+        // which doors opened, where we stay, distance walked so far)
+
         // How many steps is the shortest path that collects all of the keys?
         assertEquals("answer 1", -1, 0);
         assertEquals("answer 2", -2, 0);
+    }
+
+    /* TODO - remove
+    // this is enough to keep the history of a given path
+    // we add a key once it is gathered
+    // we add a door once it is opened
+    record Path ( List<Character> sequence, int distance ) {
+        List<Character> keys() { return sequence.stream().filter( c -> isKey(c) ).toList(); }
+    }
+     */
+
+    // optimized in space, simple recursive processing (tree)
+    record PathStep( PathStep previous, char event, int distance ) {
+        // boolean isKey() { return Day18Test.isKey(event); }
+        int totalDistance() {
+            int result = 0;
+            var current = this;
+            while ( current != null ) {
+                result += current.distance;
+                current = current.previous;
+            }
+            return result;
+        }
+        List<Character> keys() { return getList( c -> isKey(c) ); }
+        List<Character> openedDoors() { return getList( c -> isDoor(c) ); }
+        private List<Character> getList( Predicate<Character> isGood ) {
+            var result = new ArrayList<Character>();
+            var current = this;
+            while ( current != null ) {
+                if ( isGood.test( current.event ) ) result.add( current.event );
+                current = current.previous;
+            }
+            return result;
+        }
     }
 
     static Optional<Character> getIdByPoint( Map<Character,Point> idPointMap, Point p) {
