@@ -49,20 +49,26 @@ public class Day18Test {
 
         var answer1 = Integer.MAX_VALUE;
         final var ALL_KEYS = mapKey.size();
-        var next = calculator.nextStep(Optional.empty(), start);
-        while ( !next.isEmpty() ) {
-            final var minDistance = next.stream().filter( s -> s.keys().size() == ALL_KEYS )
-                    .mapToInt( s -> s.totalDistance() ).min();
-            if ( minDistance.isPresent() ) {
-                answer1 = minDistance.getAsInt();
-                break; // TODO - not sure that we can stop here
+
+        final var queue = new PriorityQueue<Step>(100, new Comparator<Step>() {
+            @Override
+            public int compare(Step a, Step b) {
+                // The head of this queue is the LEAST element with respect to the specified ordering.
+                return b.priority.compareTo( a.priority );
             }
-            var next1 = new ArrayList<Step>();
-            for ( var s : next ) {
-                final var s1 = calculator.nextStep( Optional.of(s), getPoint(s.event, mapKey, mapDoor ) );
-                next1.addAll(s1);
+        });
+
+        queue.addAll( calculator.nextStep(Optional.empty(), start) );
+        while (!queue.isEmpty()) {
+            final var s = queue.poll();
+            if ( s.keys().size() == ALL_KEYS ) {
+                // solved
+                answer1 = Math.min( answer1, s.totalDistance() );
+            } else {
+                if ( s.totalDistance() >= answer1 ) continue;
+                final var s1 = calculator.nextStep(Optional.of(s), getPoint(s.event, mapKey, mapDoor));
+                queue.addAll(s1);
             }
-            next = next1;
         }
 
         // How many steps is the shortest path that collects all of the keys?
@@ -75,8 +81,18 @@ public class Day18Test {
     }
 
     // optimized in space, simple recursive processing (tree)
-    record Step( Optional<Step> previous, char event, int distance ) {
-        // boolean isKey() { return Day18Test.isKey(event); }
+    static class Step {
+        final Optional<Step> previous;
+        final char event;
+        final int distance;
+        final Integer priority;
+        Step( Optional<Step> previous, char event, int distance ) {
+            this.previous = previous;
+            this.event = event;
+            this.distance = distance;
+            // higher if more keys and less distance
+            priority = ( 10_000 * keys().size() ) - totalDistance();
+        }
         int totalDistance() { return distance + (previous.isPresent() ? previous.get().totalDistance() : 0); }
         List<Character> keys() { return getList( c -> isKey(c) ); }
         List<Character> openedDoors() { return getList( c -> isDoor(c) ); }
