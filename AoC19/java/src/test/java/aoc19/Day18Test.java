@@ -29,10 +29,11 @@ public class Day18Test {
 
     static char lastKey( String keys ) { return keys.charAt(keys.length() - 1); }
 
-    static int solution1(String file) {
+    record TunnelMap(Map<Character, Point> keys, Map<Character,Point> doors, Set<Point> walkable, Point entrance ) {}
+
+    static TunnelMap readMap(String file) {
         final var input = IOUtil.input(file);
         final var maxY = input.size();
-        final var map = new HashMap<Point,Character>();
         final var mapKey = new HashMap<Character, Point>();
         final var mapDoor = new HashMap<Character, Point>();
         final var walkable = new HashSet<Point>();
@@ -49,16 +50,20 @@ public class Day18Test {
                 else if ( isKey(m) ) { mapKey.put(m,p); isWalkable = true; }
                 else if ( m == PATH ) { isWalkable = true; }
                 if ( isWalkable ) walkable.add(p);
-                map.put( p, m );
             }
         }
+        return new TunnelMap(mapKey, mapDoor, walkable, start);
+    }
+
+    static int solution1(String file) {
+        final var map = readMap(file);
         final var calculator = new PathCalculator(
-                Collections.unmodifiableSet(walkable),
-                Collections.unmodifiableMap(mapKey),
-                Collections.unmodifiableMap(mapDoor) );
+                Collections.unmodifiableSet(map.walkable),
+                Collections.unmodifiableMap(map.keys),
+                Collections.unmodifiableMap(map.doors) );
 
         var answer1 = Integer.MAX_VALUE;
-        final var ALL_KEYS = mapKey.size();
+        final var ALL_KEYS = map.keys.size();
 
         final var queue = new PriorityQueue<Step>(100, new Comparator<Step>() {
             @Override
@@ -68,7 +73,7 @@ public class Day18Test {
             }
         });
 
-        queue.addAll( calculator.nextStep(Optional.empty(), start) );
+        queue.addAll( calculator.nextStep(Optional.empty(), map.entrance) );
         final var minPathForKeys = new HashMap<String,Integer>();
         while (!queue.isEmpty()) {
             final var s = queue.poll();
@@ -85,7 +90,7 @@ public class Day18Test {
                 if ( minTotalDistance <= totalDistance ) continue;
                 minPathForKeys.put(nk, totalDistance);
 
-                final var s1 = calculator.nextStep(Optional.of(s), mapKey.get(lastKey( keys )) );
+                final var s1 = calculator.nextStep(Optional.of(s), map.keys.get(lastKey( keys )) );
                 queue.addAll(s1);
             }
         }
@@ -140,11 +145,6 @@ public class Day18Test {
             final var doorsNow = new HashMap<>( doors );
             final var keysNow = new HashMap<>( keys );
             if ( prev.isPresent() ) {
-                /*
-                for ( var od : prev.get().openedDoors().toCharArray() ) {
-                    doorsNow.remove(od);
-                }
-                 */
                 for ( var k : prev.get().keys.toCharArray() ) {
                     keysNow.remove(k);
                 }
