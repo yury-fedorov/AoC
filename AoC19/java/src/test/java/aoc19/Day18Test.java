@@ -3,20 +3,31 @@ package aoc19;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.function.Predicate;
-
 import static org.junit.Assert.assertEquals;
 
 public class Day18Test {
-
-    static final char WALL = '#';
     static final char PATH = '.';
     static final char START = '@';
     static boolean isKey(char c) { return Character.isLowerCase(c); }
     static boolean isDoor(char c) { return Character.isUpperCase(c); }
-    static char keyToDoor(char key) { return Character.toUpperCase(key); }
+    static char doorToKey(char door) { return Character.toLowerCase(door); }
 
     record Point( int x, int y ) {}
+
+    // TODO - potentially we may have a case when we have even more keys inside
+    static String normalizeKey( String keys ) {
+        // really matters that the last key is the last
+        final var last = lastKey(keys);
+        final var list = new ArrayList<>(keys.chars().boxed().map( c -> (char)c.intValue()).toList());
+        list.remove((Character)last);
+        Collections.sort(list);
+        final var nk = new StringBuilder(keys.length());
+        for ( var k : list ) nk.append(k);
+        nk.append(last);
+        return nk.toString();
+    }
+
+    static char lastKey( String keys ) { return keys.charAt(keys.length() - 1); }
 
     static int solution1(String file) {
         final var input = IOUtil.input(file);
@@ -61,19 +72,20 @@ public class Day18Test {
         final var minPathForKeys = new HashMap<String,Integer>();
         while (!queue.isEmpty()) {
             final var s = queue.poll();
-            final var keys = s.keys();
-            final var totalDistance = s.totalDistance();
+            final var keys = s.keys;
+            final var totalDistance = s.totalDistance;
             if ( keys.length() == ALL_KEYS ) {
                 // solved
                 answer1 = Math.min( answer1, totalDistance );
             } else {
                 if ( totalDistance >= answer1 ) continue;
-                if ( isKey(s.event) ) {
-                    final var minTotalDistance = minPathForKeys.getOrDefault(keys, Integer.MAX_VALUE);
-                    if ( minTotalDistance <= totalDistance ) continue;
-                    minPathForKeys.put(keys, totalDistance);
-                }
-                final var s1 = calculator.nextStep(Optional.of(s), getPoint(s.event, mapKey, mapDoor));
+
+                final var nk = normalizeKey(keys);
+                final var minTotalDistance = minPathForKeys.getOrDefault(nk, Integer.MAX_VALUE);
+                if ( minTotalDistance <= totalDistance ) continue;
+                minPathForKeys.put(nk, totalDistance);
+
+                final var s1 = calculator.nextStep(Optional.of(s), mapKey.get(lastKey( keys )) );
                 queue.addAll(s1);
             }
         }
@@ -87,54 +99,29 @@ public class Day18Test {
         assertEquals("sample 1", 8, solution1("day18-sample1"));
         assertEquals("sample 2", 86, solution1("day18-sample2"));
         assertEquals("sample 3", 132, solution1("day18-sample3"));
-        assertEquals("sample 5", 81, solution1("day18-sample5"));
-        // TODO - fixme
         assertEquals("sample 4", 136, solution1("day18-sample4"));
+        assertEquals("sample 5", 81, solution1("day18-sample5"));
 
         // How many steps is the shortest path that collects all of the keys?
-        if ( Config.isFast() ) return; // TODO - fix me
-        assertEquals("answer 1", -1, solution1("day18")); // 5304 too big
+        assertEquals("answer 1", 5262, solution1("day18"));
+        // if ( Config.isFast() ) return; // TODO - fix me
         assertEquals("answer 2", -2, 0);
-    }
-
-    static Point getPoint( char event, Map<Character,Point> keys, Map<Character,Point> doors ) {
-        return keys.getOrDefault( event, doors.get(event) );
     }
 
     // optimized in space, simple recursive processing (tree)
     static class Step {
-        final Optional<Step> previous;
-        final char event;
-        final int distance;
+        final int totalDistance;
         final Float priority;
-        Step( Optional<Step> previous, char event, int distance ) {
-            this.previous = previous;
-            this.event = event;
-            this.distance = distance;
+        final String keys;
+        Step( String keys, int distance ) {
+            totalDistance = distance;
+            this.keys = keys;
             // higher if more keys and less distance
             // priority = ( 10_000 * keys().size() ) - totalDistance();
-            final var kl = keys().length();
-            priority = kl -totalDistance() / ( kl + 1f );
+            final var kl = keys.length();
+            priority = kl -totalDistance / ( kl + 1f );
+            // priority = kl / ( (float)totalDistance );
         }
-        int totalDistance() { return distance + (previous.isPresent() ? previous.get().totalDistance() : 0); }
-        String keys() { return getList( c -> isKey(c) ); }
-        String openedDoors() { return getList( c -> isDoor(c) ); }
-        private String getList( Predicate<Character> isGood ) {
-            final var result = new StringBuilder(32 );
-            var current = Optional.of( this );
-            while ( current.isPresent() ) {
-                if ( isGood.test( current.get().event ) ) result.append( current.get().event );
-                current = current.get().previous;
-            }
-            return result.toString();
-        }
-    }
-
-    static Optional<Character> getIdByPoint( Map<Character,Point> idPointMap, Point p) {
-        return idPointMap.entrySet().stream()
-                .filter( e -> e.getValue().equals( p ) )
-                .map( e -> e.getKey() )
-                .findFirst();
     }
 
     static List<Point> nextPoint( Point from, Set<Point> walkable, Map<Point,Integer> distance ) {
@@ -153,31 +140,42 @@ public class Day18Test {
             final var doorsNow = new HashMap<>( doors );
             final var keysNow = new HashMap<>( keys );
             if ( prev.isPresent() ) {
+                /*
                 for ( var od : prev.get().openedDoors().toCharArray() ) {
                     doorsNow.remove(od);
                 }
-                for ( var k : prev.get().keys().toCharArray() ) {
+                 */
+                for ( var k : prev.get().keys.toCharArray() ) {
                     keysNow.remove(k);
                 }
+            }
+            final var keyPoint = new HashMap<Point,Character>();
+            for ( var de : doorsNow.entrySet() ) {
+                keyPoint.put( de.getValue(), de.getKey() );
+            }
+            for ( var ke : keysNow.entrySet() ) {
+                keyPoint.put(ke.getValue(), ke.getKey() );
             }
             var next = Set.of( start );
             var distance = 0;
             final var distanceMap = new HashMap<Point,Integer>();
-            final var nextDoors = new HashMap<Character, Integer>();
             final var nextKeys = new HashMap<Character, Integer>();
             while ( !next.isEmpty() ) {
                 final var next1 = new HashSet<Point>();
                 for ( var n : next ) {
                     boolean isNext = true;
-                    final var doorId = getIdByPoint(doorsNow, n);
-                    final var keyId = getIdByPoint(keysNow, n);
-                    if ( doorId.isPresent() ) {
+                    final var id = keyPoint.getOrDefault( n, ' ' );
+                    if ( isDoor(id) ) {
                         // this is a door (we stop here)
-                        nextDoors.put( doorId.get(), distance );
+                        // WITHOUT_DOORS nextDoors.put( doorId.get(), distance );
                         isNext = false; // we stop analyses here (at least for now)
-                    } else if ( keyId.isPresent() ) {
+                        if ( prev.isPresent() ) {
+                            isNext = prev.get().keys.indexOf( doorToKey(id) ) >= 0;
+                        }
+                    } else if ( isKey(id) ) {
                         // this is a key
-                        nextKeys.put( keyId.get(), distance );
+                        nextKeys.put( id, distance );
+                        isNext = false; // we approach further steps as an independent step, key is a milestone
                     }
                     if ( isNext ) {
                         distanceMap.put(n, distance);
@@ -191,25 +189,10 @@ public class Day18Test {
 
             final var result = new ArrayList<Step>();
             for ( var ke : nextKeys.entrySet() ) {
-                result.add( new Step( prev, ke.getKey(), ke.getValue() ) );
+                final var prevKeys = prev.isPresent() ? prev.get().keys : "";
+                final var prevDistance = prev.isPresent() ? prev.get().totalDistance : 0;
+                result.add( new Step( prevKeys + ke.getKey(), prevDistance + ke.getValue() ) );
             }
-
-            if ( prev.isPresent() ) {
-                // logic is we need to analyse all paths to next keys or doors for which we already have keys
-                // on every option the analysis is repeated (so we need to keep the state (which keys collected,
-                // which doors opened, where we stay, distance walked so far)
-                var path = prev.get();
-                var openableDoors = new ArrayList<>(
-                        path.keys().chars().boxed().map( k -> keyToDoor((char)k.intValue()) ).toList() );
-                openableDoors.removeAll( path.openedDoors().chars().boxed().toList() );
-                openableDoors.retainAll( nextDoors.keySet() );
-                // this is the set of doors to analyze
-
-                for ( var od : openableDoors ) {
-                    result.add( new Step( prev, od, nextDoors.get(od) ) );
-                }
-            }
-
             return result;
         }
     }
