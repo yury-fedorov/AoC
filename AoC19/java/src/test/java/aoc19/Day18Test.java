@@ -106,14 +106,15 @@ public class Day18Test {
         final Optional<Step> previous;
         final char event;
         final int distance;
-        final Integer priority;
+        final Float priority;
         Step( Optional<Step> previous, char event, int distance ) {
             this.previous = previous;
             this.event = event;
             this.distance = distance;
             // higher if more keys and less distance
             // priority = ( 10_000 * keys().size() ) - totalDistance();
-            priority = -totalDistance() * ( keys().length() + 1 );
+            final var kl = keys().length();
+            priority = kl -totalDistance() / ( kl + 1f );
         }
         int totalDistance() { return distance + (previous.isPresent() ? previous.get().totalDistance() : 0); }
         String keys() { return getList( c -> isKey(c) ); }
