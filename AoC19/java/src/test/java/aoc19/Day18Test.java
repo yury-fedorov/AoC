@@ -2,6 +2,7 @@ package aoc19;
 
 import org.junit.Test;
 
+import javax.swing.text.html.Option;
 import java.util.*;
 import static org.junit.Assert.assertEquals;
 
@@ -54,24 +55,14 @@ public class Day18Test {
         }
         return new TunnelMap(mapKey, mapDoor, walkable, start);
     }
-
-    static int solution1(String file) {
-        final var map = readMap(file);
-        final var calculator = new PathCalculator(
-                Collections.unmodifiableSet(map.walkable),
-                Collections.unmodifiableMap(map.keys),
-                Collections.unmodifiableMap(map.doors) );
+    static int solution1(String file) { return solution1( readMap(file) ); }
+    static int solution1( TunnelMap map) {
+        final var calculator = createPathCalculator(map);
 
         var answer1 = Integer.MAX_VALUE;
         final var ALL_KEYS = map.keys.size();
 
-        final var queue = new PriorityQueue<Step>(100, new Comparator<Step>() {
-            @Override
-            public int compare(Step a, Step b) {
-                // The head of this queue is the LEAST element with respect to the specified ordering.
-                return b.priority.compareTo( a.priority );
-            }
-        });
+        final var queue = createQueue();
 
         queue.addAll( calculator.nextStep(Optional.empty(), map.entrance) );
         final var minPathForKeys = new HashMap<String,Integer>();
@@ -96,7 +87,82 @@ public class Day18Test {
         }
 
         // How many steps is the shortest path that collects all of the keys?
-        return answer1; // 5304 too big
+        return answer1;
+    }
+
+    static PathCalculator createPathCalculator( TunnelMap map ) {
+        return new PathCalculator(
+                Collections.unmodifiableSet(map.walkable),
+                Collections.unmodifiableMap(map.keys),
+                Collections.unmodifiableMap(map.doors) );
+    }
+
+    static void addToQueue(Collection<Point> robots, PathCalculator calculator, Optional<Step> from,
+                             Map<Character,Point> keys, Collection<Step2> queue ) {
+        for ( var r : robots ) {
+            final var s1 = calculator.nextStep(from, r );
+            final var rl = new ArrayList<>(robots);
+            rl.remove(r);
+            for ( var s1i : s1 ) {
+                final var sp = keys.get( lastKey(s1i.keys) );
+                final var r1 = new ArrayList<>(rl);
+                r1.add(sp);
+                queue.add( new Step2(s1i, r1) );
+            }
+        }
+    }
+
+    static int solution2(final TunnelMap map, final int answer1) {
+        var answer2 = answer1; // expected to be faster
+        final var e = map.entrance;
+        // first need to adjust the map
+        final var toRemove = List.of( e, new Point( e.x - 1, e.y ), new Point( e.x + 1, e.y ),
+                new Point( e.x, e.y - 1 ), new Point( e.x, e.y + 1 ) );
+        map.walkable.removeAll( toRemove );
+        final var entrances = Set.of(
+                new Point( e.x - 1, e.y - 1 ), new Point( e.x + 1, e.y + 1 ),
+                new Point( e.x + 1, e.y - 1 ), new Point( e.x - 1, e.y + 1 ) );
+
+        final var calculator = createPathCalculator(map);
+        final var ALL_KEYS = map.keys.size();
+
+        final var queue = createQueue2();
+
+        addToQueue( entrances, calculator, Optional.empty(), map.keys, queue);
+        final var minPathForKeys = new HashMap<String,Integer>();
+        while (!queue.isEmpty()) {
+            final var s = queue.poll();
+            final var keys = s.step.keys;
+            final var totalDistance = s.step.totalDistance;
+            if ( keys.length() == ALL_KEYS ) {
+                // solved
+                answer2 = Math.min( answer2, totalDistance );
+            } else {
+                if ( totalDistance >= answer2 ) continue;
+
+                final var nk = normalizeKey(keys);
+                final var minTotalDistance = minPathForKeys.getOrDefault(nk, Integer.MAX_VALUE);
+                if ( minTotalDistance <= totalDistance ) continue;
+                minPathForKeys.put(nk, totalDistance);
+                addToQueue( s.robots, calculator, Optional.of(s.step), map.keys, queue);
+            }
+        }
+        return answer2;
+    }
+
+
+    private static Queue<Step> createQueue() {
+        return new PriorityQueue<>(100, (a, b) -> {
+            // The head of this queue is the LEAST element with respect to the specified ordering.
+            return b.priority.compareTo(a.priority);
+        });
+    }
+
+    private static Queue<Step2> createQueue2() {
+        return new PriorityQueue<>(100, (a, b) -> {
+            // The head of this queue is the LEAST element with respect to the specified ordering.
+            return b.step.priority.compareTo(a.step.priority);
+        });
     }
 
     @Test
@@ -107,10 +173,12 @@ public class Day18Test {
         assertEquals("sample 4", 136, solution1("day18-sample4"));
         assertEquals("sample 5", 81, solution1("day18-sample5"));
 
+        final var map = readMap("day18");
+        final var answer1 = solution1(map);
         // How many steps is the shortest path that collects all of the keys?
-        assertEquals("answer 1", 5262, solution1("day18"));
+        assertEquals("answer 1", 5262, answer1);
         // if ( Config.isFast() ) return; // TODO - fix me
-        assertEquals("answer 2", -2, 0);
+        assertEquals("answer 2", -2, solution2(map, answer1)); // 2180 - is too high
     }
 
     // optimized in space, simple recursive processing (tree)
@@ -129,6 +197,15 @@ public class Day18Test {
         }
     }
 
+    static class Step2 {
+        final Step step;
+        final Collection<Point> robots;
+        Step2( Step step, Collection<Point> robots ) {
+            this.step = step;
+            this.robots = robots;
+        }
+    }
+
     static List<Point> nextPoint( Point from, Set<Point> walkable, Map<Point,Integer> distance ) {
         var result = new ArrayList<Point>(4);
         result.add( new Point( from.x - 1, from.y ) );
@@ -142,19 +219,17 @@ public class Day18Test {
 
     record PathCalculator( Set<Point> walkable, Map<Character, Point> keys, Map<Character, Point> doors ) {
         List<Step> nextStep( Optional<Step> prev, Point start ) {
-            final var doorsNow = new HashMap<>( doors );
-            final var keysNow = new HashMap<>( keys );
-            if ( prev.isPresent() ) {
-                for ( var k : prev.get().keys.toCharArray() ) {
-                    keysNow.remove(k);
-                }
-            }
+            final var prevKeys = prev.isPresent() ? prev.get().keys : "";
+            final var prevDistance = prev.isPresent() ? prev.get().totalDistance : 0;
+
             final var keyPoint = new HashMap<Point,Character>();
-            for ( var de : doorsNow.entrySet() ) {
-                keyPoint.put( de.getValue(), de.getKey() );
+            for ( var de : doors.entrySet() ) {
+                if ( prevKeys.indexOf( doorToKey( de.getKey() ) ) < 0 )
+                    keyPoint.put( de.getValue(), de.getKey() );
             }
-            for ( var ke : keysNow.entrySet() ) {
-                keyPoint.put(ke.getValue(), ke.getKey() );
+            for ( var ke : keys.entrySet() ) {
+                if ( prevKeys.indexOf( ke.getKey() ) < 0 )
+                    keyPoint.put(ke.getValue(), ke.getKey() );
             }
             var next = Set.of( start );
             var distance = 0;
@@ -189,8 +264,6 @@ public class Day18Test {
 
             final var result = new ArrayList<Step>();
             for ( var ke : nextKeys.entrySet() ) {
-                final var prevKeys = prev.isPresent() ? prev.get().keys : "";
-                final var prevDistance = prev.isPresent() ? prev.get().totalDistance : 0;
                 result.add( new Step( prevKeys + ke.getKey(), prevDistance + ke.getValue() ) );
             }
             return result;
