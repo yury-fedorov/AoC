@@ -116,7 +116,8 @@ public class Day18Test {
         var answer2 = answer1; // expected to be faster
         final var e = map.entrance;
         // first need to adjust the map
-        final var toRemove = List.of( e, new Point( e.x - 1, e.y ), new Point( e.x + 1, e.y ),
+        final var toRemove = List.of( e,
+                new Point( e.x - 1, e.y ), new Point( e.x + 1, e.y ),
                 new Point( e.x, e.y - 1 ), new Point( e.x, e.y + 1 ) );
         map.walkable.removeAll( toRemove );
         final var entrances = Set.of(
@@ -127,7 +128,6 @@ public class Day18Test {
         final var ALL_KEYS = map.keys.size();
 
         final var queue = createQueue2();
-
         addToQueue( entrances, calculator, Optional.empty(), map.keys, queue);
         final var minPathForKeys = new HashMap<String,Integer>();
         while (!queue.isEmpty()) {
@@ -139,7 +139,6 @@ public class Day18Test {
                 answer2 = Math.min( answer2, totalDistance );
             } else {
                 if ( totalDistance >= answer2 ) continue;
-
                 final var nk = normalizeKey(keys);
                 final var minTotalDistance = minPathForKeys.getOrDefault(nk, Integer.MAX_VALUE);
                 if ( minTotalDistance <= totalDistance ) continue;
