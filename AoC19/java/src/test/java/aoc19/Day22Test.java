@@ -35,15 +35,12 @@ public class Day22Test {
         int index = 0;
         final var size = deck.size();
         final var result = new ArrayList<Integer>(size);
-        final var set = new HashSet<Integer>(size);
+
         while ( !deck.isEmpty() ) {
             final var head = deck.remove(0);
-            if ( !set.contains(index) ) {
-                while ( result.size() <= index ) result.add(0);
-                result.set(index, head);
-                set.add(index);
-            }
-            index = ( index + 3 ) % size;
+            while ( result.size() <= index ) result.add(Integer.MIN_VALUE);
+            result.set(index, head);
+            index = ( index + n ) % size;
          }
         deck.addAll(result);
     }
@@ -63,7 +60,7 @@ public class Day22Test {
             }
         }
         // what is the position of card 2019?
-        assertEquals( "answer 1", -1, deck.indexOf(2019)); // 5931 is too low
+        assertEquals( "answer 1", 6831, deck.indexOf(2019));
         assertEquals( "answer 2", -2, 0 );
     }
 }
