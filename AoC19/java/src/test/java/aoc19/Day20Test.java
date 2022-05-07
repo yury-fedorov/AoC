@@ -44,6 +44,11 @@ public class Day20Test {
     @Test
     public void solution() {
         final var maze = createMaze("day20");
+        // TODO implement the algorithm
+        // 1 is it possible to walk from AA to ZZ directly without portals?
+        // this is the maximum path required to arrive
+        // after this options are: look in the range of minimal path all reachable portals
+        // try to go measure paths using them
         assertEquals( "answer 1", -1, 0);
         assertEquals( "answer 2", -2, 0 );
     }
