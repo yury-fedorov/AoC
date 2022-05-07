@@ -9,8 +9,8 @@ import static org.junit.Assert.assertEquals;
 
 public class Day22Test {
 
-    static List<Integer> createDeck() {
-        return new LinkedList<>(IntStream.rangeClosed(0,10006).boxed().toList());
+    static List<Integer> createDeck(int size) {
+        return new LinkedList<>(IntStream.range(0,size).boxed().toList());
     }
     static final String NEW_STACK = "deal into new stack";
     static void dealIntoNewStack( List<Integer> deck ) { Collections.reverse(deck); }
@@ -48,19 +48,23 @@ public class Day22Test {
     @Test
     public void solution() {
         final var input = IOUtil.input("day22");
-        var deck = createDeck();
+        var deck = createDeck(10007);
         for ( var command : input ) {
-            if ( command.contains(NEW_STACK) ) dealIntoNewStack(deck);
-            else if ( command.contains( "cut ") ) {
+            if ( command.equals(NEW_STACK) ) dealIntoNewStack(deck);
+            else if ( command.startsWith( "cut ") ) {
                 final var n = Integer.parseInt( command.split(" " )[1] );
                 cutCards(deck, n);
-            } else if ( command.contains( "deal with increment" ) ) {
+            } else if ( command.startsWith( "deal with increment" ) ) {
                 final var n = Integer.parseInt( command.split(" increment " )[1] );
                 dealWithIncrement(deck, n);
             }
         }
         // what is the position of card 2019?
         assertEquals( "answer 1", 6831, deck.indexOf(2019));
-        assertEquals( "answer 2", -2, 0 );
+
+        final var SIZE2  = 119_315_717_514_047L;
+        final var TIMES2 = 101_741_582_076_661L;
+        // deck = createDeck(SIZE2);
+        assertEquals( "answer 2", -2, deck.get(2020-1).intValue() );
     }
 }
