@@ -79,11 +79,31 @@ public class Day20Test {
     public void solution() {
         final var maze = createMaze("day20");
         // TODO implement the algorithm
+        var next = Map.of( maze.doors.get("AA").get(0), 0 );
+        var minDistance = new HashMap<Point,Integer>();
+        final var zz = maze.doors.get("ZZ").get(0);
         // 1 is it possible to walk from AA to ZZ directly without portals?
         // this is the maximum path required to arrive
         // after this options are: look in the range of minimal path all reachable portals
         // try to go measure paths using them
-        assertEquals( "answer 1", -1, 0);
+        while (!next.isEmpty()) {
+            final var next1 = new HashMap<Point, Integer>();
+            for ( var n : next.entrySet() ) {
+                final var p = n.getKey();
+                final var minD = minDistance.getOrDefault( p, Integer.MAX_VALUE ).intValue();
+                final var d = n.getValue().intValue();
+                if ( d < minD ) {
+                    minDistance.put( p, d );
+                } else {
+                    continue; // no sense to continue
+                }
+                final var p1 = step(p);
+                p1.retainAll(maze.walkable);
+                // TODO
+            }
+            next = next1;
+        }
+        assertEquals( "answer 1", -1, minDistance.get(zz).intValue());
         assertEquals( "answer 2", -2, 0 );
     }
 }
