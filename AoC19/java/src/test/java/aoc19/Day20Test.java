@@ -111,7 +111,7 @@ public class Day20Test {
                     final var d1 = d+1;
                     final var d1i = next1.getOrDefault(p1i, Integer.MAX_VALUE);
                     if ( d1 < d1i ){
-                        next1.put( p1i, d1i );
+                        next1.put( p1i, d1 );
                     }
                 }
             }
