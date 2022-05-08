@@ -117,7 +117,7 @@ public class Day20Test {
             }
             next = next1;
         }
-        assertEquals( "answer 1", -1, minDistance.get(zz).intValue());
+        assertEquals( "answer 1", 580, minDistance.get(zz).intValue());
         assertEquals( "answer 2", -2, 0 );
     }
 }
