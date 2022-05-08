@@ -45,7 +45,7 @@ public class Day20Test {
     static Point getPoint(Point a, Point b, Set<Point> walkable) {
         final var s = new HashSet<>(step(a));
         s.addAll(step(b));
-        s.removeAll(walkable);
+        s.retainAll(walkable);
         return s.iterator().next();
     }
 
@@ -110,7 +110,7 @@ public class Day20Test {
                 for ( var p1i : p1 ) {
                     final var d1 = d+1;
                     final var d1i = next1.getOrDefault(p1i, Integer.MAX_VALUE);
-                    if ( d1i < d1 ) {
+                    if ( d1 < d1i ){
                         next1.put( p1i, d1i );
                     }
                 }
