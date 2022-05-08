@@ -43,7 +43,7 @@ public class Day20Test {
 
     static boolean isClose(Point a, Point b) { return step(a).contains(b); }
     static Point getPoint(Point a, Point b, Set<Point> walkable) {
-        final var s = new HashSet<Point>(step(a));
+        final var s = new HashSet<>(step(a));
         s.addAll(step(b));
         s.removeAll(walkable);
         return s.iterator().next();
