@@ -97,9 +97,23 @@ public class Day20Test {
                 } else {
                     continue; // no sense to continue
                 }
-                final var p1 = step(p);
+                final var p1 = new HashSet<>( step(p) );
                 p1.retainAll(maze.walkable);
                 // TODO
+                final var di = maze.doors.values().stream()
+                        .filter(c -> c.size() == 2 && c.contains(p) ).iterator();
+                if ( di.hasNext() ) {
+                    // we found a portal
+                    p1.addAll( di.next() );
+                    p1.remove(p);
+                }
+                for ( var p1i : p1 ) {
+                    final var d1 = d+1;
+                    final var d1i = next1.getOrDefault(p1i, Integer.MAX_VALUE);
+                    if ( d1i < d1 ) {
+                        next1.put( p1i, d1i );
+                    }
+                }
             }
             next = next1;
         }
