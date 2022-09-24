@@ -1,11 +1,11 @@
-Java 17 (LTS) - due to debug and possibility to run everywhere
-- Day 16: Flawed Frequency Transmission - task 2 not resolved (too slow)
+Java 17 (LTS)
 - Day 18: Many-Worlds Interpretation (paths)
 - Day 20: Donut Maze
 - Day 22: Slam Shuffle (cards)
 
 Intcode
-- Day 17: Set and Forget (task 2 missing)
+- Day 17: Set and Forget
 
-Review?
+Eventual future improvements:
 - Day 21: Springdroid Adventure (may do better assembly?)
+- Day 16: Flawed Frequency Transmission - task 2 takes 4 h 24 m - could be parallized and further improved
