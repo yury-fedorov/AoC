@@ -26,7 +26,7 @@ public class Day20Test {
         final var input = IOUtil.input(file);
         final var walkable = new HashSet<Point>();
         final var letters = new HashMap<Point,Character>();
-        final var doors = new HashMap<String,List<Point>>();
+
         final var yMax = input.size();
         for ( var y = 0; y < yMax; y++ ) {
             final var line = input.get(y);
@@ -37,8 +37,7 @@ public class Day20Test {
                 else if ( Character.isUpperCase(c) ) letters.put( new Point(x,y), c );
             }
         }
-        initDoors(letters, doors, walkable);
-        return new Maze(walkable, doors);
+        return new Maze(walkable, createDoors(letters, walkable));
     }
 
     static boolean isClose(Point a, Point b) { return step(a).contains(b); }
@@ -55,8 +54,8 @@ public class Day20Test {
         return isAb ? ( "" + ac ) + bc : ( "" + bc ) + ac;
     }
 
-    static void initDoors(Map<Point,Character> letters,
-                          Map<String,List<Point>> doors, Set<Point> walkable) {
+    static Map<String,List<Point>> createDoors(Map<Point,Character> letters, Set<Point> walkable) {
+        final var doors = new HashMap<String,List<Point>>();
         final var points = new ArrayList<>( letters.keySet() );
         while ( !points.isEmpty() ) {
             final var a = points.remove(0);
@@ -73,6 +72,7 @@ public class Day20Test {
             d.add( getPoint( a, b, walkable ) );
             doors.put(name, d);
         }
+        return doors;
     }
 
     @Test
