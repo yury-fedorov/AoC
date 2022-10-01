@@ -16,11 +16,6 @@ public class Day20Test {
     }
 
     record Maze(Set<Point> walkable, Map<String,List<Point>> doors) {}
-    static Point otherPortal( List<Point> portalDoors, Point entrance ) {
-        final var a = portalDoors.get(0);
-        final var b = portalDoors.get(1);
-        return a.equals(entrance) ? b : a;
-    }
 
     static Maze createMaze( String file ) {
         final var input = IOUtil.input(file);
@@ -75,7 +70,7 @@ public class Day20Test {
         return doors;
     }
 
-    int solution(boolean isPart1, Maze maze) {
+    static int solution(boolean isPart1, Maze maze) {
         // TODO implement the algorithm
         var next = Map.of( maze.doors.get("AA").get(0), 0 );
         var minDistance = new HashMap<Point,Integer>();
