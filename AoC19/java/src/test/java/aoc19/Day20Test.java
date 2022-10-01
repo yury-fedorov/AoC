@@ -75,9 +75,7 @@ public class Day20Test {
         return doors;
     }
 
-    @Test
-    public void solution() {
-        final var maze = createMaze("day20");
+    int solution(boolean isPart1, Maze maze) {
         // TODO implement the algorithm
         var next = Map.of( maze.doors.get("AA").get(0), 0 );
         var minDistance = new HashMap<Point,Integer>();
@@ -117,7 +115,13 @@ public class Day20Test {
             }
             next = next1;
         }
-        assertEquals( "answer 1", 580, minDistance.get(zz).intValue());
-        assertEquals( "answer 2", -2, 0 );
+        return minDistance.get(zz).intValue();
+    }
+
+    @Test
+    public void solution() {
+        final var maze = createMaze("day20");
+        assertEquals( "answer 1", 580, solution(true, maze) );
+        assertEquals( "answer 2", -2, solution(false, maze) );
     }
 }
