@@ -71,13 +71,46 @@ public class Day20Test {
         return doors;
     }
 
+    record Portal (String label, Point outer, Point inner) {}
+
+    static List<Portal> getPortals(Maze maze) {
+        final var allDoors = maze.doors.values().stream().flatMap( pp -> pp.stream() ).toList();
+        final var minX = allDoors.stream().mapToInt( p -> p.x ).min().getAsInt();
+        final var maxX = allDoors.stream().mapToInt( p -> p.x ).max().getAsInt();
+        final var minY = allDoors.stream().mapToInt( p -> p.y ).min().getAsInt();
+        final var maxY = allDoors.stream().mapToInt( p -> p.y ).max().getAsInt();
+        final var outerX = Set.of(minX, maxX);
+        final var outerY = Set.of(minY, maxY);
+        final var pairPortals = maze.doors.entrySet().stream().filter(e -> e.getValue().size() == 2)
+                .map( e -> {
+                    var ab = e.getValue();
+                    var a = ab.get(0);
+                    var b = ab.get(1);
+                    var isAOuter = outerX.contains( a.x ) || outerY.contains(a.y);
+                    var outer = isAOuter ? a : b;
+                    var inner = isAOuter ? b : a;
+                    return new Portal( e.getKey(), outer, inner );
+                } ).toList();
+        return pairPortals;
+    }
+
     static int solution(boolean isPart1, Maze maze) {
         // TODO implement the algorithm
-        int level = 0; // 0 - the outermost level
         final var aa = maze.doors.get("AA").get(0);
-        var next = Map.of( new Point3D(aa, level), 0); // generalized next
+        var next = Map.of( new Point3D(aa, 0), 0); // generalized next
         var minDistance = new HashMap<Point3D,Integer>(); // generalized min distance
         final var zz = maze.doors.get("ZZ").get(0);
+        final var portals = getPortals(maze);
+        final var allPairDoors = maze.doors.values().stream().filter(c -> c.size() == 2 ).toList();
+        final var allInnerDoors = portals.stream().map( p -> p.inner ).toList();
+        final var allOuterDoors = portals.stream().map( p -> p.outer ).toList();
+        // outer doors are absent on level 0 for part 2
+        // aa and zz are absent on level 1+ for part 2
+        final var doorsLevel0 = new HashSet<>( allOuterDoors );
+        doorsLevel0.add( zz );
+        final var doorsLevel1 = new HashSet<>(allInnerDoors);
+        doorsLevel1.addAll(allOuterDoors);
+
         // 1 is it possible to walk from AA to ZZ directly without portals?
         // this is the maximum path required to arrive
         // after this options are: look in the range of minimal path all reachable portals
@@ -93,27 +126,46 @@ public class Day20Test {
                 } else {
                     continue; // no sense to continue
                 }
-                final var p1 = new HashSet<>( step(p.point) );
+                final var p1 = new HashSet<>(step(p.point));
                 p1.retainAll(maze.walkable);
-                // TODO
-                final var di = maze.doors.values().stream()
-                        .filter(c -> c.size() == 2 && c.contains(p.point) ).iterator();
-                if ( di.hasNext() ) {
-                    // we found a portal
-                    p1.addAll( di.next() );
-                    p1.remove(p.point);
+                final var p13d = new ArrayList<>( p1.stream().map( i -> new Point3D(i, p.level) ).toList() );
+                if ( isPart1 ) {
+                    final var di = allPairDoors.stream().filter(c -> c.contains(p.point)).iterator();
+                    if ( di.hasNext() ) {
+                        // we found a portal
+                        p13d.addAll( di.next().stream().filter( i -> !i.equals( p.point ) ).map( i -> new Point3D(i, 0) ).toList() );
+                    }
+                } else {
+                    // part 2
+                    final var availableDoors = p.level == 0 ? doorsLevel0 : doorsLevel1;
+                    if ( availableDoors.contains(p.point) ) {
+                        // we found a door
+                        int level = p.level;
+                        if ( allInnerDoors.contains(p.point) ) {
+                            // go level + 1
+                            level++;
+                        } else if ( allOuterDoors.contains(p.point) ) {
+                            // go level - 1
+                            level--;
+                        } else {
+                            // this is zz
+                        }
+                        if ( level <= 2 ) { // we put the maximum depth
+                            p13d.add( new Point3D(p.point, level) );
+                        }
+                    }
                 }
-                for ( var p1i : p1 ) {
-                    final var d1 = d+1;
+                final var d1 = d+1;
+                for ( var p1i : p13d ) {
                     final var d1i = next1.getOrDefault(p1i, Integer.MAX_VALUE);
                     if ( d1 < d1i ){
-                        next1.put( new Point3D(p1i,level), d1 );
+                        next1.put( p1i, d1 );
                     }
                 }
             }
             next = next1;
         }
-        return minDistance.get( new Point3D( zz, 0 ) ).intValue();
+        return minDistance.getOrDefault( new Point3D( zz, 0 ), 0 ).intValue();
     }
 
     @Test
