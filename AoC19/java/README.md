@@ -1,6 +1,5 @@
 Java 17 (LTS)
 - Day 18: Many-Worlds Interpretation (paths)
-- Day 20: Donut Maze
 - Day 22: Slam Shuffle (cards)
 
 Intcode
