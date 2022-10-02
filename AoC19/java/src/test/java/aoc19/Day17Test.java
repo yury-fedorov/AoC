@@ -3,6 +3,7 @@ package aoc19;
 import aoc19.computer.IntcodeComputer;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,6 +16,7 @@ public class Day17Test {
     @Test
     public void solution() {
         final var  memory = IntcodeComputer.loadMemory(IOUtil.input("day17").get(0));
+        final ArrayList<Long> memory2 = (ArrayList<Long>) memory.clone();
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
         final var comp = new IntcodeComputer(memory, in, out);
@@ -29,10 +31,27 @@ public class Day17Test {
                 answer1 += isIntersection(map, x, y) ? x * y : 0;
             }
         }
-
         assertEquals( "answer 1", 4600, answer1);
-        System.out.println(mapAsString);
-        assertEquals( "answer 2", -2, 0 );
+
+        // System.out.println(mapAsString); // TODO: we do not need this debug statement anymore?
+        memory2.set(0, 2l);
+        in.clear();
+        out.clear();
+        // "L,12,L,10,R,8?"
+        // TODO: proper instructions (this is just an example)
+        final var instructions = "A,B,C,A,C\n" +
+                "L,12\n" +
+                "L,10\n" +
+                "R,8\n" +
+                "n\n";
+        instructions.chars().forEach( c -> in.add((long)c ));
+        // TODO: convert to longs and put to in queue
+        final var comp2 = new IntcodeComputer(memory2, in, out );
+        final var phase = comp2.run();
+        System.out.println(phase);
+        System.out.println( readOut(out) );
+        final var answer2 = 0; // TODO: last from out queue
+        assertEquals( "answer 2", -2, answer2 );
     }
 
     static char get( List<String> map, int x, int y ) {
