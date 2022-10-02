@@ -106,7 +106,7 @@ public class Day20Test {
         final var allOuterDoors = portals.stream().map( p -> p.outer ).toList();
         // outer doors are absent on level 0 for part 2
         // aa and zz are absent on level 1+ for part 2
-        final var doorsLevel0 = new HashSet<>( allOuterDoors );
+        final var doorsLevel0 = new HashSet<>(allInnerDoors);
         doorsLevel0.add( zz );
         final var doorsLevel1 = new HashSet<>(allInnerDoors);
         doorsLevel1.addAll(allOuterDoors);
@@ -128,33 +128,26 @@ public class Day20Test {
                 }
                 final var p1 = new HashSet<>(step(p.point));
                 p1.retainAll(maze.walkable);
+                if ( !isPart1 && p.level == 0 ) {
+                    p1.removeAll( allOuterDoors );
+                }
                 final var p13d = new ArrayList<>( p1.stream().map( i -> new Point3D(i, p.level) ).toList() );
-                if ( isPart1 ) {
-                    final var di = allPairDoors.stream().filter(c -> c.contains(p.point)).iterator();
-                    if ( di.hasNext() ) {
-                        // we found a portal
-                        p13d.addAll( di.next().stream().filter( i -> !i.equals( p.point ) ).map( i -> new Point3D(i, 0) ).toList() );
+                final var di = allPairDoors.stream().filter(c -> c.contains(p.point)).iterator();
+                if ( di.hasNext() ) {
+                    // we found a portal
+                    int level = p.level;
+                    if ( !isPart1 ) {
+                        final var isInnerDoor = allInnerDoors.contains(p.point);
+                        level += isInnerDoor ? 1 : -1;
                     }
-                } else {
-                    // part 2
-                    final var availableDoors = p.level == 0 ? doorsLevel0 : doorsLevel1;
-                    if ( availableDoors.contains(p.point) ) {
-                        // we found a door
-                        int level = p.level;
-                        if ( allInnerDoors.contains(p.point) ) {
-                            // go level + 1
-                            level++;
-                        } else if ( allOuterDoors.contains(p.point) ) {
-                            // go level - 1
-                            level--;
-                        } else {
-                            // this is zz
-                        }
-                        if ( level <= 2 ) { // we put the maximum depth
-                            p13d.add( new Point3D(p.point, level) );
-                        }
+                    if ( level <= 100 ) { // we put the maximum depth
+                        final var portalDoors = di.next();
+                        final var otherPoint = new ArrayList<>( portalDoors );
+                        otherPoint.remove( p.point );
+                        p13d.add( new Point3D( otherPoint.get(0), level) );
                     }
                 }
+
                 final var d1 = d+1;
                 for ( var p1i : p13d ) {
                     final var d1i = next1.getOrDefault(p1i, Integer.MAX_VALUE);
@@ -172,6 +165,6 @@ public class Day20Test {
     public void solution() {
         final var maze = createMaze("day20");
         assertEquals( "answer 1", 580, solution(true, maze) );
-        assertEquals( "answer 2", -2, solution(false, maze) );
+        assertEquals( "answer 2", 6362, solution(false, maze) );
     }
 }
