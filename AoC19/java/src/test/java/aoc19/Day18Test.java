@@ -2,7 +2,6 @@ package aoc19;
 
 import org.junit.Test;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 import static org.junit.Assert.assertEquals;
 
@@ -15,7 +14,6 @@ public class Day18Test {
 
     record Point( int x, int y ) {}
 
-    // TODO - potentially we may have a case when we have even more keys inside
     static String normalizeKey( String keys ) {
         // really matters that the last key is the last
         final var last = lastKey(keys);
@@ -25,6 +23,27 @@ public class Day18Test {
         final var nk = new StringBuilder(keys.length());
         for ( var k : list ) nk.append(k);
         nk.append(last);
+        return nk.toString();
+    }
+
+    static String normalizeKey2( Step2 step2 ) {
+        final var keys = step2.step.keys;
+        final var list = new ArrayList<>(keys.chars().boxed().map( c -> (char)c.intValue()).toList());
+        Collections.sort(list);
+        final var nk = new StringBuilder(keys.length() + 5);
+        for ( var k : list ) nk.append(k);
+        // tail - last doors (where robots are staying)
+        nk.append('/');
+        var list2 = new ArrayList<String>(4);
+        for (var rp : step2.robots) {
+            final var p = new StringBuilder(10);
+            p.append( rp.x ).append(',').append( rp.y ).append(';');
+            list2.add(p.toString());
+        }
+        Collections.sort(list2);
+        for ( var rp1 : list2) {
+            nk.append(rp1);
+        }
         return nk.toString();
     }
 
@@ -136,10 +155,12 @@ public class Day18Test {
             final var totalDistance = s.step.totalDistance;
             if ( keys.length() == ALL_KEYS ) {
                 // solved
-                answer2 = Math.min( answer2, totalDistance );
+                if (totalDistance < answer2) {
+                    answer2 = totalDistance;
+                }
             } else {
                 if ( totalDistance >= answer2 ) continue;
-                final var nk = normalizeKey(keys);
+                final var nk = normalizeKey2(s);
                 final var minTotalDistance = minPathForKeys.getOrDefault(nk, Integer.MAX_VALUE);
                 if ( minTotalDistance <= totalDistance ) continue;
                 minPathForKeys.put(nk, totalDistance);
@@ -164,9 +185,14 @@ public class Day18Test {
         });
     }
 
+    int solution2(String file) {
+        final var map = readMap(file);
+        final var answer1 = solution1(map);
+        return solution2(map, answer1);
+    }
+
     @Test
     public void solution() {
-        if ( Config.isFast() ) return; // TODO - solve the second part -- also takes almost 40 seconds
         assertEquals("sample 1", 8, solution1("day18-sample1"));
         assertEquals("sample 2", 86, solution1("day18-sample2"));
         assertEquals("sample 3", 132, solution1("day18-sample3"));
@@ -178,10 +204,17 @@ public class Day18Test {
         // How many steps is the shortest path that collects all of the keys?
         assertEquals("answer 1", 5262, answer1);
 
-        assertEquals("answer 2", -2, solution2(map, answer1)); // 2180 - is too high
+        // if ( Config.isFast() ) return; // solve the second part takes 12 seconds
+        /*
+        assertEquals("sample 6 (2/1)", 8, solution2("day18-sample6") );
+        assertEquals("sample 6 (2/2)", 24, solution2("day18-sample7") );
+        assertEquals("sample 6 (2/3)", 32, solution2("day18-sample8") );
+        assertEquals("sample 6 (2/4)", 72, solution2("day18-sample9") );
+        */
+        final var ANSWER2MAX = 2180; // 2180 - is too high
+        assertEquals("answer 2", 2136, solution2(map, ANSWER2MAX));
     }
 
-    // optimized in space, simple recursive processing (tree)
     static class Step {
         final int totalDistance;
         final Float priority;
@@ -190,10 +223,8 @@ public class Day18Test {
             totalDistance = distance;
             this.keys = keys;
             // higher if more keys and less distance
-            // priority = ( 10_000 * keys().size() ) - totalDistance();
             final var kl = keys.length();
             priority = kl -totalDistance / ( kl + 1f );
-            // priority = kl / ( (float)totalDistance );
         }
     }
 
@@ -219,8 +250,8 @@ public class Day18Test {
 
     record PathCalculator( Set<Point> walkable, Map<Character, Point> keys, Map<Character, Point> doors ) {
         List<Step> nextStep( Optional<Step> prev, Point start ) {
-            final var prevKeys = prev.isPresent() ? prev.get().keys : "";
-            final var prevDistance = prev.isPresent() ? prev.get().totalDistance : 0;
+            final var prevKeys = prev.map(step -> step.keys).orElse("");
+            final var prevDistance = prev.map(step -> step.totalDistance).orElse(0);
 
             final var keyPoint = new HashMap<Point,Character>();
             for ( var de : doors.entrySet() ) {
