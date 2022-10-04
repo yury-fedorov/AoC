@@ -12,6 +12,18 @@ import static aoc19.computer.AsciiUtil.readOut;
 import static org.junit.Assert.assertEquals;
 
 public class Day17Test {
+    
+    @Test
+    public void printDecomposition() {
+      // calculated and written down by hand  
+      final String path = "L,12,L,10,R,8,L,12,R,8,R,10,R,12,L,12,L,10,R,8,L,12,R,8,R,10,R,12,L,10,R,12,R,8,L,10,R,12,R,8,R,8,R,10,R,12,L,12,L,10,R,8,L,12,R,8,R,10,R,12,L,10,R,12,R,8";
+      final var pattern = Pattern.compile("^(.{1,20})\\1*(.{1,20})(?:\\1|\\2)*(.{1,20})(?:\\1|\\2|\\3)*$");
+      final var matcher = pattern.matcher(path.replaceAll(",", ""));
+      assertTrue( "a solution is found", matcher.find() );
+      System.out.println("Found value: " + matcher.group(1)); // too long but the tail is also group 3, so it is ok
+      System.out.println("Found value: " + matcher.group(2));
+      System.out.println("Found value: " + matcher.group(3));
+    }
 
     @Test
     public void solution() {
@@ -33,19 +45,19 @@ public class Day17Test {
         }
         assertEquals( "answer 1", 4600, answer1);
 
-        // System.out.println(mapAsString); // TODO: we do not need this debug statement anymore?
         memory2.set(0, 2l);
         in.clear();
         out.clear();
-        // "L,12,L,10,R,8?"
-        // TODO: proper instructions (this is just an example)
-        final var instructions = "A,B,C,A,C\n" +
-                "L,12\n" +
-                "L,10\n" +
-                "R,8\n" +
+        
+        //       [ A C             ][ A C             ][ B    ][ B    ][ C    ][ A C             ][ B    ]
+        // Path: L12L10R8L12R8R10R12L12L10R8L12R8R10R12L10R12R8L10R12R8R8R10R12L12L10R8L12R8R10R12L10R12R8
+        final var instructions = "A,C,A,C,B,B,C,A,C,B\n" +
+                "L,12,L,10,R,8,L,12\n" +
+                "L,10,R,12,R,8\n" +
+                "R,8,R,10,R,12\n" +
                 "n\n";
+        
         instructions.chars().forEach( c -> in.add((long)c ));
-        // TODO: convert to longs and put to in queue
         final var comp2 = new IntcodeComputer(memory2, in, out );
         final var phase = comp2.run();
         System.out.println(phase);
