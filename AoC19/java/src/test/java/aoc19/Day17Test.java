@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import static aoc19.computer.AsciiUtil.readOut;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class Day17Test {
     
