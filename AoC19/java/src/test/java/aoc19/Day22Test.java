@@ -44,27 +44,61 @@ public class Day22Test {
          }
         deck.addAll(result);
     }
+    
+    static abstract class Shuffling {
+        protected final long _size;
+        protected Shuffling( long size ) { _size = size; }
+        long getNewPosition( long oldPosition ); // direct (described) shuffling
+        long getOldPosition( long newPosition ); // inverse shuffling
+    }
+    
+    static class DealIntoNewStack extends Shuffling {
+        public DealIntoNewStack( long size ) { base( size ); }
+        long getNewPosition( long oldPosition ) { return _size - oldPosition - 1; }
+        long getOldPosition( long newPosition ) { return getNewPosition( newPosition ); }
+    }
+    
+    static class CutCards extends Shuffling {
+        final long _n;
+        public CutCards( long size, long n ) { base( size ); _n = n; }
+        long getNewPosition( long oldPosition ) { return ( oldPosition + _n ) % _size; }
+        long getOldPosition( long newPosition ) { return ( newPosition - _n ) % size; }
+    }
+    
+    static class DealWithIncrement extends Shuffling {
+        final long _n;
+        public DealWithIncrement( long size, long n ) { base( size ); _n = n; }
+        long getNewPosition( long oldPosition ) { return ( oldPosition + _n ) % _size; } // TODO - implement
+        long getOldPosition( long newPosition ) { return ( newPosition - _n ) % size; } // TODO - implement
+    }
 
     @Test
     public void solution() {
         final var input = IOUtil.input("day22");
-        var deck = createDeck(10007);
+        final var SIZE1 = 10007;
+        final var SIZE2  = 119_315_717_514_047L;
+        final var TIMES2 = 101_741_582_076_661L;
+        
+        final var deck = createDeck(SIZE1);
+        final var fastCommands = new ArrayList<Shuffling>( input.size() );
+        final var size = SIZE1; 
         for ( var command : input ) {
-            if ( command.equals(NEW_STACK) ) dealIntoNewStack(deck);
-            else if ( command.startsWith( "cut ") ) {
+            if ( command.equals(NEW_STACK) ) {
+                dealIntoNewStack(deck);
+                fastCommands.add( new DealIntoNewStack( size ) );
+            } else if ( command.startsWith( "cut ") ) {
                 final var n = Integer.parseInt( command.split(" " )[1] );
                 cutCards(deck, n);
+                fastCommands.add( new CutCards( size, n ) );
             } else if ( command.startsWith( "deal with increment" ) ) {
                 final var n = Integer.parseInt( command.split(" increment " )[1] );
                 dealWithIncrement(deck, n);
+                fastCommands.add( new DealWithIncrement( size, n ));
             }
         }
         // what is the position of card 2019?
         assertEquals( "answer 1", 6831, deck.indexOf(2019));
 
-        final var SIZE2  = 119_315_717_514_047L;
-        final var TIMES2 = 101_741_582_076_661L;
-        // deck = createDeck(SIZE2);
         // TODO assertEquals( "answer 2", -2, deck.get(2020-1).intValue() );
     }
 }
