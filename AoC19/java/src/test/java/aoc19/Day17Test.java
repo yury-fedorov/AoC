@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Pattern;
 
 import static aoc19.computer.AsciiUtil.readOut;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class Day17Test {
     
@@ -60,10 +62,10 @@ public class Day17Test {
         instructions.chars().forEach( c -> in.add((long)c ));
         final var comp2 = new IntcodeComputer(memory2, in, out );
         final var phase = comp2.run();
-        System.out.println(phase);
-        System.out.println( readOut(out) );
-        final var answer2 = 0; // TODO: last from out queue
-        assertEquals( "answer 2", -2, answer2 );
+        final var outDeque = new java.util.ArrayDeque( out );
+        final var answer2 = outDeque.pollLast();
+        // debug: System.out.println( readOut( outDeque ) );
+        assertEquals( "answer 2", 1113411L, answer2 );
     }
 
     static char get( List<String> map, int x, int y ) {
