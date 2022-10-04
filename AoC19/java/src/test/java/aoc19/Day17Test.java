@@ -62,10 +62,9 @@ public class Day17Test {
         instructions.chars().forEach( c -> in.add((long)c ));
         final var comp2 = new IntcodeComputer(memory2, in, out );
         final var phase = comp2.run();
-        System.out.println(phase);
         final var outDeque = new java.util.ArrayDeque( out );
         final var answer2 = outDeque.pollLast();
-        System.out.println( readOut( outDeque ) );
+        // debug: System.out.println( readOut( outDeque ) );
         assertEquals( "answer 2", 1113411L, answer2 );
     }
 
