@@ -1,5 +1,4 @@
 Java 17 (LTS)
-- Day 18: Many-Worlds Interpretation (paths)
 - Day 22: Slam Shuffle (cards)
 
 Intcode
