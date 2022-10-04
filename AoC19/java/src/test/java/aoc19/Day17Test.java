@@ -66,7 +66,7 @@ public class Day17Test {
         final var outDeque = new java.util.ArrayDeque( out );
         final var answer2 = outDeque.pollLast();
         System.out.println( readOut( outDeque ) );
-        assertEquals( "answer 2", -2, answer2 );
+        assertEquals( "answer 2", 1113411, answer2 );
     }
 
     static char get( List<String> map, int x, int y ) {
