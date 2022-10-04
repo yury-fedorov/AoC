@@ -63,9 +63,9 @@ public class Day17Test {
         final var comp2 = new IntcodeComputer(memory2, in, out );
         final var phase = comp2.run();
         System.out.println(phase);
-        final var outDeque = new java.util.ArrayDeque( readOut(out) );
+        final var outDeque = new java.util.ArrayDeque( out );
         final var answer2 = outDeque.pollLast();
-        System.out.println( outDeque );
+        System.out.println( readOut( outDeque ) );
         assertEquals( "answer 2", -2, answer2 );
     }
 
