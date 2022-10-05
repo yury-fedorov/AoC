@@ -76,7 +76,7 @@ public class Day22Test {
             final long smn = _size % _n; // amount of times we have n+1 in one iteration
             final var b = newPosition % _n; // iteration
             final var a = newPosition / _n;
-            return ( newPosition + _size * b ) / _n; 
+            return ( ( newPosition + _size * b ) / _n ) % _size; 
             // "oldPosition < s/n" -> newPosition / n
             // newPosition < n -> sn + newPosition
             // return ( a + ( b * sn ) + Math.min( smn, b ) ) % _size;
@@ -84,19 +84,20 @@ public class Day22Test {
     }
     
     void testDealWithIncrease(int size, int n) {
-        final var d7 = createDeck( size );
-        // cutCards(d7, 3); // 3,4,5,6,0,1,2 -- 3 cards from head moved to tail
-        // cutCards(d7,-2); // 5,6,0,1,2,3,4 -- 2 cards from tail moved to head
+        final var d = createDeck( size );
+        // cut cards for deck size 7
+        // cutCards(d, 3); // 3,4,5,6,0,1,2 -- 3 cards from head moved to tail
+        // cutCards(d,-2); // 5,6,0,1,2,3,4 -- 2 cards from tail moved to head
         final var c = "deal with increment " + n;
-        final var s7 = new DealWithIncrement(size, n);
-        dealWithIncrement(d7, 2); // 0,4,1,5,2,6,3
+        final var s = new DealWithIncrement(size, n);
+        dealWithIncrement(d, 2); // 0,4,1,5,2,6,3
         for ( int before = 0; before < size; before++ )
         {
                 final int testPosition = before;
-                final var afterPosition = s7.getNewPosition(testPosition);
-                final int after = d7.get( (int)afterPosition );
-                assertEquals( c, before, after );
-                assertEquals( "index inverse", s7.getOldPosition( afterPosition ), testPosition );
+                final var afterPosition = s.getNewPosition(testPosition);
+                final int after = d.get( (int)afterPosition );
+                assertEquals( c + " before vs after -> before=" + before + " after=" + after, before, after );
+                assertEquals( c + " index inverse -> after position=" + afterPosition, s.getOldPosition( afterPosition ), testPosition );
         }
     }
 
