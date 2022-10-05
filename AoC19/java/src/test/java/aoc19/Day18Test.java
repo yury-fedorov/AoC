@@ -198,13 +198,13 @@ public class Day18Test {
         assertEquals("sample 3", 132, solution1("day18-sample3"));
         assertEquals("sample 4", 136, solution1("day18-sample4"));
         assertEquals("sample 5", 81, solution1("day18-sample5"));
+        
+        if ( Config.isFast() ) return; // solve the second part takes 12 seconds, in total takes 18 seconds
 
         final var map = readMap("day18");
         final var answer1 = solution1(map);
         // How many steps is the shortest path that collects all of the keys?
         assertEquals("answer 1", 5262, answer1);
-
-        // if ( Config.isFast() ) return; // solve the second part takes 12 seconds
         /*
         assertEquals("sample 6 (2/1)", 8, solution2("day18-sample6") );
         assertEquals("sample 6 (2/2)", 24, solution2("day18-sample7") );
