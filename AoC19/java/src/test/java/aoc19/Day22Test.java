@@ -76,7 +76,7 @@ public class Day22Test {
             final long smn = _size % _n; // amount of times we have n+1 in one iteration
             final var b = newPosition % _n; // iteration
             final var a = newPosition / _n;
-            return ( ( newPosition + _size * b ) / _n ) % _size; 
+            return ( ( newPosition + _size * b ) / _n ) /* % _size */; 
             // "oldPosition < s/n" -> newPosition / n
             // newPosition < n -> sn + newPosition
             // return ( a + ( b * sn ) + Math.min( smn, b ) ) % _size;
@@ -90,7 +90,7 @@ public class Day22Test {
         // cutCards(d,-2); // 5,6,0,1,2,3,4 -- 2 cards from tail moved to head
         final var c = "deal with increment " + n;
         final var s = new DealWithIncrement(size, n);
-        dealWithIncrement(d, 2); // 0,4,1,5,2,6,3
+        dealWithIncrement(d, n); // 0,4,1,5,2,6,3
         for ( int before = 0; before < size; before++ )
         {
                 final int testPosition = before;
