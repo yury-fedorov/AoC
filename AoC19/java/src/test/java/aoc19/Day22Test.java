@@ -79,7 +79,7 @@ public class Day22Test {
 
             // "oldPosition < s/n" -> newPosition / n
             // newPosition < n -> sn + newPosition
-            return ( a + ( b * sn ) + ( b > 0 ? smn : 0 ) ) % _size;
+            return ( a + ( b * sn ) + Math.min( smn, b ) ) % _size;
         }
     }
 
