@@ -68,15 +68,34 @@ public class Day22Test {
     }
 
     static class DealWithIncrement extends Shuffling {
-        final long _n;
+        final long _n; // n is de facto in the range: [2, 72]
+        // every iteration (we have n) starts with a new shift (unique in the range 0 [0,n) )
+        final Map<Long,Long> _shiftToIteration = new HashMap<Long,Long>();
         public DealWithIncrement( long size, long n ) { super( size ); _n = n; }
-        long getNewPosition( long oldPosition ) { return ( oldPosition * _n ) % _size; }
+        long getNewPosition( long oldPosition ) {
+            final var pn = oldPosition * _n;
+            final long iteration = pn / _size;
+            final long newPosition = pn % _size;
+            final long shift = newPosition % _n;
+            _shiftToIteration.put( shift, iteration );
+            return newPosition;
+        }
+        
+        long getIteration( long shift ) {
+            // TODO - trigger initialization of the map if necessary
+            return _shiftToIteration.get( shift );
+        }
+        
         long getOldPosition( long newPosition ) {
+            // TODO - this could be optimized and moved to class member fields
             final long sn = _size / _n;
             final long smn = _size % _n; // amount of times we have n+1 in one iteration
-            final var b = newPosition % _n; // iteration
-            final var a = newPosition / _n;
-            return ( ( newPosition + _size * b ) / _n ) /* % _size */; 
+            
+            final var shift = newPosition % _n; // shift
+            final var iteration = getIteration( shift );
+            
+            // final var a = newPosition / _n;
+            return ( ( newPosition + _size * iteration ) / _n ) /* % _size */; 
             // "oldPosition < s/n" -> newPosition / n
             // newPosition < n -> sn + newPosition
             // return ( a + ( b * sn ) + Math.min( smn, b ) ) % _size;
@@ -104,7 +123,8 @@ public class Day22Test {
     @Test
     public void solution() {
         final var SIZE1 = 10007;
-        final var SIZE2  = 119_315_717_514_047L;
+        // java long max = 9,223,372,036,854,775,807
+        final var SIZE2  =       119_315_717_514_047L;
         final var TIMES2 = 101_741_582_076_661L;
         
         testDealWithIncrease( 7, 2 );
