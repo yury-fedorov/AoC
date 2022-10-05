@@ -138,8 +138,7 @@ public class Day22Test {
             } else throw new IllegalStateException();
             final var afterPosition = shuffling.getNewPosition(testPosition);
             if ( afterPosition <= Integer.MAX_VALUE ) {
-                //
-                if ( command.startsWith( NEW_STACK ) || command.startsWith( "cut" ) )
+                // TODO - clean -> if ( command.startsWith( NEW_STACK ) || command.startsWith( "cut" ) )
                 {
                     final var after = deck.get( (int)afterPosition );
                     assertEquals( command + " before vs after", before, after );
