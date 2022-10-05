@@ -76,10 +76,27 @@ public class Day22Test {
             final long smn = _size % _n; // amount of times we have n+1 in one iteration
             final var b = newPosition % _n; // iteration
             final var a = newPosition / _n;
-
+            return ( newPosition + _size * b ) / _n; 
             // "oldPosition < s/n" -> newPosition / n
             // newPosition < n -> sn + newPosition
-            return ( a + ( b * sn ) + Math.min( smn, b ) ) % _size;
+            // return ( a + ( b * sn ) + Math.min( smn, b ) ) % _size;
+        }
+    }
+    
+    void testDealWithIncrease(int size, int n) {
+        final var d7 = createDeck( size );
+        // cutCards(d7, 3); // 3,4,5,6,0,1,2 -- 3 cards from head moved to tail
+        // cutCards(d7,-2); // 5,6,0,1,2,3,4 -- 2 cards from tail moved to head
+        final var c = "deal with increment " + n;
+        final var s7 = new DealWithIncrement(size, n);
+        dealWithIncrement(d7, 2); // 0,4,1,5,2,6,3
+        for ( int before = 0; before < size; before++ )
+        {
+                final int testPosition = before;
+                final var afterPosition = s7.getNewPosition(testPosition);
+                final int after = d7.get( (int)afterPosition );
+                assertEquals( c, before, after );
+                assertEquals( "index inverse", s7.getOldPosition( afterPosition ), testPosition );
         }
     }
 
@@ -88,30 +105,10 @@ public class Day22Test {
         final var SIZE1 = 10007;
         final var SIZE2  = 119_315_717_514_047L;
         final var TIMES2 = 101_741_582_076_661L;
-
-        /*
-          deal with increment 46 index inverse
-          Expected :6053
-          Actual   :4738
-        */
-
-        {
-            final var d7 = createDeck( 7 );
-            // cutCards(d7, 3); // 3,4,5,6,0,1,2 -- 3 cards from head moved to tail
-            // cutCards(d7,-2); // 5,6,0,1,2,3,4 -- 2 cards from tail moved to head
-            final var c = "deal with increment 2";
-            final var s7 = new DealWithIncrement(7, 2 );
-            dealWithIncrement(d7, 2); // 0,4,1,5,2,6,3
-            for ( int before = 0; before < 7; before++ )
-            //final int before = 4;
-            {
-                final int testPosition = before;
-                final var afterPosition = s7.getNewPosition(testPosition);
-                final int after = d7.get( (int)afterPosition );
-                assertEquals( c, before, after );
-                assertEquals( "index inverse", s7.getOldPosition( afterPosition ), testPosition );
-            }
-        }
+        
+        testDealWithIncrease( 7, 2 );
+        testDealWithIncrease( 11, 3 );
+        testDealWithIncrease( SIZE1, 46 );
 
         final var input = IOUtil.input("day22");
         final var deck = createDeck(SIZE1);
