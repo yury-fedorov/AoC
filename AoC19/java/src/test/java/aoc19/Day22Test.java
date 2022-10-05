@@ -70,21 +70,50 @@ public class Day22Test {
     static class DealWithIncrement extends Shuffling {
         final long _n;
         public DealWithIncrement( long size, long n ) { super( size ); _n = n; }
-        long getNewPosition( long oldPosition ) { return ( oldPosition + _n ) % _size; } // TODO - implement
-        long getOldPosition( long newPosition ) { return ( newPosition - _n ) % _size; } // TODO - implement
+        long getNewPosition( long oldPosition ) { return ( oldPosition * _n ) % _size; }
+        long getOldPosition( long newPosition ) {
+            final long sn = _size / _n;
+            final long smn = _size % _n; // amount of times we have n+1 in one iteration
+            final var b = newPosition % _n; // iteration
+            final var a = newPosition / _n;
+
+            // "oldPosition < s/n" -> newPosition / n
+            // newPosition < n -> sn + newPosition
+            return ( a + ( b * sn ) + ( b > 0 ? smn : 0 ) ) % _size;
+        }
     }
 
     @Test
     public void solution() {
-
-        final var d7 = createDeck( 7 );
-        // cutCards(d7, 3); // 3,4,5,6,0,1,2 -- 3 cards from head moved to tail
-        // cutCards(d7,-2); // 5,6,0,1,2,3,4 -- 2 cards from tail moved to head
-        final var input = IOUtil.input("day22");
         final var SIZE1 = 10007;
         final var SIZE2  = 119_315_717_514_047L;
         final var TIMES2 = 101_741_582_076_661L;
 
+        /*
+          deal with increment 46 index inverse
+          Expected :6053
+          Actual   :4738
+        */
+
+        {
+            final var d7 = createDeck( 7 );
+            // cutCards(d7, 3); // 3,4,5,6,0,1,2 -- 3 cards from head moved to tail
+            // cutCards(d7,-2); // 5,6,0,1,2,3,4 -- 2 cards from tail moved to head
+            final var c = "deal with increment 2";
+            final var s7 = new DealWithIncrement(7, 2 );
+            dealWithIncrement(d7, 2); // 0,4,1,5,2,6,3
+            for ( int before = 0; before < 7; before++ )
+            //final int before = 4;
+            {
+                final int testPosition = before;
+                final var afterPosition = s7.getNewPosition(testPosition);
+                final int after = d7.get( (int)afterPosition );
+                assertEquals( c, before, after );
+                assertEquals( "index inverse", s7.getOldPosition( afterPosition ), testPosition );
+            }
+        }
+
+        final var input = IOUtil.input("day22");
         final var deck = createDeck(SIZE1);
         final var fastCommands = new ArrayList<Shuffling>( input.size() );
         final var size = SIZE1;
@@ -109,10 +138,12 @@ public class Day22Test {
             } else throw new IllegalStateException();
             final var afterPosition = shuffling.getNewPosition(testPosition);
             if ( afterPosition <= Integer.MAX_VALUE ) {
-                if ( command.startsWith( NEW_STACK ) || command.startsWith( "cut" ) ) {
+                //
+                if ( command.startsWith( NEW_STACK ) || command.startsWith( "cut" ) )
+                {
                     final var after = deck.get( (int)afterPosition );
-                    assertEquals( command, before, after );
-                    assertEquals( "index inverse", shuffling.getOldPosition( afterPosition ), testPosition );
+                    assertEquals( command + " before vs after", before, after );
+                    assertEquals( command + " index inverse", shuffling.getOldPosition( afterPosition ), testPosition );
                 }
             }
             fastCommands.add( shuffling );
