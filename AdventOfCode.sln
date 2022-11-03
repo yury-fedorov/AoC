@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28407.52
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AoC19", "AoC19\AoC19.fsproj", "{025BD98D-E11A-4815-809A-81A9F3C5CD16}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AoC19", "AoC19\fs\AoC19.fsproj", "{025BD98D-E11A-4815-809A-81A9F3C5CD16}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AoC18", "AoC18\AoC18.csproj", "{F364E4C1-792B-4E71-AEFA-E0ED6D664A48}"
 EndProject
