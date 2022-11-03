@@ -1,12 +1,14 @@
 name: .NET Tests
+
 on:
   push:
+    branches: [ "master" ]
   pull_request:
-    branches: [ main ]
-    paths-ignore:
-    - 'README.md'
+    branches: [ "master" ]
+
 env:
   DOTNET_VERSION: '6.0.x'
+  
 jobs:
   build-and-test:
     name: build-and-test-${{matrix.os}}
