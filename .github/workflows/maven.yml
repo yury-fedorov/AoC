@@ -22,5 +22,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven
+    - name: AoC19
       run: mvn -B package --file AoC19/java/pom.xml
+    - name: AoC16
+      run: mvn -B package --file AoC16/java/pom.xml
