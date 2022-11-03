@@ -1,4 +1,4 @@
-name: Rust
+name: Rust Tests
 
 on: [push]
 
@@ -7,7 +7,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: icepuma/rust-action@master
-        with:
-          args: cd AoC17/rust && cargo test
+      - uses: actions/checkout@v2
+      - name: AoC17
+        run: cd AoC17/rust && cargo test
