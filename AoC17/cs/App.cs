@@ -1,6 +1,6 @@
 namespace AoC17 {
     public class App {
-        public static string Directory {
+        public static string YearDirectory {
             get {
                 var cd = System.IO.Directory.GetCurrentDirectory();
                 while (!cd.EndsWith("AoC17") ) {
@@ -10,5 +10,7 @@ namespace AoC17 {
                 return cd;
             }
         }
+        
+        public static string Directory => System.IO.Combine(YearDirectory, "cs");
     }
 }
