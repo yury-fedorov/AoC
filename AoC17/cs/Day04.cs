@@ -6,7 +6,7 @@ namespace AoC17
 {
     public class Day04
     {
-        public const string Directory = "/Users/fedoy/projects/AoC/AoC17/cs";
+        public readonly string Directory = Path.Combine(App.Directory,"cs");
 
         public bool IsValid(string line)
         {
