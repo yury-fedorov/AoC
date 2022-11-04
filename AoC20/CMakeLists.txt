@@ -11,7 +11,18 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
-find_package(Catch2 REQUIRED)
+# find_package(Catch2 REQUIRED)
+
+Include(FetchContent)
+
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG        v3.0.1 # or a later release
+)
+
+FetchContent_MakeAvailable(Catch2)
+
 file( GLOB SOURCES */*.cpp )
 set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
