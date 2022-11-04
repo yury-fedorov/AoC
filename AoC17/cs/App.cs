@@ -11,6 +11,6 @@ namespace AoC17 {
             }
         }
         
-        public static string Directory => System.IO.Combine(YearDirectory, "cs");
+        public static string Directory => System.IO.Path.Combine(YearDirectory, "cs");
     }
 }
