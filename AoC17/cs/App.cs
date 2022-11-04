@@ -1,4 +1,4 @@
-namespace AdventOfCode2017 {
+namespace AoC17 {
     public class App {
         public static string Directory {
             get {
