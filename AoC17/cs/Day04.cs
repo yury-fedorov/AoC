@@ -6,8 +6,6 @@ namespace AoC17
 {
     public class Day04
     {
-        public readonly string Directory = Path.Combine(App.Directory,"cs");
-
         public bool IsValid(string line)
         {
             var words = line.Split(' ');
@@ -38,7 +36,7 @@ namespace AoC17
 
         [TestCase("Day04Input.txt", 386, 208)]
         public void Test1(string file, int expected, int expected2) {
-            var lines = File.ReadAllLines( Path.Combine( Directory, file ) );
+            var lines = File.ReadAllLines( Path.Combine( App.Directory, file ) );
             Assert.IsNotEmpty(lines);
             Assert.AreEqual(expected, lines.Count(IsValid));
             Assert.AreEqual(expected2, lines.Count(IsValid2));
