@@ -27,7 +27,7 @@ namespace AoC17
 	[TestCase("Day05Input.txt",343364, 25071947)]
         public void Test1(string file, int expected1, int expected2)
         {
-            var lines = File.ReadAllLines(Path.Combine( Day04.Directory, file));
+            var lines = File.ReadAllLines(Path.Combine( App.Directory, file));
             var jumpOffsets = lines.Select( l => Convert.ToInt32(l) ).ToArray();
             Assert.AreEqual(expected1, CountSteps(jumpOffsets, (offset)=>1 ));
             Assert.AreEqual(expected2, CountSteps(jumpOffsets, (offset)=> ( offset < 3 ? 1 : -1 ) ));
