@@ -1,0 +1,17 @@
+name: build and run tests
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: AoC20
+      run: cd AoC20 && cmake . && cmake --build . --target all && ./aoc20 && cd ..
+
+    - name: AoC15
+      run: cd AoC15 && cmake . && cmake --build . --target all && ./aoc15 && cd ..
