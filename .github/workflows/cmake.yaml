@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Catch2 installation (used in AoC15 and AoC20 )
+      run: sudo apt update && sudo apt -y install catch2
 
     - name: AoC20
       run: cd AoC20 && cmake . && cmake --build . --target all && ./aoc20 && cd ..
