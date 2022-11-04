@@ -1,4 +1,4 @@
-name: build and run tests
+name: C++ Tests
 on:
   push:
     branches: [ master ]
@@ -9,8 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    
-    - name: Catch2 installation (used in AoC15 and AoC20 )
+
+    - name: cppcheck installation (used in AoC15 and AoC20)
+      run: sudo apt update && sudo apt -y install cppcheck
+
+    - name: Catch2 installation (used in AoC15 and AoC20)
       # unknown package - run: sudo apt update && sudo apt -y install catch2
       run: git clone https://github.com/catchorg/Catch2.git && cd Catch2 && cmake -Bbuild -H. -DBUILD_TESTING=OFF && sudo cmake --build build/ --target install && cd ..
 
