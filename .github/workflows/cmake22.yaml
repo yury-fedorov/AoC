@@ -1,0 +1,22 @@
+name: AoC22 - C++ Tests
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  build:
+    # runs-on: ubuntu-latest
+    # so far latest is 20.04 not 22.04 yet
+    # runs-on: ubuntu-18.04 - gcc 7.5
+    runs-on: ubuntu-22.04
+      # - cxx: clang++
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: cppcheck installation
+      run: sudo apt update && sudo apt -y install cppcheck
+
+    - name: AoC22
+      run: cd AoC22/cpp && cmake . && cmake --build . --target all && ./aoc22 -d yes && cd ..
