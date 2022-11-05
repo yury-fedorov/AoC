@@ -27,5 +27,8 @@ jobs:
     # - name: AoC19
     #  run: cd AoC19/cpp && cmake . && make all && ./aoc19 && cd ../..
 
+    # - name: AoC19
+    #  run: cd AoC19/cpp && cmake . && make all && ./aoc19 && cd ../..
+
     - name: AoC15
       run: cd AoC15 && cmake . && cmake --build . --target all && ./aoc15 && cd ..
