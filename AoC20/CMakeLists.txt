@@ -29,4 +29,5 @@ set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc20 test.cpp ${SOURCES} )
 
-target_link_libraries(aoc20 PRIVATE Catch2::Catch2WithMain)
+# target_link_libraries(aoc20 PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(aoc20 PRIVATE Catch2::Catch2)
