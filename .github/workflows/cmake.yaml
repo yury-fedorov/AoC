@@ -6,7 +6,11 @@ on:
     branches: [ master ]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    # so far latest is 20.04 not 22.04 yet
+    runs-on: ubuntu-22.04
+      # - cxx: clang++
+    
     steps:
     - uses: actions/checkout@v2
 
