@@ -19,4 +19,4 @@ jobs:
       run: sudo apt update && sudo apt -y install cppcheck
 
     - name: AoC22
-      run: cd AoC22/cpp && cmake . && cmake --build . --target all && ./aoc22 && cd ..
+      run: cd AoC22/cpp && cmake . && cmake --build . --target all && ./aoc22 -d yes && cd ..
