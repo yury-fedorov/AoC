@@ -1,12 +1,13 @@
+#include "absl/strings/numbers.h"
 #include "common.h"
 
 TEST(AoC22, Day01) {
   const auto data = ReadData("01");
   std::vector<long> sums;
-  auto sum = 0L;
+  long sum{0};
   for (const std::string &line : data) {
-    if (line.length()) {
-      sum += std::stol(line);
+    if (long value{0}; absl::SimpleAtoi(line, &value)) {
+      sum += value;
     } else {
       sums.insert(std::ranges::upper_bound(sums, sum), sum);
       sum = 0;
