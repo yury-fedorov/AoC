@@ -4,12 +4,12 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <numeric>
 #include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <numeric>
 // #include <format>
 
 #include "gtest/gtest.h"

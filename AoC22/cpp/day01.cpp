@@ -15,6 +15,6 @@ TEST(AoC22, Day01) {
   const auto sum_highest_n = [&sums](size_t n) {
     return std::accumulate(sums.rbegin(), sums.rbegin() + n, 0);
   };
-  EXPECT_EQ( sum_highest_n(1), 70698);
-  EXPECT_EQ( sum_highest_n(3), 206643);
+  EXPECT_EQ(sum_highest_n(1), 70698);
+  EXPECT_EQ(sum_highest_n(3), 206643);
 }
