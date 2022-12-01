@@ -2,34 +2,24 @@
 
 using namespace std;
 
-namespace day01 {
-}
+namespace day01 {}
 
-TEST_CASE( "Day01", "[01]" ) {
-    using namespace day01;
-    
-    // ifstream f("../data/day01.txt");
-    ifstream f("../data/1.txt");
-    string line;
-    auto answer1 = 0; 
-    auto sum = 0;
-    while ( !f.eof() ) {
-       getline(f, line);
-       if ( line.length() ) {
-            const auto value = stoi( line );
-            if ( value ) sum += value;
-            else { 
-                answer1 = max( sum, answer1 );
-                sum = 0;
-            }
-        }    
+TEST_CASE("Day01", "[01]") {
+  using namespace day01;
+  const auto data = ReadData("1");
+  std::vector<long> sums;
+  auto sum = 0;
+  for (const std::string &line : data) {
+    if (line.length()) {
+      sum += std::stol(line);
+    } else {
+      sums.insert(std::ranges::upper_bound(sums, sum), sum);
+      sum = 0;
     }
-    
-    SECTION( "01-1" ) {
-        REQUIRE( answer1 == 0 );
-    }
-
-    SECTION( "01-2" ) {
-        REQUIRE( true );
-    }
+  }
+  const auto sum_highest_n = [&sums](size_t n) {
+    return std::accumulate(sums.rbegin(), sums.rbegin() + n, 0);
+  };
+  SECTION("01-1") { REQUIRE(sum_highest_n(1) == 70698); }
+  SECTION("01-2") { REQUIRE(sum_highest_n(3) == 206643); }
 }
