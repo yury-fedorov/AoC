@@ -1,9 +1,6 @@
 #include "common.h"
 
-namespace day01 {}
-
-TEST_CASE("Day01", "[01]") {
-  using namespace day01;
+TEST(AoC22, Day01) {
   const auto data = ReadData("01");
   std::vector<long> sums;
   auto sum = 0L;
@@ -18,6 +15,6 @@ TEST_CASE("Day01", "[01]") {
   const auto sum_highest_n = [&sums](size_t n) {
     return std::accumulate(sums.rbegin(), sums.rbegin() + n, 0);
   };
-  SECTION("01-1") { REQUIRE(sum_highest_n(1) == 70698); }
-  SECTION("01-2") { REQUIRE(sum_highest_n(3) == 206643); }
+  EXPECT_EQ( sum_highest_n(1), 70698);
+  EXPECT_EQ( sum_highest_n(3), 206643);
 }

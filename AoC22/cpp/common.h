@@ -1,17 +1,18 @@
 #pragma once
 
 #include <algorithm>
-#include <catch2/catch.hpp>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <ranges>
-#include <set>
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
+#include <numeric>
 // #include <format>
+
+#include "gtest/gtest.h"
 
 // to hide the external dependencies
 // #include "fmt/format.h" // CLang does not support C++20 format library
