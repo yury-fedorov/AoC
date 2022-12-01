@@ -1,14 +1,12 @@
 #include "common.h"
 
-using namespace std;
-
 namespace day01 {}
 
 TEST_CASE("Day01", "[01]") {
   using namespace day01;
-  const auto data = ReadData("1");
+  const auto data = ReadData("01");
   std::vector<long> sums;
-  auto sum = 0;
+  auto sum = 0L;
   for (const std::string &line : data) {
     if (line.length()) {
       sum += std::stol(line);
