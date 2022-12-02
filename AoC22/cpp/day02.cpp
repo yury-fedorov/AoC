@@ -7,7 +7,6 @@ TEST(AoC22, Day02) {
   const auto data = ReadData("02");
   long answer1{0};
   long answer2{0};
-  const auto shape_score = [](char a) { return 1 + (a - ROCK); };
 
   // a - opponent, b - own
   const auto round_score = [](char a, char b) {
@@ -46,7 +45,6 @@ TEST(AoC22, Day02) {
     answer2 += round_score2(opponent, xyz);
   }
 
-  EXPECT_EQ(shape_score('A'), 1);
   EXPECT_EQ(round_score1('A', 'Y'), 8);
   EXPECT_EQ(answer1, 15523);
   EXPECT_EQ(answer2, 15702);
