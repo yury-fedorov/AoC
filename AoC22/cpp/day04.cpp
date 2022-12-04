@@ -7,6 +7,7 @@ TEST(AoC22, Day04) {
   // 67-84,66-87
 
   long answer1{0};
+  long answer2=0;
   int a, b, x, y;
   std::set<int> overlap;
   for (const std::string &line : data) {
@@ -21,8 +22,9 @@ TEST(AoC22, Day04) {
     answer1 += (a<x)? ( (y<=b)? 1:0 ) : (1) ;
     for ( int i = x; i <= std::min(b, y); i++) 
         overlap.insert(i);
+    answer2 += (b >= x) ? 1 : 0;
   }
   
   EXPECT_EQ(answer1, 582);
-  EXPECT_EQ(overlap.size(),0);
+  EXPECT_EQ(answer2,0);
 }
