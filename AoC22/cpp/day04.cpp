@@ -8,7 +8,7 @@ TEST(AoC22, Day04) {
   long answer1{0};
   int a, b, x, y;
   for (const std::string &line : data) {
-    if (line.length() <7) continua;
+    if (line.length() <7) continue;
     sscanf( line.c_str(), "%d-%d,%d-%d", &a, &b, &x, &y);
     if (a > x) {
        std::swap(a, x);
