@@ -16,7 +16,7 @@ TEST(AoC22, Day04) {
     } 
     // now a <= x
     // we search for: a...x...y...b
-    answer1 += (y<=b)? 1:0;
+    answer1 += (a<x)? ( (y<=b)? 1:0 ) : (1) ;
   }
   
   EXPECT_EQ(answer1, 0);
