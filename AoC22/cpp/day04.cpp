@@ -19,7 +19,7 @@ TEST(AoC22, Day04) {
     // now a <= x
     // we search for: a...x...y...b
     answer1 += (a<x)? ( (y<=b)? 1:0 ) : (1) ;
-    for ( int i = x; i <= min(b, y); i++) 
+    for ( int i = x; i <= std::min(b, y); i++) 
         overlap.insert(i);
   }
   
