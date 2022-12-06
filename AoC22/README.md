@@ -1,4 +1,4 @@
-C++ 23
+C++ 20
 - no exceptions
 - Google Test
 - Abseil
