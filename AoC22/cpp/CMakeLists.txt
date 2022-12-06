@@ -11,7 +11,8 @@ else()
     # TODO - lots of warnings and all warnings as errors
     # removed to make almost clean Abseil: -Wall -Wextra -Werror -pedantic
     # -fexperimental-library - to be able to use experimental features like ranges/views
-    add_compile_options(-Wno-deprecated -fno-exceptions -fexperimental-library -fno-rtti)
+    # -Wno-unused-but-set-variable - to be able to compile benchmark
+    add_compile_options(-Wno-deprecated -fno-exceptions -fexperimental-library -Wno-unused-but-set-variable -fno-rtti)
 endif()
 
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,memory,undefined,dataflow")
@@ -24,12 +25,16 @@ FetchContent_Declare(absl
     GIT_TAG "20220623.1" )
 
 FetchContent_Declare(gtest
-    # URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
     GIT_REPOSITORY "https://github.com/google/googletest"
     GIT_TAG "release-1.12.1" )
 
+FetchContent_Declare(benchmark
+    GIT_REPOSITORY "https://github.com/google/benchmark"
+    GIT_TAG "v1.7.1" )
+
 FetchContent_MakeAvailable(absl)
 FetchContent_MakeAvailable(gtest)
+FetchContent_MakeAvailable(benchmark)
 
 file( GLOB SOURCES day*.cpp )
 # set(CMAKE_CXX_CPPCHECK "cppcheck")
@@ -37,4 +42,4 @@ file( GLOB SOURCES day*.cpp )
 add_executable(aoc22 test.cpp ${SOURCES}  )
 
 # absl::status 
-target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest)
+target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest benchmark)
