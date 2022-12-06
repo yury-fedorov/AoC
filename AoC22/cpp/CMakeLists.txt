@@ -9,7 +9,7 @@ if (MSVC)
     add_compile_options(/W4 /WX)
 else()
     # lots of warnings and all warnings as errors
-    add_compile_options(-Wall -Wextra -pedantic -fno-exceptions -fno-rtti) # -Werror
+    add_compile_options(-Wno-deprecated -fno-exceptions -fno-rtti) # -Wall -Wextra -Werror -pedantic
 endif()
 
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,memory,undefined,dataflow")
@@ -35,4 +35,4 @@ file( GLOB SOURCES day*.cpp )
 add_executable(aoc22 test.cpp ${SOURCES}  )
 
 # absl::status 
-target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::status absl::strings gtest)
+target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest)
