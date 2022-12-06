@@ -8,8 +8,10 @@ if (MSVC)
     # warning level 4 and all warnings as errors
     add_compile_options(/W4 /WX)
 else()
-    # lots of warnings and all warnings as errors
-    add_compile_options(-Wno-deprecated -fno-exceptions -fno-rtti) # -Wall -Wextra -Werror -pedantic
+    # TODO - lots of warnings and all warnings as errors
+    # removed to make almost clean Abseil: -Wall -Wextra -Werror -pedantic
+    # -fexperimental-library - to be able to use experimental features like ranges/views
+    add_compile_options(-Wno-deprecated -fno-exceptions -fexperimental-library -fno-rtti)
 endif()
 
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,memory,undefined,dataflow")
