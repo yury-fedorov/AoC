@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17) # 3.20 for CXX_STANDARD 23, 3.18 for Ubuntu, 3.17 for Windows
 project(aoc22)
 
-set(CMAKE_CXX_STANDARD 20) # 3.20 for CXX_STANDARD 23, latest Ubuntu 22.10 3.24
+set(CMAKE_CXX_STANDARD 23) # 3.20 for CXX_STANDARD 23, latest Ubuntu 22.10 3.24
 set(ABSL_PROPAGATE_CXX_STD, ON)
 
 if (MSVC)
@@ -35,4 +35,4 @@ file( GLOB SOURCES day*.cpp )
 add_executable(aoc22 test.cpp ${SOURCES}  )
 
 # absl::status 
-target_link_libraries(aoc22 PRIVATE absl::strings gtest)
+target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::status absl::strings gtest)
