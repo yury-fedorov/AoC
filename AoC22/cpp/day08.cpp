@@ -59,10 +59,43 @@ TEST(AoC22, Day08) {
     }
     return false;
   };
+
+    const auto get_scenic_score = [&map, max_x, max_y](const Point &p) -> long long {
+      // any tree on a border is visible
+      const int x = p.first;
+      const int y = p.second;
+      if ( day08::is_border(x, y, max_x, max_y) ) return 0;
+      const int h = map[p];
+      const std::array dxy = {std::make_pair(0, 1), std::make_pair(0, -1),
+                              std::make_pair(1, 0), std::make_pair(-1, 0)};
+      long long score {1};
+      for (const auto &[dx, dy] : dxy) {
+        auto xi = x;
+        auto yi = y;
+        long viewing_distance {0};
+        while (true) {
+          xi += dx;
+          yi += dy;
+          // if ( xi < 0 || yi < 0 || xi >= max_x || yi >= max_y ) break;
+          const auto hi = map[{xi, yi}];
+          if (hi <= h) {
+            viewing_distance++;
+          }
+          if ( hi >= h || day08::is_border(xi, yi, max_x, max_y))
+            break;
+        }
+        score *= viewing_distance;
+      }
+      return score;
+    };
+
+
   long answer1{0};
+  long long answer2{0};
   for (const auto &[p, _] : map) {
     answer1 += is_visible_outside(p) ? 1 : 0;
+    answer2 = std::max(answer2, get_scenic_score(p)); // 126 - too low, 361920 -- too low
   }
   EXPECT_EQ(answer1, 1647);
-  // EXPECT_EQ(sum_highest_n(3), 206643);
+  EXPECT_EQ(answer2, 0);
 }
