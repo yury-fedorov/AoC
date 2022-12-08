@@ -61,7 +61,7 @@ size_t Answer1(const Node *node) {
 }
 NodePtr CreateDir(Node *parent) {
   return std::unique_ptr<Node>(new Node(
-      day07::NodeType::DIR, static_cast<size_t>(0), DirPtr(), parent));
+      day07::NodeType::DIR, static_cast<size_t>(0), DirPtr( new FileSystem() ), parent));
 }
 NodePtr CreateFile(Node *parent, size_t size) {
   return std::unique_ptr<Node>(
