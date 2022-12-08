@@ -80,7 +80,7 @@ size_t Answer2(const Node *node, size_t need_to_free) {
     for (const auto &i : *node->dir_) {
       // const auto &sub_node = i.second;
       const auto &sub_node = i;
-      if ( sub_node->IsDir() ) {
+      if (sub_node->IsDir()) {
         const auto alternative = Answer2(sub_node.get(), need_to_free);
         if (alternative >= need_to_free) {
           answer = std::min(answer, alternative);
@@ -137,7 +137,7 @@ TEST(AoC22, Day07) {
   }
   EXPECT_EQ(day07::Answer1(root_node.get()), 1084134);
 
-  const auto occupied_space = day07::Size( root_node.get() );
+  const auto occupied_space = day07::Size(root_node.get());
   const auto total_free_now = day07::total_space - occupied_space;
   const auto need_to_free = day07::need_space - total_free_now;
   EXPECT_EQ(day07::Answer2(root_node.get(), need_to_free), 6183184);
