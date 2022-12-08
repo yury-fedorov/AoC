@@ -12,7 +12,7 @@ else()
     # removed to make almost clean Abseil: -Wall -Wextra -Werror -pedantic
     # -fexperimental-library - to be able to use experimental features like ranges/views
     # -Wno-unused-but-set-variable - to be able to compile benchmark
-    add_compile_options(-Wno-deprecated -fno-exceptions -fexperimental-library -Wno-unused-but-set-variable -fno-rtti)
+    add_compile_options(-Wno-deprecated -fno-exceptions -Wno-unused-but-set-variable -fno-rtti)
 endif()
 
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address") #memory - cannot together with address #undefined,dataflow
