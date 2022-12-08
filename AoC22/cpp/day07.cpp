@@ -8,14 +8,14 @@ struct Node;
 using NodePtr = std::unique_ptr<Node>;
 // using FileSystem = absl::flat_hash_map<std::string, NodePtr>;
 using FileSystem = std::vector<NodePtr>;
-using DirPtr = FileSystem *;
+using DirPtr = std::unique_ptr<FileSystem>;
 struct Node {
   NodeType type_;
   size_t size_;  // for dir is 0
   DirPtr dir_;   // nullptr for file
   Node *parent_; // we need it for cd .. // nullptr for root
   Node(NodeType type, size_t size, DirPtr dir, Node *parent)
-      : type_(type), size_(size), dir_(dir), parent_(parent) {}
+      : type_(type), size_(size), dir_(std::move(dir)), parent_(parent) {}
   // Node( const Node & node ) : type_( node.type_ ), size_( node.size_ ), dir_(
   // node.dir_), parent_( node.parent_ ) {}
   // Node(Node&&) = default;
@@ -61,11 +61,11 @@ size_t Answer1(const Node *node) {
 }
 NodePtr CreateDir(Node *parent) {
   return std::unique_ptr<Node>(new Node(
-      day07::NodeType::DIR, static_cast<size_t>(0), new FileSystem(), parent));
+      day07::NodeType::DIR, static_cast<size_t>(0), DirPtr(), parent));
 }
 NodePtr CreateFile(Node *parent, size_t size) {
   return std::unique_ptr<Node>(
-      new Node(day07::NodeType::FILE, size, nullptr, parent));
+      new Node(day07::NodeType::FILE, size, DirPtr(), parent));
 }
 
 constexpr auto total_space = 70000000;
@@ -111,8 +111,8 @@ TEST(AoC22, Day07) {
         cur_dir = cur_dir->parent_;
       } else {
         auto new_dir = day07::CreateDir(cur_dir);
-        auto new_dir_ptr = new_dir.release();
-        cur_dir->dir_->emplace_back(new_dir_ptr);
+        auto new_dir_ptr = new_dir.get();
+        cur_dir->dir_->emplace_back(std::move(new_dir));
         // change cur dir
         cur_dir = new_dir_ptr;
       }
@@ -122,14 +122,14 @@ TEST(AoC22, Day07) {
       // dir bhmndjpq
       const auto sub_dir = line.substr(dir_.length());
       auto new_dir = day07::CreateDir(cur_dir);
-      cur_dir->dir_->emplace_back(new_dir.release());
+      cur_dir->dir_->emplace_back(std::move(new_dir));
     } else if (!line.empty()) {
       // 97867 mqbz.fcp
       const std::vector<std::string_view> p = absl::StrSplit(line, " ");
       const auto &file_name = p[1];
       if (size_t size{0}; absl::SimpleAtoi(p[0], &size)) {
         auto new_file = day07::CreateFile(cur_dir, size);
-        cur_dir->dir_->emplace_back(new_file.release());
+        cur_dir->dir_->emplace_back(std::move(new_file));
       } else {
         EXPECT_EQ(absl::StrCat(line, " ", p[0]), "");
       }
