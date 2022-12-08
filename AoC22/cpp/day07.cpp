@@ -1,12 +1,9 @@
-// #include "absl/container/flat_hash_map.h"
-#include "absl/strings/numbers.h"
 #include "common.h"
 
 namespace day07 {
 enum class NodeType { FILE, DIR };
 struct Node;
 using NodePtr = std::unique_ptr<Node>;
-// using FileSystem = absl::flat_hash_map<std::string, NodePtr>;
 using FileSystem = std::vector<NodePtr>;
 using DirPtr = std::unique_ptr<FileSystem>;
 struct Node {
@@ -16,9 +13,6 @@ struct Node {
   Node *parent_; // we need it for cd .. // nullptr for root
   Node(NodeType type, size_t size, DirPtr dir, Node *parent)
       : type_(type), size_(size), dir_(std::move(dir)), parent_(parent) {}
-  // Node( const Node & node ) : type_( node.type_ ), size_( node.size_ ), dir_(
-  // node.dir_), parent_( node.parent_ ) {}
-  // Node(Node&&) = default;
   bool IsFile() const { return type_ == NodeType::FILE; }
   bool IsDir() const { return type_ == NodeType::DIR; }
 };
@@ -34,9 +28,7 @@ size_t Size(const Node *node) {
   if (node->IsFile())
     return node->size_;
   size_t sum{0};
-  for (const auto &i : *node->dir_) {
-    // const auto &sub_node = i.second;
-    const auto &sub_node = i;
+  for (const auto &sub_node : *node->dir_) {
     sum += Size(sub_node.get());
   }
   return sum;
@@ -49,9 +41,7 @@ size_t Answer1(const Node *node) {
     if (dir_size <= max_dir_size) {
       answer += dir_size;
     }
-    for (const auto &i : *node->dir_) {
-      // const auto &sub_node = i.second;
-      const auto &sub_node = i;
+    for (const auto &sub_node : *node->dir_) {
       if (sub_node->IsDir()) {
         answer += Answer1(sub_node.get());
       }
@@ -60,8 +50,9 @@ size_t Answer1(const Node *node) {
   return answer;
 }
 NodePtr CreateDir(Node *parent) {
-  return std::unique_ptr<Node>(new Node(
-      day07::NodeType::DIR, static_cast<size_t>(0), DirPtr( new FileSystem() ), parent));
+  return std::unique_ptr<Node>(new Node(day07::NodeType::DIR,
+                                        static_cast<size_t>(0),
+                                        DirPtr(new FileSystem()), parent));
 }
 NodePtr CreateFile(Node *parent, size_t size) {
   return std::unique_ptr<Node>(
@@ -77,9 +68,7 @@ size_t Answer2(const Node *node, size_t need_to_free) {
     if (dir_size >= need_to_free) {
       answer = std::min(answer, dir_size);
     }
-    for (const auto &i : *node->dir_) {
-      // const auto &sub_node = i.second;
-      const auto &sub_node = i;
+    for (const auto &sub_node : *node->dir_) {
       if (sub_node->IsDir()) {
         const auto alternative = Answer2(sub_node.get(), need_to_free);
         if (alternative >= need_to_free) {
@@ -117,7 +106,7 @@ TEST(AoC22, Day07) {
         cur_dir = new_dir_ptr;
       }
     } else if (line == ls) {
-      // ?
+      // nothing to do
     } else if (line.starts_with(dir_)) {
       // dir bhmndjpq
       const auto sub_dir = line.substr(dir_.length());
