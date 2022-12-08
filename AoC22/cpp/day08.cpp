@@ -9,7 +9,7 @@ bool is_border(int x, int y, int max_x, int max_y) {
 } // namespace day08
 
 TEST(AoC22, Day08) {
-  const auto data = ReadData("08");
+  const auto data = ReadData("08-sample");
   using Point = std::pair<int, int>;
   absl::flat_hash_map<Point, int> map;
   int y = 0;
@@ -96,6 +96,6 @@ TEST(AoC22, Day08) {
     answer1 += is_visible_outside(p) ? 1 : 0;
     answer2 = std::max(answer2, get_scenic_score(p)); // 126 - too low, 361920 -- too low
   }
-  EXPECT_EQ(answer1, 1647);
+  // EXPECT_EQ(answer1, 1647);
   EXPECT_EQ(answer2, 0);
 }
