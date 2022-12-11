@@ -33,14 +33,18 @@ FetchContent_Declare(benchmark
     GIT_TAG main ) # benchmark-src/test/options_test.cc:70:10: error: variable 'actual_iterations' set but not used [-Werror,-Wunused-but-set-variable]
                      # size_t actual_iterations = 0;
 
+FetchContent_Declare(re2
+    GIT_REPOSITORY "https://github.com/google/re2"
+    GIT_TAG main ) 
+
 FetchContent_MakeAvailable(absl)
 FetchContent_MakeAvailable(gtest)
 FetchContent_MakeAvailable(benchmark)
+FetchContent_MakeAvailable(re2)
 
 file( GLOB SOURCES day*.cpp )
 # set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc22 test.cpp ${SOURCES}  )
 
-# absl::status 
-target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest benchmark)
+target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest re2 absl::statusor benchmark)
