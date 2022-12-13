@@ -6,40 +6,38 @@
 namespace day11 {
 using Longest = __int128;
 using Long = long long;
-using BigInt = std::pair<Longest,Long>; // x, y in formula modulo * x + y
+using BigInt = std::pair<Longest, Long>; // x, y in formula modulo * x + y
 using Operation = std::function<BigInt(BigInt)>;
 
 constexpr bool IS_TEST = false;
 constexpr Long MODULO = IS_TEST ? 96577 : 9699690; // TODO proper modulo
 
-BigInt Compress( BigInt a, Long modulo ) {
-  const auto p = std::div( a.second, modulo );
-  return { a.first + p.quot, p.rem };
+BigInt Compress(BigInt a, Long modulo) {
+  const auto p = std::div(a.second, modulo);
+  return {a.first + p.quot, p.rem};
 }
 
-BigInt Add( BigInt a, BigInt b ) {
-  return { a.first + b.first, a.second + b.second }; // not compressed
+BigInt Add(BigInt a, BigInt b) {
+  return {a.first + b.first, a.second + b.second}; // not compressed
 }
 
-BigInt Mul( BigInt a, BigInt b, Long modulo ) {
-  const auto [an,a_] = a;
-  const auto [bn,b_] = b;
-  const BigInt ab = { ( an * bn * modulo ) + ( an * b_ ) + ( bn * a_ ), a_ * b_ };
-  return Compress( ab, modulo );
+BigInt Mul(BigInt a, BigInt b, Long modulo) {
+  const auto [an, a_] = a;
+  const auto [bn, b_] = b;
+  const BigInt ab = {(an * bn * modulo) + (an * b_) + (bn * a_), a_ * b_};
+  return Compress(ab, modulo);
 }
 
 // very basic just for part 1
-BigInt Div( BigInt a, int base ) {
-  return { a.first, a.second / base };
-}
+BigInt Div(BigInt a, int base) { return {a.first, a.second / base}; }
 
-bool IsDiv( BigInt a, int dividedBy ) {
+bool IsDiv(BigInt a, int dividedBy) {
   // modulo must be dividable
   return a.second % dividedBy == 0;
 }
 
-BigInt ToInt( int value ) { return { 0, value }; }
-Longest FromInt( BigInt i, Long modulo ) { return modulo * i.first + i.second; }
+BigInt ToInt(int value) { return {0, value}; }
+Longest FromInt(BigInt i, Long modulo) { return modulo * i.first + i.second; }
 
 struct Monkey {
   std::vector<BigInt> items;
@@ -55,10 +53,10 @@ struct Monkey {
 };
 // constexpr
 Operation OpAdd(int arg) {
-  return [arg](BigInt old) -> BigInt { return Add( old, ToInt( arg) ); };
+  return [arg](BigInt old) -> BigInt { return Add(old, ToInt(arg)); };
 };
 Operation OpMul(int arg) {
-  return [arg](BigInt old) -> BigInt { return Mul( old, ToInt( arg ), MODULO ); };
+  return [arg](BigInt old) -> BigInt { return Mul(old, ToInt(arg), MODULO); };
 };
 
 absl::StatusOr<Operation> OpCreate(std::string_view operation) {
@@ -80,7 +78,7 @@ absl::StatusOr<Operation> OpCreate(std::string_view operation) {
     }
     if (operation != "new = old * old")
       return absl::InvalidArgumentError("unknown case of not digital argument");
-    return [](BigInt old) -> BigInt { return Mul( old, old, MODULO); };
+    return [](BigInt old) -> BigInt { return Mul(old, old, MODULO); };
   }
   return absl::InvalidArgumentError(
       absl::StrCat("Unexpected pattern: ", operation));
@@ -91,7 +89,7 @@ std::vector<BigInt> ToInt(const std::vector<std::string> &v) {
   std::vector<BigInt> result;
   for (const auto &l : v) {
     if (int value{0}; absl::SimpleAtoi(l, &value)) {
-      result.push_back( ToInt( value ) );
+      result.push_back(ToInt(value));
     }
   }
   return result;
@@ -110,13 +108,16 @@ absl::StatusOr<int> ReadTailNumber(std::string_view line) {
 
 TEST(AoC22, Day11) {
 
-  EXPECT_EQ( day11::FromInt( day11::OpCreate("new = old * 17").value()(day11::ToInt(1)), day11::MODULO ), 17);
+  EXPECT_EQ(
+      day11::FromInt(day11::OpCreate("new = old * 17").value()(day11::ToInt(1)),
+                     day11::MODULO),
+      17);
   // EXPECT_EQ(day11::OpCreate("new = old + 17").value()(1), 18);
   // EXPECT_EQ(day11::OpCreate("new = old * old").value()(2), 4);
   const bool is_part_1 = false;
   const auto n = is_part_1 ? 20 : 10000;
 
-  const auto data = ReadData( day11::IS_TEST ? "11-sample" : "11");
+  const auto data = ReadData(day11::IS_TEST ? "11-sample" : "11");
   std::vector<day11::Monkey> monkeys;
 
   for (int i = 0; i < data.size(); i++) {
@@ -146,7 +147,7 @@ TEST(AoC22, Day11) {
   std::vector<day11::Long> counts(monkeys.size(), 0); // all values set to 0
 
   day11::Long modulo = {1};
-  for ( auto &m : monkeys ) {
+  for (auto &m : monkeys) {
     modulo *= m.divisibleBy;
   }
   EXPECT_EQ(day11::MODULO, modulo); // precalculated
@@ -159,8 +160,11 @@ TEST(AoC22, Day11) {
         auto worry_level = m.items.front();
         m.items.erase(m.items.begin()); // removes the first element
         worry_level = m.operation(worry_level);
-        if (is_part_1 ) worry_level = day11::Div( worry_level, 3);
-        const int new_monkey = day11::IsDiv( worry_level, m.divisibleBy ) ? m.monkeyTrue : m.monkeyFalse;
+        if (is_part_1)
+          worry_level = day11::Div(worry_level, 3);
+        const int new_monkey = day11::IsDiv(worry_level, m.divisibleBy)
+                                   ? m.monkeyTrue
+                                   : m.monkeyFalse;
         monkeys[new_monkey].items.push_back(worry_level);
       }
       monkey_id++;
@@ -172,7 +176,7 @@ TEST(AoC22, Day11) {
                     std::ranges::greater()); // first element will be greatest
 
   constexpr auto ANSWER1 = day11::IS_TEST ? 10605 : 118674;
-  constexpr auto ANSWER2 = day11::IS_TEST ? 2713310158 : 32333418600;   
+  constexpr auto ANSWER2 = day11::IS_TEST ? 2713310158 : 32333418600;
 
-  EXPECT_EQ(counts[0] * counts[1], is_part_1 ? ANSWER1 : ANSWER2 );
+  EXPECT_EQ(counts[0] * counts[1], is_part_1 ? ANSWER1 : ANSWER2);
 }
