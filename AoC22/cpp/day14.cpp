@@ -61,6 +61,38 @@ Map LoadMap(std::string_view file) {
   return map;
 }
 
+Material At(const Map& map, const Point p) noexcept {
+  const auto i = map.find(p);
+  return i == map.end() ? Material::Air : i->second;
+}
+
+std::optional<Point> TraceGrainSand(const Map& map) noexcept {
+  const auto [p0, p1] = MinMax(map);
+  const auto [_, y_max] = p1;
+  int x = 500;
+  for (int y = 0; y <= y_max; y++) {
+    const int y1 = y + 1;
+    const std::array xii = {x, x - 1, x + 1};
+    bool is_falling = false;
+    for (int xi : xii) {
+      const auto m_down = At(map, {xi, y1});
+      if (m_down == Material::Air) {
+        // we just fall down as we are yet in the air
+        x = xi;
+        is_falling = true;
+        break;
+      }
+    }
+
+    if (is_falling) continue;  // we continue to fall
+
+    // if we are here it means we have found the bottom line for the grain of
+    // sand
+    return Point{x, y};
+  }
+  return std::optional<Point>();  // the grain flow into the abyss
+}
+
 size_t CountRestSand(const Map& map) noexcept {
   size_t count = {0};
   // TODO count_if ?
@@ -72,6 +104,11 @@ size_t CountRestSand(const Map& map) noexcept {
 }  // namespace day14
 
 TEST(AoC22, Day14) {
-  const auto map = day14::LoadMap("14-sample");  // 96,30 -> 496,24 -> 496,30
+  auto map = day14::LoadMap("14-sample");  // 96,30 -> 496,24 -> 496,30
+  while (true) {
+    const auto p = TraceGrainSand(map);
+    if (!p.has_value()) break;
+    map.insert({p.value(), day14::Material::Sand});
+  }
   EXPECT_EQ(day14::CountRestSand(map), 24);
 }
