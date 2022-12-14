@@ -7,6 +7,13 @@ std::vector<std::string_view> SplitList(std::string_view list) noexcept {
   std::vector<std::string_view> result;
   if (list[0] == '[') {
     // TODO implement
+    auto i = list.cbegin() + 1;  // skip [
+    auto b = i;
+    bool is_simple = true;
+    while (i != list.cend()) {
+      const char c = *i;
+      i++;
+    }
   } else {
     result.push_back(list);  // we consider it is a pure value
   }
