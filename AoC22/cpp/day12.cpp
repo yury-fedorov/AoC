@@ -61,10 +61,12 @@ std::tuple<Map, Point, Point> Load(std::string_view file) {
   for (const std::string &line : data) {
     int x = 0;
     for (const char ch : line) {
-      const Point start = {x, y};
+      const Point p = {x, y};
       map[p] = ch;
       if (ch == START)
-        p0 = p;
+        start = p;
+      else if (ch == END )
+        end = p;
       x++;
     }
     y++;
@@ -76,8 +78,10 @@ std::tuple<Map, Point, Point> Load(std::string_view file) {
 TEST(AoC22, Day12) {
   const auto [map, start, end] = day12::Load("12");
   // starting poin
-  std::vector<Point> queue = {start};
+  std::vector<day12::Point> queue = {start};
   while (!queue.empty()) {
+  	const auto p = queue.back();
+  	queue.pop_back();
   }
   /*
   const auto sum_highest_n = [&sums](size_t n) {
