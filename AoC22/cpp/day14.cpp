@@ -118,7 +118,7 @@ size_t CountRestSand(const Map& map) noexcept {
 }  // namespace day14
 
 TEST(AoC22, Day14) {
-  constexpr bool is_part_1 = false;
+  constexpr bool is_part_1 = true; // TODO - part 2 is slow - takes 22-24 seconds
   auto map = day14::LoadMap("14");  // 96,30 -> 496,24 -> 496,30
   if (!is_part_1) {
     const auto [p0, p1] = day14::MinMax(map);
