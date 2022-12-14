@@ -1,6 +1,77 @@
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/numbers.h"
 #include "common.h"
 
+namespace day14 {
+using Point = std::pair<int, int>;
+enum class Material { Air, Rock, Sand };
+using Map = absl::flat_hash_map<Point, Material>;
+
+// TODO do we need it?
+std::pair<Point, Point> MinMax(const Map& map) {
+  const Point& p = map.cbegin()->first;
+  auto [x0, y0] = p;
+  auto [x1, y1] = p;
+  for (const auto& [pi, _] : map) {
+    const auto [xi, yi] = pi;
+    x0 = std::min(x0, xi);
+    x1 = std::max(x1, xi);
+    y0 = std::min(y0, yi);
+    y1 = std::max(y1, yi);
+  }
+  return {{x0, y0}, {x1, y1}};
+}
+
+int Sign(auto x) {
+  return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
+}  // TODO - move to common.h
+
+Map LoadMap(std::string_view file) {
+  const auto data = ReadData(file);
+  Map map;
+  for (const auto& line : data) {
+    const std::vector<std::string_view> points_as_string =
+        absl::StrSplit(line, " -> ");
+    std::vector<Point> points;
+    for (const auto& point_as_string : points_as_string) {
+      const std::vector<std::string_view> xy =
+          absl::StrSplit(point_as_string, ",");
+      int x, y;
+      if (absl::SimpleAtoi(xy[0], &x) && absl::SimpleAtoi(xy[1], &y)) {
+        points.emplace_back(x, y);
+      }
+    }
+    std::optional<Point> prev;
+    for (const auto& p : points) {
+      if (prev.has_value()) {
+        const auto [x0, y0] = prev.value();
+        const auto [x1, y1] = p;
+        const auto [dx, dy] = Point{Sign(x1 - x0), Sign(y1 - y0)};
+        const bool is_xi = dx != 0;
+        const int a = is_xi ? x0 : y0;
+        const int b = is_xi ? x1 : y1;
+        for (int i = a; i <= b; i++) {
+          const auto p = is_xi ? Point{i, y0} : Point{x0, i};
+          map.insert({p, Material::Rock});
+        }
+      }
+      prev = p;
+    }
+  }
+  return map;
+}
+
+size_t CountRestSand(const Map& map) noexcept {
+  size_t count = {0};
+  // TODO count_if ?
+  for (const auto& [_, m] : map) {
+    count += m == Material::Sand ? 1 : 0;
+  }
+  return count;
+}
+}  // namespace day14
+
 TEST(AoC22, Day14) {
-  const auto data = ReadData("14");
-  // EXPECT_EQ(...., ....);
+  const auto map = day14::LoadMap("14-sample");  // 96,30 -> 496,24 -> 496,30
+  EXPECT_EQ(day14::CountRestSand(map), 24);
 }
