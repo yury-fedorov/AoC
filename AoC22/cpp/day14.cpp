@@ -30,6 +30,7 @@ Map LoadMap(std::string_view file) {
   const auto data = ReadData(file);
   Map map;
   for (const auto& line : data) {
+    if ( line.empty() ) continue;
     const std::vector<std::string_view> points_as_string =
         absl::StrSplit(line, " -> ");
     std::vector<Point> points;
@@ -39,7 +40,7 @@ Map LoadMap(std::string_view file) {
       int x, y;
       if (absl::SimpleAtoi(xy[0], &x) && absl::SimpleAtoi(xy[1], &y)) {
         points.emplace_back(x, y);
-      }
+      } else EXPECT_TRUE(false) << "Failed to parse: " << point_as_string;
     }
     std::optional<Point> prev;
     for (const auto& p : points) {
@@ -48,16 +49,20 @@ Map LoadMap(std::string_view file) {
         const auto [x1, y1] = p;
         const auto [dx, dy] = Point{Sign(x1 - x0), Sign(y1 - y0)};
         const bool is_xi = dx != 0;
+        EXPECT_TRUE( is_xi ? dy == 0 : dy != 0 ) << "We move only on one direction at a time " << x0 << "," << y0 << " - " << x1 << "," << y1;
         const int a = is_xi ? x0 : y0;
         const int b = is_xi ? x1 : y1;
-        for (int i = a; i <= b; i++) {
-          const auto p = is_xi ? Point{i, y0} : Point{x0, i};
+        const int d = Sign( b - a );
+        for (int i = a; true; i += d ) {
+          const Point p = is_xi ? Point{i, y0} : Point{x0, i};
           map.insert({p, Material::Rock});
+          if ( i == b ) break;
         }
       }
       prev = p;
     }
   }
+  EXPECT_TRUE( map.size() > 10 ) << "Map contains not enough elements";
   return map;
 }
 
@@ -104,11 +109,11 @@ size_t CountRestSand(const Map& map) noexcept {
 }  // namespace day14
 
 TEST(AoC22, Day14) {
-  auto map = day14::LoadMap("14-sample");  // 96,30 -> 496,24 -> 496,30
+  auto map = day14::LoadMap("14");  // 96,30 -> 496,24 -> 496,30
   while (true) {
     const auto p = TraceGrainSand(map);
     if (!p.has_value()) break;
     map.insert({p.value(), day14::Material::Sand});
   }
-  EXPECT_EQ(day14::CountRestSand(map), 24);
+  EXPECT_EQ(day14::CountRestSand(map), 779);
 }
