@@ -6,12 +6,27 @@ namespace day13 {
 std::vector<std::string_view> SplitList(std::string_view list) noexcept {
   std::vector<std::string_view> result;
   if (list[0] == '[') {
-    // TODO implement
     auto i = list.cbegin() + 1;  // skip [
     auto b = i;
-    bool is_simple = true;
+    // this level is always simple
     while (i != list.cend()) {
       const char c = *i;
+      if (c == ',' || c == ']') {
+        const auto e = std::string_view(b, i);  // ? does include last ,
+        result.emplace_back(e);
+        if (c == ']') break;  // this is the end
+        b = i + 1;
+      } else if (c == '[') {
+        // from it starts a sublist, we need to find its end
+        int level = 1;
+        for (i++; level > 0; i++) {
+          if (*i == '[')
+            level++;
+          else if (*i == ']')
+            level--;
+        }
+        // we moved i ahead enough to trigger with next symbol ','
+      }
       i++;
     }
   } else {
