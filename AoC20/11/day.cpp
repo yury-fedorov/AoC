@@ -92,7 +92,7 @@ auto day11(const bool isFirstAnswer) {
     const int maxOccupied = isFirstAnswer ? 4 : 5;
     auto prevTotal = totalOccupied(field);
     const auto [xn, yn] = getSize(field);
-    for ( int i = 0; true; i++ ) {
+    while ( true ) {
         Field newField (field) ;
         for ( int x = 0; x < xn; x++ ) {
             for ( int y = 0; y < yn; y++ ) {

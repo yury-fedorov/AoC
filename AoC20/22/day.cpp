@@ -32,7 +32,7 @@ Player recursiveCombat( Decks & decks ) {
     Deck & d1 = decks[FIRST];
     Deck & d2 = decks[SECOND];
 
-    for ( int game = 0; !d1.empty() && !d2.empty(); game++ ) {
+    while ( !d1.empty() && !d2.empty() ) {
         const auto [pos, isNew] = history.insert( decks );
         if ( !isNew ) return FIRST; 
         
