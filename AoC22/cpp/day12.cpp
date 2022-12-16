@@ -65,7 +65,7 @@ std::tuple<Map, Point, Point> Load(std::string_view file) {
       map[p] = ch;
       if (ch == START)
         start = p;
-      else if (ch == END )
+      else if (ch == END)
         end = p;
       x++;
     }
@@ -80,8 +80,8 @@ TEST(AoC22, Day12) {
   // starting poin
   std::vector<day12::Point> queue = {start};
   while (!queue.empty()) {
-  	const auto p = queue.back();
-  	queue.pop_back();
+    const auto p = queue.back();
+    queue.pop_back();
   }
   /*
   const auto sum_highest_n = [&sums](size_t n) {
