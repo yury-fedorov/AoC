@@ -6,16 +6,17 @@ namespace day13 {
 std::vector<std::string_view> SplitList(std::string_view list) noexcept {
   std::vector<std::string_view> result;
   if (list[0] == '[') {
-    auto i = list.cbegin() + 1;  // skip [
+    auto i = list.cbegin() + 1; // skip [
     auto b = i;
     // this level is always simple
     while (i != list.cend()) {
       const char c = *i;
       if (c == ',' || c == ']') {
-        const auto e = std::string_view(b, i);  // ? does include last ,
-        if ( !e.empty() ) // when a list completely empty [] - no elements!
+        const auto e = std::string_view(b, i); // ? does include last ,
+        if (!e.empty()) // when a list completely empty [] - no elements!
           result.emplace_back(e);
-        if (c == ']') break;  // this is the end
+        if (c == ']')
+          break; // this is the end
         b = i + 1;
       } else if (c == '[') {
         // from it starts a sublist, we need to find its end
@@ -33,9 +34,9 @@ std::vector<std::string_view> SplitList(std::string_view list) noexcept {
     }
   } else {
     const auto e = list.find_first_of(",[]");
-    if ( e >= 0 ) 
+    if (e >= 0)
       list = list.substr(0, e);
-    result.push_back(list);  // we consider it is a pure value
+    result.push_back(list); // we consider it is a pure value
   }
   return result;
 }
@@ -67,13 +68,15 @@ Order GetOrder(std::string_view l, std::string_view r) noexcept {
   const auto rs = rl.size();
   // If the right list runs out of items first, the inputs are not in the right
   // order.
-  const auto i_max = std::min(ls,rs);
+  const auto i_max = std::min(ls, rs);
   for (int i = 0; i < i_max; i++) {
     const auto oi = GetOrder(ll[i], rl[i]);
-    if (oi == Order::Continue) continue;
+    if (oi == Order::Continue)
+      continue;
     return oi;
   }
-  if (rs < ls) return Order::Wrong;  // right list is shorter
+  if (rs < ls)
+    return Order::Wrong; // right list is shorter
 
   // If the left list runs out of items first, the inputs are in the right
   // order.
@@ -85,8 +88,8 @@ int Answer1(std::string_view file) noexcept {
   int answer1 = 0;
   int index = 0;
   for (int i = 0; i < data.size() - 1; i++) {
-    const auto& a = data[i];
-    const auto& b = data[i + 1];
+    const auto &a = data[i];
+    const auto &b = data[i + 1];
     if (!a.empty() && !b.empty()) {
       index++;
       answer1 += GetOrder(a, b) == Order::Right ? index : 0;
@@ -95,7 +98,31 @@ int Answer1(std::string_view file) noexcept {
   return answer1;
 }
 
-}  // namespace day13
+int Answer2(std::string_view file) noexcept {
+  auto data = ReadData(file);
+  const std::string divider1 = "[[2]]";
+  const std::string divider2 = "[[6]]";
+  data.push_back(divider1);
+  data.push_back(divider2);
+
+  for (int i = 0; i < data.size(); i++) {
+    const auto &a = data[i];
+    if (a.empty()) {
+      data.erase(data.begin() + i);
+    }
+  }
+
+  std::sort(data.begin(), data.end(), [](const auto &a, const auto &b) -> bool {
+    return GetOrder(a, b) == Order::Right;
+  });
+
+  const auto a = std::find(data.begin(), data.end(), divider1);
+  const auto b = std::find(data.begin(), data.end(), divider2);
+
+  return (a - data.begin() + 1) * (b - data.begin() + 1);
+}
+
+} // namespace day13
 
 TEST(AoC22, Day13) {
   // basic tests
@@ -107,7 +134,9 @@ TEST(AoC22, Day13) {
   EXPECT_EQ(day13::SplitList("[[1],4]").size(), 2);
   EXPECT_EQ(day13::GetOrder("[[1],[2,3,4]]", "[[1],4]"), day13::Order::Right);
   EXPECT_EQ(day13::Answer1("13-sample"), 13);
+  EXPECT_EQ(day13::Answer2("13-sample"), 140);
 
   const auto answer1 = day13::Answer1("13");
   EXPECT_EQ(answer1, 5588);
+  EXPECT_EQ(day13::Answer2("13"), 23958);
 }
