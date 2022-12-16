@@ -6,15 +6,35 @@ namespace day13 {
 std::vector<std::string_view> SplitList(std::string_view list) noexcept {
   std::vector<std::string_view> result;
   if (list[0] == '[') {
-    // TODO implement
     auto i = list.cbegin() + 1;  // skip [
     auto b = i;
-    bool is_simple = true;
+    // this level is always simple
     while (i != list.cend()) {
       const char c = *i;
+      if (c == ',' || c == ']') {
+        const auto e = std::string_view(b, i);  // ? does include last ,
+        if ( !e.empty() ) // when a list completely empty [] - no elements!
+          result.emplace_back(e);
+        if (c == ']') break;  // this is the end
+        b = i + 1;
+      } else if (c == '[') {
+        // from it starts a sublist, we need to find its end
+        int level = 1;
+        for (i++; level > 0; i++) {
+          if (*i == '[')
+            level++;
+          else if (*i == ']')
+            level--;
+        }
+        i--;
+        // we moved i ahead enough to trigger with next symbol ','
+      }
       i++;
     }
   } else {
+    const auto e = list.find_first_of(",[]");
+    if ( e >= 0 ) 
+      list = list.substr(0, e);
     result.push_back(list);  // we consider it is a pure value
   }
   return result;
@@ -47,12 +67,14 @@ Order GetOrder(std::string_view l, std::string_view r) noexcept {
   const auto rs = rl.size();
   // If the right list runs out of items first, the inputs are not in the right
   // order.
-  if (rs < ls) return Order::Wrong;  // right list is shorter
-  for (int i = 0; i < ls; i++) {
+  const auto i_max = std::min(ls,rs);
+  for (int i = 0; i < i_max; i++) {
     const auto oi = GetOrder(ll[i], rl[i]);
     if (oi == Order::Continue) continue;
     return oi;
   }
+  if (rs < ls) return Order::Wrong;  // right list is shorter
+
   // If the left list runs out of items first, the inputs are in the right
   // order.
   return ls == rs ? Order::Continue : Order::Right;
@@ -82,7 +104,10 @@ TEST(AoC22, Day13) {
   EXPECT_EQ(day13::GetOrder("13", "15"), day13::Order::Right);
   EXPECT_EQ(day13::GetOrder("20", "15"), day13::Order::Wrong);
   EXPECT_EQ(day13::GetOrder("1", "1"), day13::Order::Continue);
+  EXPECT_EQ(day13::SplitList("[[1],4]").size(), 2);
+  EXPECT_EQ(day13::GetOrder("[[1],[2,3,4]]", "[[1],4]"), day13::Order::Right);
+  EXPECT_EQ(day13::Answer1("13-sample"), 13);
 
-  const auto answer1 = day13::Answer1("13-sample");
-  // we know that it is a WIP yet - EXPECT_EQ(answer1, 13);
+  const auto answer1 = day13::Answer1("13");
+  EXPECT_EQ(answer1, 5588);
 }
