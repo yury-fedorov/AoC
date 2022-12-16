@@ -8,11 +8,11 @@ enum class Material { Air, Rock, Sand };
 using Map = absl::flat_hash_map<Point, Material>;
 
 // TODO do we need it?
-std::pair<Point, Point> MinMax(const Map& map) {
-  const Point& p = map.cbegin()->first;
+std::pair<Point, Point> MinMax(const Map &map) {
+  const Point &p = map.cbegin()->first;
   auto [x0, y0] = p;
   auto [x1, y1] = p;
-  for (const auto& [pi, _] : map) {
+  for (const auto &[pi, _] : map) {
     const auto [xi, yi] = pi;
     x0 = std::min(x0, xi);
     x1 = std::max(x1, xi);
@@ -24,17 +24,18 @@ std::pair<Point, Point> MinMax(const Map& map) {
 
 int Sign(auto x) {
   return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
-}  // TODO - move to common.h
+} // TODO - move to common.h
 
 Map LoadMap(std::string_view file) {
   const auto data = ReadData(file);
   Map map;
-  for (const auto& line : data) {
-    if (line.empty()) continue;
+  for (const auto &line : data) {
+    if (line.empty())
+      continue;
     const std::vector<std::string_view> points_as_string =
         absl::StrSplit(line, " -> ");
     std::vector<Point> points;
-    for (const auto& point_as_string : points_as_string) {
+    for (const auto &point_as_string : points_as_string) {
       const std::vector<std::string_view> xy =
           absl::StrSplit(point_as_string, ",");
       int x, y;
@@ -44,7 +45,7 @@ Map LoadMap(std::string_view file) {
         EXPECT_TRUE(false) << "Failed to parse: " << point_as_string;
     }
     std::optional<Point> prev;
-    for (const auto& p : points) {
+    for (const auto &p : points) {
       if (prev.has_value()) {
         const auto [x0, y0] = prev.value();
         const auto [x1, y1] = p;
@@ -59,7 +60,8 @@ Map LoadMap(std::string_view file) {
         for (int i = a; true; i += d) {
           const Point p = is_xi ? Point{i, y0} : Point{x0, i};
           map.insert({p, Material::Rock});
-          if (i == b) break;
+          if (i == b)
+            break;
         }
       }
       prev = p;
@@ -69,12 +71,12 @@ Map LoadMap(std::string_view file) {
   return map;
 }
 
-Material At(const Map& map, const Point p) noexcept {
+Material At(const Map &map, const Point p) noexcept {
   const auto i = map.find(p);
   return i == map.end() ? Material::Air : i->second;
 }
 
-std::optional<Point> TraceGrainSand(const Map& map) noexcept {
+std::optional<Point> TraceGrainSand(const Map &map) noexcept {
   const auto [p0, p1] = MinMax(map);
   const auto [_, y_max] = p1;
   const Point source{500, 0};
@@ -93,7 +95,8 @@ std::optional<Point> TraceGrainSand(const Map& map) noexcept {
       }
     }
 
-    if (is_falling) continue;  // we continue to fall
+    if (is_falling)
+      continue; // we continue to fall
 
     // if we are here it means we have found the bottom line for the grain of
     // sand
@@ -104,22 +107,23 @@ std::optional<Point> TraceGrainSand(const Map& map) noexcept {
     }
     return p;
   }
-  return std::optional<Point>();  // the grain flow into the abyss
+  return std::optional<Point>(); // the grain flow into the abyss
 }
 
-size_t CountRestSand(const Map& map) noexcept {
+size_t CountRestSand(const Map &map) noexcept {
   size_t count = {0};
   // TODO count_if ?
-  for (const auto& [_, m] : map) {
+  for (const auto &[_, m] : map) {
     count += m == Material::Sand ? 1 : 0;
   }
   return count;
 }
-}  // namespace day14
+} // namespace day14
 
 TEST(AoC22, Day14) {
-  constexpr bool is_part_1 = true; // TODO - part 2 is slow - takes 22-24 seconds
-  auto map = day14::LoadMap("14");  // 96,30 -> 496,24 -> 496,30
+  constexpr bool is_part_1 =
+      true; // TODO - part 2 is slow - takes 22-24 seconds
+  auto map = day14::LoadMap("14"); // 96,30 -> 496,24 -> 496,30
   if (!is_part_1) {
     const auto [p0, p1] = day14::MinMax(map);
     const int y_floor = p1.second + 2;
@@ -130,7 +134,8 @@ TEST(AoC22, Day14) {
   }
   while (true) {
     const auto p = TraceGrainSand(map);
-    if (!p.has_value()) break;
+    if (!p.has_value())
+      break;
     map.insert({p.value(), day14::Material::Sand});
   }
   EXPECT_EQ(day14::CountRestSand(map), is_part_1 ? 779 : 27426);
