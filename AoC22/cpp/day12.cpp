@@ -62,7 +62,7 @@ std::tuple<Map, Point, Point> Load(std::string_view file) {
     int x = 0;
     for (const char ch : line) {
       const Point p = {x, y};
-      map[p] = ch;
+      map[p] = PureHeight(ch);
       if (ch == START)
         start = p;
       else if (ch == END)
@@ -73,21 +73,49 @@ std::tuple<Map, Point, Point> Load(std::string_view file) {
   }
   return {map, start, end};
 }
+
+int Distance(const Point &a, const Point &b) noexcept {
+  const auto [x0, y0] = a;
+  const auto [x1, y1] = b;
+  return std::abs(x0 - x1) + std::abs(y0 - y1);
+}
+
 } // namespace day12
 
 TEST(AoC22, Day12) {
   const auto [map, start, end] = day12::Load("12");
-  // starting poin
+  const day12::Point END = end;
+  const auto order = [END](const day12::Point &a,
+                           const day12::Point &b) -> bool {
+    return day12::Distance(a, END) < day12::Distance(b, END);
+  };
+
+  // starting point
+  day12::MapPath map_path = {{start, 0}};
   std::vector<day12::Point> queue = {start};
   while (!queue.empty()) {
     const auto p = queue.back();
     queue.pop_back();
+    const int path_length = map_path.at(p);
+    const auto n = day12::NextMove(p, map);
+    const auto path_1 = path_length + 1;
+    for (const auto &nj : n) {
+      auto path_j = path_1;
+      const auto j = map_path.find(nj);
+      if (j != map_path.end()) {
+        // we already have arrived to this point
+        path_j = std::min(path_j, j->second);
+      }
+      map_path[nj] = path_j;
+      if (path_1 == path_j) {
+        // this is the shortest path till the cell, we need to go further
+        queue.emplace_back(nj);
+      }
+    }
+    std::sort(queue.begin(), queue.end(), order);
+    auto it = std::unique(queue.begin(), queue.end());
+    queue.resize(std::distance(queue.begin(), it));
   }
-  /*
-  const auto sum_highest_n = [&sums](size_t n) {
-    return std::accumulate(sums.rbegin(), sums.rbegin() + n, 0);
-  };
-  EXPECT_EQ(sum_highest_n(1), 70698);
-  // EXPECT_EQ(sum_highest_n(3), 206643);
-  */
+
+  EXPECT_EQ(map_path.at(end), 0);
 }
