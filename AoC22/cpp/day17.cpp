@@ -15,9 +15,6 @@ struct JetPattern {
   }
 };
 
-// TODO: do we need it or it could be data driven?
-enum class RockType { H_LINE, PLUS, L_SHAPE, V_LINE, SQUARE };
-
 const std::vector k_h_line = {Point{0, 0}, Point{1, 0}, Point{2, 0},
                                  Point{3, 0}};
 const std::vector k_plus = {Point{1, 0}, Point{0, 1}, Point{1, 1},
