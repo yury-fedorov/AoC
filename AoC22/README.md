@@ -3,3 +3,5 @@ C++ 20
 - Google Test
 - Abseil
 - clang-format
+- re2
+- benchmark
