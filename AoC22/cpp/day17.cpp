@@ -2,7 +2,7 @@
 #include "common.h"
 namespace day17 {
   using Long = long long;
-  using Point = std::pair<int,Long>;
+  using Point = std::pair<int,int>;
   using Chamber = std::vector<std::string>;
   constexpr int k_chamber_width = 7;
 
@@ -15,6 +15,13 @@ namespace day17 {
       return next;
     }
   };
+
+  // TODO: do we need it or it could be data driven?
+  enum class RockType { H_LINE, PLUS, L_SHAPE, V_LINE, SQUARE };
+  
+  constexpr std::array k_h_line = { Point{ 0, 0 }, Point{1,0}, Point{2,0}, Point{3,0} };
+  // TODO other 4 rocks
+  constexpr std::array k_rocks = { k_h_line }; // TODO rocks here
 
   void FallOnePiece( Chamber & chamber, JetPattern & jet ) noexcept {
   }
