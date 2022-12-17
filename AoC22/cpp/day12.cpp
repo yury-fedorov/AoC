@@ -2,6 +2,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/numbers.h"
 #include "common.h"
+#include <queue>
 
 namespace day12 {
 using Point = std::pair<int, int>;
@@ -9,8 +10,7 @@ using Points = std::vector<Point>;
 using Height = char;
 using Map = absl::flat_hash_map<Point, Height>;
 using MapPath = absl::flat_hash_map<Point, int>; // steps to arrive
-using NextQueue =
-    absl::flat_hash_set<Point>; // queue of points to process - TODO
+using PointSet = absl::flat_hash_set<Point>;     // queue of points to process
 
 constexpr std::array<Point, 4> shifts = {Point{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 std::optional<Height> GetHeight(const Map &map, Point p) noexcept {
@@ -44,8 +44,6 @@ Points NextMove(Point current, const Map &map) {
     if (!height.has_value())
       continue;
     const auto h1 = height.value();
-    if (h1 == START)
-      continue; // do not return
     if (static_cast<int>(h1 - h0) > 1)
       continue; // too much go up hill
     result.emplace_back(next);
@@ -74,48 +72,45 @@ std::tuple<Map, Point, Point> Load(std::string_view file) {
   return {map, start, end};
 }
 
-int Distance(const Point &a, const Point &b) noexcept {
-  const auto [x0, y0] = a;
-  const auto [x1, y1] = b;
-  return std::abs(x0 - x1) + std::abs(y0 - y1);
+std::optional<int> Shortest(const Map &map, const Point start,
+                            const Point end) {
+  // starting point
+  int path_length = {0};
+  day12::MapPath map_path = {{start, 0}};
+  day12::PointSet next = {start};
+  while (map_path.find(end) == map_path.end()) {
+    day12::PointSet next1;
+    path_length += 1;
+    for (const auto &p : next) {
+      const auto n = day12::NextMove(p, map);
+      for (const auto &nj : n) {
+        if (map_path.find(nj) != map_path.end())
+          continue;
+        map_path[nj] = path_length;
+        next1.insert(nj);
+      }
+    }
+    next = next1;
+    if (next.empty())
+      return std::optional<int>();
+  }
+  return map_path.at(end);
 }
 
 } // namespace day12
 
 TEST(AoC22, Day12) {
   const auto [map, start, end] = day12::Load("12");
-  const day12::Point END = end;
-  const auto order = [END](const day12::Point &a,
-                           const day12::Point &b) -> bool {
-    return day12::Distance(a, END) < day12::Distance(b, END);
-  };
-
-  // starting point
-  day12::MapPath map_path = {{start, 0}};
-  std::vector<day12::Point> queue = {start};
-  while (!queue.empty()) {
-    const auto p = queue.back();
-    queue.pop_back();
-    const int path_length = map_path.at(p);
-    const auto n = day12::NextMove(p, map);
-    const auto path_1 = path_length + 1;
-    for (const auto &nj : n) {
-      auto path_j = path_1;
-      const auto j = map_path.find(nj);
-      if (j != map_path.end()) {
-        // we already have arrived to this point
-        path_j = std::min(path_j, j->second);
-      }
-      map_path[nj] = path_j;
-      if (path_1 == path_j) {
-        // this is the shortest path till the cell, we need to go further
-        queue.emplace_back(nj);
-      }
+  const int answer1 = day12::Shortest(map, start, end).value();
+  EXPECT_EQ(answer1, 350);
+  return; // part2 is slow - takes 25 seconds
+  int answer2 = answer1;
+  for (const auto &[start_i, level] : map) {
+    if (level == 'a') {
+      const auto o = day12::Shortest(map, start_i, end);
+      if (o.has_value())
+        answer2 = std::min(answer2, o.value());
     }
-    std::sort(queue.begin(), queue.end(), order);
-    auto it = std::unique(queue.begin(), queue.end());
-    queue.resize(std::distance(queue.begin(), it));
   }
-
-  EXPECT_EQ(map_path.at(end), 0);
+  EXPECT_EQ(answer2, 349);
 }
