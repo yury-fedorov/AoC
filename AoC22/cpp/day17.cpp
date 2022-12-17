@@ -16,17 +16,17 @@ struct JetPattern {
 };
 
 const std::vector k_h_line = {Point{0, 0}, Point{1, 0}, Point{2, 0},
-                                 Point{3, 0}};
-const std::vector k_plus = {Point{1, 0}, Point{0, 1}, Point{1, 1},
-                               Point{2, 1}, Point{1, 2}}; // TODO
+                              Point{3, 0}};
+const std::vector k_plus = {Point{1, 0}, Point{0, 1}, Point{1, 1}, Point{2, 1},
+                            Point{1, 2}};
 const std::vector k_l_shape = {Point{2, 0}, Point{2, 1}, Point{2, 2},
-                                  Point{0, 2}, Point{1, 2}};
+                               Point{0, 2}, Point{1, 2}};
 const std::vector k_v_line = {Point{0, 0}, Point{0, 1}, Point{0, 2},
-                                 Point{0, 3}};
+                              Point{0, 3}};
 const std::vector k_square = {Point{0, 0}, Point{0, 1}, Point{1, 0},
-                                 Point{1, 1}};
-const std::vector< std::vector<Point> > k_rocks = {k_h_line, k_plus, k_l_shape, k_v_line,
-                                k_square};
+                              Point{1, 1}};
+const std::vector<std::vector<Point>> k_rocks = {k_h_line, k_plus, k_l_shape,
+                                                 k_v_line, k_square};
 
 void FallOnePiece(Chamber &chamber, JetPattern &jet) noexcept {}
 
