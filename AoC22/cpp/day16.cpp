@@ -11,6 +11,9 @@ struct Conf {
 };
 using Map = absl::flat_hash_map<std::string, Conf>;
 using Set = absl::flat_hash_set<std::string_view>;
+using SetPtr = std::shared_ptr<Set>;
+using State = std::tuple<std::string_view, int, SetPtr>;
+using StateCache = absl::flat_hash_map<State, long>;
 long PressureInMinute(const Map &map, const Set &open) noexcept {
   long out = 0;
   for (const auto &ov : open) {
@@ -18,22 +21,29 @@ long PressureInMinute(const Map &map, const Set &open) noexcept {
   }
   return out;
 }
-long Pressure(std::string_view start, int to_go, const Map &map, Set open) {
+long Pressure(std::string_view start, int to_go, const Map &map, std::shared_ptr<Set> open) {
   if (to_go <= 0)
     return 0;
+
+  const auto key = State{start, to_go, open};
+  static StateCache cache;
+  auto i = cache.find(key);
+  if ( i != cache.end() ) return i->second;
+
   const auto &c = map.at(start);
-  const long pressure = PressureInMinute(map, open);
+  const long pressure = PressureInMinute(map, *open);
   long delta = 0;
-  for (int i = -1; i < c.next.size(); i++) {
+  const int in = static_cast<int>( c.next.size() );
+  for (int i = -1; i < in; i++) {
     long di = pressure;
     if (i < 0) {
       // opening valve?
       if (c.rate <= 0)
         continue; // no sense to spend time opening this broken valve
-      if (open.find(start) != open.end())
+      if (open->find(start) != open->end())
         continue; // this one is already open
-      Set open1{open};
-      open1.insert(start);
+      const auto open1 = std::make_shared<Set>( *open  );
+      open1->insert(start);
       di = Pressure(start, to_go - 1, map, open1);
     } else {
       // moving to another?
@@ -42,13 +52,16 @@ long Pressure(std::string_view start, int to_go, const Map &map, Set open) {
     }
     delta = std::max(delta, di);
   }
-  return pressure + delta;
+  const long result = pressure + delta;
+  cache.insert( {key, result} );
+  return result;
 }
 
 long Answer1(std::string_view file) noexcept {
   const auto data = ReadData(file);
+  // Valve HH has flow rate=22; tunnel leads to valve GG
   // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
-  re2::RE2 re("Valve (.+) has flow rate=(\\d+); tunnels lead.? to valve.? (.+)");
+  re2::RE2 re("Valve (.+) has flow rate=(\\d+); tunnel.? lead.? to valve.? (.+)");
   Map map;
   for (const auto &line : data) {
     if (line.empty())
@@ -62,7 +75,7 @@ long Answer1(std::string_view file) noexcept {
     } else
       EXPECT_TRUE(false) << line;
   }
-  return Pressure("AA", 30, map, Set{});
+  return Pressure("AA", 30, map, std::make_shared<Set>() );
 }
 } // namespace day16
 
