@@ -1,23 +1,72 @@
 // #include "absl/strings/numbers.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "common.h"
+#include <re2/re2.h>
+
+namespace day16 {
+struct Conf {
+  int rate;
+  std::vector<std::string> next;
+};
+using Map = absl::flat_hash_map<std::string, Conf>;
+using Set = absl::flat_hash_set<std::string_view>;
+long PressureInMinute(const Map &map, const Set &open) noexcept {
+  long out = 0;
+  for (const auto &ov : open) {
+    out += map.at(ov).rate;
+  }
+  return out;
+}
+long Pressure(std::string_view start, int to_go, const Map &map, Set open) {
+  if (to_go <= 0)
+    return 0;
+  const auto &c = map.at(start);
+  const long pressure = PressureInMinute(map, open);
+  long delta = 0;
+  for (int i = -1; i < c.next.size(); i++) {
+    long di = pressure;
+    if (i < 0) {
+      // opening valve?
+      if (c.rate <= 0)
+        continue; // no sense to spend time opening this broken valve
+      if (open.find(start) != open.end())
+        continue; // this one is already open
+      Set open1{open};
+      open1.insert(start);
+      di = Pressure(start, to_go - 1, map, open1);
+    } else {
+      // moving to another?
+      const auto &start1 = c.next[i];
+      di = Pressure(start1, to_go - 1, map, open);
+    }
+    delta = std::max(delta, di);
+  }
+  return pressure + delta;
+}
+
+long Answer1(std::string_view file) noexcept {
+  const auto data = ReadData(file);
+  // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+  re2::RE2 re("Valve (.+) has flow rate=(\\d+); tunnels lead.? to valve.? (.+)");
+  Map map;
+  for (const auto &line : data) {
+    if (line.empty())
+      continue;
+    re2::StringPiece input(line);
+    std::string valve, list;
+    int rate{0};
+    if (re2::RE2::FullMatch(input, re, &valve, &rate, &list)) {
+      const std::vector<std::string> n = absl::StrSplit(list, ", ");
+      map.insert({valve, Conf{rate, n}});
+    } else
+      EXPECT_TRUE(false) << line;
+  }
+  return Pressure("AA", 30, map, Set{});
+}
+} // namespace day16
 
 TEST(AoC22, Day16) {
-  const auto data = ReadData("16");
-  /*
-  std::vector<long> sums;
-  long sum{0};
-  for (const std::string &line : data) {
-    if (long value{0}; absl::SimpleAtoi(line, &value)) {
-      sum += value;
-    } else {
-      sums.insert(std::ranges::upper_bound(sums, sum), sum);
-      sum = 0;
-    }
-  }
-  const auto sum_highest_n = [&sums](size_t n) {
-    return std::accumulate(sums.rbegin(), sums.rbegin() + n, 0);
-  };
-  EXPECT_EQ(sum_highest_n(1), 70698);
-  EXPECT_EQ(sum_highest_n(3), 206643);
-  */
+  const auto a1 = day16::Answer1("16-sample");
+  EXPECT_EQ(a1, 1651);
 }
