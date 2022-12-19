@@ -14,6 +14,8 @@ struct Blueprint {
   int geode_robot_cost_obsidian;
 };
 using MaterialQtyMap = absl::flat_hash_map<Material, int>; // material, qty
+using OreClayObsidian = std::tuple<int, int, int>;
+
 std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   const auto data = ReadData(file);
   re2::RE2 re(
@@ -62,16 +64,89 @@ const MaterialQtyMap k_start_robots = {{Material::Ore, 1},
                                        {Material::Obsidian, 0},
                                        {Material::Geode, 0}};
 
+[[nodiscard]] OreClayObsidian Cost(const Blueprint &b,
+                                   Material robot_type) noexcept {
+  int requires_ore{0};
+  int requires_clay{0};
+  int requires_obsidian{0};
+  switch (robot_type) {
+  case Material::Ore:
+    requires_ore = b.ore_robot_cost_ore;
+    break;
+  case Material::Clay:
+    requires_ore = b.clay_robot_cost_ore;
+    break;
+  case Material::Obsidian:
+    requires_ore = b.obsidian_robot_cost_ore;
+    requires_clay = b.obsidian_robot_cost_clay;
+    break;
+  case Material::Geode:
+    requires_ore = b.geode_robot_cost_ore;
+    requires_obsidian = b.geode_robot_cost_obsidian;
+    break;
+  }
+  return {requires_ore, requires_clay, requires_obsidian};
+}
+
+[[nodiscard]] OreClayObsidian MissingForRobot(const Blueprint &blueprint,
+                                              const MaterialQtyMap &materials,
+                                              Material robot_type) noexcept {
+  const auto [a, b, c] = Cost(blueprint, robot_type);
+  const int aa = materials.at(Material::Ore);
+  const int ab = materials.at(Material::Clay);
+  const int ac = materials.at(Material::Obsidian);
+  const auto missing = [](int required, int available) {
+    const auto delta = available - required;
+    return delta < 0 ? -delta : 0;
+  };
+  return {missing(a, aa), missing(b, ab), missing(c, ac)};
+}
+
+[[nodiscard]] bool IsMissing(const OreClayObsidian &oco) noexcept {
+  const auto [a, b, c] = oco;
+  return a != 0 || b != 0 || c != 0;
+}
+
+[[nodiscard]] bool CanProduce(const Blueprint &b,
+                              const MaterialQtyMap &materials,
+                              Material robot_type) noexcept {
+  // const auto [ore, clay, obsidian] = Cost(b, robot_type);
+  const auto missing = MissingForRobot(b, materials, robot_type);
+  return !IsMissing(missing);
+}
+
+void Produce(const Blueprint &b, MaterialQtyMap &materials,
+             MaterialQtyMap &robots, Material robot_type) noexcept {
+  const auto [ore, clay, obsidian] = Cost(b, robot_type);
+  materials[Material::Ore] -= ore;
+  materials[Material::Clay] -= clay;
+  materials[Material::Obsidian] -= obsidian;
+  robots[robot_type] += 1;
+}
+
 int LargestGeodes(const Blueprint &b, int time, MaterialQtyMap robots,
                   MaterialQtyMap materials) noexcept {
   if (time > 0) {
-    
+    std::vector<std::optional<Material>> options = {
+        std::optional<Material>(), std::optional<Material>(Material::Ore),
+        std::optional<Material>(Material::Clay),
+        std::optional<Material>(Material::Obsidian),
+        std::optional<Material>(Material::Geode)};
+    int result = 0;
+    for (const auto &o : options) {
+      if (o.has_value()) {
+        // we try to construct a robot for this material
+      } else {
+        // we try not to do anything and just wait
+        // TODO how we pass back updated amount of material and robots?
+      }
+    }
   }
   return materials[Material::Geode];
 }
 
 int LargestGeodes(const Blueprint &b) noexcept {
-  return LargestGeodes(b, k_time, k_start_robots, MaterialQtyMap() );
+  return LargestGeodes(b, k_time, k_start_robots, MaterialQtyMap());
 }
 
 } // namespace day19
