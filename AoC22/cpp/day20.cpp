@@ -16,18 +16,20 @@ namespace day20 {
   // mix
   const auto initial{seq};
   for (int i : initial) {
+    if (i == 0)
+      continue; // no shift is needed
     auto i0 = std::find(seq.cbegin(), seq.cend(), i);
     const int index0 = i0 - seq.cbegin();
     int index1 = (index0 + i);
-    index1 += index1 < 0 ? n + 1: 0;
+    index1 += index1 < 0 ? n : 0;
     index1 %= n;
-    
+    const bool is_goes_ahead = index0 < index1;
     // to compensate erased head index
     // index1 -= index0 < index1 ? 1 : 0;
     // index1 += index1 < 0 ? n : 0;
-    
+
     seq.erase(i0);
-    seq.insert(seq.begin() + index1, i);
+    seq.insert(seq.begin() + index1 + (is_goes_ahead && i < 0 ? -1 : 0), i);
   }
 
   // the grove coordinates
@@ -47,6 +49,5 @@ namespace day20 {
 
 TEST(AoC22, Day20) {
   EXPECT_EQ(day20::Answer1("20-sample"), 3);
-  EXPECT_EQ(day20::Answer1("20"), 0);
-  // EXPECT_EQ(sum_highest_n(3), 206643);
+  EXPECT_EQ(day20::Answer1("20"), 0); //  // -19004 not right
 }
