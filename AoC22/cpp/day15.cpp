@@ -70,13 +70,15 @@ constexpr int k_y = 2000000;
   return set.size();
 }
 
-/* TODO part2
+// part2
 using RangeList = std::vector<Range>;
 constexpr int k_lowest = 0;
 constexpr int k_largest = 4000000;
 [[nodiscard]] int Answer2(std::string_view file, int y) noexcept {
+  // TODO - to be rewritten as does not solve anything in this way
   const auto data = Read(file);
-  for (int i = k_lowest; i <= k_largest;) {
+  int i = k_lowest;
+  for (; i <= k_largest;) {
     for (const auto &sb : data) {
       const auto opt_range = GetRange(sb, y);
       if (!opt_range.has_value())
@@ -91,8 +93,6 @@ constexpr int k_largest = 4000000;
   }
   return i;
 }
-}
-*/
 
 [[nodiscard]] inline long long TurningFrequency(const Point &p) noexcept {
   const auto [x, y] = p;
