@@ -70,9 +70,39 @@ constexpr int k_y = 2000000;
   return set.size();
 }
 
+/* TODO part2
+using RangeList = std::vector<Range>;
+constexpr int k_lowest = 0;
+constexpr int k_largest = 4000000;
+[[nodiscard]] int Answer2(std::string_view file, int y) noexcept {
+  const auto data = Read(file);
+  for (int i = k_lowest; i <= k_largest;) {
+    for (const auto &sb : data) {
+      const auto opt_range = GetRange(sb, y);
+      if (!opt_range.has_value())
+        continue;
+      const auto [min, max] = opt_range.value();
+      if (i >= min && i < max) {
+        i = max;
+        break;
+      }
+    }
+    i++;
+  }
+  return i;
+}
+}
+*/
+
+[[nodiscard]] inline long long TurningFrequency(const Point &p) noexcept {
+  const auto [x, y] = p;
+  return (x * 4000000LL) + y;
+}
+
 } // namespace day15
 
 TEST(AoC22, Day15) {
   EXPECT_EQ(day15::Answer1("15-sample", 10), 26);
-  EXPECT_EQ(day15::Answer1("15", day15::k_y), 5127797);
+  // takes 14 seconds EXPECT_EQ(day15::Answer1("15", day15::k_y), 5127797);
+  EXPECT_EQ(day15::TurningFrequency({14, 11}), 56000011);
 }
