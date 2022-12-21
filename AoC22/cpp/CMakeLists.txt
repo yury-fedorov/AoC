@@ -11,8 +11,14 @@ else()
     # TODO - lots of warnings and all warnings as errors
     # removed to make almost clean Abseil: -Wall -Wextra -Werror -pedantic
     # -fexperimental-library - to be able to use experimental features like ranges/views    
-    add_compile_options(-Wno-deprecated -fno-exceptions -fno-rtti)
+    # -fno-exceptions -fno-rtti - exceptions and RTTI are required for range-v3 implementation
+    add_compile_options(-Wno-deprecated)    
 endif()
+
+# if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    # Olny for Clang we add experimental for ranges/views as GCC has it already
+    # add_compile_options(-fexperimental-library) 
+# endif()
 
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address") #memory - cannot together with address #undefined,dataflow
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
@@ -36,14 +42,20 @@ FetchContent_Declare(re2
     GIT_REPOSITORY "https://github.com/google/re2"
     GIT_TAG main ) 
 
+# requires exceptions
+FetchContent_Declare(range-v3
+    GIT_REPOSITORY "https://github.com/ericniebler/range-v3"
+    GIT_TAG "0.12.0" )
+
 FetchContent_MakeAvailable(absl)
 FetchContent_MakeAvailable(gtest)
 FetchContent_MakeAvailable(benchmark)
 FetchContent_MakeAvailable(re2)
+FetchContent_MakeAvailable(range-v3)
 
 file( GLOB SOURCES day*.cpp )
 # set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc22 test.cpp ${SOURCES}  )
 
-target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest re2 absl::statusor benchmark)
+target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest re2 absl::statusor benchmark range-v3)
