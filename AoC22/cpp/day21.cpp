@@ -63,7 +63,7 @@ using Map = std::map<std::string, Var>;
   return 0;
 }
 
-[[nodiscard]] int Answer1(std::string_view file) noexcept {
+[[nodiscard]] Int Answer1(std::string_view file) noexcept {
   const auto data = ReadData(file);
   // root: pppw + sjmn
   // dbpl: 5
