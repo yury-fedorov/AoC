@@ -49,10 +49,11 @@ void Move(Seq &seq, int value) noexcept {
       seq.insert(seq.begin(), value);
       old_index = 0;
       new_index = 1;
+      continue;
     }
     std::swap(seq.at(old_index), seq.at(new_index));
     old_index = new_index;
-    if ( old_index == 0 && d < 0 ) {
+    if (old_index == 0 && d < 0) {
       seq.erase(seq.begin());
       seq.push_back(value);
       old_index = sz - 1;
@@ -86,7 +87,7 @@ void Move(Seq &seq, int value) noexcept {
   const auto initial{seq};
   for (int value : initial) {
     Move(seq, value);
-    EXPECT_TRUE(false) << ToStr( seq );
+    // EXPECT_TRUE(false) << ToStr( seq );
   }
 
   // the grove coordinates
@@ -113,7 +114,7 @@ void Test(Seq s, int value, Seq e) noexcept {
 
 TEST(AoC22, Day20) {
   EXPECT_EQ(day20::Answer1("20-sample"), 3);
-  return ;
+  // return ;
   day20::Test(day20::Seq{4, 5, 6, 1, 7, 8, 9}, 1,
               day20::Seq{4, 5, 6, 7, 1, 8, 9});
   day20::Test(day20::Seq{4, -2, 5, 6, 7, 8, 9}, -2,
@@ -121,6 +122,8 @@ TEST(AoC22, Day20) {
   day20::Test(day20::Seq{1, 3, 2, 4}, 2, day20::Seq{1, 2, 3, 4});
   day20::Test(day20::Seq{1, 2, 3, 4}, 2, day20::Seq{1, 3, 4, 2});
   // day20::Test(day20::Seq{1, -1, 3, 4}, -1, day20::Seq{-1, 1, 3, 4});
-  day20::Test( day20::Seq{1, 2, -2, -3, 0, 3, 4}, -2, day20::Seq{1, 2, -3, 0, 3, 4, -2} );
-  EXPECT_EQ(day20::Answer1("20"), 0); //  // -19004 not right -9108 -4389 -5382
+  day20::Test(day20::Seq{1, 2, -2, -3, 0, 3, 4}, -2,
+              day20::Seq{1, 2, -3, 0, 3, 4, -2});
+  EXPECT_EQ(day20::Answer1("20"),
+            0); //  // -19004 not right -9108 -4389 -5382 4924
 }
