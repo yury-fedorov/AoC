@@ -23,16 +23,13 @@ template <class T>
     return a - b;
   case '*':
     return a * b;
-  case '/': {
+  case '/':
     {
       const auto r = a % b;
       if (r != 0)
-        return std::optional<T>(); // not siutable
+        return std::optional<T>(); // not suitable
       return a / b;
     }
-  case '=':
-    return a == b ? 1 : 0;
-  }
   }
   EXPECT_TRUE(false) << "Unexpected op: " << op;
   return std::optional<T>();
@@ -70,7 +67,7 @@ template <class T>
   if (formula.empty())
     return raw_val;
 
-  static re2::RE2 re("([a-z]{4}) ([+-/*=]) ([a-z]{4})");
+  static re2::RE2 re("([a-z]{4}) (.) ([a-z]{4})");
   re2::StringPiece input(formula);
   std::string a, op, b;
   if (re2::RE2::FullMatch(input, re, &a, &op, &b)) {
@@ -130,7 +127,7 @@ noexcept { if ( node == k_human ) return Var { 0, k_human }; // we do formula
   const auto [raw_val, formula] = var;
   if (formula.empty()) return raw_val;
 
-  static re2::RE2 re("(.*) ([+-/*=]) (.*})");
+  static re2::RE2 re("(.*) ([/+-*=]) (.*})");
   re2::StringPiece input(formula);
   std::string a, op, b;
   if (re2::RE2::FullMatch(input, re, &a, &op, &b)) {
