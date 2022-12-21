@@ -87,6 +87,5 @@ using Map = std::map<std::string, Var>;
 
 TEST(AoC22, Day21) {
   EXPECT_EQ(day21::Answer1("21-sample"), 152);
-  EXPECT_EQ(day21::Answer1("21"), 0); // - -98997638 -98997638
-
+  EXPECT_EQ(day21::Answer1("21"), day21::Long{0} ); // - -98997638 -98997638
 }
