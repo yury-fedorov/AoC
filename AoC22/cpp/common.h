@@ -17,7 +17,7 @@
 namespace r = ranges;
 namespace rv = ranges::views;
 
-inline bool is_fast_only() noexcept { return true; } // to filter out slow tests
+[[nodiscard]] inline bool IsFastOnly() noexcept { return true; } // to filter out slow tests
 
 inline std::vector<std::string> ReadData(std::string_view file) noexcept {
   const std::string filepath = absl::StrCat("../data/", file, ".txt");
