@@ -23,13 +23,12 @@ template <class T>
     return a - b;
   case '*':
     return a * b;
-  case '/':
-    {
-      const auto r = a % b;
-      if (r != 0)
-        return std::optional<T>(); // not suitable
-      return a / b;
-    }
+  case '/': {
+    const auto r = a % b;
+    if (r != 0)
+      return std::optional<T>(); // not suitable
+    return a / b;
+  }
   }
   EXPECT_TRUE(false) << "Unexpected op: " << op;
   return std::optional<T>();
