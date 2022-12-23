@@ -15,8 +15,6 @@ using Set = absl::flat_hash_set<int>;
   re2::RE2 re("Sensor at x=([-\\d]+), y=([-\\d]+): closest beacon is at "
               "x=([-\\d]+), y=([-\\d]+)");
   for (const std::string &line : data) {
-    if (line.empty())
-      continue;
     re2::StringPiece input(line);
     int sx, sy, bx, by;
     if (re2::RE2::FullMatch(input, re, &sx, &sy, &bx, &by)) {

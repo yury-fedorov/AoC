@@ -20,10 +20,8 @@ namespace rv = ranges::views;
 // to filter out slow tests
 [[nodiscard]] inline bool IsFastOnly() noexcept { return true; }
 
-inline std::vector<std::string> ReadData(std::string_view file) noexcept {
-  const std::string filepath = absl::StrCat("../data/", file, ".txt");
-  std::ifstream f(filepath);
-  std::string content;
-  std::getline(f, content, '\0'); // read all file
-  return absl::StrSplit(content, '\n');
+[[nodiscard]] inline int Sign(auto x) noexcept {
+  return x > 0 ? 1 : x < 0 ? -1 : 0;
 }
+
+[[nodiscard]] std::vector<std::string> ReadData(std::string_view file) noexcept;

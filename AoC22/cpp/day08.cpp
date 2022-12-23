@@ -15,8 +15,6 @@ TEST(AoC22, Day08) {
   int max_x = 0;
   for (const std::string &line : data) {
     const auto ll = line.length();
-    if (ll == 0)
-      continue;
     max_x = ll;
     for (int x = 0; x < max_x; x++) {
       map[{x, y}] = line[x];

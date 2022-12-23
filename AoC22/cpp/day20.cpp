@@ -75,8 +75,6 @@ void Move(Seq &seq, int value) noexcept {
   Seq seq;
   seq.reserve(data.size());
   for (const std::string &line : data) {
-    if (line.empty())
-      continue;
     if (int value{0}; absl::SimpleAtoi(line, &value)) {
       seq.push_back(value);
     } else {

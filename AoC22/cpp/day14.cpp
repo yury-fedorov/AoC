@@ -22,16 +22,10 @@ std::pair<Point, Point> MinMax(const Map &map) {
   return {{x0, y0}, {x1, y1}};
 }
 
-int Sign(auto x) {
-  return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
-} // TODO - move to common.h
-
 Map LoadMap(std::string_view file) {
   const auto data = ReadData(file);
   Map map;
   for (const auto &line : data) {
-    if (line.empty())
-      continue;
     const std::vector<std::string_view> points_as_string =
         absl::StrSplit(line, " -> ");
     std::vector<Point> points;

@@ -34,8 +34,6 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   int geode_robot_cost_obsidian;
 
   for (const std::string &line : data) {
-    if (line.empty())
-      continue;
     re2::StringPiece input(line);
     if (re2::RE2::FullMatch(input, re, &id, &ore_robot_cost_ore,
                             &clay_robot_cost_ore, &obsidian_robot_cost_ore,

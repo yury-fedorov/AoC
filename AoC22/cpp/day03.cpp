@@ -27,8 +27,6 @@ TEST(AoC22, Day03) {
   long sum{0};
   for (const std::string &rucksack : data) {
     const auto [c0, c1] = split_in_two(rucksack);
-    if (c0.empty())
-      continue;
     const char same = find_same(c0, c1).value();
     sum += calculate_score(same);
   }

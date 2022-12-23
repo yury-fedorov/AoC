@@ -69,8 +69,6 @@ long Answer1(std::string_view file) noexcept {
       "Valve (.+) has flow rate=(\\d+); tunnel.? lead.? to valve.? (.+)");
   Map map;
   for (const auto &line : data) {
-    if (line.empty())
-      continue;
     re2::StringPiece input(line);
     std::string valve, list;
     int rate{0};

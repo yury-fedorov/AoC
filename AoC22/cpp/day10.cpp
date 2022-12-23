@@ -8,8 +8,6 @@ ValueInTime Run(const std::vector<std::string> &data) {
   int circle{0};
   constexpr auto NOOP = "noop";
   for (const std::string &line : data) {
-    if (line.empty())
-      continue;
     int circles;
     long x1 = {x};
     if (line.starts_with(NOOP)) {

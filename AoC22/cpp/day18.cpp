@@ -29,8 +29,6 @@ std::pair<int, int> Solution(std::string_view file) {
   PointSet positions;
   re2::RE2 re("(\\d+),(\\d+),(\\d+)");
   for (const std::string &line : data) {
-    if (line.empty())
-      continue;
     int x, y, z;
     re2::StringPiece input(line);
     if (re2::RE2::FullMatch(input, re, &x, &y, &z)) {

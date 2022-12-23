@@ -6,8 +6,7 @@ TEST(AoC22, Day04) {
   long answer2 = 0;
   int a, b, x, y;
   for (const std::string &line : data) {
-    if (line.length() < 7)
-      continue;
+    // TODO - switch to re2?
     sscanf(line.c_str(), "%d-%d,%d-%d", &a, &b, &x, &y);
     if (a > x) {
       std::swap(a, x);

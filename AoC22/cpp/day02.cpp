@@ -37,8 +37,6 @@ TEST(AoC22, Day02) {
   };
 
   for (const std::string &line : data) {
-    if (line.length() < 2)
-      continue;
     const char opponent = line.at(0);
     const char xyz = line.at(2);
     answer1 += round_score1(opponent, xyz);

@@ -28,6 +28,7 @@ std::string solution(const std::vector<std::string> &data,
       // follow the instructions (manipulation with the stacks)
       int amount, from, to;
       constexpr auto kFormat = "move %d from %d to %d";
+      // TODO move to re2?
       if (EOF == sscanf(line.c_str(), kFormat, &amount, &from, &to))
         continue;
       auto &stack_from = stacks[from - 1];

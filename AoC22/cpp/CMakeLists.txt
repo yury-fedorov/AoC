@@ -53,7 +53,7 @@ FetchContent_MakeAvailable(benchmark)
 FetchContent_MakeAvailable(re2)
 FetchContent_MakeAvailable(range-v3)
 
-file( GLOB SOURCES day*.cpp )
+file( GLOB SOURCES day*.cpp common.cpp)
 # set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc22 test.cpp ${SOURCES}  )

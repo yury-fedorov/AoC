@@ -7,23 +7,21 @@ namespace day09 {
 using Point = std::pair<int, int>;
 using Set = absl::flat_hash_set<Point>;
 
-void MakeMove(Point &point, const int dx, const int dy) {
+void MakeMove(Point &point, const int dx, const int dy) noexcept {
   auto [x, y] = point;
   x += dx;
   y += dy;
   point = {x, y};
 }
 
-int Sign(auto x) { return (x > 0) ? 1 : ((x < 0) ? -1 : 0); }
-
-void MakeMove(const Point &head, Point &tail, Set &tail_path) {
+void MakeMove(const Point &head, Point &tail, Set &tail_path) noexcept {
   const auto [xh, yh] = head;
   const auto [xt, yt] = tail;
   const auto dx = xh - xt;
   const auto dy = yh - yt;
   if (std::max(abs(dx), abs(dy)) > 1) {
     // need to move tail, the head is not adjucent anymore
-    day09::MakeMove(tail, day09::Sign(dx), day09::Sign(dy));
+    day09::MakeMove(tail, Sign(dx), Sign(dy));
     tail_path.insert(tail);
   }
 }
@@ -45,8 +43,6 @@ TEST(AoC22, Day09) {
   const absl::flat_hash_map<char, day09::Point> shift = {
       {'U', {0, -1}}, {'D', {0, 1}}, {'L', {-1, 0}}, {'R', {1, 0}}};
   for (const std::string &line : data) {
-    if (line.empty())
-      continue;
     const std::vector<std::string_view> p = absl::StrSplit(line, ' ');
     const char dir = p[0][0];
     int n{0};
