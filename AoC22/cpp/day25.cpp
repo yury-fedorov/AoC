@@ -1,6 +1,6 @@
 #include "common.h"
 
-namespaces day25 {
+namespace day25 {
 } 
 
 TEST(AoC22, Day25) {
