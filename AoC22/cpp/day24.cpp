@@ -1,6 +1,6 @@
 #include "common.h"
 
-namespaces day24 {
+namespace day24 {
 
 using Map = std::vector<std::string>;
 [[nodiscard]] size_t Answer1(const Map& map) noexcept {
