@@ -20,7 +20,7 @@ namespace rv = ranges::views;
 // to filter out slow tests
 [[nodiscard]] inline bool IsFastOnly() noexcept { return true; }
 
-[[nodiscard]] inline int Sign(auto x) noexcept {
+[[nodiscard]] inline constexpr int Sign(auto x) noexcept {
   return x > 0 ? 1 : x < 0 ? -1 : 0;
 }
 
