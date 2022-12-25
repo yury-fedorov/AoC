@@ -13,7 +13,14 @@ namespace day25 {
       sum += k * v;
     }
     return sum;
-  } 
+  }
+  
+  Snafu ToSnafu( Int value ) noexcept {
+    Snafu result;
+    constexpr double kRoot5 = 1.0 / 5.0
+    auto start = pow( value, kRoot5 );
+    return result;
+  }
 } 
 
 // from Domodossola (Italy)
@@ -25,4 +32,6 @@ TEST(AoC22, Day25) {
   }
   EXPECT_EQ(day25::ToDecimal("1=0"), 15);
   EXPECT_EQ(sum,day25::ToDecimal("4216113430113-")); // 4216113430113-
+  EXPECT_EQ(day25::ToSnafu(3),"1="); 
+  EXPECT_EQ(day25::ToSnafu(sum),"4216113430113-"); // what is right?
 }
