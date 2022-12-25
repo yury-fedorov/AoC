@@ -15,10 +15,19 @@ namespace day25 {
     return sum;
   }
   
+  constexpr inline bool IsUp( int high ) noexcept {
+    return high >= 3; // 3 -> 1=
+  }
+  
   Snafu ToSnafu( Int value ) noexcept {
     Snafu result;
-    constexpr double kRoot5 = 1.0 / 5.0
-    auto start = pow( value, kRoot5 );
+    constexpr double kRoot5 = 1.0 / 5.0;
+    auto start = std::pow( value, kRoot5 );
+    int position = std::ceil( start );
+    const Int ref_value = std::pow( 5, position );
+    while ( value != 0 ) {
+      break; // todo
+    }
     return result;
   }
 } 
