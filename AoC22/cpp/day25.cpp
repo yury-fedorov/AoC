@@ -1,7 +1,7 @@
 #include "common.h"
 
 namespace day25 {
-  using Int = int128_t; //long long;
+  using Int = __int128; //long long;
   using Snafu = std::string;
   Int ToDecimal(std::string_view snafu) noexcept {
     auto it = snafu.rbegin();
