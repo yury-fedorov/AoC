@@ -18,14 +18,22 @@ namespace day25 {
   constexpr inline bool IsUp( int high ) noexcept {
     return high >= 3; // 3 -> 1=
   }
+
+  // from Voghera (Italy)
+  constexpr inline bool IsGood( Int value, int position ) noexcept {
+    const Int ref_value = std::pow( 5, position );
+    const Int ref_low = position >= 1 ? std::pow(5, position - 1) : 0;
+    return ( 3 * ref_value > value ) && ( value <= ( ref_value - (2* ref_low) ) );
+  }
   
   Snafu ToSnafu( Int value ) noexcept {
     Snafu result;
     constexpr double kRoot5 = 1.0 / 5.0;
     auto start = std::pow( value, kRoot5 );
     int position = std::ceil( start );
-    const Int ref_value = std::pow( 5, position );
+    if ( !IsGood( value, position ) ) position--; 
     while ( value != 0 ) {
+      EXPECT_TRUE( IsGood(value, position ) ) << "Wrong position " << position;
       break; // todo
     }
     return result;
@@ -40,6 +48,7 @@ TEST(AoC22, Day25) {
     sum += day25::ToDecimal(s);
   }
   EXPECT_EQ(day25::ToDecimal("1=0"), 15);
+  EXPECT_EQ(sum,5481165789LL);
   EXPECT_EQ(sum,day25::ToDecimal("4216113430113-")); // 4216113430113-
   EXPECT_EQ(day25::ToSnafu(3),"1="); 
   EXPECT_EQ(day25::ToSnafu(sum),"4216113430113-"); // what is right?
