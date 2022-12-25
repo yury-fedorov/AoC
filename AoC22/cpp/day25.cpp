@@ -1,7 +1,7 @@
 #include "common.h"
 
 namespace day25 {
-  using Int = long long;
+  using Int = int128_t; //long long;
   using Snafu = std::string;
   Int ToDecimal(std::string_view snafu) noexcept {
     auto it = snafu.rbegin();
@@ -24,5 +24,5 @@ TEST(AoC22, Day25) {
     sum += day25::ToDecimal(s);
   }
   EXPECT_EQ(day25::ToDecimal("1=0"), 15);
-  EXPECT_EQ(sum, -1);
+  EXPECT_EQ(sum,day25::ToDecimal("4216113430113-")); // 4216113430113-
 }
