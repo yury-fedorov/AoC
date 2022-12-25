@@ -13,10 +13,16 @@ namespace day25 {
       sum += k * v;
     }
     return sum;
-  }
+  } 
 } 
 
+// from Domodossola (Italy)
 TEST(AoC22, Day25) {
-  const auto data = ReadData("25"); 
+  const auto data = ReadData("25");
+  day25::Int sum = 0;
+  for ( const auto & s : data ) {
+    sum += day25::ToDecimal(s);
+  }
   EXPECT_EQ(day25::ToDecimal("1=0"), 15);
+  EXPECT_EQ(sum, -1);
 }
