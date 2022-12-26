@@ -101,6 +101,10 @@ constexpr int k_largest = 4000000;
 
 TEST(AoC22, Day15) {
   EXPECT_EQ(day15::Answer1("15-sample", 10), 26);
-  // takes 14 seconds EXPECT_EQ(day15::Answer1("15", day15::k_y), 5127797);
   EXPECT_EQ(day15::TurningFrequency({14, 11}), 56000011);
+  if (IsFastOnly()) {
+    return;
+  }
+  // takes 14 seconds
+  EXPECT_EQ(day15::Answer1("15", day15::k_y), 5127797);
 }
