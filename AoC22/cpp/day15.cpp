@@ -26,6 +26,76 @@ using Set = absl::flat_hash_set<int>;
   return result;
 }
 
+// Intersection operations
+[[nodiscard]] constexpr inline bool IsIntersection(Range a, Range b) noexcept {
+  if (a.first > b.first)
+    std::swap(a, b); // now a.first <= b.first
+  return a.second >= b.first;
+}
+
+[[nodiscard]] std::optional<Range> Intersection(Range a, Range b) noexcept {
+  if (!IsIntersection(a, b))
+    return std::nullopt;
+  return Range{std::min(a.first, b.first), std::max(a.second, b.second)};
+}
+
+void Sort(std::vector<Range> &ranges) noexcept {
+  r::sort(ranges,
+          [](const Range &a, const Range &b) { return a.first < b.first; });
+}
+
+void AddRange(std::vector<Range> &ranges, Range r) noexcept {
+  Sort(ranges);
+  for (int i = 0; i < ranges.size(); i++) {
+    const auto opt_range = Intersection(ranges.at(i), r);
+    if (opt_range.has_value()) {
+      ranges.at(i) = std::move(opt_range.value());
+      const auto i1 = i + 1;
+      if (i1 < ranges.size()) {
+        const auto opt_range1 = Intersection(ranges.at(i), ranges.at(i1));
+        if (opt_range1.has_value()) {
+          ranges.at(i) = opt_range1.value();
+          ranges.erase(ranges.begin() + i1);
+        }
+      }
+      return;
+    }
+  }
+}
+
+[[nodiscard]] constexpr inline bool IsInside(Range r, int value) noexcept {
+  return r.first <= value && r.second >= value;
+}
+
+[[nodiscard]] constexpr inline bool IsValid(Range r) noexcept {
+  return r.first <= r.second;
+}
+
+void RemovePoint(std::vector<Range> &ranges, int value) noexcept {
+  for (int i = 0; i < ranges.size(); i++) {
+    const Range r = ranges.at(i);
+    if (IsInside(r, value)) {
+      const Range r1{r.first, value - 1};
+      const Range r2{value + 1, r.second};
+      ranges.erase(ranges.begin() + i);
+      if (IsValid(r1))
+        ranges.emplace_back(std::move(r1));
+      if (IsValid(r2))
+        ranges.emplace_back(std::move(r2));
+      Sort(ranges);
+      return;
+    }
+  }
+}
+/*
+[[nodiscard]] Set Minus( Range ab, const std::vector<Range> &ranges ) noexcept {
+    Set result;
+    for ( const auto & r : ranges ) {
+    }
+    return result;
+}
+*/
+
 [[nodiscard]] inline int Distance(const Point &a, const Point &b) noexcept {
   return abs(a.first - b.first) + abs(a.second - b.second);
 }
@@ -68,28 +138,33 @@ constexpr int k_y = 2000000;
   return set.size();
 }
 
+[[nodiscard]] std::vector<Range> GetSlice(const std::vector<SensorBeacon> &data,
+                                         int y) noexcept {
+  std::vector<Range> result;
+  for (const auto &sb : data) {
+    const auto opt_range = GetRange(sb, y);
+    if (!opt_range.has_value())
+      continue;
+    AddRange(result, opt_range.value());
+    const auto &beacon = sb.second;
+    const auto [bx, _] = beacon;
+    RemovePoint(result, bx);
+  }
+  return result;
+}
+
 // part2
 using RangeList = std::vector<Range>;
 constexpr int k_lowest = 0;
 constexpr int k_largest = 4000000;
 [[nodiscard]] int Answer2(std::string_view file, int y) noexcept {
-  // TODO - to be rewritten as does not solve anything in this way
   const auto data = Read(file);
-  int i = k_lowest;
-  for (; i <= k_largest;) {
-    for (const auto &sb : data) {
-      const auto opt_range = GetRange(sb, y);
-      if (!opt_range.has_value())
-        continue;
-      const auto [min, max] = opt_range.value();
-      if (i >= min && i < max) {
-        i = max;
-        break;
-      }
-    }
-    i++;
+  for (int y = k_lowest; y <= k_largest; y++) {
+    const auto ranges = GetSlice(data, y);
+    if (ranges.size() > 1)
+      return y;
   }
-  return i;
+  return -1;
 }
 
 [[nodiscard]] inline long long TurningFrequency(const Point &p) noexcept {
@@ -102,6 +177,7 @@ constexpr int k_largest = 4000000;
 TEST(AoC22, Day15) {
   EXPECT_EQ(day15::Answer1("15-sample", 10), 26);
   EXPECT_EQ(day15::TurningFrequency({14, 11}), 56000011);
+  EXPECT_EQ(day15::Answer2("15", day15::k_y), -2);
   if (IsFastOnly()) {
     return;
   }
