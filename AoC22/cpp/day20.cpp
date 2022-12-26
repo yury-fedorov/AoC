@@ -33,14 +33,14 @@ void Move(Node *node, bool is_forward) noexcept {
   }
 }
 
-constexpr Int kDecryptionKey = { 811589153 };
+constexpr Int kDecryptionKey = {811589153};
 
 [[nodiscard]] Int Answer(std::string_view file, bool is_part1) noexcept {
   const auto data = ReadData(file);
   std::vector<Node> nodes;
   for (const std::string &line : data) {
     if (int value{0}; absl::SimpleAtoi(line, &value)) {
-      const Int long_value = is_part1 ? value : ( value * kDecryptionKey );
+      const Int long_value = is_part1 ? value : (value * kDecryptionKey);
       Node node{long_value, nullptr, nullptr};
       nodes.emplace_back(std::move(node));
     } else {
@@ -64,7 +64,7 @@ constexpr Int kDecryptionKey = { 811589153 };
   }
 
   // mix
-  const Int modulo = static_cast<Int>( nodes.size() ) - 1;
+  const Int modulo = static_cast<Int>(nodes.size()) - 1;
   const auto n = is_part1 ? 1 : 10;
   for (int i = 0; i < n; i++) {
     for (auto &node : nodes) {
@@ -97,8 +97,12 @@ constexpr Int kDecryptionKey = { 811589153 };
 } // namespace day20
 
 TEST(AoC22, Day20) {
-  const auto answer1 = [](std::string_view file) { return day20::Answer(file, true); };
-  const auto answer2 = [](std::string_view file) { return day20::Answer(file, false); };
+  const auto answer1 = [](std::string_view file) {
+    return day20::Answer(file, true);
+  };
+  const auto answer2 = [](std::string_view file) {
+    return day20::Answer(file, false);
+  };
   EXPECT_EQ(answer1("20-sample"), 3);
   EXPECT_EQ(answer1("20"), 7713);
   EXPECT_EQ(answer2("20-sample"), 1623178306);
