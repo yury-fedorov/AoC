@@ -1,3 +1,5 @@
+#include <queue>
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_join.h"
@@ -67,6 +69,27 @@ using StateCache = absl::flat_hash_map<StateKey, long>;  // state - pressure
   // cache.insert( {key, result} );
   return result;
 }
+
+long Pressure(const Map &map) noexcept {
+  const auto kNoOpen = DoorsToStr(Set{});
+  const auto kStartState = StateKey{kNoOpen, "AA", 0};
+  auto states = StateCache{{kStartState, 0}};
+  std::vector<StateKey> to_process = {kStartState};
+  const auto priority = [&states](const StateKey &key) {
+    const auto [_, __, t] = key;
+    return states.at(key) / (0.1 + t);
+  };
+  const auto less = [&priority](const StateKey &a, const StateKey &b) {
+    return priority(a) < priority(b);
+  };
+  std::priority_queue queue(to_process.begin(), to_process.end(), less);
+  while (true) {
+    auto next = queue.top();
+    queue.pop();
+  }
+  return 0;
+}
+
 // open doors in format ,AA, ... ,ZZ,...
 // state - cur position - AA + open doors + time_passed --> maximum
 //
