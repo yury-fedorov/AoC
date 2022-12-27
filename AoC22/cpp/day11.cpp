@@ -90,7 +90,7 @@ struct Monkey {
 }
 
 // TODO - ranges / views?
-[[nodiscard]] constexpr std::vector<BigInt> ToInt(
+[[nodiscard]] std::vector<BigInt> ToInt(
     absl::Span<const std::string> v) noexcept {
   std::vector<BigInt> result;
   for (const auto &l : v) {
