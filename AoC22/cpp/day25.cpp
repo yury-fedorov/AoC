@@ -1,9 +1,9 @@
 #include "common.h"
 
 namespace day25 {
-using Int = __int128; // long long;
+using Int = int64_t;
 using Snafu = std::string;
-Int ToDecimal(std::string_view snafu) noexcept {
+[[nodiscard]] constexpr Int ToDecimal(std::string_view snafu) noexcept {
   auto it = snafu.rbegin();
   const auto end = snafu.rend();
   Int sum{0};
@@ -16,7 +16,7 @@ Int ToDecimal(std::string_view snafu) noexcept {
 }
 
 constexpr inline bool IsUp(int high) noexcept {
-  return high >= 3; // 3 -> 1=
+  return high >= 3;  // 3 -> 1=
 }
 
 // from Voghera (Italy)
@@ -30,20 +30,21 @@ constexpr inline bool IsGood(Int value, int position) noexcept {
 constexpr inline int Position(Int value) noexcept {
   int position = 0;
   for (; true; position++) {
-    if (3 * std::pow(5, position) > value)
-      return position;
+    if (3 * std::pow(5, position) > value) return position;
   }
 }
 
+/*
 Snafu ToSnafu(Int value) noexcept {
   Snafu result;
   auto position = Position(value);
   while (value != 0) {
     EXPECT_TRUE(IsGood(value, position)) << "Wrong position " << position;
-    break; // todo
+    break;  // TODO - missing implementation
   }
   return result;
 }
+*/
 
 Int Sum(std::string_view file) noexcept {
   const auto data = ReadData(file);
@@ -54,7 +55,7 @@ Int Sum(std::string_view file) noexcept {
   return sum;
 }
 
-} // namespace day25
+}  // namespace day25
 
 // from Domodossola (Italy)
 TEST(AoC22, Day25) {
@@ -62,7 +63,7 @@ TEST(AoC22, Day25) {
   const auto sum = day25::Sum("25");
   EXPECT_EQ(day25::ToDecimal("1=0"), 15);
   EXPECT_EQ(day25::ToDecimal("1=0"), 15);
-  EXPECT_EQ(sum, 36671616971741LL); // 36671616971741
+  EXPECT_EQ(sum, 36671616971741LL);
 
   using Pair = std::pair<int, std::string_view>;
   constexpr std::array kTests = {
@@ -79,5 +80,4 @@ TEST(AoC22, Day25) {
   // calculated using Google Sheet
   // TODO - finish the algorithm later?
   EXPECT_EQ(sum, day25::ToDecimal("20=02=120-=-2110-0=1"));
-  // EXPECT_EQ(day25::ToSnafu(sum), "4216113430113-"); // what is right?
 }
