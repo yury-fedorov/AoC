@@ -2,7 +2,6 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/numbers.h"
 #include "common.h"
-#include <queue>
 
 namespace day12 {
 using Point = std::pair<int, int>;
