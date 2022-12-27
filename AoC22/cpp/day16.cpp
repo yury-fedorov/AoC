@@ -1,8 +1,8 @@
-// #include "absl/strings/numbers.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_join.h"
 #include "common.h"
-#include <re2/re2.h>
+#include "re2/re2.h"
 
 namespace day16 {
 struct Conf {
@@ -10,21 +10,31 @@ struct Conf {
   std::vector<std::string> next;
 };
 using Map = absl::flat_hash_map<std::string, Conf>;
-using Set = absl::flat_hash_set<std::string_view>;
-using SetPtr = std::shared_ptr<Set>;
-// using State = std::tuple<std::string_view, int, SetPtr>;
-// using StateCache = absl::flat_hash_map<State, long>;
-long PressureInMinute(const Map &map, const Set &open) noexcept {
+using Set = absl::flat_hash_set<std::string_view>;  // open doors
+using StateKey =
+    std::tuple<std::string, std::string, int>;  // open doors, position, time
+using StateCache = absl::flat_hash_map<StateKey, long>;  // state - pressure
+
+[[nodiscard]] long PressureInMinute(const Map &map, const Set &open) noexcept {
   long out = 0;
   for (const auto &ov : open) {
     out += map.at(ov).rate;
   }
   return out;
 }
-long Pressure(std::string_view start, int to_go, const Map &map,
-              std::shared_ptr<Set> open) {
-  if (to_go <= 0)
-    return 0;
+
+[[nodiscard]] std::string DoorsToStr(const Set &set) noexcept {
+  std::vector<std::string> ordered;
+  for (const auto &s : set) {
+    ordered.push_back(std::string(s));
+  }
+  r::sort(ordered);
+  return absl::StrJoin(ordered, " ");
+}
+
+[[nodiscard]] long Pressure(std::string_view start, int to_go, const Map &map,
+                            std::shared_ptr<Set> open) noexcept {
+  if (to_go <= 0) return 0;
 
   // const auto key = State{start, to_go, open};
   // static StateCache cache;
@@ -40,9 +50,9 @@ long Pressure(std::string_view start, int to_go, const Map &map,
     if (i < 0) {
       // opening valve?
       if (c.rate <= 0)
-        continue; // no sense to spend time opening this broken valve
+        continue;  // no sense to spend time opening this broken valve
       if (open->find(start) != open->end())
-        continue; // this one is already open
+        continue;  // this one is already open
       const auto open1 = std::make_shared<Set>(*open);
       open1->insert(start);
       di = Pressure(start, to_go - 1, map, open1);
@@ -61,7 +71,7 @@ long Pressure(std::string_view start, int to_go, const Map &map,
 // state - cur position - AA + open doors + time_passed --> maximum
 //
 
-long Answer1(std::string_view file) noexcept {
+[[nodiscard]] long Answer1(std::string_view file) noexcept {
   const auto data = ReadData(file);
   // Valve HH has flow rate=22; tunnel leads to valve GG
   // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
@@ -80,10 +90,10 @@ long Answer1(std::string_view file) noexcept {
   }
   return Pressure("AA", 30, map, std::make_shared<Set>());
 }
-} // namespace day16
+}  // namespace day16
 
 TEST(AoC22, Day16) {
-  return; // TODO - not working yet
+  return;  // TODO - not working yet
   const auto a1 = day16::Answer1("16-sample");
   EXPECT_EQ(a1, 1651);
 }
