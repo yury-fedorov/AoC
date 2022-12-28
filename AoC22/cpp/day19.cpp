@@ -1,20 +1,29 @@
 #include "absl/container/flat_hash_map.h"
 #include "common.h"
-#include <re2/re2.h>
+#include "re2/re2.h"
 
 namespace day19 {
 enum class Material { Ore, Clay, Obsidian, Geode };
 struct Blueprint {
   int id;
-  int ore_robot_cost_ore;      // produces ore
-  int clay_robot_cost_ore;     // produces clay from ore
-  int obsidian_robot_cost_ore; // produces obsidian from ore and clay
+  int ore_robot_cost_ore;       // produces ore
+  int clay_robot_cost_ore;      // produces clay from ore
+  int obsidian_robot_cost_ore;  // produces obsidian from ore and clay
   int obsidian_robot_cost_clay;
-  int geode_robot_cost_ore; // produces geode from ore and obsidian
+  int geode_robot_cost_ore;  // produces geode from ore and obsidian
   int geode_robot_cost_obsidian;
 };
-using MaterialQtyMap = absl::flat_hash_map<Material, int>; // material, qty
+using MaterialQtyMap = absl::flat_hash_map<Material, int>;  // material, qty
 using OreClayObsidian = std::tuple<int, int, int>;
+using IdGeodesList = absl::flat_hash_map<int, int>;
+
+[[nodiscard]] int64_t QualityLevel(const IdGeodesList &list) noexcept {
+  int64_t sum{0};
+  for (const auto [id, geodes] : list) {
+    sum += id * geodes;
+  }
+  return sum;
+}
 
 std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   const auto data = ReadData(file);
@@ -26,11 +35,11 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   std::vector<Blueprint> result;
 
   int id;
-  int ore_robot_cost_ore;      // produces ore
-  int clay_robot_cost_ore;     // produces clay from ore
-  int obsidian_robot_cost_ore; // produces obsidian from ore and clay
+  int ore_robot_cost_ore;       // produces ore
+  int clay_robot_cost_ore;      // produces clay from ore
+  int obsidian_robot_cost_ore;  // produces obsidian from ore and clay
   int obsidian_robot_cost_clay;
-  int geode_robot_cost_ore; // produces geode from ore and obsidian
+  int geode_robot_cost_ore;  // produces geode from ore and obsidian
   int geode_robot_cost_obsidian;
 
   for (const std::string &line : data) {
@@ -68,20 +77,20 @@ const MaterialQtyMap k_start_robots = {{Material::Ore, 1},
   int requires_clay{0};
   int requires_obsidian{0};
   switch (robot_type) {
-  case Material::Ore:
-    requires_ore = b.ore_robot_cost_ore;
-    break;
-  case Material::Clay:
-    requires_ore = b.clay_robot_cost_ore;
-    break;
-  case Material::Obsidian:
-    requires_ore = b.obsidian_robot_cost_ore;
-    requires_clay = b.obsidian_robot_cost_clay;
-    break;
-  case Material::Geode:
-    requires_ore = b.geode_robot_cost_ore;
-    requires_obsidian = b.geode_robot_cost_obsidian;
-    break;
+    case Material::Ore:
+      requires_ore = b.ore_robot_cost_ore;
+      break;
+    case Material::Clay:
+      requires_ore = b.clay_robot_cost_ore;
+      break;
+    case Material::Obsidian:
+      requires_ore = b.obsidian_robot_cost_ore;
+      requires_clay = b.obsidian_robot_cost_clay;
+      break;
+    case Material::Geode:
+      requires_ore = b.geode_robot_cost_ore;
+      requires_obsidian = b.geode_robot_cost_obsidian;
+      break;
   }
   return {requires_ore, requires_clay, requires_obsidian};
 }
@@ -147,7 +156,7 @@ int LargestGeodes(const Blueprint &b) noexcept {
   return LargestGeodes(b, k_time, k_start_robots, MaterialQtyMap());
 }
 
-} // namespace day19
+}  // namespace day19
 
 TEST(AoC22, Day19) {
   const auto tb = day19::ReadBlueprints("19-sample");
@@ -155,6 +164,9 @@ TEST(AoC22, Day19) {
 
   const auto blueprints = day19::ReadBlueprints("19");
   EXPECT_EQ(blueprints.size(), 30);
+
+  const day19::IdGeodesList test_list = {{1, 9}, {2, 12}};
+  EXPECT_EQ(day19::QualityLevel(test_list), 33);
   /*
   std::vector<long> sums;
   long sum{0};
