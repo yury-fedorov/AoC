@@ -1,7 +1,6 @@
 #include <queue>
 
 #include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_join.h"
 #include "common.h"
 #include "re2/re2.h"
@@ -12,21 +11,11 @@ struct Conf {
   std::vector<std::string> next;
 };
 using Map = absl::flat_hash_map<std::string, Conf>;
-using Set = absl::flat_hash_set<std::string_view>; // open doors
-using Doors = std::vector<std::string_view>;       // open doors
+using Doors = std::vector<std::string_view>;  // open doors
 using StateKey =
-    std::tuple<std::string, std::string, int>; // open doors, position, time
-using StateCache = absl::flat_hash_map<StateKey, long>; // state - pressure
+    std::tuple<std::string, std::string, int>;  // open doors, position, time
+using StateCache = absl::flat_hash_map<StateKey, long>;  // state - pressure
 
-/*
-[[nodiscard]] long PressureInMinute(const Map &map, const Set &open) noexcept {
-  long out = 0;
-  for (const auto &ov : open) {
-    out += map.at(ov).rate;
-  }
-  return out;
-}
-*/
 [[nodiscard]] long PressureInMinute(const Map &map,
                                     const Doors &open) noexcept {
   long out = 0;
@@ -37,16 +26,6 @@ using StateCache = absl::flat_hash_map<StateKey, long>; // state - pressure
 }
 
 constexpr auto kDoorSeparator = " ";
-/*
-[[nodiscard]] std::string DoorsToStr(const Set &set) noexcept {
-  std::vector<std::string> ordered;
-  for (const auto &s : set) {
-    ordered.push_back(std::string(s));
-  }
-  r::sort(ordered);
-  return absl::StrJoin(ordered, kDoorSeparator);
-}
-*/
 
 [[nodiscard]] std::string DoorsToStr(Doors doors) noexcept {
   r::sort(doors);
@@ -57,49 +36,25 @@ constexpr auto kDoorSeparator = " ";
   return absl::StrSplit(doors, kDoorSeparator);
 }
 
-/*
-[[nodiscard]] long Pressure(std::string_view start, int to_go, const Map &map,
-                            std::shared_ptr<Set> open) noexcept {
-  if (to_go <= 0)
-    return 0;
-
-  // const auto key = State{start, to_go, open};
-  // static StateCache cache;
-  // auto i = cache.find(key);
-  // if ( i != cache.end() ) return i->second;
-
-  const auto &c = map.at(start);
-  const long pressure = PressureInMinute(map, *open);
-  long delta = 0;
-  const int in = static_cast<int>(c.next.size());
-  for (int i = -1; i < in; i++) {
-    long di = pressure;
-    if (i < 0) {
-      // opening valve?
-      if (c.rate <= 0)
-        continue; // no sense to spend time opening this broken valve
-      if (open->find(start) != open->end())
-        continue; // this one is already open
-      const auto open1 = std::make_shared<Set>(*open);
-      open1->insert(start);
-      di = Pressure(start, to_go - 1, map, open1);
-    } else {
-      // moving to another?
-      const auto &start1 = c.next[i];
-      di = Pressure(start1, to_go - 1, map, open);
-    }
-    delta = std::max(delta, di);
+bool RememberState(StateCache &states, const StateKey &key,
+                   long pressure) noexcept {
+  bool is_to_insert = false;
+  auto i = states.find(key);
+  if (i == states.end()) {
+    // the key does not yet exist, we just save it
+    is_to_insert = true;
+  } else if (i->second < pressure) {
+    // the key exists and we found better pressure value
+    is_to_insert = true;
   }
-  const long result = pressure + delta;
-  // cache.insert( {key, result} );
-  return result;
+  if (is_to_insert) states.insert({key, pressure});
+  return is_to_insert;
 }
-*/
 
-// version 2
-long Pressure(const Map &map) noexcept {
-  const auto kNoOpen = DoorsToStr(Doors{});
-  const auto kStartState = StateKey{kNoOpen, "AA", 0};
+constexpr int kT = 30;
+
+[[nodiscard]] long Pressure(const Map &map) noexcept {
+  const auto kStartState = StateKey{"", "AA", 0};
   auto states = StateCache{{kStartState, 0}};
   std::vector<StateKey> to_process = {kStartState};
   const auto priority = [&states](const StateKey &key) {
@@ -112,43 +67,53 @@ long Pressure(const Map &map) noexcept {
   std::priority_queue queue(to_process.begin(), to_process.end(), less);
   while (!queue.empty()) {
     auto next = queue.top();
-    const auto [open_doors, position, t0] = next;
     queue.pop();
 
-    const auto &c = map.at(position);
+    const auto [open_doors, position, t0] = next;
+    const int t1 = t0 + 1;
+    if (t1 > kT) continue;  // we end this request here
+
     const auto doors = StrToDoors(open_doors);
-    const long pressure = PressureInMinute(map, doors);
-    const auto t1 = t0 + 1;
-    const auto t1_key = StateKey{open_doors, position, t1};
-    /*
-        long delta = 0;
-        const int in = static_cast<int>(c.next.size());
-        for (int i = -1; i < in; i++) {
-          long di = pressure;
-          if (i < 0) {
-            // opening valve?
-            if (c.rate <= 0)
-              continue; // no sense to spend time opening this broken valve
-            if (open->find(start) != open->end())
-              continue; // this one is already open
-            const auto open1 = std::make_shared<Set>(*open);
-            open1->insert(start);
-            di = Pressure(start, to_go - 1, map, open1);
-          } else {
-            // moving to another?
-            const auto &start1 = c.next[i];
-            di = Pressure(start1, to_go - 1, map, open);
-          }
-          delta = std::max(delta, di);
+    const long pressure_t1 = PressureInMinute(map, doors) + states.at(next);
+    // everything is ready but position
+
+    const auto &c = map.at(position);
+    const int in = static_cast<int>(c.next.size());
+    for (int i = -1; i < in; i++) {
+      std::optional<StateKey> key_t1;
+      if (i < 0) {
+        // opening valve?
+        if (c.rate <= 0)
+          continue;  // no sense to spend time opening this broken valve
+        if (open_doors.find(position) != std::string::npos)
+          continue;  // this one is already open
+        auto doors_t1 = doors;
+        doors_t1.push_back(position);
+        r::sort(doors_t1);
+        key_t1 = StateKey{DoorsToStr(doors_t1), position, t1};
+      } else {
+        // moving to another?
+        const auto &position_t1 = c.next[i];
+        key_t1 = StateKey{open_doors, position_t1, t1};
+      }
+      if (key_t1.has_value()) {
+        if (RememberState(states, key_t1.value(), pressure_t1)) {
+          // this state is valuable, let's insert it to the processing queue
+          queue.push(key_t1.value());
         }
-        */
+      }
+    }
   }
-  return 0;
+  long max_pressure = 0;
+  for (const auto &[state, pressure] : states) {
+    const auto &[_, __, t] = state;
+    if (t == kT) max_pressure = std::max(max_pressure, pressure);
+  }
+  return max_pressure;
 }
 
 // open doors in format ,AA, ... ,ZZ,...
 // state - cur position - AA + open doors + time_passed --> maximum
-//
 
 [[nodiscard]] long Answer1(std::string_view file) noexcept {
   const auto data = ReadData(file);
@@ -169,10 +134,10 @@ long Pressure(const Map &map) noexcept {
   }
   return Pressure(map);
 }
-} // namespace day16
+}  // namespace day16
 
 TEST(AoC22, Day16) {
-  return; // TODO - not working yet
+  return;  // TODO - crash at map.at() call
   const auto a1 = day16::Answer1("16-sample");
   EXPECT_EQ(a1, 1651);
 }
