@@ -1,3 +1,5 @@
+#include <future>
+
 #include "absl/container/flat_hash_map.h"
 #include "common.h"
 #include "re2/re2.h"
@@ -63,13 +65,18 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   return result;
 }
 
-constexpr int k_time = 24;
-
 // we initially have 1 ore-collecting robot
-const MaterialQtyMap k_start_robots = {{Material::Ore, 1},
-                                       {Material::Clay, 0},
-                                       {Material::Obsidian, 0},
-                                       {Material::Geode, 0}};
+const MaterialQtyMap kStartRobots = {{Material::Ore, 1},
+                                     {Material::Clay, 0},
+                                     {Material::Obsidian, 0},
+                                     {Material::Geode, 0}};
+
+// ore -> universal can be spend between all types of robots
+// geode - ore + obsidian ( ore + clay ( ore ) )
+// we start with 1 ore robot - 24 ore
+// next step ore or clay robot
+// next step ore or clay or obsidian robot
+// next step ore ore clay ore obsidian or geode robot
 
 [[nodiscard]] OreClayObsidian Cost(const Blueprint &b,
                                    Material robot_type) noexcept {
@@ -109,19 +116,21 @@ const MaterialQtyMap k_start_robots = {{Material::Ore, 1},
   return {missing(a, aa), missing(b, ab), missing(c, ac)};
 }
 
+// helps to understand quickly if something is missing among materials
 [[nodiscard]] bool IsMissing(const OreClayObsidian &oco) noexcept {
   const auto [a, b, c] = oco;
   return a != 0 || b != 0 || c != 0;
 }
 
+// may I produce this type of robot with given amount of resources?
 [[nodiscard]] bool CanProduce(const Blueprint &b,
                               const MaterialQtyMap &materials,
                               Material robot_type) noexcept {
-  // const auto [ore, clay, obsidian] = Cost(b, robot_type);
   const auto missing = MissingForRobot(b, materials, robot_type);
   return !IsMissing(missing);
 }
 
+// produce the requested type of robot
 void Produce(const Blueprint &b, MaterialQtyMap &materials,
              MaterialQtyMap &robots, Material robot_type) noexcept {
   const auto [ore, clay, obsidian] = Cost(b, robot_type);
@@ -131,29 +140,117 @@ void Produce(const Blueprint &b, MaterialQtyMap &materials,
   robots[robot_type] += 1;
 }
 
-int LargestGeodes(const Blueprint &b, int time, MaterialQtyMap robots,
-                  MaterialQtyMap materials) noexcept {
-  if (time > 0) {
-    std::vector<std::optional<Material>> options = {
-        std::optional<Material>(), std::optional<Material>(Material::Ore),
-        std::optional<Material>(Material::Clay),
-        std::optional<Material>(Material::Obsidian),
-        std::optional<Material>(Material::Geode)};
-    int result = 0;
-    for (const auto &o : options) {
-      if (o.has_value()) {
-        // we try to construct a robot for this material
-      } else {
-        // we try not to do anything and just wait
-        // TODO how we pass back updated amount of material and robots?
-      }
-    }
+void Collect(const MaterialQtyMap &robots, MaterialQtyMap &materials,
+             int times = 1) noexcept {
+  for (const auto [type, qty] : robots) {
+    materials.at(type) += times * qty;
   }
-  return materials[Material::Geode];
 }
 
-int LargestGeodes(const Blueprint &b) noexcept {
-  return LargestGeodes(b, k_time, k_start_robots, MaterialQtyMap());
+// checks if we have all necessary robot types to produce the requested type of
+// robot ever without any further robot construction
+[[nodiscard]] bool EnoughRobotTypes(Material robot_type,
+                                    const Blueprint &blueprint,
+                                    const MaterialQtyMap &robots) noexcept {
+  const auto [ore, clay, obsidian] = Cost(blueprint, robot_type);
+  if (ore > 0 && robots.at(Material::Ore) == 0) return false;
+  if (clay > 0 && robots.at(Material::Clay) == 0) return false;
+  if (obsidian > 0 && robots.at(Material::Obsidian) == 0) return false;
+  return true;
+}
+
+// calculates how much time is requested to produce required type of robot
+// without any further robot construction (so just waiting)
+[[nodiscard]] std::optional<int> RequiredTime(
+    Material robot_type, const Blueprint &blueprint,
+    const MaterialQtyMap &robots, const MaterialQtyMap &materials) noexcept {
+  if (!EnoughRobotTypes(robot_type, blueprint, robots))
+    return std::nullopt;  // we never produce this robot
+  const auto oco = MissingForRobot(blueprint, materials, robot_type);
+  // if ( !IsMissing(oco) ) return 0; // no time to wait, we may produce
+  // immediately, all necessary materials are available
+  const auto [ore, clay, obsidian] = oco;  // missing
+  const auto get_time = [&robots](int missing, Material material) {
+    return static_cast<int>(
+        ceil(static_cast<double>(missing) / robots.at(material)));
+  };
+  const int t1 = get_time(ore, Material::Ore);
+  const int t2 = get_time(clay, Material::Clay);
+  const int t3 = get_time(obsidian, Material::Obsidian);
+  return std::max(std::max(t1, t2), t3);
+}
+
+int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
+                  const MaterialQtyMap &materials_t0,
+                  std::optional<Material> commitment = std::nullopt) noexcept {
+  if (time <= 0) return materials_t0.at(Material::Geode);
+  auto materials_t1{materials_t0};
+  Collect(robots, materials_t1);
+  if (time == 1) {
+    // no sense to invest anymore, only to wait
+    return materials_t1.at(Material::Geode);
+  }
+
+  const auto time_1 = time - 1;
+
+  if (commitment.has_value()) {
+    // we know what we have to produce next
+    const auto robot_type = commitment.value();
+    if (CanProduce(b, materials_t0, robot_type)) {
+      auto robots_t1{robots};
+      Produce(b, materials_t1, robots_t1, robot_type);
+      return LargestGeodes(b, time_1, robots_t1, materials_t1, std::nullopt);
+    }
+    return LargestGeodes(b, time_1, robots, materials_t1, commitment);
+  }
+
+  // we do not have any committment, we choose what to do
+  constexpr std::array options = {Material::Ore, Material::Clay,
+                                  Material::Obsidian, Material::Geode};
+
+  int result = 0;
+  for (const auto robot_type : options) {
+    // we try to construct a robot for this material
+    // we may do it only if:
+    // 1) all required types of material are being produced already (robots)
+    // 2) we have enough materials of all types for it
+
+    const auto required_time_option =
+        RequiredTime(robot_type, b, robots, materials_t0);
+    if (!required_time_option.has_value()) continue;  // not able at all
+    const int required_time = required_time_option.value();
+    if (required_time >= time) continue;  // no sense, too much time
+
+    int result_i;
+    if (required_time <= 0) {
+      // we produce immediately
+      auto robots_t1{robots};
+      auto materials_t1i{materials_t1};  // clone
+      Produce(b, materials_t1i, robots_t1, robot_type);
+      result_i =
+          LargestGeodes(b, time_1, robots_t1, materials_t1i, std::nullopt);
+    } else {
+      // we have to wait
+      result_i = LargestGeodes(b, time_1, robots, materials_t1, robot_type);
+    }
+    result = std::max(result, result_i);
+  }
+
+  return result;
+}
+
+int LargestGeodes(const Blueprint &b, int time) noexcept {
+  const MaterialQtyMap zero_materials = {{Material::Ore, 0},
+                                         {Material::Clay, 0},
+                                         {Material::Obsidian, 0},
+                                         {Material::Geode, 0}};
+  return LargestGeodes(b, time, kStartRobots, zero_materials);
+}
+
+int LargestGeodes1(const Blueprint &b) noexcept { return LargestGeodes(b, 24); }
+
+int64_t LargestGeodes2(const Blueprint &b) noexcept {
+  return LargestGeodes(b, 32);
 }
 
 }  // namespace day19
@@ -167,13 +264,24 @@ TEST(AoC22, Day19) {
 
   const day19::IdGeodesList test_list = {{1, 9}, {2, 12}};
   EXPECT_EQ(day19::QualityLevel(test_list), 33);
-  /*
-  std::vector<long> sums;
-  long sum{0};
-  const auto sum_highest_n = [&sums](size_t n) {
-    return std::accumulate(sums.rbegin(), sums.rbegin() + n, 0);
-  };
-  EXPECT_EQ(sum_highest_n(1), 70698);
-  EXPECT_EQ(sum_highest_n(3), 206643);
-   */
+
+  // if ( IsFastOnly() ) return; // 103 seconds
+  EXPECT_EQ(day19::LargestGeodes1(tb[0]), 9);
+  EXPECT_EQ(day19::LargestGeodes1(tb[1]), 12);
+
+  // answer 1
+  day19::IdGeodesList list;
+  for (const auto &b : blueprints) {
+    list[b.id] = day19::LargestGeodes1(b);
+  }
+  EXPECT_EQ(day19::QualityLevel(list), 600);
+
+  /*  long running
+    auto a = std::async(std::launch::async, [&blueprints]{ return
+    day19::LargestGeodes2( blueprints[0] ); }); auto b =
+    std::async(std::launch::async, [&blueprints]{ return day19::LargestGeodes2(
+    blueprints[1] ); }); auto c = std::async(std::launch::async, [&blueprints]{
+    return day19::LargestGeodes2( blueprints[2] ); }); EXPECT_EQ( a.get() *
+    b.get() * c.get(), 0);
+    */
 }
