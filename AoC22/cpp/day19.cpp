@@ -5,7 +5,7 @@
 #include "re2/re2.h"
 
 namespace day19 {
-enum class Material { Ore, Clay, Obsidian, Geode };
+enum class Material : int { Ore = 0, Clay, Obsidian, Geode };
 struct Blueprint {
   int id;
   int ore_robot_cost_ore;       // produces ore
@@ -15,14 +15,30 @@ struct Blueprint {
   int geode_robot_cost_ore;  // produces geode from ore and obsidian
   int geode_robot_cost_obsidian;
 };
-using MaterialQtyMap = absl::flat_hash_map<Material, int>;  // material, qty
+// using MaterialQtyMap = absl::flat_hash_map<Material, int>;  // material, qty
+using MaterialQtyMap = std::array<int, 4>;  // material, qty
 using OreClayObsidian = std::tuple<int, int, int>;
 using IdGeodesList = absl::flat_hash_map<int, int>;
 
-const MaterialQtyMap zero_materials = {{Material::Ore, 0},
-                                       {Material::Clay, 0},
-                                       {Material::Obsidian, 0},
-                                       {Material::Geode, 0}};
+constexpr MaterialQtyMap zero_materials = {0, 0, 0, 0};
+
+constexpr std::array kMaterials = {Material::Geode, Material::Obsidian,
+                                   Material::Clay, Material::Ore};
+
+[[nodiscard]] inline int ToIndex(Material material) noexcept {
+  const int index{static_cast<int>(material)};
+  EXPECT_TRUE(index >= 0 && index <= 3) << "Bad conversion: " << index;
+  return index;
+}
+
+[[nodiscard]] inline int At(const MaterialQtyMap &map,
+                            Material material) noexcept {
+  return map.at(ToIndex(material));
+}
+
+[[nodiscard]] inline int &At(MaterialQtyMap &map, Material material) noexcept {
+  return map.at(ToIndex(material));
+}
 
 [[nodiscard]] int64_t QualityLevel(const IdGeodesList &list) noexcept {
   int64_t sum{0};
@@ -105,9 +121,9 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
                                               const MaterialQtyMap &materials,
                                               Material robot_type) noexcept {
   const auto [a, b, c] = Cost(blueprint, robot_type);
-  const int aa = materials.at(Material::Ore);
-  const int ab = materials.at(Material::Clay);
-  const int ac = materials.at(Material::Obsidian);
+  const int aa = At(materials, Material::Ore);
+  const int ab = At(materials, Material::Clay);
+  const int ac = At(materials, Material::Obsidian);
   const auto missing = [](int required, int available) {
     const auto delta = available - required;
     return delta < 0 ? -delta : 0;
@@ -133,16 +149,17 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
 void Produce(const Blueprint &b, MaterialQtyMap &materials,
              MaterialQtyMap &robots, Material robot_type) noexcept {
   const auto [ore, clay, obsidian] = Cost(b, robot_type);
-  materials[Material::Ore] -= ore;
-  materials[Material::Clay] -= clay;
-  materials[Material::Obsidian] -= obsidian;
-  robots[robot_type] += 1;
+  At(materials, Material::Ore) -= ore;
+  At(materials, Material::Clay) -= clay;
+  At(materials, Material::Obsidian) -= obsidian;
+  At(robots, robot_type) += 1;
 }
 
 void Collect(const MaterialQtyMap &robots, MaterialQtyMap &materials,
              int times = 1) noexcept {
-  for (const auto [type, qty] : robots) {
-    materials.at(type) += times * qty;
+  for (const auto type : kMaterials) {
+    const auto qty = At(robots, type);
+    At(materials, type) += times * qty;
   }
 }
 
@@ -152,9 +169,9 @@ void Collect(const MaterialQtyMap &robots, MaterialQtyMap &materials,
                                     const Blueprint &blueprint,
                                     const MaterialQtyMap &robots) noexcept {
   const auto [ore, clay, obsidian] = Cost(blueprint, robot_type);
-  if (ore > 0 && robots.at(Material::Ore) == 0) return false;
-  if (clay > 0 && robots.at(Material::Clay) == 0) return false;
-  if (obsidian > 0 && robots.at(Material::Obsidian) == 0) return false;
+  if (ore > 0 && At(robots, Material::Ore) == 0) return false;
+  if (clay > 0 && At(robots, Material::Clay) == 0) return false;
+  if (obsidian > 0 && At(robots, Material::Obsidian) == 0) return false;
   return true;
 }
 
@@ -171,7 +188,7 @@ void Collect(const MaterialQtyMap &robots, MaterialQtyMap &materials,
   const auto [ore, clay, obsidian] = oco;  // missing
   const auto get_time = [&robots](int missing, Material material) {
     return static_cast<int>(
-        ceil(static_cast<double>(missing) / robots.at(material)));
+        ceil(static_cast<double>(missing) / At(robots, material)));
   };
   const int t1 = get_time(ore, Material::Ore);
   const int t2 = get_time(clay, Material::Clay);
@@ -179,18 +196,26 @@ void Collect(const MaterialQtyMap &robots, MaterialQtyMap &materials,
   return std::max(std::max(t1, t2), t3);
 }
 
-constexpr std::array kMaterials = {Material::Geode, Material::Obsidian,
-                                   Material::Clay, Material::Ore};
+/*
+OreClayObsidian OneGeode( const Blueprint &b ) noexcept {
+        int ore = b.geode_robot_cost_ore;
+        const int obsidian = b.geode_robot_cost_obsidian;
+        const int clay = obsidian * b.obsidian_robot_cost_clay;
+        ore += obsidian * b.obsidian_robot_cost_ore;
+        ore += clay * b.clay_robot_cost_ore;
+        return ore; // amount of ore to produce 1 geode
+}
+*/
 
 int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
                   const MaterialQtyMap &materials_t0,
                   std::optional<Material> commitment = std::nullopt) noexcept {
-  if (time <= 0) return materials_t0.at(Material::Geode);
+  if (time <= 0) return At(materials_t0, Material::Geode);
   auto materials_t1{materials_t0};
   Collect(robots, materials_t1);
   if (time == 1) {
     // no sense to invest anymore, only to wait
-    return materials_t1.at(Material::Geode);
+    return At(materials_t1, Material::Geode);
   }
 
   const auto time_1 = time - 1;
@@ -211,6 +236,37 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
   if (time == 2) {
     // has sense to invest only in
     options = {Material::Geode};
+  } else if (time == 3) {
+    if (CanProduce(b, materials_t0, Material::Geode))
+      options = {Material::Geode};
+    else {
+      // options = {Material::Geode, Material::Obsidian, Material::Clay};
+      // cannot produce immediately geode but may be we may pilot its
+      // production?
+      const auto oco = MissingForRobot(b, materials_t1, Material::Geode);
+      // if (IsMissing(oco)) {
+      // we check what is missing, if only one thing we produce it
+      const auto [ore, clay, obsidian] = oco;
+      if (ore > 0) {
+        // no optimization is possible: no sense to spend ore to produce fewer
+        // ore
+        return 0;
+      }
+      if (obsidian > 0) {
+        // if ( obsidian > 1 ) options = { Material::Geode }; // nothing to do
+        // else
+        options = {Material::Obsidian};  // we try to catch up with obsidian
+      }
+      // if ( clay < 3 ) options = {Material::Clay, Material::Geode};
+      // options = {Material::Geode, Material::Obsidian,Material::Clay};
+      /*
+      if ( ( clay + obsidian ) >= 3 ) {
+        // no chance to fix it
+        return 0;
+      }
+      */
+      // }
+    }
   }
 
   int result = 0;
@@ -246,11 +302,7 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
 
 int LargestGeodes(const Blueprint &b, int time) noexcept {
   // we initially have 1 ore-collecting robot
-  const MaterialQtyMap kStartRobots = {{Material::Ore, 1},
-                                       {Material::Clay, 0},
-                                       {Material::Obsidian, 0},
-                                       {Material::Geode, 0}};
-
+  constexpr MaterialQtyMap kStartRobots = {1, 0, 0, 0};
   return LargestGeodes(b, time, kStartRobots, zero_materials);
 }
 
@@ -272,8 +324,8 @@ TEST(AoC22, Day19) {
   const day19::IdGeodesList test_list = {{1, 9}, {2, 12}};
   EXPECT_EQ(day19::QualityLevel(test_list), 33);
 
-  if (IsFastOnly()) {
-    return; // 57 seconds
+  // if (IsFastOnly()) return;  // 57 seconds
+  if (false) {
     EXPECT_EQ(day19::LargestGeodes1(tb[0]), 9);
     EXPECT_EQ(day19::LargestGeodes1(tb[1]), 12);
 
