@@ -19,6 +19,11 @@ using MaterialQtyMap = absl::flat_hash_map<Material, int>;  // material, qty
 using OreClayObsidian = std::tuple<int, int, int>;
 using IdGeodesList = absl::flat_hash_map<int, int>;
 
+const MaterialQtyMap zero_materials = {{Material::Ore, 0},
+                                       {Material::Clay, 0},
+                                       {Material::Obsidian, 0},
+                                       {Material::Geode, 0}};
+
 [[nodiscard]] int64_t QualityLevel(const IdGeodesList &list) noexcept {
   int64_t sum{0};
   for (const auto [id, geodes] : list) {
@@ -64,12 +69,6 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   }
   return result;
 }
-
-// we initially have 1 ore-collecting robot
-const MaterialQtyMap kStartRobots = {{Material::Ore, 1},
-                                     {Material::Clay, 0},
-                                     {Material::Obsidian, 0},
-                                     {Material::Geode, 0}};
 
 // ore -> universal can be spend between all types of robots
 // geode - ore + obsidian ( ore + clay ( ore ) )
@@ -180,6 +179,9 @@ void Collect(const MaterialQtyMap &robots, MaterialQtyMap &materials,
   return std::max(std::max(t1, t2), t3);
 }
 
+constexpr std::array kMaterials = {Material::Geode, Material::Obsidian,
+                                   Material::Clay, Material::Ore};
+
 int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
                   const MaterialQtyMap &materials_t0,
                   std::optional<Material> commitment = std::nullopt) noexcept {
@@ -205,8 +207,11 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
   }
 
   // we do not have any committment, we choose what to do
-  constexpr std::array options = {Material::Ore, Material::Clay,
-                                  Material::Obsidian, Material::Geode};
+  absl::Span<const Material> options = kMaterials;
+  if (time == 2) {
+    // has sense to invest only in
+    options = {Material::Geode};
+  }
 
   int result = 0;
   for (const auto robot_type : options) {
@@ -240,10 +245,12 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
 }
 
 int LargestGeodes(const Blueprint &b, int time) noexcept {
-  const MaterialQtyMap zero_materials = {{Material::Ore, 0},
-                                         {Material::Clay, 0},
-                                         {Material::Obsidian, 0},
-                                         {Material::Geode, 0}};
+  // we initially have 1 ore-collecting robot
+  const MaterialQtyMap kStartRobots = {{Material::Ore, 1},
+                                       {Material::Clay, 0},
+                                       {Material::Obsidian, 0},
+                                       {Material::Geode, 0}};
+
   return LargestGeodes(b, time, kStartRobots, zero_materials);
 }
 
@@ -265,23 +272,28 @@ TEST(AoC22, Day19) {
   const day19::IdGeodesList test_list = {{1, 9}, {2, 12}};
   EXPECT_EQ(day19::QualityLevel(test_list), 33);
 
-  // if ( IsFastOnly() ) return; // 103 seconds
-  EXPECT_EQ(day19::LargestGeodes1(tb[0]), 9);
-  EXPECT_EQ(day19::LargestGeodes1(tb[1]), 12);
+  if (IsFastOnly()) {
+    return; // 57 seconds
+    EXPECT_EQ(day19::LargestGeodes1(tb[0]), 9);
+    EXPECT_EQ(day19::LargestGeodes1(tb[1]), 12);
 
-  // answer 1
-  day19::IdGeodesList list;
-  for (const auto &b : blueprints) {
-    list[b.id] = day19::LargestGeodes1(b);
+    // answer 1
+    day19::IdGeodesList list;
+    for (const auto &b : blueprints) {
+      list[b.id] = day19::LargestGeodes1(b);
+    }
+    EXPECT_EQ(day19::QualityLevel(list), 600);
   }
-  EXPECT_EQ(day19::QualityLevel(list), 600);
-
-  /*  long running
-    auto a = std::async(std::launch::async, [&blueprints]{ return
-    day19::LargestGeodes2( blueprints[0] ); }); auto b =
-    std::async(std::launch::async, [&blueprints]{ return day19::LargestGeodes2(
-    blueprints[1] ); }); auto c = std::async(std::launch::async, [&blueprints]{
-    return day19::LargestGeodes2( blueprints[2] ); }); EXPECT_EQ( a.get() *
-    b.get() * c.get(), 0);
-    */
+  if (false) {
+    auto a = std::async(std::launch::async, [&blueprints] {
+      return day19::LargestGeodes2(blueprints[0]);
+    });
+    auto b = std::async(std::launch::async, [&blueprints] {
+      return day19::LargestGeodes2(blueprints[1]);
+    });
+    auto c = std::async(std::launch::async, [&blueprints] {
+      return day19::LargestGeodes2(blueprints[2]);
+    });
+    EXPECT_EQ(a.get() * b.get() * c.get(), 0);
+  }
 }
