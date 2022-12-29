@@ -230,45 +230,18 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
     }
     return LargestGeodes(b, time_1, robots, materials_t1, commitment);
   }
-
+  constexpr auto options = kMaterials;
+  /*
+  constexpr std::array kGeode = {Material::Geode};
+  constexpr std::array kObsidian = {Material::Obsidian};
   // we do not have any committment, we choose what to do
   absl::Span<const Material> options = kMaterials;
   if (time == 2) {
     // has sense to invest only in
-    options = {Material::Geode};
-  } else if (time == 3) {
-    if (CanProduce(b, materials_t0, Material::Geode))
-      options = {Material::Geode};
-    else {
-      // options = {Material::Geode, Material::Obsidian, Material::Clay};
-      // cannot produce immediately geode but may be we may pilot its
-      // production?
-      const auto oco = MissingForRobot(b, materials_t1, Material::Geode);
-      // if (IsMissing(oco)) {
-      // we check what is missing, if only one thing we produce it
-      const auto [ore, clay, obsidian] = oco;
-      if (ore > 0) {
-        // no optimization is possible: no sense to spend ore to produce fewer
-        // ore
-        return 0;
-      }
-      if (obsidian > 0) {
-        // if ( obsidian > 1 ) options = { Material::Geode }; // nothing to do
-        // else
-        options = {Material::Obsidian};  // we try to catch up with obsidian
-      }
-      // if ( clay < 3 ) options = {Material::Clay, Material::Geode};
-      // options = {Material::Geode, Material::Obsidian,Material::Clay};
-      /*
-      if ( ( clay + obsidian ) >= 3 ) {
-        // no chance to fix it
-        return 0;
-      }
-      */
-      // }
-    }
-  }
-
+    options = kGeode;
+  } 
+  */
+  
   int result = 0;
   for (const auto robot_type : options) {
     // we try to construct a robot for this material
@@ -324,8 +297,8 @@ TEST(AoC22, Day19) {
   const day19::IdGeodesList test_list = {{1, 9}, {2, 12}};
   EXPECT_EQ(day19::QualityLevel(test_list), 33);
 
-  // if (IsFastOnly()) return;  // 57 seconds
-  if (false) {
+  if (IsFastOnly()) return;  // 733 seconds on local PC
+  if (true) {
     EXPECT_EQ(day19::LargestGeodes1(tb[0]), 9);
     EXPECT_EQ(day19::LargestGeodes1(tb[1]), 12);
 
