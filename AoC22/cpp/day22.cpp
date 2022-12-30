@@ -31,7 +31,7 @@ constexpr char TILE = '.';
 
 [[nodiscard]] int Answer1(std::string_view file) noexcept {
   const auto [map_binding, path] = day22::Load(file);
-  const day22::Map &map = map_binding;
+  const Map &map = map_binding;
   // You begin the path in the leftmost open tile of the top row of tiles.
   // Initially, you are facing to the right (from the perspective of how the map
   // is drawn).
@@ -108,6 +108,6 @@ constexpr char TILE = '.';
 TEST(AoC22, Day22) {
   EXPECT_EQ(day22::FinalPassword(6, 8, day22::Direction::kRight), 6032);
   EXPECT_EQ(day22::Answer1("22-sample"), 6032);
-  // TODO - 
   EXPECT_EQ(day22::Answer1("22"), 27436);
+  // TODO - part2
 }
