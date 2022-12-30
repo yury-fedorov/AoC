@@ -33,6 +33,7 @@ constexpr auto kDoorSeparator = " ";
 }
 
 [[nodiscard]] Doors StrToDoors(std::string_view doors) noexcept {
+  if ( doors.empty() ) return Doors{};
   return absl::StrSplit(doors, kDoorSeparator);
 }
 
@@ -137,7 +138,7 @@ constexpr int kT = 30;
 }  // namespace day16
 
 TEST(AoC22, Day16) {
-  return;  // TODO - crash at map.at() call
+  return;  // TODO - wrong answer
   const auto a1 = day16::Answer1("16-sample");
   EXPECT_EQ(a1, 1651);
 }
