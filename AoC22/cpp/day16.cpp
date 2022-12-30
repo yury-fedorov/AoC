@@ -11,10 +11,10 @@ struct Conf {
   std::vector<std::string> next;
 };
 using Map = absl::flat_hash_map<std::string, Conf>;
-using Doors = std::vector<std::string_view>;  // open doors
+using Doors = std::vector<std::string_view>; // open doors
 using StateKey =
-    std::tuple<std::string, std::string, int>;  // open doors, position, time
-using StateCache = absl::flat_hash_map<StateKey, long>;  // state - pressure
+    std::tuple<std::string, std::string, int>; // open doors, position, time
+using StateCache = absl::flat_hash_map<StateKey, long>; // state - pressure
 
 [[nodiscard]] long PressureInMinute(const Map &map,
                                     const Doors &open) noexcept {
@@ -33,7 +33,8 @@ constexpr auto kDoorSeparator = " ";
 }
 
 [[nodiscard]] Doors StrToDoors(std::string_view doors) noexcept {
-  if ( doors.empty() ) return Doors{};
+  if (doors.empty())
+    return Doors{};
   return absl::StrSplit(doors, kDoorSeparator);
 }
 
@@ -48,7 +49,8 @@ bool RememberState(StateCache &states, const StateKey &key,
     // the key exists and we found better pressure value
     is_to_insert = true;
   }
-  if (is_to_insert) states.insert({key, pressure});
+  if (is_to_insert)
+    states.insert({key, pressure});
   return is_to_insert;
 }
 
@@ -72,7 +74,8 @@ constexpr int kT = 30;
 
     const auto [open_doors, position, t0] = next;
     const int t1 = t0 + 1;
-    if (t1 > kT) continue;  // we end this request here
+    if (t1 > kT)
+      continue; // we end this request here
 
     const auto doors = StrToDoors(open_doors);
     const long pressure_t1 = PressureInMinute(map, doors) + states.at(next);
@@ -85,9 +88,9 @@ constexpr int kT = 30;
       if (i < 0) {
         // opening valve?
         if (c.rate <= 0)
-          continue;  // no sense to spend time opening this broken valve
+          continue; // no sense to spend time opening this broken valve
         if (open_doors.find(position) != std::string::npos)
-          continue;  // this one is already open
+          continue; // this one is already open
         auto doors_t1 = doors;
         doors_t1.push_back(position);
         r::sort(doors_t1);
@@ -98,6 +101,9 @@ constexpr int kT = 30;
         key_t1 = StateKey{open_doors, position_t1, t1};
       }
       if (key_t1.has_value()) {
+        // wrong - we may have temporal less pressure but it is ok
+        // good optimizer: have understanding where to go next: one of non
+        // opened doors and how much it costs us (in steps)
         if (RememberState(states, key_t1.value(), pressure_t1)) {
           // this state is valuable, let's insert it to the processing queue
           queue.push(key_t1.value());
@@ -106,9 +112,16 @@ constexpr int kT = 30;
     }
   }
   long max_pressure = 0;
+  StateKey best_key;
   for (const auto &[state, pressure] : states) {
     const auto &[_, __, t] = state;
-    if (t == kT) max_pressure = std::max(max_pressure, pressure);
+    if (t == kT) {
+      if (max_pressure < pressure) {
+        best_key = state;
+        max_pressure = pressure;
+      }
+      // max_pressure = std::max(max_pressure, pressure);
+    }
   }
   return max_pressure;
 }
@@ -135,10 +148,10 @@ constexpr int kT = 30;
   }
   return Pressure(map);
 }
-}  // namespace day16
+} // namespace day16
 
 TEST(AoC22, Day16) {
-  return;  // TODO - wrong answer
+  return; // TODO - wrong answer
   const auto a1 = day16::Answer1("16-sample");
   EXPECT_EQ(a1, 1651);
 }
