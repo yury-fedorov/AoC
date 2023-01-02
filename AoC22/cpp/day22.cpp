@@ -103,6 +103,13 @@ constexpr char TILE = '.';
   return FinalPassword(row + 1, column + 1, facing);
 }
 
+// cube in personal map (it is not generic)
+// 2R-7R 2D-4R 2U-9D
+// 1U-9L 1L-6L
+// 4R-2D 4L-6U
+// 7R-2R 7D-9R
+// 6U-4L 6L-1L
+
 } // namespace day22
 
 TEST(AoC22, Day22) {
