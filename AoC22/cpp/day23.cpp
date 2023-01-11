@@ -47,10 +47,26 @@ constexpr std::array kDirections = {Point{0, -1}, Point{0, 1}, Point{-1, 0},
   return elf;
 }
 
+[[nodiscard]] bool IsEmptyAround(const Map &map, Point position) noexcept {
+  const auto [x, y] = position;
+  for (int dx = -1; dx <= 1; dx++) {
+    for (int dy = -1; dy <= 1; dy++) {
+      if (dx == 0 && dy == 0)
+        continue;
+      const auto x1 = x + dx;
+      const auto y1 = y + dy;
+      if (map.find({x1, y1}) != map.end())
+        return false;
+    }
+  }
+  return true;
+}
+
 [[nodiscard]] Map Iteration(const Map &start, int order) noexcept {
   absl::flat_hash_map<Point, std::vector<Point>> to_from;
   for (const auto &elf : start) {
-    const auto elf_next = Next(start, elf, order);
+    const auto elf_next =
+        IsEmptyAround(start, elf) ? elf : Next(start, elf, order);
     to_from[elf_next].push_back(elf);
   }
   // now we cancel all movements where we have multiple from
@@ -93,8 +109,7 @@ std::tuple<Point, Point> MinMax(const Map &map) noexcept {
          map.size();
 }
 
-// TODO: only for debug purposes  
-std::string Print(const Map &map) {
+[[nodiscard]] std::string Print(const Map &map) noexcept {
   const auto [min, max] = MinMax(map);
   std::string out;
   for (int y = min.second; y <= max.second; y++) {
@@ -106,17 +121,39 @@ std::string Print(const Map &map) {
   return out;
 }
 
+[[nodiscard]] size_t Answer1(std::string_view file) noexcept {
+  day23::Map map = day23::ReadMap(file);
+  int order = 0;
+  for (int i = 0; i < 10; i++) {
+    map = day23::Iteration(map, order);
+    order = (order + 1) % 4;
+  }
+  return day23::CountEmpty(map);
+}
+
+[[nodiscard]] size_t Answer2(std::string_view file) noexcept {
+  day23::Map map = day23::ReadMap(file);
+  int order = 0;
+  size_t moves = 0;
+  auto prev = day23::Print(map);
+  while (true) {
+    map = day23::Iteration(map, order);
+    const auto next = day23::Print(map);
+    moves++;
+    if (prev == next)
+      return moves;
+    prev = next;
+    order = (order + 1) % 4;
+  }
+}
+
 } // namespace day23
 
 TEST(AoC22, Day23) {
-  const auto initial_map = day23::ReadMap("23-sample2");
-  day23::Map map = initial_map;
-  int order = 0;
-  for (int i = 0; i < 10; i++) {
-    const auto out0 = day23::Print(map);
-    map = day23::Iteration(map, order);
-    const auto out1 = day23::Print(map);
-    order = (order + 1) % 4;
-  }
-  // TODO - debug -- EXPECT_EQ( day23::CountEmpty(map), -1);
+  EXPECT_EQ(day23::Answer1("23-sample2"), 110);
+  EXPECT_EQ(day23::Answer1("23"), 4218);
+  EXPECT_EQ(day23::Answer2("23-sample2"), 20);
+  if (IsFastOnly())
+    return; // slow - takes 83 seconds
+  EXPECT_EQ(day23::Answer2("23"), 976);
 }
