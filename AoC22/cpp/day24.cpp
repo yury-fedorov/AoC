@@ -8,10 +8,49 @@ using Point = std::pair<int, int>;
 using Queue = absl::flat_hash_set<Point>;
 struct Blizzard {
   Point start;
-  Point direction; // dx, dy
-  Point last;      // from last to first
+  Point shift; // dx, dy
+  Point last;  // from last to first
   Point first;
 };
+
+const absl::flat_hash_map<char, Point> kDirectionMap = {
+    {'<', {-1, 0}}, {'^', {0, -1}}, {'v', {0, 1}}, {'>', {1, 0}}};
+
+constexpr char kWall = '#';
+
+[[nodiscard]] char At(const Map &map, Point at) noexcept {
+  const auto [x, y] = at;
+  if (x < 0 || y < 0 || y >= map.size())
+    return kWall;
+  const auto &line = map[y];
+  if (x >= line.length())
+    return kWall;
+  return line[x];
+}
+
+[[nodiscard]] Point Shift(Point point, Point shift) noexcept {
+  return {point.first + shift.first, point.second + shift.second};
+}
+
+[[nodiscard]] Point AtBorder(const Map &map, Point point,
+                             Point shift) noexcept {
+  while (true) {
+    const Point next = Shift(point, shift);
+    if (At(map, next) == kWall)
+      break;
+    point = next;
+  }
+  return point;
+}
+
+[[nodiscard]] Blizzard CreateBlizzard(const Map &map, Point start) noexcept {
+  const char direction = At(map, start);
+  const Point shift = kDirectionMap.at(direction);
+  const Point negative_shift{-shift.first, -shift.second};
+  const Point last = AtBorder(map, start, shift);
+  const Point first = AtBorder(map, start, negative_shift);
+  return {start, shift, last, first};
+}
 
 using Blizzards = std::vector<Blizzard>;
 [[nodiscard]] Point Position(const Map &map, Point start, size_t t) noexcept {
@@ -25,13 +64,20 @@ using Blizzards = std::vector<Blizzard>;
   return abs(ax - bx) + abs(ay - by);
 }
 
+[[nodiscard]] constexpr int Index(std::string_view line) noexcept {
+  return line.find('.');
+}
+
 [[nodiscard]] size_t Answer1(const Map &map) noexcept {
   // TODO
-  Point start;
-  Point finish;
+  Point start{Index(map[0]), 0};
+  const int y_max = map.size() - 1;
+  Point finish{Index(map[y_max]), y_max};
   const auto till_finish = [&finish](const Point p) {
     return Distance(finish, p);
   };
+  return till_finish(
+      start); // 145 min, 152 too low, 160 too low (10%), 174 too low (20%)
 
   size_t t{0};
   Queue frontline = {start};
@@ -40,6 +86,8 @@ using Blizzards = std::vector<Blizzard>;
     t++;
     Queue next;
     for (const Point &p0 : frontline) {
+      // logic on current state the cell can be occupied by a blizzard
+      // but it must be free on the next step
       // 5 options: up, down, right, left, stay
       Point p1;
       if (p1 == finish)
