@@ -107,41 +107,13 @@ constexpr char kGround = '.';
   return current_positions;
 }
 
-// XXX only for debug purposes
-[[nodiscard]] std::string Print(const Map &map,
-                                const Points &blizzards) noexcept {
-  std::string out;
-  const int max_y = map.size();
-  for (int y = 0; y < max_y; y++) {
-    const auto &line = map.at(y);
-    const int max_x = line.size();
-    for (int x = 0; x < max_x; x++) {
-      const Point p{x, y};
-      char c = At(map, p);
-      if (c != kWall) {
-        c = blizzards.find(p) == blizzards.end() ? '.' : '*';
-      }
-      out += c;
-    }
-    out += '\n';
-  }
-  return out;
-}
-
-[[nodiscard]] int Answer1(const Map &map) noexcept {
-  const auto blizzards = InitBlizzards(map);
-  const auto index = [](std::string_view line) -> int {
-    return line.find(kGround);
-  };
-  Point start{index(map[0]), 0};
-  const int y_max = map.size() - 1;
-  Point finish{index(map[y_max]), y_max};
-  int t{0};
+[[nodiscard]] int MinimalTime(const Map &map, const Blizzards &blizzards,
+                              Point start, Point finish, int t0) noexcept {
+  int t{t0};
   Points frontline = {start};
   while (!frontline.empty()) {
     t++;
     const auto positions_blizzards = BlizzardsAt(blizzards, t);
-    const auto out = Print(map, positions_blizzards);
     const auto is_free = [&map, &positions_blizzards](Point p) -> bool {
       return At(map, p) != kWall &&
              positions_blizzards.find(p) == positions_blizzards.end();
@@ -165,16 +137,30 @@ constexpr char kGround = '.';
   return t;
 }
 
-[[nodiscard]] int Solution(std::string_view file) noexcept {
-  return Answer1(ReadData(file));
+using Answers = std::pair<int, int>;
+
+[[nodiscard]] Answers Solution(std::string_view file) noexcept {
+  const auto map = ReadData(file);
+  const auto blizzards = InitBlizzards(map);
+  const auto index = [](std::string_view line) -> int {
+    return line.find(kGround);
+  };
+  const Point start{index(map[0]), 0};
+  const int y_max = map.size() - 1;
+  const Point finish{index(map[y_max]), y_max};
+  const int t1 = MinimalTime(map, blizzards, start, finish, 0);
+  const int t2 = MinimalTime(map, blizzards, finish, start, t1);
+  const int t3 = MinimalTime(map, blizzards, start, finish, t2);
+  return Answers{t1, t3};
 }
 
 } // namespace day24
 
 TEST(AoC22, Day24) {
-  EXPECT_EQ(day24::Solution("24-sample"), 18);
-  // 147 min
-  // 145 min, 152 too low, 160 too low (10%), 174 too low (20%)
-  // 224 -- not right
-  EXPECT_EQ(day24::Solution("24"), 0);
+  const day24::Answers test{18, 54};
+  EXPECT_EQ(day24::Solution("24-sample"), test);
+  if (IsFastOnly())
+    return; // takes 22 seconds
+  const day24::Answers answers{224, 820};
+  EXPECT_EQ(day24::Solution("24"), answers);
 }
