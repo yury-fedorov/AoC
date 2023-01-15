@@ -124,8 +124,8 @@ constexpr char kGround = '.';
     t++;
     const auto positions_blizzards = BlizzardsAt(blizzards, t);
     const auto is_free = [&map, &positions_blizzards](Point p) -> bool {
-      return At(map, p) == kWall ||
-             positions_blizzards.find(p) != positions_blizzards.end();
+      return At(map, p) != kWall &&
+             positions_blizzards.find(p) == positions_blizzards.end();
     };
     Points next;
     for (const Point &p0 : frontline) {
