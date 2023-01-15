@@ -62,7 +62,7 @@ constexpr char kGround = '.';
   const Point first = AtBorder(map, start, backward_shift);
   const auto z = shift.first != 0 ? [](Point p) { return p.first; }
                                   : [](Point p) { return p.second; };
-  const int distance = abs(z(last) - z(first));
+  const int distance = abs(z(last) - z(first)) + 1;
   return {start, shift, last, first, distance};
 }
 
@@ -92,10 +92,10 @@ constexpr char kGround = '.';
 
 [[nodiscard]] Point Position(const Blizzard &b, int t) noexcept {
   const auto tf = t % b.distance;
-  const auto d = Distance(b.start, b.last);
-  const bool is_restart = d > tf;
+  const auto d = Distance(b.start, b.last) + 1;
+  const bool is_restart = tf >= d;
   const auto start = is_restart ? b.first : b.start;
-  const auto n = is_restart ? (tf - d - 1) : tf;
+  const auto n = is_restart ? (tf - d) : tf;
   return Shift(start, b.shift, n);
 }
 
@@ -107,6 +107,27 @@ constexpr char kGround = '.';
   return current_positions;
 }
 
+// XXX only for debug purposes
+[[nodiscard]] std::string Print(const Map &map,
+                                const Points &blizzards) noexcept {
+  std::string out;
+  const int max_y = map.size();
+  for (int y = 0; y < max_y; y++) {
+    const auto &line = map.at(y);
+    const int max_x = line.size();
+    for (int x = 0; x < max_x; x++) {
+      const Point p{x, y};
+      char c = At(map, p);
+      if (c != kWall) {
+        c = blizzards.find(p) == blizzards.end() ? '.' : '*';
+      }
+      out += c;
+    }
+    out += '\n';
+  }
+  return out;
+}
+
 [[nodiscard]] int Answer1(const Map &map) noexcept {
   const auto blizzards = InitBlizzards(map);
   const auto index = [](std::string_view line) -> int {
@@ -115,14 +136,12 @@ constexpr char kGround = '.';
   Point start{index(map[0]), 0};
   const int y_max = map.size() - 1;
   Point finish{index(map[y_max]), y_max};
-  const auto till_finish = [&finish](const Point p) {
-    return Distance(finish, p);
-  };
   int t{0};
   Points frontline = {start};
   while (!frontline.empty()) {
     t++;
     const auto positions_blizzards = BlizzardsAt(blizzards, t);
+    const auto out = Print(map, positions_blizzards);
     const auto is_free = [&map, &positions_blizzards](Point p) -> bool {
       return At(map, p) != kWall &&
              positions_blizzards.find(p) == positions_blizzards.end();
@@ -156,5 +175,6 @@ TEST(AoC22, Day24) {
   EXPECT_EQ(day24::Solution("24-sample"), 18);
   // 147 min
   // 145 min, 152 too low, 160 too low (10%), 174 too low (20%)
-  // EXPECT_EQ(day24::Solution("24"), 0);
+  // 224 -- not right
+  EXPECT_EQ(day24::Solution("24"), 0);
 }
