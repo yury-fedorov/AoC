@@ -1,22 +1,33 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "common.h"
+
 namespace day24 {
 
 using Map = std::vector<std::string>;
 using Point = std::pair<int, int>;
-using Queue = absl::flat_hash_set<Point>;
+using Points = absl::flat_hash_set<Point>;
 struct Blizzard {
   Point start;
   Point shift; // dx, dy
   Point last;  // from last to first
   Point first;
+  int distance;
 };
+using Blizzards = std::vector<Blizzard>;
+
+const Point kUp{0, -1};
+const Point kLeft{-1, 0};
+const Point kDown{0, 1};
+const Point kRight{1, 0};
 
 const absl::flat_hash_map<char, Point> kDirectionMap = {
-    {'<', {-1, 0}}, {'^', {0, -1}}, {'v', {0, 1}}, {'>', {1, 0}}};
+    {'<', kLeft}, {'^', kUp}, {'v', kDown}, {'>', kRight}};
+
+const std::array kOptions = {kRight, kDown, Point{0, 0}, kUp, kLeft};
 
 constexpr char kWall = '#';
+constexpr char kGround = '.';
 
 [[nodiscard]] char At(const Map &map, Point at) noexcept {
   const auto [x, y] = at;
@@ -28,8 +39,8 @@ constexpr char kWall = '#';
   return line[x];
 }
 
-[[nodiscard]] Point Shift(Point point, Point shift) noexcept {
-  return {point.first + shift.first, point.second + shift.second};
+[[nodiscard]] Point Shift(Point point, Point shift, int n = 1) noexcept {
+  return {point.first + (n * shift.first), point.second + (n * shift.second)};
 }
 
 [[nodiscard]] Point AtBorder(const Map &map, Point point,
@@ -46,16 +57,31 @@ constexpr char kWall = '#';
 [[nodiscard]] Blizzard CreateBlizzard(const Map &map, Point start) noexcept {
   const char direction = At(map, start);
   const Point shift = kDirectionMap.at(direction);
-  const Point negative_shift{-shift.first, -shift.second};
+  const Point backward_shift{-shift.first, -shift.second};
   const Point last = AtBorder(map, start, shift);
-  const Point first = AtBorder(map, start, negative_shift);
-  return {start, shift, last, first};
+  const Point first = AtBorder(map, start, backward_shift);
+  const auto z = shift.first != 0 ? [](Point p) { return p.first; }
+                                  : [](Point p) { return p.second; };
+  const int distance = abs(z(last) - z(first));
+  return {start, shift, last, first, distance};
 }
 
-using Blizzards = std::vector<Blizzard>;
-[[nodiscard]] Point Position(const Map &map, Point start, size_t t) noexcept {
-  // TODO (direction, size of moving, last, first position)
-  return start;
+[[nodiscard]] Blizzards InitBlizzards(const Map &map) noexcept {
+  const int y_n = map.size();
+  const auto is_blizzard = [](char c) { return c != kWall && c != kGround; };
+  Blizzards blizzards;
+  for (int y = 0; y < y_n; y++) {
+    const auto &line = map.at(y);
+    const int x_n = line.size();
+    for (int x = 0; x <= x_n; x++) {
+      const Point p{x, y};
+      const char c = At(map, p);
+      if (is_blizzard(c)) {
+        blizzards.emplace_back(CreateBlizzard(map, p));
+      }
+    }
+  }
+  return blizzards;
 }
 
 [[nodiscard]] size_t Distance(Point a, Point b) noexcept {
@@ -64,56 +90,71 @@ using Blizzards = std::vector<Blizzard>;
   return abs(ax - bx) + abs(ay - by);
 }
 
-[[nodiscard]] constexpr int Index(std::string_view line) noexcept {
-  return line.find('.');
+[[nodiscard]] Point Position(const Blizzard &b, int t) noexcept {
+  const auto tf = t % b.distance;
+  const auto d = Distance(b.start, b.last);
+  const bool is_restart = d > tf;
+  const auto start = is_restart ? b.first : b.start;
+  const auto n = is_restart ? (tf - d - 1) : tf;
+  return Shift(start, b.shift, n);
 }
 
-[[nodiscard]] size_t Answer1(const Map &map) noexcept {
-  // TODO
-  Point start{Index(map[0]), 0};
+[[nodiscard]] Points BlizzardsAt(const Blizzards &blizzards, int t) noexcept {
+  Points current_positions;
+  for (const auto &b : blizzards) {
+    current_positions.insert(Position(b, t));
+  }
+  return current_positions;
+}
+
+[[nodiscard]] int Answer1(const Map &map) noexcept {
+  const auto blizzards = InitBlizzards(map);
+  const auto index = [](std::string_view line) -> int {
+    return line.find(kGround);
+  };
+  Point start{index(map[0]), 0};
   const int y_max = map.size() - 1;
-  Point finish{Index(map[y_max]), y_max};
+  Point finish{index(map[y_max]), y_max};
   const auto till_finish = [&finish](const Point p) {
     return Distance(finish, p);
   };
-  return till_finish(
-      start); // 145 min, 152 too low, 160 too low (10%), 174 too low (20%)
-
-  size_t t{0};
-  Queue frontline = {start};
-  while (true) {
-    break;
+  int t{0};
+  Points frontline = {start};
+  while (!frontline.empty()) {
     t++;
-    Queue next;
+    const auto positions_blizzards = BlizzardsAt(blizzards, t);
+    const auto is_free = [&map, &positions_blizzards](Point p) -> bool {
+      return At(map, p) == kWall ||
+             positions_blizzards.find(p) != positions_blizzards.end();
+    };
+    Points next;
     for (const Point &p0 : frontline) {
       // logic on current state the cell can be occupied by a blizzard
       // but it must be free on the next step
       // 5 options: up, down, right, left, stay
-      Point p1;
-      if (p1 == finish)
-        break;
+      for (const Point &s : kOptions) {
+        const Point p1 = Shift(p0, s);
+        if (p1 == finish)
+          return t;
+        if (is_free(p1)) {
+          next.emplace(p1);
+        }
+      }
     }
-    /*
-    constexpr size_t kMaxDelay = 1; // we consider at max n cells delay to be in
-    optimal const auto [min, max] = absl::c_minmax_element( next.begin(),
-    next.end(),
-    [&till_finish](auto a, auto b) {
-      return till_finish(a) < till_finish(b);
-    } );
-    const auto min_remains = till_finish(*min);
-    const auto max_remains = till_finish(*max);
-    if ( max_remains - min_remains > kMaxDelay ) {
-      // we need to remove all elements which are too dist
-    }
-    break; // TODO
-    */
+    frontline = next;
   }
   return t;
+}
+
+[[nodiscard]] int Solution(std::string_view file) noexcept {
+  return Answer1(ReadData(file));
 }
 
 } // namespace day24
 
 TEST(AoC22, Day24) {
-  const day24::Map map = ReadData("24");
-  EXPECT_EQ(day24::Answer1(map), 0);
+  EXPECT_EQ(day24::Solution("24-sample"), 18);
+  // 147 min
+  // 145 min, 152 too low, 160 too low (10%), 174 too low (20%)
+  // EXPECT_EQ(day24::Solution("24"), 0);
 }
