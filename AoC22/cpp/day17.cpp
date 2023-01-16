@@ -1,3 +1,4 @@
+#include "absl/container/flat_hash_map.h"
 #include "common.h"
 
 namespace day17 {
@@ -7,10 +8,11 @@ using Point = std::pair<int, Long>;
 using Chamber = std::deque<std::string>; // as we insert in the beginning
 using Rock = std::vector<Point>;
 constexpr int kChamberWidth = 7;
+using Profile = std::array<uint8_t, kChamberWidth>;
 
 struct JetPattern {
   std::string_view pattern;
-  size_t position;
+  uint16_t position;
   char next() noexcept {
     const char next = pattern[position];
     position = (position + 1) % pattern.length();
@@ -96,9 +98,9 @@ void FallOnePiece(Chamber &chamber, JetPattern &jet, int rock_id) noexcept {
         SetRock(chamber, {px + x, py + y});
       }
       // remove all empty lines
-      while ( IsEmpty(chamber.front() ) ) {
+      while (IsEmpty(chamber.front())) {
         chamber.pop_front();
-      } 
+      }
       break;
     }
     // rock falls one unit
@@ -117,11 +119,56 @@ void FallOnePiece(Chamber &chamber, JetPattern &jet, int rock_id) noexcept {
   return CountLines(chamber);
 }
 
+[[nodiscard]] Profile GetProfile(const Chamber &chamber) noexcept {
+  Profile profile{0};
+  const uint8_t max_depth =
+      static_cast<uint8_t>(std::min(255LL, static_cast<Long>(chamber.size())));
+  for (int x = 0; x < kChamberWidth; x++) {
+    uint8_t depth{0};
+    for (; depth < max_depth && chamber[depth][x] != kRockPiece; depth++) {
+    }
+    profile[x] = depth;
+  }
+  return profile;
+}
+
+using State =
+    std::tuple<uint16_t, uint8_t, Profile>; // position - 10092 long line,
+                                            // rock_id 5 values, profile
+using StateMark = std::pair<Long, Long>;    // rock_id, lines
+using Cache = absl::flat_hash_map<State, StateMark>;
+
+[[nodiscard]] size_t Answer2(std::string_view jet_pattern_file) noexcept {
+  const auto data = ReadData(jet_pattern_file).at(0);
+  constexpr Long n{1'000'000'000'000LL};
+  JetPattern jet{data, 0};
+  Chamber chamber;
+  Cache cache;
+  const uint8_t rock_count = kRocks.size();
+  Long loop_size{0};
+  Long loop_count{0};
+  for (Long rock_id = 0; rock_id < n; rock_id++) {
+    const uint8_t small_rock_id = rock_id % rock_count;
+    FallOnePiece(chamber, jet, small_rock_id);
+    const State state{jet.position, small_rock_id, GetProfile(chamber)};
+    const StateMark mark{rock_id, CountLines(chamber)};
+    const auto [iterator, is_inserted] = cache.try_emplace(state, mark);
+    if (!is_inserted) {
+      // now we may skip some
+      const auto m0 = iterator->second; // what position was hitted
+      loop_size = cache.size();
+      loop_count = n / loop_size;
+      rock_id = loop_count * loop_size;
+    }
+  }
+  return CountLines(chamber) + ((loop_count - 1) * loop_size);
+}
+
 } // namespace day17
 
 TEST(AoC22, Day17) {
   // XXX if (IsFastOnly()) return;  // TODO - no solution yet
-  const auto answer1 = day17::Answer1("17-sample");
-  EXPECT_EQ(answer1, 3068);
-  EXPECT_EQ(day17::Answer1("17"), 3217);  
+  EXPECT_EQ(day17::Answer1("17-sample"), 3068);
+  EXPECT_EQ(day17::Answer1("17"), 3217);
+  EXPECT_EQ(day17::Answer2("17-sample"), 1514285714288LL);
 }
