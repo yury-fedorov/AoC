@@ -4,7 +4,7 @@ namespace day17 {
 
 using Long = long long;
 using Point = std::pair<int, Long>;
-using Chamber = std::deque<std::string>;  // as we insert in the beginning
+using Chamber = std::deque<std::string>; // as we insert in the beginning
 using Rock = std::vector<Point>;
 constexpr int kChamberWidth = 7;
 
@@ -50,9 +50,11 @@ void SetRock(Chamber &chamber, Point point) noexcept {
 
 [[nodiscard]] bool IsFeasible(const Chamber &chamber, Point point) noexcept {
   const auto [x, y] = point;
-  if (chamber.size() >= y || y < 0 || x < 0) return false;
+  if (y >= chamber.size() || y < 0 || x < 0)
+    return false;
   const auto &line = chamber.at(y);
-  if (line.size() >= x) return false;
+  if (x >= line.size())
+    return false;
   return line[x] == '.';
 }
 
@@ -60,7 +62,9 @@ void SetRock(Chamber &chamber, Point point) noexcept {
                               Point shift) noexcept {
   const auto [dx, dy] = shift;
   for (const auto [x, y] : rock) {
-    if (!IsFeasible(chamber, Point{x + dx, y + dy})) return false;
+    const bool is_feasible = IsFeasible(chamber, Point{x + dx, y + dy});
+    if (!is_feasible)
+      return false;
   }
   return true;
 }
@@ -71,19 +75,17 @@ void FallOnePiece(Chamber &chamber, JetPattern &jet, int rock_id) noexcept {
   // (or the floor, if there isn't one).
   const Rock &rock = kRocks.at(rock_id);
   const int rock_height = kRockHeightList.at(rock_id);
-  const int additional_height =
-      3 + rock_height;  // we need to add to manipulate chamber
-  const Long not_empty_lines = CountLines(chamber);
-  const int to_add = additional_height - (chamber.size() - not_empty_lines);
-  for (int i = 0; i < to_add; i++) {
+  const int additional_height = 3 + rock_height;
+  for (int i = 0; i < additional_height; i++) {
     chamber.push_front(std::string(kEmptyLine));
   }
-  int x = 2;   // left side
-  Long y = 0;  // up side
+  int x = 2;  // left side
+  Long y = 0; // up side
   // now the chamber is fixed in size till the next piece
   while (true) {
-    const int wind_direction = jet.next() == '<' ? -1 : 1;
-    const auto x1 = x + wind_direction;
+    const int gas_direction = jet.next() == '<' ? -1 : 1;
+    // gas pushes rock (left or right)
+    const auto x1 = x + gas_direction;
     if (IsFeasible(chamber, rock, {x1, y})) {
       x = x1;
     }
@@ -93,8 +95,13 @@ void FallOnePiece(Chamber &chamber, JetPattern &jet, int rock_id) noexcept {
       for (const auto &[px, py] : rock) {
         SetRock(chamber, {px + x, py + y});
       }
+      // remove all empty lines
+      while ( IsEmpty(chamber.front() ) ) {
+        chamber.pop_front();
+      } 
       break;
     }
+    // rock falls one unit
     y = y1;
   }
 }
@@ -110,10 +117,11 @@ void FallOnePiece(Chamber &chamber, JetPattern &jet, int rock_id) noexcept {
   return CountLines(chamber);
 }
 
-}  // namespace day17
+} // namespace day17
 
 TEST(AoC22, Day17) {
   // XXX if (IsFastOnly()) return;  // TODO - no solution yet
   const auto answer1 = day17::Answer1("17-sample");
   EXPECT_EQ(answer1, 3068);
+  EXPECT_EQ(day17::Answer1("17"), 3217);  
 }
