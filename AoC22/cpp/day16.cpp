@@ -113,7 +113,6 @@ void RemoveNoPressure(Doors &doors, const Map &map) noexcept {
   });
 }
 
-/*
 // highest rates at the beginning with shortest path to it
 void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   absl::c_sort(doors, [&map, from](const auto &a, const auto &b) {
@@ -122,7 +121,6 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
     return (map.at(a).rate - ad) > (map.at(b).rate - bd);
   });
 }
-*/
 
 [[nodiscard]] long Pressure(const Map &map, std::string_view start,
                             const Doors &open, int t_left,
@@ -139,6 +137,7 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
     const auto path = SequenceFast(map, start, target.value());
     const auto dt = path.size() + 1;  // 1 - to open the door
     const auto t1 = t_left - dt;
+    if ( t1 <= 0 ) return t_left * last_minute;
     Doors open1{open};
     open1.push_back(target.value());
     const auto pressure =
@@ -154,7 +153,7 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   // 3. remove no pressure doors
   RemoveNoPressure(doors, map);
   // 4. order first high rated doors (could try to optimize: top 50%)
-  // Order(map, doors, start);
+  Order(map, doors, start);
   long pressure{0};
   for (const auto &target : doors) {
     const long cur_pressure = Pressure(map, start, open, t_left, target);
