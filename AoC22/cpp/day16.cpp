@@ -1,3 +1,4 @@
+#include <deque>
 #include <queue>
 
 #include "absl/container/flat_hash_map.h"
@@ -137,7 +138,7 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
     const auto path = SequenceFast(map, start, target.value());
     const auto dt = path.size() + 1;  // 1 - to open the door
     const auto t1 = t_left - dt;
-    if ( t1 <= 0 ) return t_left * last_minute;
+    if (t1 <= 0) return t_left * last_minute;
     Doors open1{open};
     open1.push_back(target.value());
     const auto pressure =
@@ -154,7 +155,7 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   RemoveNoPressure(doors, map);
   // 4. order first high rated doors (could try to optimize: top 50%)
   Order(map, doors, start);
-  long pressure{0};
+  long pressure{t_left * last_minute};
   for (const auto &target : doors) {
     const long cur_pressure = Pressure(map, start, open, t_left, target);
     pressure = std::max(pressure, cur_pressure);
@@ -162,8 +163,73 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   return pressure;
 }
 
-// open doors in format ,AA, ... ,ZZ,...
-[[nodiscard]] long Answer1(std::string_view file) noexcept {
+[[nodiscard]] long Pressure(const Map &map, std::string_view cur_door,
+                            std::deque<std::string_view> sequence,
+                            int t_max) noexcept {
+  long pressure{0};
+  Doors open;
+  for (int t{0}; t < t_max;) {
+    const auto last_minute = PressureInMinute(map, open);
+    int dt;
+    if (sequence.empty()) {
+      dt = t_max;
+    } else {
+      const auto target = sequence.front();
+      sequence.pop_front();
+      const auto path = SequenceFast(map, cur_door, target);
+      dt = path.size() + 1;  // 1 - to open the door
+      open.push_back(target);
+      cur_door = target;
+    }
+    const auto t1{t + dt};
+    const auto edt = t1 < t_max ? dt : (t_max - t);
+    pressure += edt * last_minute;
+    t += edt;
+    // EXPECT_TRUE(false) << "t=" << t << " pressure= " << pressure << " cur
+    // door = " << target;
+  }
+  return pressure;
+}
+
+[[nodiscard]] long Pressure(const Map &map, std::string_view cur_door,
+                            Doors open, int t_max) noexcept {
+  if (t_max < 0) return 0;
+  const auto last_minute = PressureInMinute(map, open);
+  // 1. get all doors
+  Doors doors = AllDoors(map);
+  // 2. remove opened doors
+  RemoveOpened(doors, open);
+  // 3. remove no pressure doors
+  RemoveNoPressure(doors, map);
+  constexpr bool kIsOptimized = false;
+  if (kIsOptimized) {
+    // 4. order first high rated doors (could try to optimize: top 50%)
+    Order(map, doors, cur_door);
+    const auto n{doors.size()};
+    // 4379 - not right answer
+    constexpr size_t kMaxHead =
+        5;  // with 3 - 3735 (too high) 4 - 4149 (too high), 5 - 4149, no
+            // restrict - 4442 -- too high?
+    if (n > kMaxHead) {
+      doors.resize(kMaxHead);
+    }
+  }
+  long pressure{t_max * last_minute};
+  for (const auto &target : doors) {
+    const auto path = SequenceFast(map, cur_door, target);
+    const auto dt = path.size() + 1;  // 1 - to open the door
+    const auto t1 = t_max - dt;
+    if (t1 < 0) continue;  // no sense to go
+    long cur_pressure = dt * last_minute;
+    Doors open1{open};
+    open1.push_back(target);
+    cur_pressure += Pressure(map, target, open1, t1);
+    pressure = std::max(pressure, cur_pressure);
+  }
+  return pressure;
+}
+
+[[nodiscard]] Map ReadMap(std::string_view file) noexcept {
   const auto data = ReadData(file);
   // Valve HH has flow rate=22; tunnel leads to valve GG
   // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
@@ -180,13 +246,29 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
     } else
       EXPECT_TRUE(false) << line;
   }
+  return map;
+}
+
+// open doors in format ,AA, ... ,ZZ,...
+[[nodiscard]] long Answer1(std::string_view file) noexcept {
+  const auto map = ReadMap(file);
   return Pressure(map, "AA", Doors{}, kT, std::nullopt);
 }
 
 }  // namespace day16
 
 TEST(AoC22, Day16) {
-  // return;  // TODO - wrong answer
-  const auto a1 = day16::Answer1("16-sample");
-  EXPECT_EQ(a1, 1651);
+  std::deque<std::string_view> test_seq = {"DD", "BB", "JJ", "HH", "EE", "CC"};
+  const auto test_map = day16::ReadMap("16-sample");
+  EXPECT_EQ(day16::Pressure(test_map, "AA", test_seq, day16::kT), 1651);
+  const auto t1 =
+      day16::Pressure(test_map, "AA", day16::Doors{}, day16::kT, std::nullopt);
+  EXPECT_EQ(t1, 1651);
+  EXPECT_EQ(day16::Pressure(test_map, "AA", day16::Doors{}, day16::kT), 1651);
+  return;  // slow
+  const auto map = day16::ReadMap("16");
+  const auto a1 =
+      day16::Pressure(map, "AA", day16::Doors{}, day16::kT, std::nullopt);
+  EXPECT_EQ(a1, 0);
+  // EXPECT_EQ( day16::Pressure( map, "AA", day16::Doors{}, day16::kT ) , 0);
 }
