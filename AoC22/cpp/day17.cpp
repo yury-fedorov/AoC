@@ -5,10 +5,10 @@ namespace day17 {
 
 using Long = long long;
 using Point = std::pair<int, Long>;
-using Chamber = std::deque<std::string>; // as we insert in the beginning
+using Chamber = std::deque<std::string>;  // as we insert in the beginning
 using Rock = std::vector<Point>;
 constexpr int kChamberWidth = 7;
-using Profile = std::array<uint8_t, kChamberWidth>;
+using Profile = uint64_t;  // byte for every cell
 
 struct JetPattern {
   std::string_view pattern;
@@ -52,11 +52,9 @@ void SetRock(Chamber &chamber, Point point) noexcept {
 
 [[nodiscard]] bool IsFeasible(const Chamber &chamber, Point point) noexcept {
   const auto [x, y] = point;
-  if (y >= chamber.size() || y < 0 || x < 0)
-    return false;
+  if (y >= chamber.size() || y < 0 || x < 0) return false;
   const auto &line = chamber.at(y);
-  if (x >= line.size())
-    return false;
+  if (x >= line.size()) return false;
   return line[x] == '.';
 }
 
@@ -65,8 +63,7 @@ void SetRock(Chamber &chamber, Point point) noexcept {
   const auto [dx, dy] = shift;
   for (const auto [x, y] : rock) {
     const bool is_feasible = IsFeasible(chamber, Point{x + dx, y + dy});
-    if (!is_feasible)
-      return false;
+    if (!is_feasible) return false;
   }
   return true;
 }
@@ -81,8 +78,8 @@ void FallOnePiece(Chamber &chamber, JetPattern &jet, int rock_id) noexcept {
   for (int i = 0; i < additional_height; i++) {
     chamber.push_front(std::string(kEmptyLine));
   }
-  int x = 2;  // left side
-  Long y = 0; // up side
+  int x = 2;   // left side
+  Long y = 0;  // up side
   // now the chamber is fixed in size till the next piece
   while (true) {
     const int gas_direction = jet.next() == '<' ? -1 : 1;
@@ -121,22 +118,41 @@ void FallOnePiece(Chamber &chamber, JetPattern &jet, int rock_id) noexcept {
 
 [[nodiscard]] Profile GetProfile(const Chamber &chamber) noexcept {
   Profile profile{0};
-  const uint8_t max_depth =
-      static_cast<uint8_t>(std::min(255LL, static_cast<Long>(chamber.size())));
+  const auto chamber_depth{chamber.size()};
+  constexpr uint8_t kMaxDepth{30};
+  const uint8_t max_depth = chamber_depth > kMaxDepth
+                                ? kMaxDepth
+                                : static_cast<uint8_t>(chamber_depth);
   for (int x = 0; x < kChamberWidth; x++) {
     uint8_t depth{0};
     for (; depth < max_depth && chamber[depth][x] != kRockPiece; depth++) {
     }
-    profile[x] = depth;
+    profile = (profile << 8) | depth;
   }
   return profile;
 }
 
 using State =
-    std::tuple<uint16_t, uint8_t, Profile>; // position - 10092 long line,
-                                            // rock_id 5 values, profile
-using StateMark = std::pair<Long, Long>;    // rock_id, lines
+    std::tuple<uint16_t, uint8_t, Profile>;  // position - 10092 long line,
+                                             // rock_id 5 values, profile
+using StateMark = std::pair<Long, Long>;     // rock_id, lines
 using Cache = absl::flat_hash_map<State, StateMark>;
+
+[[nodiscard]] std::string FormatProfile(Profile profile) noexcept {
+  return absl::StrCat(absl::Hex(profile, absl::kZeroPad4));
+}
+
+[[nodiscard]] std::string FormatState(State state) noexcept {
+  const auto [gas_pos, rid, prof] = state;
+  return absl::StrCat("gas: ", gas_pos, " rid: ", rid,
+                      " prof: ", FormatProfile(prof));
+}
+
+[[nodiscard]] std::string FormatMark(StateMark mark) noexcept {
+  const auto [rock_id, chamber_height] = mark;
+  return absl::StrCat("rock id: ", rock_id,
+                      " chamber height: ", chamber_height);
+}
 
 [[nodiscard]] size_t Answer2(std::string_view jet_pattern_file) noexcept {
   const auto data = ReadData(jet_pattern_file).at(0);
@@ -147,24 +163,53 @@ using Cache = absl::flat_hash_map<State, StateMark>;
   const uint8_t rock_count = kRocks.size();
   Long loop_size{0};
   Long loop_count{0};
+  Long dh{0};
+  bool is_loop_found = false;
   for (Long rock_id = 0; rock_id < n; rock_id++) {
     const uint8_t small_rock_id = rock_id % rock_count;
     FallOnePiece(chamber, jet, small_rock_id);
-    const State state{jet.position, small_rock_id, GetProfile(chamber)};
-    const StateMark mark{rock_id, CountLines(chamber)};
-    const auto [iterator, is_inserted] = cache.try_emplace(state, mark);
-    if (!is_inserted) {
-      // now we may skip some
-      const auto m0 = iterator->second; // what position was hitted
-      loop_size = cache.size();
-      loop_count = n / loop_size;
-      rock_id = loop_count * loop_size;
+    if (!is_loop_found) {
+      const Profile profile{GetProfile(chamber)};
+      const State state{jet.position, small_rock_id, profile};
+      const auto cur_height{CountLines(chamber)};
+      const StateMark mark{rock_id, cur_height};
+      const auto [iterator, is_inserted] = cache.try_emplace(state, mark);
+      if (!is_inserted) {
+        // now we may skip some
+        const auto m0 = iterator->second;  // what position was hitted
+        EXPECT_TRUE(false) << " profile: " << FormatProfile(profile)
+                           << " hitted key: " << FormatState(iterator->first)
+                           << " current key: " << FormatState(state) << " MARK "
+                           << FormatMark(iterator->second);
+        const auto [rid, lines] = m0;
+        const StateMark *p_mark = nullptr;
+        for (const auto &[_, v] : cache) {
+          if (v.first == (rid + 1)) {
+            p_mark = &v;
+            break;
+          }
+        }
+        EXPECT_TRUE(p_mark->second >= lines) << "Height is expected higher";
+        // loop_size = (rock_id - rid);
+        loop_size = (rock_id - rid - 1);
+        loop_count = n / loop_size;
+        dh = cur_height - p_mark->second + 1;
+        const auto head = cur_height - dh;
+        EXPECT_TRUE(false) << "loop size: " << loop_size
+                           << " loop_count: " << loop_count << " head: " << head
+                           << " dh: " << dh
+                           << " profile: " << FormatProfile(profile)
+                           << "cur height: " << cur_height
+                           << " cur_rock_id: " << rock_id;
+        rock_id = head + (loop_count * loop_size);
+        is_loop_found = true;
+      }
     }
   }
-  return CountLines(chamber) + ((loop_count - 1) * loop_size);
+  return CountLines(chamber) + ((loop_count - 1LL) * dh);
 }
 
-} // namespace day17
+}  // namespace day17
 
 TEST(AoC22, Day17) {
   // XXX if (IsFastOnly()) return;  // TODO - no solution yet
