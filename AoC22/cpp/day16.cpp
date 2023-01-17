@@ -15,7 +15,7 @@ struct Conf {
 };
 
 using Map = absl::flat_hash_map<std::string, Conf>;
-using Doors = std::vector<std::string_view>;  // open doors
+using Doors = std::vector<std::string_view>; // open doors
 using DoorSet = absl::flat_hash_set<std::string_view>;
 
 constexpr int kT = 30;
@@ -59,7 +59,8 @@ constexpr int kT = 30;
   static Cache cache;
   const Input input{from, to};
   const auto i = cache.find(input);
-  if (i != cache.end()) return i->second;  // cache hitted
+  if (i != cache.end())
+    return i->second; // cache hitted
   const int distance = Distance(map, from, to);
   cache[input] = distance;
   return distance;
@@ -69,7 +70,8 @@ constexpr int kT = 30;
                              std::string_view to, int depth) noexcept {
   if (from != to && depth > 0) {
     const auto &next_doors = map.at(from).next;
-    if (absl::c_find(next_doors, to) != next_doors.end()) return Doors{to};
+    if (absl::c_find(next_doors, to) != next_doors.end())
+      return Doors{to};
     // we are here because one level depth was not enough
     for (const auto &door : next_doors) {
       const auto d1 = depth - 1;
@@ -92,7 +94,8 @@ constexpr int kT = 30;
   static Cache cache;
   const Input input{from, to};
   const auto i = cache.find(input);
-  if (i != cache.end()) return i->second;  // cache hitted
+  if (i != cache.end())
+    return i->second; // cache hitted
   const int distance = DistanceFast(map, from, to);
   const auto s = Sequence(map, from, to, distance);
   cache[input] = s;
@@ -102,7 +105,9 @@ constexpr int kT = 30;
 void RemoveOpened(Doors &doors, const Doors &open) noexcept {
   // erase-remove idiom
   absl::c_for_each(open, [&doors](const auto &door) {
-    doors.erase(std::remove(doors.begin(), doors.end(), door), doors.end());
+    //    doors.erase(std::remove(doors.begin(), doors.end(), door),
+    //    doors.end());
+    doors.erase(absl::c_find(doors, door));
   });
 }
 
@@ -114,6 +119,7 @@ void RemoveNoPressure(Doors &doors, const Map &map) noexcept {
   });
 }
 
+/*
 // highest rates at the beginning with shortest path to it
 void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   absl::c_sort(doors, [&map, from](const auto &a, const auto &b) {
@@ -122,7 +128,9 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
     return (map.at(a).rate - ad) > (map.at(b).rate - bd);
   });
 }
+*/
 
+/*
 [[nodiscard]] long Pressure(const Map &map, std::string_view start,
                             const Doors &open, int t_left,
                             std::optional<std::string_view> target) noexcept {
@@ -162,7 +170,9 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   }
   return pressure;
 }
+*/
 
+/*
 [[nodiscard]] long Pressure(const Map &map, std::string_view cur_door,
                             std::deque<std::string_view> sequence,
                             int t_max) noexcept {
@@ -190,10 +200,12 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   }
   return pressure;
 }
+*/
 
 [[nodiscard]] long Pressure(const Map &map, std::string_view cur_door,
                             Doors open, int t_max) noexcept {
-  if (t_max < 0) return 0;
+  if (t_max < 0)
+    return 0;
   const auto last_minute = PressureInMinute(map, open);
   // 1. get all doors
   Doors doors = AllDoors(map);
@@ -201,25 +213,29 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   RemoveOpened(doors, open);
   // 3. remove no pressure doors
   RemoveNoPressure(doors, map);
+  /*
   constexpr bool kIsOptimized = false;
   if (kIsOptimized) {
     // 4. order first high rated doors (could try to optimize: top 50%)
     Order(map, doors, cur_door);
     const auto n{doors.size()};
-    // 4379 - not right answer
+    // 4379 - not right answer -- 639s
     constexpr size_t kMaxHead =
         5;  // with 3 - 3735 (too high) 4 - 4149 (too high), 5 - 4149, no
-            // restrict - 4442 -- too high?
+            // restrict - 4442 -- too high? - 635s
     if (n > kMaxHead) {
       doors.resize(kMaxHead);
     }
   }
+  */
   long pressure{t_max * last_minute};
   for (const auto &target : doors) {
-    const auto path = SequenceFast(map, cur_door, target);
-    const auto dt = path.size() + 1;  // 1 - to open the door
+    // const auto path = SequenceFast(map, cur_door, target);
+    // const auto dt = path.size() + 1;  // 1 - to open the door
+    const auto dt = DistanceFast(map, cur_door, target) + 1;
     const auto t1 = t_max - dt;
-    if (t1 < 0) continue;  // no sense to go
+    if (t1 < 0)
+      continue; // no sense to go
     long cur_pressure = dt * last_minute;
     Doors open1{open};
     open1.push_back(target);
@@ -249,26 +265,31 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   return map;
 }
 
+/*
 // open doors in format ,AA, ... ,ZZ,...
 [[nodiscard]] long Answer1(std::string_view file) noexcept {
   const auto map = ReadMap(file);
   return Pressure(map, "AA", Doors{}, kT, std::nullopt);
 }
+*/
 
-}  // namespace day16
+} // namespace day16
 
 TEST(AoC22, Day16) {
-  std::deque<std::string_view> test_seq = {"DD", "BB", "JJ", "HH", "EE", "CC"};
-  const auto test_map = day16::ReadMap("16-sample");
-  EXPECT_EQ(day16::Pressure(test_map, "AA", test_seq, day16::kT), 1651);
-  const auto t1 =
-      day16::Pressure(test_map, "AA", day16::Doors{}, day16::kT, std::nullopt);
-  EXPECT_EQ(t1, 1651);
-  EXPECT_EQ(day16::Pressure(test_map, "AA", day16::Doors{}, day16::kT), 1651);
-  return;  // slow
-  const auto map = day16::ReadMap("16");
-  const auto a1 =
-      day16::Pressure(map, "AA", day16::Doors{}, day16::kT, std::nullopt);
-  EXPECT_EQ(a1, 0);
-  // EXPECT_EQ( day16::Pressure( map, "AA", day16::Doors{}, day16::kT ) , 0);
+  const auto answer1 = [](const day16::Map &map) {
+    // return day16::Pressure(map, "AA", day16::Doors{}, day16::kT,
+    // std::nullopt);
+    return day16::Pressure(map, "AA", day16::Doors{}, day16::kT);
+  };
+  const bool is_test = IsFastOnly(); 
+  if (is_test) {
+    // std::deque<std::string_view> test_seq = {"DD", "BB", "JJ", "HH", "EE",
+    // "CC"};
+    const auto test_map = day16::ReadMap("16-sample");
+    // EXPECT_EQ(day16::Pressure(test_map, "AA", test_seq, day16::kT), 1651);
+    EXPECT_EQ(answer1(test_map), 1651);
+  } else {
+    const auto map = day16::ReadMap("16");
+    EXPECT_EQ(answer1(map), 1775); // takes 56 seconds
+  }
 }
