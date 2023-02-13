@@ -12,7 +12,7 @@ else()
     # removed to make almost clean Abseil: -Wall -Wextra -Werror -pedantic
     # -fexperimental-library - to be able to use experimental features like ranges/views    
     # -fno-exceptions -fno-rtti - exceptions and RTTI are required for range-v3 implementation
-    add_compile_options(-Wno-deprecated)    
+    add_compile_options(-Wno-deprecated)
 endif()
 
 # if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
