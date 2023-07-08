@@ -27,7 +27,7 @@ include(FetchContent)
 
 FetchContent_Declare(absl
     GIT_REPOSITORY "https://github.com/abseil/abseil-cpp.git"
-    GIT_TAG master ) # as ie bug in low_level_hash was fixed
+    GIT_TAG master )
 
 FetchContent_Declare(gtest
     GIT_REPOSITORY "https://github.com/google/googletest"
@@ -35,12 +35,11 @@ FetchContent_Declare(gtest
 
 FetchContent_Declare(benchmark
     GIT_REPOSITORY "https://github.com/google/benchmark"
-    GIT_TAG main ) # benchmark-src/test/options_test.cc:70:10: error: variable 'actual_iterations' set but not used [-Werror,-Wunused-but-set-variable]
-                     # size_t actual_iterations = 0;
+    GIT_TAG main )
 
 FetchContent_Declare(re2
     GIT_REPOSITORY "https://github.com/google/re2"
-    GIT_TAG main ) 
+    GIT_TAG 2023-03-01 ) # working 2022-12-01, 2023-03-01 broken on 2023-06-01
 
 # requires exceptions
 FetchContent_Declare(range-v3
