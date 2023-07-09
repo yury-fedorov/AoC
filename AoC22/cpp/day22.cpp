@@ -34,6 +34,39 @@ constexpr char TILE = '.';
   return {map, path};
 }
 
+constexpr int kSegmentSize = 50;
+
+constexpr Point PointToSegment(Point point,
+                               int segment_size = kSegmentSize) noexcept {
+  const auto [x, y] = point;
+  return {x / segment_size, y / segment_size};
+}
+
+constexpr char ToDir(Direction d) noexcept {
+  return kDirectionChar[static_cast<int>(d)];
+}
+
+constexpr char Tile(Point segment) noexcept {
+  // 1 2 3
+  // 4 5 6
+  // 7 8 9
+  // A B C
+  const auto [x, y] = segment;
+  const auto index = x + (y * 3);
+  return "123456789ABC"[index];
+}
+
+constexpr SegDir ToSegDir(Point point, Direction d) noexcept {
+  return {Tile(PointToSegment(point)), ToDir(d)};
+}
+
+constexpr std::optional<SegDir> NewSegDir(const std::string_view sdsd,
+                                          SegDir sd) noexcept {
+  if (SegDir{sdsd[0], sdsd[1]} == sd)
+    return SegDir{sdsd[2], sdsd[3]};
+  return std::nullopt;
+}
+
 class Navigator {
 protected:
   const Map &map_;
