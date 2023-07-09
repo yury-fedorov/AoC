@@ -11,8 +11,7 @@ else()
     # TODO - lots of warnings and all warnings as errors
     # removed to make almost clean Abseil: -Wall -Wextra -Werror -pedantic
     # -fexperimental-library - to be able to use experimental features like ranges/views    
-    # -fno-exceptions -fno-rtti - exceptions and RTTI are required for range-v3 implementation
-    add_compile_options(-Wno-deprecated)    
+    add_compile_options(-Wno-deprecated -fno-exceptions -fno-rtti)    
 endif()
 
 # if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -41,20 +40,14 @@ FetchContent_Declare(re2
     GIT_REPOSITORY "https://github.com/google/re2"
     GIT_TAG 2023-03-01 ) # working 2022-12-01, 2023-03-01 broken on 2023-06-01
 
-# requires exceptions
-FetchContent_Declare(range-v3
-    GIT_REPOSITORY "https://github.com/ericniebler/range-v3"
-    GIT_TAG "0.12.0" )
-
 FetchContent_MakeAvailable(absl)
 FetchContent_MakeAvailable(gtest)
 FetchContent_MakeAvailable(benchmark)
 FetchContent_MakeAvailable(re2)
-FetchContent_MakeAvailable(range-v3)
 
 file( GLOB SOURCES day*.cpp common.cpp)
 # set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc22 test.cpp ${SOURCES}  )
 
-target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest re2 absl::statusor benchmark range-v3)
+target_link_libraries(aoc22 PRIVATE absl::flat_hash_set absl::strings gtest re2 absl::statusor benchmark)
