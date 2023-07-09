@@ -9,6 +9,7 @@ using Map = std::vector<std::string>;
 enum class Direction : int { kRight = 0, kDown, kLeft, kUp };
 using Position = std::pair<Point, Direction>;
 using Answers = std::vector<int>;
+using SegDir = std::pair<char, char>;
 
 constexpr std::array kShifts = {Point{1, 0}, Point{0, 1}, Point{-1, 0},
                                 Point{0, -1}};
@@ -46,6 +47,10 @@ constexpr char ToDir(Direction d) noexcept {
   return kDirectionChar[static_cast<int>(d)];
 }
 
+constexpr Direction ToDirection(char d) noexcept {
+  return static_cast<Direction>(d);
+}
+
 constexpr char Tile(Point segment) noexcept {
   // 1 2 3
   // 4 5 6
@@ -65,6 +70,19 @@ constexpr std::optional<SegDir> NewSegDir(const std::string_view sdsd,
   if (SegDir{sdsd[0], sdsd[1]} == sd)
     return SegDir{sdsd[2], sdsd[3]};
   return std::nullopt;
+}
+
+constexpr Direction Back(Direction d) noexcept {
+  return static_cast<Direction>((static_cast<int>(d) + 2) % 4);
+}
+
+constexpr char Back(char direction) noexcept {
+  return ToDir(Back(ToDirection(direction)));
+}
+
+constexpr std::pair<SegDir, SegDir>
+Back(const std::string_view from_to) noexcept {
+  return {SegDir{from_to[2], Back(from_to[3])}, SegDir{from_to[0], from_to[1]}};
 }
 
 class Navigator {
