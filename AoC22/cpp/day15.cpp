@@ -42,7 +42,7 @@ using Set = absl::flat_hash_set<int>;
 }
 
 void Sort(std::vector<Range> &ranges) noexcept {
-  r::sort(ranges,
+  absl::sort(ranges,
           [](const Range &a, const Range &b) { return a.first < b.first; });
 }
 
