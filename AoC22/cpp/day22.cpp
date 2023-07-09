@@ -1,6 +1,6 @@
 #include "common.h"
-#include "re2/re2.h
 #include "absl/algorithm/container.h"
+#include "re2/re2.h"
 
 namespace day22 {
 
