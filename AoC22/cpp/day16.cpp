@@ -277,6 +277,7 @@ TEST(AoC22, Day16) {
   EXPECT_EQ(answer1(map), is_test ? 1651 : 1775);
 
   // TODO - Day16 Part2 to be solved
-  if ( IsGreenOnly() && is_test )
-    EXPECT_EQ(answer2(map), is_test ? 1707 : 0);
+  if ( IsGreenOnly() ) return;
+  
+  EXPECT_EQ(answer2(map), is_test ? 1707 : 0);
 }
