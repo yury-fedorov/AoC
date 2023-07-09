@@ -30,7 +30,7 @@ using DoorSet = absl::flat_hash_set<Door>;
 
 [[nodiscard]] Doors AllDoors(const Map &map) noexcept {
   Doors doors;
-  r::for_each(map, [&doors](const auto &pair) { doors.push_back(pair.first); });
+  absl::c_for_each(map, [&doors](const auto &pair) { doors.push_back(pair.first); });
   return doors;
 }
 
