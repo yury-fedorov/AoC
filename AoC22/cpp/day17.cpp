@@ -41,7 +41,7 @@ constexpr char kRockPiece = '#';
 }
 
 [[nodiscard]] Long CountLines(const Chamber &chamber) noexcept {
-  return r::count_if(chamber,
+  return absl::c_count_if(chamber,
                      [](std::string_view line) { return !IsEmpty(line); });
 }
 
