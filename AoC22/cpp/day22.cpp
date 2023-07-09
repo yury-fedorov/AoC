@@ -1,5 +1,6 @@
 #include "common.h"
-#include "re2/re2.h"
+#include "re2/re2.h
+#include "absl/algorithm/container.h"
 
 namespace day22 {
 
@@ -23,10 +24,10 @@ constexpr char TILE = '.';
 
 [[nodiscard]] std::pair<Map, std::string> Load(std::string_view file) noexcept {
   const auto data = ReadData(file);
-  const auto map = data | rv::filter([](const std::string &s) {
-                     return s.find(TILE) != std::string::npos;
-                   }) |
-                   r::to<std::vector>();
+  Map map;
+  absl::c_copy_if(data, std::back_inserter(map), [](const std::string &s) {
+    return s.find(TILE) != std::string::npos;
+  });
   const std::string path = *(data.rbegin());
   return {map, path};
 }
