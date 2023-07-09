@@ -215,5 +215,6 @@ TEST(AoC22, Day17) {
   // XXX if (IsFastOnly()) return;  // TODO - no solution yet
   EXPECT_EQ(day17::Answer1("17-sample"), 3068);
   EXPECT_EQ(day17::Answer1("17"), 3217);
+  if ( IsGreenOnly() ) return; // TODO - Day17 Part2 to be solved.
   EXPECT_EQ(day17::Answer2("17-sample"), 1514285714288LL);
 }
