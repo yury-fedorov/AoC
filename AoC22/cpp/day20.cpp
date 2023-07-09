@@ -58,9 +58,9 @@ constexpr Int kDecryptionKey = {811589153};
   }
 
   auto *next = &first;
-  for (auto &e : nodes | rv::reverse) {
-    e.next = next;
-    next = &e;
+  for ( auto it = nodes.rbegin(); it != nodes.rend(); it++ ) {
+    it->next = next;
+    next = &*it;
   }
 
   // mix
