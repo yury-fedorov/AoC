@@ -13,6 +13,8 @@ using Answers = std::vector<int>;
 constexpr std::array kShifts = {Point{1, 0}, Point{0, 1}, Point{-1, 0},
                                 Point{0, -1}};
 
+constexpr std::array kDirectionChar = { 'R', 'D', 'L', 'U' };
+
 constexpr char EMPTY = ' ';
 constexpr char WALL = '#';
 constexpr char TILE = '.';
@@ -102,6 +104,36 @@ protected:
     const auto [from, direction] = from_direction;
     // TODO: implement part 2
     return {from, direction};
+/* TODO - early draft
+    constexpr std::array kMapping = { "2UAR", "AL2D" };
+    // only for the real case
+    constexpr int kss = 50;
+
+    auto [from, direction] = from_direction;
+    // global
+    auto [xg, yg] = from;
+    // local
+    int xl = xg / kss;
+    int yl = yg / kss;
+    if ( yl == 0 && xl == 1 && direction == Direction::kUp ) {
+      // 2U -> AL swap
+      std::swap(xl, yl);
+      xg = xl;
+      yg = yl + (3 * kss);
+      direction = Direction::kRight;
+    } else if ( xl == 0 && yl == 3 && direction == Direction::kLeft ) {
+      // AL -> 2U swap
+      std::swap(xl, yl);
+      xg = xl + (kss);
+      yg = yl;
+      direction = Direction::kDown;
+    } else {
+      std::cerr << xg << " " << yg << " " << (int)direction << " ";
+      throw;
+    } 
+    // return {{-1, -1}, direction};
+    return {{xg, yg}, direction};
+  */  
   }
 
 public:
