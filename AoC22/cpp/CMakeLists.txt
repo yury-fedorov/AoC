@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.17) # 3.20 for CXX_STANDARD 23, 3.18 for Ubuntu
 project(aoc22)
 
 set(CMAKE_CXX_STANDARD 20) # 3.20 for CXX_STANDARD 23, latest Ubuntu 22.10 3.24
-set(ABSL_PROPAGATE_CXX_STD, ON)
-set(ABSL_ENABLE_INSTALL, ON) # otherwise re2 does not find absl: https://github.com/google/re2/issues/436
+set(ABSL_PROPAGATE_CXX_STD ON)
+set(ABSL_ENABLE_INSTALL ON) # otherwise re2 does not find absl: https://github.com/google/re2/issues/436
 
 if (MSVC)
     # warning level 4 and all warnings as errors
