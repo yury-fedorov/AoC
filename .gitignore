@@ -1,13 +1,18 @@
-/bin/
-/obj/
-.vs/
-/.idea/
-/.vscode/
+# editors
+**/.vs/
+**/.idea/
+**/.vscode/
 *.iml
-/CMakeFiles/
-/cpp/CMakeCache.txt
-/cpp/Makefile
-/cpp/cmake_install.cmake
+# .NET
+**/bin/
+**/obj/
+# C++
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cpp/Makefile
+**/cmake_install.cmake
+**/_deps/
+
 AoC15/Makefile
 AoC16/target/
 AoC17/rust/target/
@@ -17,7 +22,6 @@ AoC19/cpp/aoc19.dir/
 AoC19/cpp/x64/
 AoC19/java/target/
 AoC19/cpp/aoc19
-AoC20/cmake_install.cmake
 AoC20/generated-includes/
 AoC20/aoc20
 AoC22/cpp/lib/
