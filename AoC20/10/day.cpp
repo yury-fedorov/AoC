@@ -1,18 +1,17 @@
 #include <iostream>
+#include <optional>		
 #include <map>
 #include <vector>
 #include <fstream>
 #include <assert.h>
 #include <catch2/catch.hpp>
 
-using namespace std;
-
 // 3 3 - no alternative
 // 3 1 3 - no alternative
 // 3 1 1 3 - and 3 2 3 (2)
 // 3 1 1 1 3 - and 3 3 3, 3 2 1 3, 3 1 2 3 (4) 
 // 3 1 1 1 1 3 - and 3 3 1 3, 3 1 3 3, 3 2 2 3, 3 1 2 1 3, 3 2 1 1 3, 3 1 1 2 3 (7)
-int options( int digit, int length ) {
+std::optional<int> options( int digit, int length ) {
     assert( length > 0 );
     if ( digit == 3 ) return 1;
     assert( digit == 1 );
@@ -21,18 +20,15 @@ int options( int digit, int length ) {
         case 2: return 2;
         case 3: return 4;
         case 4: return 7;
-        default:
-            cerr << length << endl;
-            assert( false);
     }
+    std::cerr << length << std::endl;
+    return std::nullopt;
 }
 
 TEST_CASE( "Day10", "[10]" ) {
-    ifstream f("10/input.txt");
-
-    vector<int> adapters;
-
-    string line;
+    std::ifstream f("10/input.txt");
+    std::vector<int> adapters;
+    std::string line;
     while (getline(f, line)) {
         adapters.push_back(stoi(line));
     }
@@ -42,8 +38,8 @@ TEST_CASE( "Day10", "[10]" ) {
     const auto n = adapters.size();
     sort(adapters.begin(), adapters.end());
 
-    map<int,int> differences;
-    vector<int> seq;
+    std::map<int,int> differences;
+    std::vector<int> seq;
     for ( size_t i = 1; i < n; i++ ) {
         const auto diff = adapters[i]-adapters[i-1];
         differences[diff]++;
@@ -51,7 +47,7 @@ TEST_CASE( "Day10", "[10]" ) {
     }
     REQUIRE( 1914 == ( differences[1] * differences[3] ) ); 
 
-    vector<pair<int,int>> grseq;
+    std::vector<std::pair<int,int>> grseq;
     int prev = 0;
     int length = 0;
     for ( const int se : seq ) {
@@ -69,7 +65,7 @@ TEST_CASE( "Day10", "[10]" ) {
 
     long long combinations = 1;
     for ( const auto & p : grseq ) {
-        combinations *= options( p.first, p.second );
+        combinations *= options( p.first, p.second ).value();
     }
 
     REQUIRE(9256148959232 == combinations); 
