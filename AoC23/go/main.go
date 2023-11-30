@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
-	fmt.Println(aoc23.Day01())
-	// fmt.Println(aoc23.Day02())
+	for i, d := range aoc23.Days() {
+		s := d.Solve()
+		fmt.Printf("%d %q %q", i, s.Part1, s.Part2)
+	}
 }

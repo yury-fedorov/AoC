@@ -1,5 +1,7 @@
 package aoc23
 
-func Day02() (string, string) {
-	return "2", "4"
+type Day02 struct{}
+
+func (d Day02) Solve() Solution {
+	return Solution{"", ""}
 }
