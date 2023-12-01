@@ -6,6 +6,13 @@ import (
 	"os"
 )
 
+type Part int
+
+const (
+	Part1 Part = 1
+	Part2 Part = 2
+)
+
 type Solution struct {
 	Part1 string
 	Part2 string
@@ -22,7 +29,7 @@ func Days() []Day {
 }
 
 func ReadFile(tag string) []string {
-	file, err := os.Open( fmt.Sprintf("../data/%v.txt", tag) )
+	file, err := os.Open(fmt.Sprintf("../data/%v.txt", tag))
 	if err != nil {
 		panic(err)
 	}
