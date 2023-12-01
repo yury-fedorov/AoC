@@ -12,25 +12,21 @@ func (d Day01) calibrationValue(part Part, line string) int {
 	return (10 * d.firstDigit(part, line)) + d.lastDigit(part, line)
 }
 
-func (d Day01) textDigit(line string) (found bool, digit int) {
-	Day01TextDigits := []string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
-	for i, text := range Day01TextDigits {
-		if strings.HasPrefix(line, text) {
-			return true, i + 1
-		}
-	}
-	return false, 0
-}
+var day01TextDigits = []string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
 
 func (d Day01) positionDigit(part Part, line string, i int) (found bool, digit int) {
 	letter := []rune(line)[i]
 	if unicode.IsDigit(letter) {
 		return true, int(letter - '0')
 	}
-	if part == Part1 {
-		return false, 0
+	if part == Part2 {
+		for j, text := range day01TextDigits {
+			if strings.HasPrefix(line[i:], text) {
+				return true, j + 1
+			}
+		}
 	}
-	return d.textDigit(line[i:])
+	return false, 0
 }
 
 func (d Day01) firstDigit(part Part, line string) int {
