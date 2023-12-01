@@ -1,8 +1,6 @@
 package aoc23
 
 import (
-	"bufio"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -69,17 +67,9 @@ func (d Day01) LastDigit(line string) int {
 }
 
 func (d Day01) Solve() Solution {
-	file, err := os.Open("../data/01.txt")
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-	fileScanner := bufio.NewScanner(file)
-	fileScanner.Split(bufio.ScanLines)
 	part1 := 0
 	part2 := 0
-	for fileScanner.Scan() {
-		line := fileScanner.Text()
+	for _, line := range ReadFile("01") {
 		part1 += d.Line(line)
 		part2 += d.Line2(line)
 	}
