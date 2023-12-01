@@ -1,5 +1,7 @@
 # Advent of Code
 
+## [2023 - Go 1.21](https://adventofcode.com/2023)
+
 ## [2022 - C++ 20](https://adventofcode.com/2022)
 
 ## [2021 - C# 10, .NET 6 (rank 7127)](https://adventofcode.com/2021)
