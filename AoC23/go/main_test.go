@@ -17,7 +17,7 @@ func TestDays(t *testing.T) {
 	solutions := []aoc.Solution{
 		{Part1: "54968", Part2: "54094"},
 		{Part1: "2283", Part2: "78669"},
-		{Part1: "", Part2: ""},
+		{Part1: "0", Part2: "0"},
 	}
 	for i, d := range Days() {
 		got := d.Solve()
