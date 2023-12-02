@@ -77,6 +77,20 @@ func (d Day02) matchGame(requirement extraction, g game) bool {
 	return true
 }
 
+func (d Day02) power(set extraction) int {
+	return set[red] * set[green] * set[blue]
+}
+
+func (d Day02) set(game game) extraction {
+	var r, g, b int
+	for _, e := range game.extractions {
+		r = max(r, e[red])
+		g = max(g, e[green])
+		b = max(b, e[blue])
+	}
+	return d.rgb(r, g, b)
+}
+
 func (d Day02) Solve() Solution {
 	requirement := d.rgb(12, 13, 14)
 	var part1, part2 int
@@ -85,7 +99,7 @@ func (d Day02) Solve() Solution {
 		if d.matchGame(requirement, g) {
 			part1 += g.id
 		}
-		part2 += 1
+		part2 += d.power(d.set(g))
 	}
 	return Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
