@@ -1,5 +1,7 @@
-#include "absl/container/flat_hash_map.h"
 #include "common.h"
+#include <deque>
+#include <map>
+#include "absl/algorithm/container.h"
 
 namespace day17 {
 
@@ -135,8 +137,8 @@ void FallOnePiece(Chamber &chamber, JetPattern &jet, int rock_id) noexcept {
 using State =
     std::tuple<uint16_t, uint8_t, Profile>;  // position - 10092 long line,
                                              // rock_id 5 values, profile
-using StateMark = std::pair<Long, Long>;     // rock_id, lines
-using Cache = absl::flat_hash_map<State, StateMark>;
+using StateMark = std::tuple<Long, Long>;    // rock_id, lines
+using Cache = std::map<State, StateMark>;
 
 [[nodiscard]] std::string FormatProfile(Profile profile) noexcept {
   return absl::StrCat(absl::Hex(profile, absl::kZeroPad4));
@@ -171,9 +173,9 @@ using Cache = absl::flat_hash_map<State, StateMark>;
     if (!is_loop_found) {
       const Profile profile{GetProfile(chamber)};
       const State state{jet.position, small_rock_id, profile};
-      const auto cur_height{CountLines(chamber)};
-      const StateMark mark{rock_id, cur_height};
-      const auto [iterator, is_inserted] = cache.try_emplace(state, mark);
+      const Long cur_height{CountLines(chamber)};
+      // StateMark mark{rock_id, cur_height};
+      const auto [iterator, is_inserted] = cache.try_emplace(state, rock_id, cur_height);
       if (!is_inserted) {
         // now we may skip some
         const auto m0 = iterator->second;  // what position was hitted
@@ -184,16 +186,16 @@ using Cache = absl::flat_hash_map<State, StateMark>;
         const auto [rid, lines] = m0;
         const StateMark *p_mark = nullptr;
         for (const auto &[_, v] : cache) {
-          if (v.first == (rid + 1)) {
+          if (std::get<0>(v) == (rid + 1)) {
             p_mark = &v;
             break;
           }
         }
-        EXPECT_TRUE(p_mark->second >= lines) << "Height is expected higher";
+        EXPECT_TRUE(std::get<1>(*p_mark) >= lines) << "Height is expected higher";
         // loop_size = (rock_id - rid);
         loop_size = (rock_id - rid - 1);
         loop_count = n / loop_size;
-        dh = cur_height - p_mark->second + 1;
+        dh = cur_height - std::get<1>(*p_mark) + 1;
         const auto head = cur_height - dh;
         EXPECT_TRUE(false) << "loop size: " << loop_size
                            << " loop_count: " << loop_count << " head: " << head
