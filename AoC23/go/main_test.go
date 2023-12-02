@@ -9,19 +9,18 @@ import (
 	"github.com/yury-fedorov/AoC/AoC23/day03"
 )
 
-func Days() []aoc.Day {
-	return []aoc.Day{&day01.Day01{}, &day02.Day02{}, &day03.Day03{}}
-}
-
 func TestDays(t *testing.T) {
-	solutions := []aoc.Solution{
-		{Part1: "54968", Part2: "54094"},
-		{Part1: "2283", Part2: "78669"},
-		{Part1: "0", Part2: "0"},
+	tests := []struct {
+		day  aoc.Day
+		want aoc.Solution
+	}{
+		{day: &day01.Day01{}, want: aoc.Solution{Part1: "54968", Part2: "54094"}},
+		{day: &day02.Day02{}, want: aoc.Solution{Part1: "2283", Part2: "78669"}},
+		{day: &day03.Day03{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
 	}
-	for i, d := range Days() {
-		got := d.Solve()
-		want := solutions[i]
+	for i, test := range tests {
+		got := test.day.Solve()
+		want := test.want
 		if got != want {
 			day := i + 1 // zero based index
 			t.Fatalf(`Day %d returned %v, want %v`, day, got, want)
