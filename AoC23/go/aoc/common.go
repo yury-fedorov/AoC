@@ -1,4 +1,4 @@
-package aoc23
+package aoc
 
 import (
 	"bufio"
@@ -20,12 +20,6 @@ type Solution struct {
 
 type Day interface {
 	Solve() Solution
-}
-
-func Days() []Day {
-	var d01 Day01
-	var d02 Day02
-	return []Day{&d01, &d02}
 }
 
 func ReadFile(tag string) []string {

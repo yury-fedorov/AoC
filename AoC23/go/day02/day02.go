@@ -1,12 +1,11 @@
-package aoc23
+package day02
 
 import (
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"regexp"
 	"strconv"
 	"strings"
 )
-
-type Day02 struct{}
 
 type color string
 
@@ -29,7 +28,7 @@ var r1 = regexp.MustCompile(`Game (\d+): (.+)`)
 var r2 = regexp.MustCompile(`(\d+) ([a-z]+)`)
 
 // Game 6: 3 blue, 10 green, 2 red; 5 green; 6 blue, 3 red
-func (d Day02) parseGame(line string) game {
+func parseGame(line string) game {
 	match := r1.FindStringSubmatch(line)
 	id, err := strconv.Atoi(match[1])
 	if err != nil {
@@ -53,11 +52,11 @@ func (d Day02) parseGame(line string) game {
 	return game{id: id, extractions: extractions}
 }
 
-func (d Day02) rgb(r int, g int, b int) extraction {
+func rgb(r int, g int, b int) extraction {
 	return extraction{red: r, green: g, blue: b}
 }
 
-func (d Day02) match(requirement, test extraction) bool {
+func match(requirement, test extraction) bool {
 	for _, c := range colors {
 		maxQty := requirement[c]
 		testQty := test[c]
@@ -68,38 +67,46 @@ func (d Day02) match(requirement, test extraction) bool {
 	return true
 }
 
-func (d Day02) matchGame(requirement extraction, g game) bool {
+func matchGame(requirement extraction, g game) bool {
 	for _, e := range g.extractions {
-		if !d.match(requirement, e) {
+		if !match(requirement, e) {
 			return false
 		}
 	}
 	return true
 }
 
-func (d Day02) power(set extraction) int {
+func power(set extraction) int {
 	return set[red] * set[green] * set[blue]
 }
 
-func (d Day02) set(game game) extraction {
+func set(game game) extraction {
 	var r, g, b int
 	for _, e := range game.extractions {
 		r = max(r, e[red])
 		g = max(g, e[green])
 		b = max(b, e[blue])
 	}
-	return d.rgb(r, g, b)
+	return rgb(r, g, b)
 }
 
-func (d Day02) Solve() Solution {
-	requirement := d.rgb(12, 13, 14)
+func Solve(lines []string) (int, int) {
+	requirement := rgb(12, 13, 14)
 	var part1, part2 int
-	for _, line := range ReadFile("02") {
-		g := d.parseGame(line)
-		if d.matchGame(requirement, g) {
+	for _, line := range lines {
+		g := parseGame(line)
+		if matchGame(requirement, g) {
 			part1 += g.id
 		}
-		part2 += d.power(d.set(g))
+		part2 += power(set(g))
 	}
-	return Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return part1, part2
+}
+
+type Day02 struct{}
+
+func (d Day02) Solve() aoc.Solution {
+	lines := aoc.ReadFile("02")
+	part1, part2 := Solve(lines)
+	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
