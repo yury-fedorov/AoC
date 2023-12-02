@@ -9,7 +9,7 @@ import (
 func TestDays(t *testing.T) {
 	solutions := []aoc23.Solution{
 		{Part1: "54968", Part2: "54094"},
-		{Part1: "", Part2: ""},
+		{Part1: "2283", Part2: ""},
 	}
 	for i, d := range aoc23.Days() {
 		got := d.Solve()
