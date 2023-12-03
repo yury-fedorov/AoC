@@ -39,7 +39,7 @@ FetchContent_Declare(benchmark
 
 FetchContent_Declare(re2
     GIT_REPOSITORY "https://github.com/google/re2"
-    GIT_TAG main ) # working 2022-12-01, 2023-03-01 broken on 2023-06-01
+    GIT_TAG main )
 
 FetchContent_MakeAvailable(absl)
 FetchContent_MakeAvailable(gtest)
