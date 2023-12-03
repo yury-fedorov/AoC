@@ -1,4 +1,4 @@
-name: AoC22 - C++ Tests
+name: AoC22 - C++ & Abseil
 on:
   push:
     branches: [ master ]
@@ -6,12 +6,8 @@ on:
     branches: [ master ]
 jobs:
   build:
-    # runs-on: ubuntu-latest
-    # so far latest is 20.04 not 22.04 yet
-    # runs-on: ubuntu-18.04 - gcc 7.5
-    runs-on: ubuntu-22.04
-      # - cxx: clang++
-    
+    runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v2
 
