@@ -6,13 +6,13 @@ on:
     branches: [ master ]
 jobs:
   build:
-    # runs-on: ubuntu-latest
-    # so far latest is 20.04 not 22.04 yet
-    runs-on: ubuntu-22.04
-      # - cxx: clang++
-    
+    runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v2
+
+    - name: versions
+      run: lsb_release -a && cmake --version && clang --version
 
     - name: cppcheck installation (used in AoC15 and AoC20)
       run: sudo apt update && sudo apt -y install cppcheck
