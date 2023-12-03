@@ -80,6 +80,14 @@ func power(set extraction) int {
 	return set[red] * set[green] * set[blue]
 }
 
+// Go 1.21 is not yet available on github actions (Dec 2023)
+func max(a,b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+
 func set(game game) extraction {
 	var r, g, b int
 	for _, e := range game.extractions {

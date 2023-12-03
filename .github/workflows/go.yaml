@@ -13,4 +13,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: AoC23
-        run: cd AoC23/go && go test
+        run: cd AoC23/go && go version && go test
