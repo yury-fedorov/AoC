@@ -46,24 +46,66 @@ func parse(line string) Card {
 	return Card{number: number, winningNumbers: parseNumbers(match[2]), cardNumbers: parseNumbers(match[3])}
 }
 
-func points(card Card) int {
-	var count int
+// call repeats multiple times
+var matchingNumbersCache = make(map[int]int)
+
+func matchingNumbers(card Card) int {
+	result, found := matchingNumbersCache[card.number]
+	if found {
+		return result
+	}
 	for _, w := range card.winningNumbers {
 		if slices.Contains(card.cardNumbers, w) {
-			count++
+			result++
 		}
 	}
-	if count == 0 {
-		return 0
+	matchingNumbersCache[card.number] = result
+	return result
+}
+
+func points(card Card) int {
+	count := matchingNumbers(card)
+	var result int
+	if count > 0 {
+		result = int(math.Pow(2, float64(count-1)))
 	}
-	return int(math.Pow(2, float64(count-1)))
+	return result
+}
+
+func countCards(cards []Card, index int) map[int]int {
+	card := cards[index]
+	count := matchingNumbers(card)
+	var result = make(map[int]int)
+	result[card.number] = 1
+	for di := 1; di <= count; di++ {
+		r := countCards(cards, index+di)
+		for cn, cc := range r {
+			result[cn] = result[cn] + cc
+		}
+	}
+	return result
 }
 
 func (d Day04) Solve() aoc.Solution {
 	var part1, part2 int
+	var cards []Card
 	for _, line := range aoc.ReadFile("04") {
-		card := parse(line)
-		part1 += points(card)
+		cards = append(cards, parse(line))
 	}
+
+	wonCards := make(map[int]int)
+	for index, card := range cards {
+		cardPoints := points(card)
+		part1 += cardPoints
+		wc := countCards(cards, index)
+		for cn, cc := range wc {
+			wonCards[cn] = wonCards[cn] + cc
+		}
+	}
+
+	for _, won := range wonCards {
+		part2 += won
+	}
+
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
