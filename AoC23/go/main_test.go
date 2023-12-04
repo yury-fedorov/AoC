@@ -8,6 +8,7 @@ import (
 	"github.com/yury-fedorov/AoC/AoC23/day02"
 	"github.com/yury-fedorov/AoC/AoC23/day03"
 	"github.com/yury-fedorov/AoC/AoC23/day04"
+	"github.com/yury-fedorov/AoC/AoC23/day05"
 )
 
 func TestDays(t *testing.T) {
@@ -19,6 +20,7 @@ func TestDays(t *testing.T) {
 		{day: &day02.Day02{}, want: aoc.Solution{Part1: "2283", Part2: "78669"}},
 		{day: &day03.Day03{}, want: aoc.Solution{Part1: "540212", Part2: "87605697"}},
 		{day: &day04.Day04{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
+		{day: &day05.Day05{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
 	}
 	for i, test := range tests {
 		got := test.day.Solve()
