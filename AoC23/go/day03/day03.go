@@ -83,19 +83,12 @@ func sumPartNumbers(list []partNumber) int {
 	return result
 }
 
-func abs(x int) int {
-	if x >= 0 {
-		return x
-	}
-	return -x
-}
-
 func inRange(x, min, max int) bool {
 	return x >= min && x <= max
 }
 
 func isAdjacent(n partNumber, x, y int) bool {
-	return abs(n.y-y) <= 1 && inRange(x, n.x0-1, n.x1+1)
+	return aoc.Abs(n.y-y) <= 1 && inRange(x, n.x0-1, n.x1+1)
 }
 
 func sumGearRatios(engine []string, numberList []partNumber) int {

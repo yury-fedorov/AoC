@@ -37,3 +37,10 @@ func ReadFile(tag string) []string {
 	}
 	return result
 }
+
+func Abs[I int64 | int](x I) I {
+	if x >= 0 {
+		return x
+	}
+	return -x
+}
