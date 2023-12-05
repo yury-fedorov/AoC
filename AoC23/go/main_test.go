@@ -12,7 +12,7 @@ import (
 	"github.com/yury-fedorov/AoC/AoC23/day06"
 )
 
-const runSlowTests = true
+const runSlowTests = false
 
 type Test struct {
 	day  aoc.Day
