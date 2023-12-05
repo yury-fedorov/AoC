@@ -2,7 +2,6 @@ package day04
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"math"
 	"regexp"
 	"slices"
 	"strconv"
@@ -67,7 +66,7 @@ func points(card Card) int {
 	count := matchingNumbers(card)
 	var result int
 	if count > 0 {
-		result = int(math.Pow(2, float64(count-1)))
+		result = aoc.Pow(2, count-1)
 	}
 	return result
 }

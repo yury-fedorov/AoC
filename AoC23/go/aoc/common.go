@@ -3,6 +3,7 @@ package aoc
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 )
 
@@ -43,4 +44,8 @@ func Abs[I int64 | int](x I) I {
 		return x
 	}
 	return -x
+}
+
+func Pow[I int64 | int](x, y I) I {
+	return I(math.Pow(float64(x), float64(y)))
 }
