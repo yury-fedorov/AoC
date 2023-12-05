@@ -9,3 +9,11 @@ func Min[I int64 | int](a, b I) I {
 	}
 	return b
 }
+
+// Go 1.21 is not yet available on github actions (Dec 2023)
+func Max[I int64 | int](a, b I) I {
+	if a > b {
+		return a
+	}
+	return b
+}
