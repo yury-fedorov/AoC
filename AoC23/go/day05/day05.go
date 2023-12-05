@@ -85,19 +85,11 @@ func seedToLocation(seed int64, almanac Almanac) int64 {
 	return result
 }
 
-// Go 1.20 doesn't have min yet, only in Go 1.21
-func min(a, b int64) int64 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func calcMin(almanac Almanac, startSeed int64, length int64, c chan int64) {
 	initialLowest := almanac.seeds[0]
 	result := initialLowest
 	for seed := startSeed; seed < (startSeed + length); seed++ {
-		result = min(result, seedToLocation(seed, almanac))
+		result = aoc.Min(result, seedToLocation(seed, almanac))
 	}
 	c <- result
 }
@@ -108,7 +100,7 @@ func (d Day05) Solve() aoc.Solution {
 	initialLowest := almanac.seeds[0]
 	lowest := initialLowest
 	for _, seed := range almanac.seeds {
-		lowest = min(lowest, seedToLocation(seed, almanac))
+		lowest = aoc.Min(lowest, seedToLocation(seed, almanac))
 	}
 	part1 = int(lowest)
 
@@ -120,7 +112,7 @@ func (d Day05) Solve() aoc.Solution {
 		startSeed := s2[i]
 		length := s2[i+1]
 		for length > 0 {
-			curLength := min(length, Chunk)
+			curLength := aoc.Min(length, Chunk)
 			go calcMin(almanac, startSeed, curLength, c)
 			count++
 			length -= curLength
@@ -129,7 +121,7 @@ func (d Day05) Solve() aoc.Solution {
 	}
 	for i := 0; i < count; i++ {
 		curLowest := <-c
-		lowest = min(lowest, curLowest)
+		lowest = aoc.Min(lowest, curLowest)
 	}
 	part2 = int(lowest)
 
