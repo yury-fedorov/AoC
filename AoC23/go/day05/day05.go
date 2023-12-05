@@ -91,24 +91,38 @@ func min(a, b int64) int64 {
 	return b
 }
 
+func calcMin(almanac Almanac, startSeed int64, length int64, c chan int64) {
+	initialLowest := almanac.seeds[0]
+	result := initialLowest
+	for seed := startSeed; seed < (startSeed + length); seed++ {
+		result = min(result, seedToLocation(seed, almanac))
+	}
+	c <- result
+}
+
 func (d Day05) Solve() aoc.Solution {
 	var part1, part2 int
 	almanac := parse(aoc.ReadFile("05"))
-	lowest := almanac.seeds[0]
+	initialLowest := almanac.seeds[0]
+	lowest := initialLowest
 	for _, seed := range almanac.seeds {
 		lowest = min(lowest, seedToLocation(seed, almanac))
 	}
 	part1 = int(lowest)
 
 	// TODO refactor in go routines and channels
-	lowest = almanac.seeds[0]
 	s2 := almanac.seeds
+	var count int
+	c := make(chan int64)
 	for i := 0; i < len(s2); i += 2 {
 		startSeed := s2[i]
 		length := s2[i+1]
-		for seed := startSeed; seed < (startSeed + length); seed++ {
-			lowest = min(lowest, seedToLocation(seed, almanac))
-		}
+		go calcMin(almanac, startSeed, length, c)
+		count++
+	}
+	for i := 0; i < count; i++ {
+		curLowest := <-c
+		lowest = min(lowest, curLowest)
 	}
 	part2 = int(lowest)
 
