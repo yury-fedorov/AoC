@@ -5,7 +5,8 @@
 * [Google Go Style Guide](https://google.github.io/styleguide/go/guide)
 
 ## Interesting Parts
-1. Day05 - channels and goroutines
+1. `Day03` - `aoc.Abs()` for `int` and `int64`
+2. `Day05` - channels and goroutines
 
 ## Tech Debt
-1. Day05 - sort and binarySearch
+1. `Day05` - `Sort` and (binary) `Search`
