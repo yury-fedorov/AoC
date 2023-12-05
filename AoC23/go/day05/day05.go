@@ -61,10 +61,12 @@ func parse(data []string) Almanac {
 	if len(section.name) != 0 {
 		sections = append(sections, section)
 	}
+	// TODO sort for every Section in sections based on binary search need to be used in transform()
 	return Almanac{seeds: seeds, sections: sections}
 }
 
 func transform(start int64, section AlmanacSection) int64 {
+	// TODO instead of going one by one, binary search would speed up the execution from O(n) to O(log n)
 	for _, line := range section.mapping {
 		if start >= line.sourceRangeStart && start < (line.sourceRangeStart+line.rangeLength) {
 			// found the right transformation line
@@ -110,15 +112,20 @@ func (d Day05) Solve() aoc.Solution {
 	}
 	part1 = int(lowest)
 
-	// TODO refactor in go routines and channels
 	s2 := almanac.seeds
 	var count int
 	c := make(chan int64)
+	const Chunk int64 = 10_000
 	for i := 0; i < len(s2); i += 2 {
 		startSeed := s2[i]
 		length := s2[i+1]
-		go calcMin(almanac, startSeed, length, c)
-		count++
+		for length > 0 {
+			curLength := min(length, Chunk)
+			go calcMin(almanac, startSeed, curLength, c)
+			count++
+			length -= curLength
+			startSeed += curLength
+		}
 	}
 	for i := 0; i < count; i++ {
 		curLowest := <-c
