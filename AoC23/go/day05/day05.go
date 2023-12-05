@@ -98,5 +98,16 @@ func (d Day05) Solve() aoc.Solution {
 		lowest = min(lowest, seedToLocation(seed, almanac))
 	}
 	part1 = int(lowest)
+
+	lowest = almanac.seeds[0]
+	s2 := almanac.seeds
+	for i := 0; i < len(s2); i += 2 {
+		startSeed := s2[i]
+		length := s2[i+1]
+		for seed := startSeed; seed < (startSeed + length); seed++ {
+			lowest = min(lowest, seedToLocation(seed, almanac))
+		}
+	}
+	part2 = int(lowest)
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
