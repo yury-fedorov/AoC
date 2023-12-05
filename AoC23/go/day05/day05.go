@@ -20,7 +20,8 @@ type AlmanacSection struct {
 }
 
 type Almanac struct {
-	seeds    []int64
+	seeds []int64
+	// TODO - sort for quick transform() call usage based on binary search implemented in search.Search()
 	sections []AlmanacSection
 }
 
@@ -99,6 +100,7 @@ func (d Day05) Solve() aoc.Solution {
 	}
 	part1 = int(lowest)
 
+	// TODO refactor in go routines and channels
 	lowest = almanac.seeds[0]
 	s2 := almanac.seeds
 	for i := 0; i < len(s2); i += 2 {
@@ -109,5 +111,6 @@ func (d Day05) Solve() aoc.Solution {
 		}
 	}
 	part2 = int(lowest)
+
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
