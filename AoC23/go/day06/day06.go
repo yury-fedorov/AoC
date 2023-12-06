@@ -71,15 +71,14 @@ func countWinningRanges(record RaceResult) int {
 }
 
 func (d Day06) Solve() aoc.Solution {
-	var part1, part2 int
 	records := parse(aoc.ReadFile("06"))
 
-	part1 = 1
+	part1 := 1
 	for _, r := range records {
 		part1 *= countWinningRanges(r)
 	}
 
-	part2 = countWinningRanges(toRace2(records))
+	part2 := countWinningRanges(toRace2(records))
 
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
