@@ -62,15 +62,7 @@ func toRace2(races []RaceResult) RaceResult {
 		time += strconv.Itoa(r.time)
 		dist += strconv.Itoa(r.distance)
 	}
-	timeInt, err := strconv.Atoi(time)
-	if err != nil {
-		panic(time)
-	}
-	distInt, err := strconv.Atoi(dist)
-	if err != nil {
-		panic(distInt)
-	}
-	return RaceResult{time: timeInt, distance: distInt}
+	return RaceResult{time: aoc.Atoi(time), distance: aoc.Atoi(dist)}
 }
 
 func countWinningRanges(record RaceResult) int {

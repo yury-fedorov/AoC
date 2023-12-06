@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 )
 
 type Part int
@@ -39,13 +40,25 @@ func ReadFile(tag string) []string {
 	return result
 }
 
-func Abs[I int64 | int](x I) I {
-	if x >= 0 {
-		return x
+func Ifelse[T any](condition bool, ok T, ko T) T {
+	if condition {
+		return ok
 	}
-	return -x
+	return ko
+}
+
+func Abs[I int64 | int](x I) I {
+	return Ifelse(x >= 0, x, -x)
 }
 
 func Pow[I int64 | int](x, y I) I {
 	return I(math.Pow(float64(x), float64(y)))
+}
+
+func Atoi(number string) int {
+	result, err := strconv.Atoi(number)
+	if err != nil {
+		panic(number)
+	}
+	return result
 }
