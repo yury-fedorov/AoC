@@ -73,19 +73,21 @@ func toRace2(races []RaceResult) RaceResult {
 	return RaceResult{time: timeInt, distance: distInt}
 }
 
+func countWinningRanges(record RaceResult) int {
+	ctMin, ctMax := winningRange(record)
+	return ctMax - ctMin + 1
+}
+
 func (d Day06) Solve() aoc.Solution {
 	var part1, part2 int
 	records := parse(aoc.ReadFile("06"))
 
 	part1 = 1
 	for _, r := range records {
-		ctMin, ctMax := winningRange(r)
-		part1 *= ctMax - ctMin + 1
+		part1 *= countWinningRanges(r)
 	}
 
-	race2 := toRace2(records)
-	ctMin, ctMax := winningRange(race2)
-	part2 = ctMax - ctMin + 1
+	part2 = countWinningRanges(toRace2(records))
 
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
