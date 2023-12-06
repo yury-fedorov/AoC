@@ -28,11 +28,7 @@ type Almanac struct {
 func toSlice(text string) []int64 {
 	var result []int64
 	for _, textNumber := range strings.Split(text, " ") {
-		number, err := strconv.Atoi(textNumber)
-		if err != nil {
-			panic(textNumber)
-		}
-		result = append(result, int64(number))
+		result = append(result, int64(aoc.Atoi(textNumber)))
 	}
 	return result
 }

@@ -56,10 +56,7 @@ func identifyPartNumbers(engine []string) []partNumber {
 				// so the number is around: [startAt, x)
 				if isPartialNumber(engine, startAt, x, y) {
 					partialNumberText := string(line[startAt:x])
-					partialNumber, err := strconv.Atoi(partialNumberText)
-					if err != nil {
-						panic(partialNumber)
-					}
+					partialNumber := aoc.Atoi(partialNumberText)
 					result = append(result, partNumber{
 						number: partialNumber,
 						x0:     startAt,

@@ -30,10 +30,7 @@ var r2 = regexp.MustCompile(`(\d+) ([a-z]+)`)
 // Game 6: 3 blue, 10 green, 2 red; 5 green; 6 blue, 3 red
 func parseGame(line string) game {
 	match := r1.FindStringSubmatch(line)
-	id, err := strconv.Atoi(match[1])
-	if err != nil {
-		panic(err)
-	}
+	id := aoc.Atoi(match[1])
 	var extractions []extraction
 	gamesStr := strings.Split(match[2], ";")
 	for _, gameStr := range gamesStr {
@@ -41,11 +38,7 @@ func parseGame(line string) game {
 		es := strings.Split(gameStr, ",")
 		for _, esi := range es {
 			match = r2.FindStringSubmatch(esi)
-			qty, err := strconv.Atoi(match[1])
-			if err != nil {
-				panic(err)
-			}
-			e[color(match[2])] = qty
+			e[color(match[2])] = aoc.Atoi(match[1])
 		}
 		extractions = append(extractions, e)
 	}

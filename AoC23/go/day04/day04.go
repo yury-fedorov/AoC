@@ -38,10 +38,7 @@ func parseNumbers(line string) []int {
 
 func parse(line string) Card {
 	match := r1.FindStringSubmatch(line)
-	number, err := strconv.Atoi(match[1])
-	if err != nil {
-		panic(line)
-	}
+	number := aoc.Atoi(match[1])
 	return Card{number: number, winningNumbers: parseNumbers(match[2]), cardNumbers: parseNumbers(match[3])}
 }
 
