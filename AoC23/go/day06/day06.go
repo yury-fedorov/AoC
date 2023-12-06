@@ -15,8 +15,6 @@ type RaceResult struct {
 }
 
 func toSlice(text string) []int {
-	// var re = regexp.MustCompile(`([0-9]+)`)
-	// found := re.FindAllStringSubmatch(text, 0)
 	found := strings.Split(strings.Split(text, ":")[1], " ")
 	var result []int
 	for _, num := range found {
@@ -58,13 +56,36 @@ func winningRange(record RaceResult) (int, int) {
 	return ctMin, ctMax
 }
 
+func toRace2(races []RaceResult) RaceResult {
+	var time, dist string
+	for _, r := range races {
+		time += strconv.Itoa(r.time)
+		dist += strconv.Itoa(r.distance)
+	}
+	timeInt, err := strconv.Atoi(time)
+	if err != nil {
+		panic(time)
+	}
+	distInt, err := strconv.Atoi(dist)
+	if err != nil {
+		panic(distInt)
+	}
+	return RaceResult{time: timeInt, distance: distInt}
+}
+
 func (d Day06) Solve() aoc.Solution {
 	var part1, part2 int
 	records := parse(aoc.ReadFile("06"))
+
 	part1 = 1
 	for _, r := range records {
 		ctMin, ctMax := winningRange(r)
-		part1 *= (ctMax - ctMin + 1)
+		part1 *= ctMax - ctMin + 1
 	}
+
+	race2 := toRace2(records)
+	ctMin, ctMax := winningRange(race2)
+	part2 = ctMax - ctMin + 1
+
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
