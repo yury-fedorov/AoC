@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"golang.org/x/exp/maps"
-	"slices"
+	slices "golang.org/x/exp/slices" // Due to 1.20
 	"sort"
 	"strconv"
 	"strings"
