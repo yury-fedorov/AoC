@@ -25,13 +25,14 @@ const (
 )
 
 func parse(data []string) Network {
-	var re = regexp.MustCompile( `([A-Z]+) = \((A-Z]+), (A-Z]+)\)` )
+	// AAA = (BBB, CCC)
+	var re = regexp.MustCompile( `([A-Z]+) = \(([A-Z]+), ([A-Z]+)\)` )
 	var result Network
 	result.nodes = make(map[NodeName]Node)
 	result.navigation = data[0]
 	for _, line := range data[2:] {
 		m := re.FindStringSubmatch(line)
-		node := Node{ name: NodeName(m[0]), left: NodeName(m[1]), right: NodeName(m[2]) }
+		node := Node{ name: NodeName(m[1]), left: NodeName(m[2]), right: NodeName(m[3]) }
 		result.nodes[node.name] = node
 	}
 	return result
