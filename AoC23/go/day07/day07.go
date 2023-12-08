@@ -166,7 +166,7 @@ type Day07 struct{}
 
 func (d Day07) Solve() aoc.Solution {
 	var part1, part2 int
-	data := aoc.ReadFile("07")
+  data := aoc.ReadFile("07")
 	var list []HandBet
 	for _, line := range data {
 		hb := parse(line)
@@ -185,6 +185,6 @@ func (d Day07) Solve() aoc.Solution {
 		part2 += rank * hb.bet
 		fmt.Println(string(hb.hand))
 	}
-	
+
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
