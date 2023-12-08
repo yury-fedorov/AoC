@@ -1,7 +1,6 @@
 package day07
 
 import (
-	"fmt"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"golang.org/x/exp/maps"
 	slices "golang.org/x/exp/slices" // Due to 1.20
@@ -183,7 +182,6 @@ func (d Day07) Solve() aoc.Solution {
 	for i, hb := range list {
 		rank := i + 1
 		part2 += rank * hb.bet
-		fmt.Println(string(hb.hand))
 	}
 
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
