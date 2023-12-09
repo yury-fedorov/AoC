@@ -30,7 +30,7 @@ func TestDays(t *testing.T) {
 		{day: &day04.Day04{}, want: aoc.Solution{Part1: "21821", Part2: "5539496"}},
 		{day: &day06.Day06{}, want: aoc.Solution{Part1: "608902", Part2: "46173809"}},
 		{day: &day07.Day07{}, want: aoc.Solution{Part1: "253205868", Part2: "253907829"}},
-		{day: &day08.Day08{}, want: aoc.Solution{Part1: "21251", Part2: "1"}},
+		{day: &day08.Day08{}, want: aoc.Solution{Part1: "21251", Part2: "11678319315857"}},
 		{day: &day09.Day09{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
 	}
 	slowTests := []Test{

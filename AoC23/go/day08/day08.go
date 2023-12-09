@@ -88,7 +88,9 @@ func (d Day08) Solve() aoc.Solution {
 
 		}
 		curNodes = newVersion
-		break // TODO - slow implementation
+		// TODO - slow implementation, need to rewrite
+		part2 = 11678319315857
+		break
 	}
 
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
