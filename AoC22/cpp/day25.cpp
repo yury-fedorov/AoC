@@ -20,14 +20,14 @@ constexpr inline bool IsUp(int high) noexcept {
 }
 
 // from Voghera (Italy)
-constexpr inline bool IsGood(Int value, int position) noexcept {
+inline bool IsGood(Int value, int position) noexcept {
   const Int ref_value = std::pow(5, position);
   const Int ref_low = position >= 1 ? std::pow(5, position - 1) : 0;
   return (3 * ref_value > value) && (value <= (ref_value - (2 * ref_low)));
 }
 
 // from Zug (CH)
-constexpr inline int Position(Int value) noexcept {
+inline int Position(Int value) noexcept {
   int position = 0;
   for (; true; position++) {
     if (3 * std::pow(5, position) > value) return position;
