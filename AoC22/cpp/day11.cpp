@@ -104,7 +104,7 @@ struct Monkey {
 [[nodiscard]] absl::StatusOr<int> ReadTailNumber(std::string_view line) {
   int value{0};
   const int start_pos = line.find_last_of(' ');
-  const std::string number(line.data() + start_pos, line.end());
+  const std::string number(line.begin() + start_pos, line.end());
   if (absl::SimpleAtoi(number, &value)) return value;
   return absl::InvalidArgumentError(absl::StrCat("unexpected input: ", line));
 }
