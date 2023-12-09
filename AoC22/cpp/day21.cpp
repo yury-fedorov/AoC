@@ -29,7 +29,7 @@ template <class T>
 }
 
 template <class T>
-[[nodiscard]] T Eval(Map& map, std::string_view node) {
+[[nodiscard]] T Eval(Map& map, std::string_view node) noexcept {
   const Var& var = map.at(node);
   const auto [raw_val, formula] = var;
   if (formula.empty()) return raw_val;
@@ -73,20 +73,18 @@ template <class T>
   return Eval<Long>(map, kRoot);
 }
 
-double PureEval(Map map, std::string_view root, Long humn) {
+double PureEval(Map map, std::string_view root, Long humn) noexcept {
     map[kHuman] = Var{ humn, "" };
     return Eval<double>(map, root);
 }
 
 [[nodiscard]] bool IsSensible(const Map& map, std::string_view root) noexcept {
-  const auto zero = PureEval(map, root, 0);
-  const auto y1 = PureEval(map, root, 100);
-  return y1 != zero;
+  return PureEval(map, root, 0) != PureEval(map, root, 100);
 }
 
-[[nodiscard]] Int Answer2(const Map& map, std::string_view root_var, Int target) noexcept {
+[[nodiscard]] Int Answer2(const Map& map, std::string_view root, Int target) noexcept {
     // f(x) = a + b*x
-    const auto f = [&map, &root_var](Int x) { return PureEval(map, root_var, x); };
+    const auto f = [&map, &root](Int x) { return PureEval(map, root, x); };
     const Int x0 = 0;
     const Int y0 = f(x0);
     const Int x1 = 1'000'000; // sensitivity of result
@@ -101,9 +99,8 @@ double PureEval(Map map, std::string_view root, Long humn) {
   const std::vector<std::string> parts = absl::StrSplit(old_root, " + ");
   const std::string_view root_a = parts.front();
   const std::string_view root_b = parts.back();
-  const bool is_a_sens = IsSensible(map, root_a);
-  const auto& root_const = is_a_sens ? root_b : root_a;
-  const auto& root_var = is_a_sens ? root_a : root_b;
+  const auto [root_var, root_const] = IsSensible(map, root_a)
+      ? std::make_pair(root_a, root_b) : std::make_pair(root_b, root_a);
   const Int target = PureEval(map, root_const, std::numeric_limits<Long>::quiet_NaN());
   return Answer2(map, root_var, target);
 }
