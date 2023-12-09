@@ -5,8 +5,13 @@
 namespace day21 {
 
 using Long = long long;
-// using Longest = absl::int128;
+#ifdef __SIZEOF_INT128__
 using Longest = __int128;
+#else
+// using Longest = absl::int128;
+using Longest = Long;
+#endif
+
 // using Int = int64_t;
 // using Int = Longest;
 using Int = int64_t;  // 2530*1419951562 = 1884792404
