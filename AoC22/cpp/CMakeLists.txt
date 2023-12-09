@@ -7,7 +7,7 @@ set(ABSL_ENABLE_INSTALL ON) # otherwise re2 does not find absl: https://github.c
 
 if (MSVC)
     # warning level 4 and all warnings as errors
-    add_compile_options(/W4 /WX)
+    # add_compile_options(/W4 /WX)
 else()
     # TODO - lots of warnings and all warnings as errors
     # removed to make almost clean Abseil: -Wall -Wextra -Werror -pedantic
