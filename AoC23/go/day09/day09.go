@@ -35,34 +35,20 @@ func isZeros(seq Sequence) bool {
 	return true
 }
 
-func nextValue(seq Sequence) int64 {
+func nextPrev(seq Sequence) (int64, int64) {
 	var downList []Sequence
 	for !isZeros(seq) {
 		downList = append(downList, seq)
 		seq = down(seq)
 	}
 	n := len(downList)
-	var result int64
+	var next, prev int64
 	for i := n - 1; i >= 0; i-- {
 		curDown := downList[i]
-		result += curDown[len(curDown)-1]
+		next += curDown[len(curDown)-1]
+		prev = curDown[0] - prev
 	}
-	return result
-}
-
-func prevValue(seq Sequence) int64 {
-	var downList []Sequence
-	for !isZeros(seq) {
-		downList = append(downList, seq)
-		seq = down(seq)
-	}
-	n := len(downList)
-	var result int64
-	for i := n - 1; i >= 0; i-- {
-		curDown := downList[i]
-		result = curDown[0] - result
-	}
-	return result
+	return next, prev
 }
 
 type Day09 struct{}
@@ -72,8 +58,9 @@ func (d Day09) Solve() aoc.Solution {
 	data := aoc.ReadFile("09")
 	sequences := parse(data)
 	for _, s := range sequences {
-		part1 += nextValue(s)
-		part2 += prevValue(s)
+		next, prev := nextPrev(s)
+		part1 += next
+		part2 += prev
 	}
 	return aoc.Solution{strconv.Itoa(int(part1)), strconv.Itoa(int(part2))}
 }
