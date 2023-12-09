@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Part int
@@ -59,6 +60,14 @@ func Atoi(number string) int {
 	result, err := strconv.Atoi(number)
 	if err != nil {
 		panic(number)
+	}
+	return result
+}
+
+func ToSlice(text string) []int64 {
+	var result []int64
+	for _, textNumber := range strings.Split(text, " ") {
+		result = append(result, int64(Atoi(textNumber)))
 	}
 	return result
 }

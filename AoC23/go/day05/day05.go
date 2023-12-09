@@ -25,21 +25,13 @@ type Almanac struct {
 	sections []AlmanacSection
 }
 
-func toSlice(text string) []int64 {
-	var result []int64
-	for _, textNumber := range strings.Split(text, " ") {
-		result = append(result, int64(aoc.Atoi(textNumber)))
-	}
-	return result
-}
-
 func toMapLine(text string) AlmanacMapLine {
-	line := toSlice(text)
+	line := aoc.ToSlice(text)
 	return AlmanacMapLine{destinationRangeStart: line[0], sourceRangeStart: line[1], rangeLength: line[2]}
 }
 
 func parse(data []string) Almanac {
-	seeds := toSlice(strings.Split(data[0], ": ")[1])
+	seeds := aoc.ToSlice(strings.Split(data[0], ": ")[1])
 	var sections []AlmanacSection
 	var section AlmanacSection
 	for _, line := range data[2:] {
