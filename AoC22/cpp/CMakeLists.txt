@@ -13,15 +13,16 @@ else()
     # removed to make almost clean Abseil: -Wall -Wextra -Werror -pedantic
     # -fexperimental-library - to be able to use experimental features like ranges/views    
     add_compile_options(-Wno-deprecated -fno-exceptions -fno-rtti)    
+
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address") #memory - cannot together with address #undefined,dataflow
+    set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+
 endif()
 
-# if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    # Olny for Clang we add experimental for ranges/views as GCC has it already
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    # Only for Clang we add experimental for ranges/views as GCC has it already
     # add_compile_options(-fexperimental-library) 
-# endif()
-
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address") #memory - cannot together with address #undefined,dataflow
-set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+endif()
 
 include(FetchContent)
 
