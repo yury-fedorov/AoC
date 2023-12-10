@@ -146,34 +146,25 @@ func isCrossed(tiles []Tile, d Point) bool {
 }
 
 func countAdjCrossedBoarders(s []int, tiles []Tile, d Point) int {
-	var se []int
-	index := 0
+	n := len(s)
 	s0 := s[0]
-	s = s[1:]
-	for len(s) > 0 {
-		s1 := s[0]
-		s = s[1:]
+	head := 0
+	var result int
+	var tt [][]Tile
+	for i := 0; i < n; i++ {
+		s1 := s[i]
 		if math.Abs(float64(s1-s0)) > 1.0 {
-			se = append(se, index)
-			// result++
+			// end of sequence
+			tt = append(tt, tiles[head:i])
+			head = i
 		}
 		s0 = s1
-		index++
 	}
-	se = append(se, index)
-	if len(se) == 1 {
-		return aoc.Ifelse(isCrossed(tiles, d), 1, 0)
+	if head < n {
+		tt = append(tt, tiles[head:])
 	}
-
-	var result int
-	ssi := 0
-	for _, sei := range se {
-		ti := tiles[ssi:(sei)]
-		aw := adjByDirection(ti, d)
-		if aw[1] && aw[-1] {
-			result += 1
-		}
-		ssi = sei + 1
+	for _, tti := range tt {
+		result += aoc.Ifelse(isCrossed(tti, d), 1, 0)
 	}
 	return result
 }
@@ -216,9 +207,9 @@ func isInternal(loop [][]Tile, path map[Point]int, p Point) bool {
 	return true
 }
 
-func (d Day10) Solve() aoc.Solution {
+func solve(file string) (int, int) {
 	var part1, part2 int
-	loop := parse("10-6")
+	loop := parse(file)
 	startPoint := start(loop)
 	nextDirs := nextDir(loop, startPoint)
 	startTile := toTile(nextDirs)
@@ -273,5 +264,20 @@ func (d Day10) Solve() aoc.Solution {
 		part2 += aoc.Ifelse(isCandidate && isInternal(loop, path, p), 1, 0)
 	}
 
+	return part1, part2
+}
+
+func (d Day10) Solve() aoc.Solution {
+	// tests
+	_, e5p2 := solve("10-5")
+	if e5p2 != 4 {
+		panic("wrong 10-5")
+	}
+	_, e6p2 := solve("10-6")
+	if e6p2 != 8 {
+		panic("wrong 10-6")
+	}
+
+	part1, part2 := solve("10") // 10-5 p2: 4
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
