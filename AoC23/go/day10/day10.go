@@ -266,7 +266,10 @@ func solve(file string) (int, int) {
 	}
 
 	for p, isCandidate := range candidates {
-		part2 += aoc.Ifelse(isCandidate && isInternal(loop, path, p), 1, 0)
+		if isCandidate && isInternal(loop, path, p) {
+			fmt.Println(p)
+			part2++
+		}
 	}
 
 	return part1, part2
@@ -282,8 +285,9 @@ func testPart2(file string, wantP2 int) {
 
 func (d Day10) Solve() aoc.Solution {
 	// tests
-	testPart2("10-5", 4)
 	testPart2("10-6", 8)
+	// ok
+	testPart2("10-5", 4)
 	testPart2("10-7", 10)
 
 	part1, part2 := solve("10") // 472 - too low
