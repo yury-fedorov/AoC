@@ -2,6 +2,7 @@ package day10
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"math"
 	"slices"
 	"strconv"
 )
@@ -14,17 +15,16 @@ type Point struct {
 
 type Tile rune
 
-var Directions = []Point{{x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: -1}, {x: 0, y: 1}}
-
 const (
-	VertPipe Tile = '|'
-	HorPipe       = '-'
-	NEBend        = 'L'
-	NWBend        = 'J'
-	SWBend        = '7'
-	SEBend        = 'F'
-	Ground        = '.'
-	Start         = 'S'
+	VertPipe    Tile = '|'
+	HorPipe     Tile = '-'
+	NEBend      Tile = 'L'
+	NWBend      Tile = 'J'
+	SWBend      Tile = '7'
+	SEBend      Tile = 'F'
+	Ground      Tile = '.'
+	Start       Tile = 'S'
+	OuterGround Tile = 'O' // for part 2
 )
 
 var South = Point{x: 0, y: 1}
@@ -60,11 +60,11 @@ func xy(loop [][]Tile) (int, int) {
 
 func at(loop [][]Tile, x int, y int) Tile {
 	if x < 0 || y < 0 {
-		return Ground
+		return OuterGround
 	}
 	xMax, yMax := xy(loop)
 	if x >= xMax || y >= yMax {
-		return Ground
+		return OuterGround
 	}
 	return loop[y][x]
 }
@@ -129,9 +129,58 @@ func move(start Point, d Point) Point {
 	return Point{x: start.x + d.x, y: start.y + d.y}
 }
 
+func countCrossedBoarders(loop [][]Tile, path map[Point]int, p Point, d Point) int {
+	var result int
+	var s []int
+	var tiles []Tile
+	for pi := p; true; pi = move(pi, d) {
+		t := at(loop, pi.x, pi.y)
+		steps, isPipeline := path[pi]
+		if isPipeline {
+			s = append(s, steps)
+			tiles = append(tiles, t)
+		} else {
+			// not pipeline anymore
+			if len(s) == 0 {
+			} else if len(s) == 1 {
+				result += 1
+			} else {
+				s0 := s[0]
+				s = s[1:]
+				for len(s) > 0 {
+					s1 := s[0]
+					s = s[1:]
+					if math.Abs(float64(s1-s0)) > 1.0 {
+						result++
+					}
+					s0 = s1
+				}
+				result++
+			}
+			s = []int{}
+			tiles = []Tile{}
+
+		}
+		if t == OuterGround {
+			break
+		}
+	}
+	return result
+}
+
+func isInternal(loop [][]Tile, path map[Point]int, p Point) bool {
+	for _, d := range Moves {
+		c := countCrossedBoarders(loop, path, p, d)
+		if c%2 != 1 {
+			return false
+		}
+	}
+	return true
+}
+
 func (d Day10) Solve() aoc.Solution {
 	var part1, part2 int
-	loop := parse("10")
+	loop := parse("10-6")
 	startPoint := start(loop)
 	nextDirs := nextDir(loop, startPoint)
 	startTile := toTile(nextDirs)
@@ -163,6 +212,28 @@ func (d Day10) Solve() aoc.Solution {
 	}
 
 	part1 = len(path) / 2
+
+	// part 2
+	// clean from all not necessary tubes
+	candidates := make(map[Point]bool)
+	xMax, yMax := xy(loop)
+	for y := 0; y < yMax; y++ {
+		for x := 0; x < xMax; x++ {
+			p := Point{x: x, y: y}
+			_, found := path[p]
+			if !found {
+				// candidates
+				// all candidates at the boarders are outer
+				border := x == 0 || y == 0 || (x+1) == xMax || (y+1) == yMax
+				loop[y][x] = aoc.Ifelse(border, OuterGround, Ground)
+				candidates[p] = !border
+			}
+		}
+	}
+
+	for p, isCandidate := range candidates {
+		part2 += aoc.Ifelse(isCandidate && isInternal(loop, path, p), 1, 0)
+	}
 
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
