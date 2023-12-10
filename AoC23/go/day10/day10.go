@@ -1,6 +1,7 @@
 package day10
 
 import (
+	"fmt"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"math"
 	"slices"
@@ -134,7 +135,8 @@ func adjByDirection(tiles []Tile, d Point) map[int]bool {
 	set := make(map[int]bool)
 	for _, t := range tiles {
 		for _, td := range Shifts[t] {
-			set[aoc.Ifelse(isX, td.x, td.y)] = true
+			// ie. the direction of crossing by X, we are interested in Y delta
+			set[aoc.Ifelse(isX, td.y, td.x)] = true
 		}
 	}
 	return set
@@ -142,7 +144,7 @@ func adjByDirection(tiles []Tile, d Point) map[int]bool {
 
 func isCrossed(tiles []Tile, d Point) bool {
 	aw := adjByDirection(tiles, d)
-	return aw[1] && aw[-1]
+	return aw[1] && aw[-1] // we need to be on both sides from the axis
 }
 
 func countAdjCrossedBoarders(s []int, tiles []Tile, d Point) int {
@@ -162,6 +164,9 @@ func countAdjCrossedBoarders(s []int, tiles []Tile, d Point) int {
 	}
 	if head < n {
 		tt = append(tt, tiles[head:])
+	}
+	if len(tt) > 1 {
+		// most complicated cases
 	}
 	for _, tti := range tt {
 		result += aoc.Ifelse(isCrossed(tti, d), 1, 0)
@@ -267,17 +272,20 @@ func solve(file string) (int, int) {
 	return part1, part2
 }
 
+func testPart2(file string, wantP2 int) {
+	_, gotP2 := solve(file)
+	if gotP2 != wantP2 {
+		fmt.Printf(`%s got %d want %d`, file, gotP2, wantP2)
+		fmt.Println()
+	}
+}
+
 func (d Day10) Solve() aoc.Solution {
 	// tests
-	_, e5p2 := solve("10-5")
-	if e5p2 != 4 {
-		panic("wrong 10-5")
-	}
-	_, e6p2 := solve("10-6")
-	if e6p2 != 8 {
-		panic("wrong 10-6")
-	}
+	testPart2("10-5", 4)
+	testPart2("10-6", 8)
+	testPart2("10-7", 10)
 
-	part1, part2 := solve("10") // 10-5 p2: 4
+	part1, part2 := solve("10") // 472 - too low
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
