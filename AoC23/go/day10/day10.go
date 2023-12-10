@@ -129,6 +129,55 @@ func move(start Point, d Point) Point {
 	return Point{x: start.x + d.x, y: start.y + d.y}
 }
 
+func adjByDirection(tiles []Tile, d Point) map[int]bool {
+	isX := d.x != 0
+	set := make(map[int]bool)
+	for _, t := range tiles {
+		for _, td := range Shifts[t] {
+			set[aoc.Ifelse(isX, td.x, td.y)] = true
+		}
+	}
+	return set
+}
+
+func isCrossed(tiles []Tile, d Point) bool {
+	aw := adjByDirection(tiles, d)
+	return aw[1] && aw[-1]
+}
+
+func countAdjCrossedBoarders(s []int, tiles []Tile, d Point) int {
+	var se []int
+	index := 0
+	s0 := s[0]
+	s = s[1:]
+	for len(s) > 0 {
+		s1 := s[0]
+		s = s[1:]
+		if math.Abs(float64(s1-s0)) > 1.0 {
+			se = append(se, index)
+			// result++
+		}
+		s0 = s1
+		index++
+	}
+	se = append(se, index)
+	if len(se) == 1 {
+		return aoc.Ifelse(isCrossed(tiles, d), 1, 0)
+	}
+
+	var result int
+	ssi := 0
+	for _, sei := range se {
+		ti := tiles[ssi:(sei)]
+		aw := adjByDirection(ti, d)
+		if aw[1] && aw[-1] {
+			result += 1
+		}
+		ssi = sei + 1
+	}
+	return result
+}
+
 func countCrossedBoarders(loop [][]Tile, path map[Point]int, p Point, d Point) int {
 	var result int
 	var s []int
@@ -145,21 +194,10 @@ func countCrossedBoarders(loop [][]Tile, path map[Point]int, p Point, d Point) i
 			} else if len(s) == 1 {
 				result += 1
 			} else {
-				s0 := s[0]
-				s = s[1:]
-				for len(s) > 0 {
-					s1 := s[0]
-					s = s[1:]
-					if math.Abs(float64(s1-s0)) > 1.0 {
-						result++
-					}
-					s0 = s1
-				}
-				result++
+				result += countAdjCrossedBoarders(s, tiles, d)
 			}
 			s = []int{}
 			tiles = []Tile{}
-
 		}
 		if t == OuterGround {
 			break
