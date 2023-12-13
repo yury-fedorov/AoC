@@ -267,7 +267,7 @@ func solve(file string) (int, int) {
 
 	for p, isCandidate := range candidates {
 		if isCandidate && isInternal(loop, path, p) {
-			fmt.Println(p)
+			// XXX - debug - fmt.Println(p)
 			part2++
 		}
 	}
