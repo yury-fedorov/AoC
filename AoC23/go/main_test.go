@@ -14,6 +14,10 @@ import (
 	"github.com/yury-fedorov/AoC/AoC23/day08"
 	"github.com/yury-fedorov/AoC/AoC23/day09"
 	"github.com/yury-fedorov/AoC/AoC23/day10"
+	"github.com/yury-fedorov/AoC/AoC23/day11"
+	"github.com/yury-fedorov/AoC/AoC23/day12"
+	"github.com/yury-fedorov/AoC/AoC23/day13"
+	"github.com/yury-fedorov/AoC/AoC23/day14"
 )
 
 const runSlowTests = false
@@ -33,7 +37,11 @@ func TestDays(t *testing.T) {
 		{day: &day07.Day07{}, want: aoc.Solution{Part1: "253205868", Part2: "253907829"}},
 		{day: &day08.Day08{}, want: aoc.Solution{Part1: "21251", Part2: "11678319315857"}},
 		{day: &day09.Day09{}, want: aoc.Solution{Part1: "1834108701", Part2: "993"}},
-		{day: &day10.Day10{}, want: aoc.Solution{Part1: "6613", Part2: "0"}},
+		{day: &day10.Day10{}, want: aoc.Solution{Part1: "6613", Part2: "0"}}, // TODO - part 2
+		{day: &day11.Day11{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
+		{day: &day12.Day12{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
+		{day: &day13.Day13{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
+		{day: &day14.Day14{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
 	}
 	slowTests := []Test{
 		// takes 8 minutes
@@ -47,7 +55,7 @@ func TestDays(t *testing.T) {
 		got := test.day.Solve()
 		want := test.want
 		if got != want {
-			t.Fatalf(`%T returned %v, want %v`, test.day, got, want)
+			t.Errorf(`%T returned %v, want %v`, test.day, got, want)
 		}
 	}
 }
