@@ -75,12 +75,12 @@ func emptyLines(image Image, a Point, b Point, isX bool) []int {
 	return result
 }
 
-func Distance(image Image, ga Point, gb Point) int {
+func Distance(image Image, ga Point, gb Point, ek int) int {
 	dx := aoc.Abs(ga.x - gb.x)
 	dy := aoc.Abs(ga.y - gb.y)
 	ex := emptyLines(image, ga, gb, true)
 	ey := emptyLines(image, ga, gb, false)
-	return dx + dy + len(ex) + len(ey)
+	return dx + dy + (len(ex)+len(ey))*(ek-1)
 }
 
 func less(ga Point, gb Point) bool {
@@ -101,8 +101,8 @@ func (d Day11) Solve() aoc.Solution {
 	for _, ga := range image.Galaxies {
 		for _, gb := range image.Galaxies {
 			if less(ga, gb) {
-				part1 += Distance(image, ga, gb)
-				// part2++
+				part1 += Distance(image, ga, gb, 2)
+				part2 += Distance(image, ga, gb, 1000000)
 			}
 		}
 	}
