@@ -55,9 +55,9 @@ func toSlice(p Pattern, rt ReflectionType, i int) string {
 func reflectionPoint(p Pattern, rt ReflectionType, i int) bool {
 	xMax, yMax := size(p)
 	a, b := i, i+1
-	max := aoc.Ifelse(rt == Vertical, xMax, yMax)
+	bMax := aoc.Ifelse(rt == Vertical, xMax, yMax)
 	var count int
-	for a >= 0 && b < max {
+	for a >= 0 && b < bMax {
 		if toSlice(p, rt, a) != toSlice(p, rt, b) {
 			return false
 		}
