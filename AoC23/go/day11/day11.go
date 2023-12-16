@@ -19,10 +19,6 @@ type Image struct {
 	EmptyLines []Point // NDValue is used on one of coordinates
 }
 
-func ParseFile(file string) Image {
-	return parse(aoc.ReadFile(file))
-}
-
 func parse(data []string) Image {
 	const Galaxy rune = '#'
 	yMax := len(data)
@@ -92,23 +88,14 @@ func less(ga Point, gb Point) bool {
 
 func (d Day11) Solve() aoc.Solution {
 	var part1, part2 int
-	image := ParseFile("11")
-	// g := func(i int) Point { return image.Galaxies[i-1] }
-	// d := func(a int, b int) int { return Distance(image, g(a), g(b)) }
-	// part1 = Distance(image, g(8), g(9)) // 5 right
-	// part1 = Distance(image, g(1), g(7)) // 15 right
-	// part1 = Distance(image, g(3), g(6)) // 17 right
+	image := parse(aoc.ReadFile("11"))
 	for _, ga := range image.Galaxies {
 		for _, gb := range image.Galaxies {
 			if less(ga, gb) {
 				part1 += Distance(image, ga, gb, 2)
-				part2 += Distance(image, ga, gb, 1000000)
+				part2 += Distance(image, ga, gb, 1_000_000)
 			}
 		}
 	}
-
-	// part1 = len(image.Galaxies)
-	// part2 = len(image.EmptyLines)
-
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
