@@ -2,7 +2,7 @@ package day15
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"slices"
+	"golang.org/x/exp/slices" // Due to 1.20
 	"strconv"
 	"strings"
 )
@@ -74,7 +74,6 @@ func (d Day15) Solve() aoc.Solution {
 		boxes[boxIndex] = cur
 	}
 
-	// 578751 - too high
 	for boxIndex, lenses := range boxes {
 		for lensIndex, lens := range lenses {
 			part2 += (boxIndex + 1) * (lensIndex + 1) * (lens.focalLength)
