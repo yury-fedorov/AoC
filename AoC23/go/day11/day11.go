@@ -58,15 +58,15 @@ func parse(data []string) Image {
 	return Image{Galaxies: galaxies, EmptyLines: emptyLine}
 }
 
-func emptyLines(image Image, ga Point, gb Point, isX bool) []int {
+func emptyLines(image Image, a Point, b Point, isX bool) []int {
 	var result []int
-	gaz := aoc.Ifelse(isX, ga.x, ga.y)
-	gbz := aoc.Ifelse(isX, gb.x, ga.y)
-	if gaz > gbz {
-		gaz, gbz = gbz, gaz
+	az := aoc.Ifelse(isX, a.x, a.y)
+	bz := aoc.Ifelse(isX, b.x, b.y)
+	if az > bz {
+		az, bz = bz, az
 	}
-	// now gaz < gbz
-	for z := gaz; z < gbz; z++ {
+	// now az < bz
+	for z := az; z < bz; z++ {
 		t := aoc.Ifelse(isX, Point{x: z, y: NDValue}, Point{x: NDValue, y: z})
 		if slices.Contains(image.EmptyLines, t) {
 			result = append(result, z)
@@ -92,15 +92,21 @@ func less(ga Point, gb Point) bool {
 
 func (d Day11) Solve() aoc.Solution {
 	var part1, part2 int
-	image := ParseFile("11-1")
+	image := ParseFile("11")
+	// g := func(i int) Point { return image.Galaxies[i-1] }
+	// d := func(a int, b int) int { return Distance(image, g(a), g(b)) }
+	// part1 = Distance(image, g(8), g(9)) // 5 right
+	// part1 = Distance(image, g(1), g(7)) // 15 right
+	// part1 = Distance(image, g(3), g(6)) // 17 right
 	for _, ga := range image.Galaxies {
 		for _, gb := range image.Galaxies {
 			if less(ga, gb) {
 				part1 += Distance(image, ga, gb)
-				part2++
+				// part2++
 			}
 		}
 	}
+
 	// part1 = len(image.Galaxies)
 	// part2 = len(image.EmptyLines)
 
