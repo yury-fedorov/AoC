@@ -1,6 +1,7 @@
 package day13
 
 import (
+	"fmt"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
 )
@@ -67,19 +68,25 @@ func reflectionPoint(p Pattern, rt ReflectionType, i int) bool {
 	return count > 0
 }
 
-func reflection(p Pattern) Reflection {
+func reflection(p Pattern, exclude *Reflection) (Reflection, error) {
 	xMax, yMax := size(p)
 	for x := 0; x < xMax; x++ {
 		if reflectionPoint(p, Vertical, x) {
-			return Reflection{Vertical, x}
+			r := Reflection{Vertical, x}
+			if exclude == nil || r != *exclude {
+				return r, nil
+			}
 		}
 	}
 	for y := 0; y < yMax; y++ {
 		if reflectionPoint(p, Horizontal, y) {
-			return Reflection{Horizontal, y}
+			r := Reflection{Horizontal, y}
+			if exclude == nil || r != *exclude {
+				return r, nil
+			}
 		}
 	}
-	panic("bad implementation")
+	return Reflection{}, fmt.Errorf("")
 }
 
 func summarize(reflection Reflection) int {
@@ -87,11 +94,49 @@ func summarize(reflection Reflection) int {
 	return k * (reflection.firstCell + 1)
 }
 
+func fixSmudgeCell(c rune) rune {
+	return aoc.Ifelse(c == '#', '.', '#')
+}
+
+func fixSmudge(p Pattern, x, y int) Pattern {
+	var result Pattern
+	for yi, li := range p {
+		if yi == y {
+			l := []rune(li)
+			for xi := 0; xi < len(li); xi++ {
+				if xi == x {
+					l[xi] = fixSmudgeCell(l[xi])
+				}
+			}
+			result = append(result, string(l))
+		} else {
+			result = append(result, li)
+		}
+	}
+	return result
+}
+
+func reflection2(p Pattern, r1 Reflection) Reflection {
+	xMax, yMax := size(p)
+	for y := 0; y < yMax; y++ {
+		for x := 0; x < xMax; x++ {
+			p2 := fixSmudge(p, x, y)
+			r2, err := reflection(p2, &r1)
+			if err == nil && r2 != r1 {
+				return r2
+			}
+		}
+	}
+	panic("bad implementation")
+}
+
 func (d Day13) Solve() aoc.Solution {
 	var part1, part2 int
 	patterns := parse("13")
 	for _, p := range patterns {
-		part1 += summarize(reflection(p))
+		r1, _ := reflection(p, nil)
+		part1 += summarize(r1)
+		part2 += summarize(reflection2(p, r1))
 	}
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
