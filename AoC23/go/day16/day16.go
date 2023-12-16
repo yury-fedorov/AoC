@@ -72,11 +72,7 @@ func isIn(p Point, xMax int, yMax int) bool {
 	return !(p.x < 0 || p.y < 0 || p.x >= xMax || p.y >= yMax)
 }
 
-func (day Day16) Solve() aoc.Solution {
-	var part1, part2 int
-	m := aoc.ReadFile("16")
-	p := Point{x: 0, y: 0}
-	d := Right
+func inlight(m []string, p Point, d Point) int {
 	var directionQueue []DirectionQueueItem
 	var doneQueue []DirectionQueueItem
 	xMax, yMax := len(m[0]), len(m)
@@ -110,12 +106,33 @@ func (day Day16) Solve() aoc.Solution {
 					}
 				}
 			}
+			if len(directionQueue) == 0 {
+				break
+			}
 			ni := directionQueue[0]
 			p = ni.startingPoint
 			d = ni.direction
 			directionQueue = directionQueue[1:]
 		}
 	}
-	part1 = len(light)
+	return len(light)
+}
+
+func (day Day16) Solve() aoc.Solution {
+	var part1, part2 int
+	m := aoc.ReadFile("16")
+	part1 = inlight(m, Point{x: 0, y: 0}, Right)
+
+	part2 = part1
+	xMax, yMax := len(m[0]), len(m)
+	for x := 0; x < xMax; x++ {
+		part2 = aoc.Max(part2, inlight(m, Point{x: x, y: 0}, Down))
+		part2 = aoc.Max(part2, inlight(m, Point{x: x, y: yMax - 1}, Up))
+	}
+	for y := 0; y < yMax; y++ {
+		part2 = aoc.Max(part2, inlight(m, Point{x: 0, y: y}, Right))
+		part2 = aoc.Max(part2, inlight(m, Point{x: xMax - 1, y: y}, Left))
+	}
+
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
