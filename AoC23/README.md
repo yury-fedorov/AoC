@@ -7,10 +7,9 @@
 ## TODO
 1. Day10 Part2 - count properly if we are in or out of the tube.
 2. Day12
-3. Day13
-4. Day14
-5. Day15
-6. Day16
+3. Day14
+4. Day15
+5. Day16
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
