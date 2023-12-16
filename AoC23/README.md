@@ -8,8 +8,6 @@
 1. Day10 Part2 - count properly if we are in or out of the tube.
 2. Day12 both - combinatorics
 3. Day14 - all directions and many circles (easy?)
-4. Day15 - hashmap (easy?)
-
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
