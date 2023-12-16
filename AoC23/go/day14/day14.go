@@ -89,10 +89,6 @@ func moveTo(dish Dish, dir Direction) {
 	}
 }
 
-func moveToNorth(dish Dish) {
-	moveTo(dish, North)
-}
-
 func size(dish Dish) (int, int) {
 	return len(dish[0]), len(dish)
 }
@@ -126,7 +122,7 @@ func (day Day14) Solve() aoc.Solution {
 	var part1, part2 int
 	file := "14"
 	dish := parse(file)
-	moveToNorth(dish)
+	moveTo(dish, North)
 	part1 = totalLoad(dish)
 
 	const circleCount int = 1_000_000_000
@@ -136,10 +132,8 @@ func (day Day14) Solve() aoc.Solution {
 	for i := 0; i < circleCount; i++ {
 		for _, dir := range spinCircle {
 			moveTo(dish, dir)
-			// fmt.Println(show(dish))
 		}
 		key := show(dish)
-		// fmt.Println(key)
 		prev, found := cache[key]
 		if found {
 			// now we know the circle
