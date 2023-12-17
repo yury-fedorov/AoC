@@ -62,17 +62,29 @@ type State struct {
 	maxStraightSteps int
 }
 
+func direction(p0, p1 Point) Point {
+	return Point{x: p1.x - p0.x, y: p1.y - p0.y}
+}
+
 func isSameDirection(p0 Point, p1 Point, d0 Point) bool {
 	return d0.x == (p1.x-p0.x) && d0.y == (p1.y-p0.y)
 }
 
 type QueueStep struct {
-	position, direction Point
-	heatLoss            int
+	position Point
+
+	// data before the step
+	direction              Point
+	remainingStraightSteps int
+	sumHeatLoss            int
 }
 
 type QueueStepDone struct {
 	position, direction Point
+}
+
+func heatLossAt(p Point) int {
+	return int([]rune(m[p.y])[p.x] - '0')
 }
 
 func (d Day17) Solve() aoc.Solution {
@@ -85,27 +97,39 @@ func (d Day17) Solve() aoc.Solution {
 		}
 	*/
 	queue := []QueueStep{
-		{position: p0, direction: Right, heatLoss: 0},
-		{position: p0, direction: Down, heatLoss: 0},
+		{position: p0, direction: Right, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
+		{position: p0, direction: Down, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
 	}
 	done := make(map[QueueStepDone]int)
 	end := Point{x: xMax - 1, y: yMax - 1}
-	minPath := map[Point]int{
+	// total accumulated heat loss by the point
+	minHeatLoss := map[Point]int{
 		p0: 0,
 	}
-
 	for len(queue) > 0 {
 		nqs := queue[0]
 		queue = queue[1:]
 		pi := nqs.position
-		done[QueueStepDone{position: pi, direction: nqs.direction}] = nqs.heatLoss
-		/*
-			pi1List := nextMoves(pi, nqs.direction, true) // TODO - work on it
-			var curHeatLoss int = m[pi.y][pi.x] - '0'
-			cache[]
-		*/
+		done[QueueStepDone{position: pi, direction: nqs.direction}] = nqs.sumHeatLoss
+		p1List := nextMoves(pi, nqs.direction, nqs.remainingStraightSteps > 0)
+		for _, p1i := range p1List {
+			shl := nqs.sumHeatLoss + heatLossAt(p1i)
+			prev, found := minHeatLoss[p1i]
+			isBestPath := false
+			if !found || prev > shl {
+				minHeatLoss[p1i] = shl
+				isBestPath = true
+			}
+			if !isBestPath || p1i == end {
+				continue
+			}
+			newDir := direction(pi, p1i)
+			remainingStraightSteps := aoc.Ifelse(nqs.direction == newDir, nqs.remainingStraightSteps-1, maxStepsStraight)
+			queue = append(queue, QueueStep{position: p1i, direction: newDir, sumHeatLoss: shl,
+				remainingStraightSteps: remainingStraightSteps})
+		}
 	}
 
-	part1 = minPath[end]
+	part1 = minHeatLoss[end] + heatLossAt(end)
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
