@@ -28,7 +28,7 @@ func isIn(p Point) bool {
 	return p.x >= 0 && p.y >= 0 && p.x < xMax && p.y < yMax
 }
 
-func nextDirs(dir0 Point) []Point {
+func nextDirs(dir0 Point, canGoStraight bool) []Point {
 	i0 := slices.Index(Directions, dir0)
 	dby := func(di int) Point {
 		if di < 0 {
@@ -36,7 +36,8 @@ func nextDirs(dir0 Point) []Point {
 		}
 		return Directions[di%DirectionCount]
 	}
-	return []Point{dir0, dby(i0 + 1), dby(i0 - 1)}
+	result := []Point{dir0, dby(i0 + 1), dby(i0 - 1)}
+	return aoc.Ifelse(canGoStraight, result, result[1:])
 }
 
 func next(p0 Point, d Point) Point {
@@ -44,9 +45,9 @@ func next(p0 Point, d Point) Point {
 }
 
 // returns points on the map (not directions)
-func nextMoves(p0 Point, dir0 Point) []Point {
+func nextMoves(p0 Point, dir0 Point, canGoStraight bool) []Point {
 	var result []Point
-	for _, di := range nextDirs(dir0) {
+	for _, di := range nextDirs(dir0, canGoStraight) {
 		p1 := next(p0, di)
 		if isIn(p1) {
 			result = append(result, p1)
@@ -55,9 +56,56 @@ func nextMoves(p0 Point, dir0 Point) []Point {
 	return result
 }
 
+type State struct {
+	position         Point
+	direction        Point
+	maxStraightSteps int
+}
+
+func isSameDirection(p0 Point, p1 Point, d0 Point) bool {
+	return d0.x == (p1.x-p0.x) && d0.y == (p1.y-p0.y)
+}
+
+type QueueStep struct {
+	position, direction Point
+	heatLoss            int
+}
+
+type QueueStepDone struct {
+	position, direction Point
+}
+
 func (d Day17) Solve() aoc.Solution {
 	var part1, part2 int
-	// for _, line := range  {
-	// }
+	p0 := Point{x: 0, y: 0}
+	/*
+		cache := map[State]int{
+			State{position: p0, direction: Right, maxStraightSteps: maxStepsStraight}: 0,
+			State{position: p0, direction: Down, maxStraightSteps: maxStepsStraight}:  0,
+		}
+	*/
+	queue := []QueueStep{
+		{position: p0, direction: Right, heatLoss: 0},
+		{position: p0, direction: Down, heatLoss: 0},
+	}
+	done := make(map[QueueStepDone]int)
+	end := Point{x: xMax - 1, y: yMax - 1}
+	minPath := map[Point]int{
+		p0: 0,
+	}
+
+	for len(queue) > 0 {
+		nqs := queue[0]
+		queue = queue[1:]
+		pi := nqs.position
+		done[QueueStepDone{position: pi, direction: nqs.direction}] = nqs.heatLoss
+		/*
+			pi1List := nextMoves(pi, nqs.direction, true) // TODO - work on it
+			var curHeatLoss int = m[pi.y][pi.x] - '0'
+			cache[]
+		*/
+	}
+
+	part1 = minPath[end]
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
