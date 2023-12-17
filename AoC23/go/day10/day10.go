@@ -206,6 +206,7 @@ func isInternal(loop [][]Tile, path map[Point]int, p Point) bool {
 	for _, d := range Moves {
 		c := countCrossedBoarders(loop, path, p, d)
 		if c%2 != 1 {
+			fmt.Println(fmt.Sprintf("p: %v d: %v c: %v", p, d, c))
 			return false
 		}
 	}
@@ -262,13 +263,22 @@ func solve(file string) (int, int) {
 				loop[y][x] = aoc.Ifelse(border, OuterGround, Ground)
 				candidates[p] = !border
 			}
+			fmt.Print(string(loop[y][x]))
 		}
+		fmt.Println()
 	}
 
+	fmt.Println()
+	fmt.Println()
+	fmt.Println()
+
 	for p, isCandidate := range candidates {
-		if isCandidate && isInternal(loop, path, p) {
+		if isCandidate {
 			// XXX - debug - fmt.Println(p)
-			part2++
+			// DEBUG - p: {8 5} d: {1 0} c: 4
+			if isInternal(loop, path, p) {
+				part2++
+			}
 		}
 	}
 
@@ -286,10 +296,12 @@ func testPart2(file string, wantP2 int) {
 func (d Day10) Solve() aoc.Solution {
 	// tests
 	testPart2("10-6", 8)
-	// ok
-	testPart2("10-5", 4)
-	testPart2("10-7", 10)
-
-	part1, part2 := solve("10") // 472 - too low
+	/*
+			// ok
+			testPart2("10-5", 4)
+			testPart2("10-7", 10)
+		part1, part2 := solve("10") // 472 - too low
+	*/
+	var part1, part2 int
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
