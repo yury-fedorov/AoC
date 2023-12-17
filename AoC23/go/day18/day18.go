@@ -1,13 +1,13 @@
-package day25
+package day18
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
 )
 
-type Day25 struct{}
+type Day18 struct{}
 
-func (day Day25) Solve() aoc.Solution {
+func (day Day18) Solve() aoc.Solution {
 	var part1, part2 int
 	// for _, line := range aoc.ReadFile("25") {
 	// }
