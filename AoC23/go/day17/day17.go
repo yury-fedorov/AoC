@@ -31,10 +31,7 @@ func isIn(p Point) bool {
 func nextDirs(dir0 Point, canGoStraight bool) []Point {
 	i0 := slices.Index(Directions, dir0)
 	dby := func(di int) Point {
-		if di < 0 {
-			di += DirectionCount
-		}
-		return Directions[di%DirectionCount]
+		return Directions[(di+DirectionCount)%DirectionCount]
 	}
 	result := []Point{dir0, dby(i0 + 1), dby(i0 - 1)}
 	return aoc.Ifelse(canGoStraight, result, result[1:])
@@ -108,13 +105,24 @@ func (d Day17) Solve() aoc.Solution {
 				continue
 			}
 			newDir := direction(pi, p1i)
-			remainingStraightSteps := aoc.Ifelse(nqs.direction == newDir, nqs.remainingStraightSteps-1, maxStepsStraight)
+			remainingStraightSteps := aoc.Ifelse(nqs.direction == newDir, nqs.remainingStraightSteps, maxStepsStraight) - 1
 			queue = append(queue, QueueStep{position: p1i, direction: newDir, sumHeatLoss: shl,
 				remainingStraightSteps: remainingStraightSteps})
 		}
 	}
-
-	part1 = minHeatLoss[end] + heatLossAt(end)
-	// 1223 - too low
+	/*
+		for y := 0; y < yMax; y++ {
+			for x := 0; x < xMax; x++ {
+				p := Point{x: x, y: y}
+				shl := minHeatLoss[p]
+				fmt.Print(aoc.Ifelse(shl <= 0, " ???", fmt.Sprintf(" %3d", shl)))
+				fmt.Printf(" [%d] ", heatLossAt(p))
+			}
+			fmt.Println()
+		}
+	*/
+	part1 = minHeatLoss[end]
+	// 1254 - too low
+	// 1283 ... 1285 - too high
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
