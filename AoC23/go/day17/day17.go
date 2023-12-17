@@ -21,7 +21,7 @@ var Down = Point{x: 0, y: 1}
 var Directions = []Point{Right, Down, Left, Up}
 var DirectionCount = len(Directions)
 
-var m = aoc.ReadFile("17-1")
+var m = aoc.ReadFile("17")
 var xMax, yMax = len(m[0]), len(m)
 
 func isIn(p Point) bool {
@@ -66,10 +66,6 @@ func direction(p0, p1 Point) Point {
 	return Point{x: p1.x - p0.x, y: p1.y - p0.y}
 }
 
-func isSameDirection(p0 Point, p1 Point, d0 Point) bool {
-	return d0.x == (p1.x-p0.x) && d0.y == (p1.y-p0.y)
-}
-
 type QueueStep struct {
 	position Point
 
@@ -79,10 +75,6 @@ type QueueStep struct {
 	sumHeatLoss            int
 }
 
-type QueueStepDone struct {
-	position, direction Point
-}
-
 func heatLossAt(p Point) int {
 	return int([]rune(m[p.y])[p.x] - '0')
 }
@@ -90,17 +82,10 @@ func heatLossAt(p Point) int {
 func (d Day17) Solve() aoc.Solution {
 	var part1, part2 int
 	p0 := Point{x: 0, y: 0}
-	/*
-		cache := map[State]int{
-			State{position: p0, direction: Right, maxStraightSteps: maxStepsStraight}: 0,
-			State{position: p0, direction: Down, maxStraightSteps: maxStepsStraight}:  0,
-		}
-	*/
 	queue := []QueueStep{
 		{position: p0, direction: Right, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
 		{position: p0, direction: Down, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
 	}
-	done := make(map[QueueStepDone]int)
 	end := Point{x: xMax - 1, y: yMax - 1}
 	// total accumulated heat loss by the point
 	minHeatLoss := map[Point]int{
@@ -110,7 +95,6 @@ func (d Day17) Solve() aoc.Solution {
 		nqs := queue[0]
 		queue = queue[1:]
 		pi := nqs.position
-		done[QueueStepDone{position: pi, direction: nqs.direction}] = nqs.sumHeatLoss
 		p1List := nextMoves(pi, nqs.direction, nqs.remainingStraightSteps > 0)
 		for _, p1i := range p1List {
 			shl := nqs.sumHeatLoss + heatLossAt(p1i)
@@ -131,5 +115,6 @@ func (d Day17) Solve() aoc.Solution {
 	}
 
 	part1 = minHeatLoss[end] + heatLossAt(end)
+	// 1223 - too low
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
