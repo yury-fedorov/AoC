@@ -145,10 +145,69 @@ func diff(s []int) []int {
 func midGrid(grid []int) []int {
 	d := diff(grid)
 	var result []int
-	for i, v := range grid {
-		result = append(result, v+d[i])
+	for i, di := range d {
+		result = append(result, grid[i]+(di/2))
 	}
 	return result
+}
+
+func isInRange(l Line, p Point, onX bool) bool {
+	a := aoc.Ifelse(onX, l.a.x, l.a.y)
+	b := aoc.Ifelse(onX, l.b.x, l.b.y)
+	z := aoc.Ifelse(onX, p.x, p.y)
+	return aoc.Min(a, b) <= z && z <= aoc.Max(a, b)
+}
+
+func isCrossed(l Line, p Point, d Point) bool {
+	isLineHorizontal := l.a.y == l.b.y
+	if isLineHorizontal && !isInRange(l, p, true) {
+		// the horizontal line doesn't match the range [xa, xb] with point's x value
+		return false
+	}
+	if !isLineHorizontal && !isInRange(l, p, false) {
+		// the vertical line doesn't match the range [ya, yb] with point's y value
+		return false
+	}
+	if d.y < 0 {
+		return isLineHorizontal && l.a.y < p.y // up
+	}
+	if d.y > 0 {
+		return isLineHorizontal && l.a.y > p.y // down
+	}
+	if isLineHorizontal {
+		return false
+	}
+	if d.x < 0 && l.a.x < p.x {
+		return true // left
+	}
+	if d.x > 0 && l.a.x > p.x {
+		return true // right
+	}
+	return false
+}
+
+func foundCrossed(m2 []Line, p Point, d Point) []Line {
+	var result []Line
+	for _, l := range m2 {
+		if isCrossed(l, p, d) {
+			result = append(result, l)
+		}
+	}
+	return result
+}
+
+func isIn2(m2 []Line, p Point) bool {
+	for _, d := range Moves {
+		crossed := foundCrossed(m2, p, d)
+		if len(crossed)%2 != 1 {
+			return false
+		}
+	}
+	return true
+}
+
+func length(a, b int) int {
+	return aoc.Max(a, b) - aoc.Min(a, b) + 1
 }
 
 func part2(m2 []Line) int {
@@ -157,14 +216,19 @@ func part2(m2 []Line) int {
 	yGrid := orderedGrid(m2, func(p Point) int { return p.y })
 	midX := midGrid(xGrid)
 	midY := midGrid(yGrid)
-
-	part2 = len(xGrid) * len(yGrid) * (len(midX) - len(midY))
+	for ix, px := range midX {
+		for iy, py := range midY {
+			if isIn2(m2, Point{px, py}) {
+				part2 += length(xGrid[ix], xGrid[ix+1]) * length(yGrid[iy], yGrid[iy+1])
+			}
+		}
+	}
 	return part2
 }
 
 func (day Day18) Solve() aoc.Solution {
 	// Initialization requires different maps for part1 and part 2.
-	var digPlan = aoc.ReadFile("18")
+	var digPlan = aoc.ReadFile("18-1")
 	m := make(map[Point]rune) // part 1 version fo the map
 	var m2 []Line             // part 2 version of the map
 	var p, p2 Point           // starting points
@@ -194,3 +258,7 @@ func (day Day18) Solve() aoc.Solution {
 	}
 	return aoc.Solution{strconv.Itoa(part1(m)), strconv.Itoa(part2(m2))}
 }
+
+// 952408144115 - right
+// 1407387173222
+// 952413211789
