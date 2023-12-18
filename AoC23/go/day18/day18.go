@@ -1,7 +1,6 @@
 package day18
 
 import (
-	"fmt"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"golang.org/x/exp/maps"
 	"strconv"
@@ -111,18 +110,11 @@ func (day Day18) Solve() aoc.Solution {
 			}
 		}
 	}
-
 	for y := minP.y; y <= maxP.y; y++ {
 		for x := minP.x; x <= maxP.x; x++ {
-			// fmt.Print(aoc.Ifelse(m[Point{x, y}] == Dug, "#", "."))
 			ch := m[Point{x, y}]
-			if ch == rune(0) {
-				ch = 'X'
-			}
 			part1 += aoc.Ifelse(ch != Outside, 1, 0)
-			fmt.Print(string(ch))
 		}
-		fmt.Println()
 	}
 
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
