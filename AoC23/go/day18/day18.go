@@ -230,15 +230,26 @@ func part2(m2 []Line) int {
 	for ix, _ := range midX {
 		for iy, _ := range midY {
 			in := isInCache[Point{ix, iy}]
+			if !in {
+				continue
+			}
 			// on the right could be overlapping
-			inOnRight := isInCache[Point{ix + 1, iy}]
-			if in && inOnRight {
+			inRight := isInCache[Point{ix + 1, iy}]
+			if inRight {
 				part2 -= length(yGrid[iy], yGrid[iy+1])
 			}
 			// on the bottom could be overlapping
-			inOnBottom := isInCache[Point{ix, iy + 1}]
-			if in && inOnBottom {
-				part2 -= length(yGrid[ix], yGrid[ix+1])
+			inBottom := isInCache[Point{ix, iy + 1}]
+			if inBottom {
+				part2 -= length(xGrid[ix], xGrid[ix+1])
+			}
+			// one single piece on corner at right and bottom
+			inRightBottom := isInCache[Point{ix + 1, iy + 1}]
+			if inRightBottom {
+				//part2--
+			}
+			if inRight && inBottom {
+				part2++
 			}
 		}
 	}
@@ -284,3 +295,5 @@ func (day Day18) Solve() aoc.Solution {
 // 952413211789
 // 952408170675 (right now - closest)
 // 952399900391 (removing + 1)
+// 952408170666
+// 952408144101-952408144115
