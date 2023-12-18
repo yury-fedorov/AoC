@@ -2,6 +2,7 @@ package day12
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -17,12 +18,8 @@ const (
 )
 
 type Record struct {
-	label         string
 	record        []State
 	damagedGroups []int64
-	countUnknown  int
-	knownDamaged  int // known positions of damaged
-	sumDamaged    int // precise (from damagedGroups)
 }
 
 func parse(file string) []Record {
@@ -34,17 +31,15 @@ func parse(file string) []Record {
 			record = append(record, State(re))
 		}
 		dg := aoc.ToSlice(strings.ReplaceAll(recordGroups[1], ",", " "))
-		var sum int
-		for _, dgi := range dg {
-			sum += int(dgi)
-		}
-		var known, unknown int
-		for _, ri := range record {
-			known += aoc.Ifelse(ri == Damaged, 1, 0)
-			unknown += aoc.Ifelse(ri == Unknown, 1, 0)
-		}
-		result = append(result, Record{label: recordGroups[0], record: record, damagedGroups: dg,
-			knownDamaged: known, sumDamaged: sum, countUnknown: unknown})
+		result = append(result, Record{record: record, damagedGroups: dg})
+	}
+	return result
+}
+
+func count(record []State, state State) int {
+	var result int
+	for _, ri := range record {
+		result += aoc.Ifelse(ri == state, 1, 0)
 	}
 	return result
 }
@@ -52,7 +47,7 @@ func parse(file string) []Record {
 func isValid(states []State, groups []int64) bool {
 	var curGroup int64
 	gi := 0
-	for _, s := range states {
+	for _, s := range append(states, Operational) {
 		if s == Damaged {
 			curGroup++
 		} else {
@@ -68,22 +63,32 @@ func isValid(states []State, groups []int64) bool {
 			curGroup = 0
 		}
 	}
-	return true
+	return gi == len(groups)
 }
 
-func possibleArrangements(r Record) int {
-	countUnknown := r.countUnknown
-	unknownDamaged := r.sumDamaged - r.knownDamaged
-	d := countUnknown - unknownDamaged
-	return aoc.Pow(2, d)
+var options = []State{Damaged, Operational}
+
+func countPossibleArrangements(pattern []State, groups []int64) int {
+	i := slices.Index(pattern, Unknown)
+	if i < 0 {
+		return aoc.Ifelse(isValid(pattern, groups), 1, 0)
+	}
+	var result int
+	for _, o := range options {
+		newPattern := make([]State, len(pattern))
+		copy(newPattern, pattern)
+		newPattern[i] = o
+		result += countPossibleArrangements(newPattern, groups)
+	}
+	return result
 }
 
 func (day Day12) Solve() aoc.Solution {
 	var part1, part2 int
 	records := parse("12") // lines: 1000 max chr in line: 20
 	for _, r := range records {
-		part1 += possibleArrangements(r)
-		part2 = aoc.Max(part2, len(r.label))
+		part1 += countPossibleArrangements(r.record, r.damagedGroups)
+		// part2 = aoc.Max(part2, len(r.label))
 	}
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
