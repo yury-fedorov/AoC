@@ -49,22 +49,22 @@ func minMax(points []Point) (min Point, max Point) {
 	return minP, maxP
 }
 
-func (day Day18) Solve() aoc.Solution {
-	var part1, part2 int
-	var digPlan = aoc.ReadFile("18")
-	m := make(map[Point]rune)
-	var p Point
-	m[p] = Dug
-	for _, line := range digPlan {
-		dq := strings.Split(line, " ")
-		d := Directions[dq[0]]
-		q := aoc.Atoi(dq[1])
-		for i := 0; i < q; i++ {
-			p = move(p, d)
-			m[p] = Dug
-		}
-	}
+// -- part 2 --
 
+type Line struct {
+	a, b Point
+}
+
+var Directions2 = map[rune]Point{
+	'0': Right,
+	'1': Down,
+	'2': Left,
+	'3': Up,
+}
+
+// Solution of the part 1.
+func part1(m map[Point]rune) int {
+	var part1 int
 	minP, maxP := minMax(maps.Keys(m))
 
 	var outside []Point
@@ -116,6 +116,41 @@ func (day Day18) Solve() aoc.Solution {
 			part1 += aoc.Ifelse(ch != Outside, 1, 0)
 		}
 	}
+	return part1
+}
 
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+func (day Day18) Solve() aoc.Solution {
+	var part2 int
+
+	// Initialization starts.
+	var digPlan = aoc.ReadFile("18")
+	m := make(map[Point]rune)
+	var m2 []Line // part 2 version of the map
+	var p, p2 Point
+	m[p] = Dug
+	for _, line := range digPlan {
+		dq := strings.Split(line, " ")
+		d := Directions[dq[0]]
+		q := aoc.Atoi(dq[1])
+		for i := 0; i < q; i++ {
+			p = move(p, d)
+			m[p] = Dug
+		}
+		// part 2
+		// (#489852)
+		code := dq[2]
+		code = code[2 : len(code)-1]
+		d2code := []rune(code)[len(code)-1]
+		d2 := Directions2[d2code]
+		code = code[:len(code)-1]
+		q2, err := strconv.ParseInt(code, 16, 64)
+		if err != nil {
+			panic(err)
+		}
+		p2b := Point{x: p2.x + (d2.x * int(q2)), y: p2.y + (d2.y * int(q2))}
+		m2 = append(m2, Line{p2, p2b})
+		p2 = p2b
+	}
+
+	return aoc.Solution{strconv.Itoa(part1(m)), strconv.Itoa(part2)}
 }
