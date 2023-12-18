@@ -216,13 +216,33 @@ func part2(m2 []Line) int {
 	yGrid := orderedGrid(m2, func(p Point) int { return p.y })
 	midX := midGrid(xGrid)
 	midY := midGrid(yGrid)
+	isInCache := make(map[Point]bool) // x, y - indexes of grids
 	for ix, px := range midX {
 		for iy, py := range midY {
-			if isIn2(m2, Point{px, py}) {
+			in := isIn2(m2, Point{px, py})
+			isInCache[Point{ix, iy}] = in
+			if in {
 				part2 += length(xGrid[ix], xGrid[ix+1]) * length(yGrid[iy], yGrid[iy+1])
 			}
 		}
 	}
+	// remove all adjacent in zone overlapping
+	for ix, _ := range midX {
+		for iy, _ := range midY {
+			in := isInCache[Point{ix, iy}]
+			// on the right could be overlapping
+			inOnRight := isInCache[Point{ix + 1, iy}]
+			if in && inOnRight {
+				part2 -= length(yGrid[iy], yGrid[iy+1])
+			}
+			// on the bottom could be overlapping
+			inOnBottom := isInCache[Point{ix, iy + 1}]
+			if in && inOnBottom {
+				part2 -= length(yGrid[ix], yGrid[ix+1])
+			}
+		}
+	}
+
 	return part2
 }
 
@@ -262,3 +282,5 @@ func (day Day18) Solve() aoc.Solution {
 // 952408144115 - right
 // 1407387173222
 // 952413211789
+// 952408170675 (right now - closest)
+// 952399900391 (removing + 1)
