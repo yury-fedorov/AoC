@@ -44,6 +44,14 @@ func count(record []State, state State) int {
 	return result
 }
 
+func sum(groups []int64) int {
+	var result int
+	for _, g := range groups {
+		result += int(g)
+	}
+	return result
+}
+
 func isValid(states []State, groups []int64) bool {
 	var curGroup int64
 	gi := 0
@@ -66,9 +74,27 @@ func isValid(states []State, groups []int64) bool {
 	return gi == len(groups)
 }
 
+func couldBeValid(pattern []State, groups []int64) bool {
+	dc := count(pattern, Damaged)
+	gs := sum(groups)
+	if dc > gs {
+		return false
+	}
+	if dc == gs {
+		return true
+	}
+	uc := count(pattern, Unknown)
+	return (uc + dc) >= gs
+}
+
 var options = []State{Damaged, Operational}
 
 func countPossibleArrangements(pattern []State, groups []int64) int {
+	/*
+		if !couldBeValid(pattern, groups) {
+			return 0
+		}
+	*/
 	i := slices.Index(pattern, Unknown)
 	if i < 0 {
 		return aoc.Ifelse(isValid(pattern, groups), 1, 0)
@@ -83,12 +109,22 @@ func countPossibleArrangements(pattern []State, groups []int64) int {
 	return result
 }
 
+func countPossibleArrangements2(pattern []State, groups []int64) int {
+	var pattern2 []State
+	var groups2 []int64
+	for i := 0; i < 5; i++ {
+		pattern2 = append(pattern2, pattern...)
+		groups2 = append(groups2, groups...)
+	}
+	return countPossibleArrangements(pattern2, groups2)
+}
+
 func (day Day12) Solve() aoc.Solution {
 	var part1, part2 int
 	records := parse("12") // lines: 1000 max chr in line: 20
 	for _, r := range records {
 		part1 += countPossibleArrangements(r.record, r.damagedGroups)
-		// part2 = aoc.Max(part2, len(r.label))
+		// part2 += countPossibleArrangements2(r.record, r.damagedGroups)
 	}
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
