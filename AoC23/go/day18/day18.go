@@ -18,6 +18,7 @@ var Up = Point{x: 0, y: -1}
 var Down = Point{x: 0, y: 1}
 var Left = Point{x: -1, y: 0}
 var Right = Point{x: 1, y: 0}
+var Moves = []Point{Up, Down, Left, Right}
 var Directions = map[string]Point{
 	"U": Up,
 	"D": Down,
@@ -25,10 +26,15 @@ var Directions = map[string]Point{
 	"R": Right,
 }
 
-const Dug = true
+const Dug rune = '#'
+const Outside rune = '!'
 
 func move(p Point, d Point) Point {
 	return Point{x: p.x + d.x, y: p.y + d.y}
+}
+
+func isIn(min Point, max Point, p Point) bool {
+	return min.x <= p.x && max.x >= p.x && min.y <= p.y && max.y >= p.y
 }
 
 func minMax(points []Point) (min Point, max Point) {
@@ -47,7 +53,7 @@ func minMax(points []Point) (min Point, max Point) {
 func (day Day18) Solve() aoc.Solution {
 	var part1, part2 int
 	var digPlan = aoc.ReadFile("18")
-	m := make(map[Point]bool)
+	m := make(map[Point]rune)
 	var p Point
 	m[p] = Dug
 	for _, line := range digPlan {
@@ -61,11 +67,60 @@ func (day Day18) Solve() aoc.Solution {
 	}
 
 	minP, maxP := minMax(maps.Keys(m))
+
+	var outside []Point
+	for y := minP.y; y <= maxP.y; y++ {
+		p := Point{minP.x, y}
+		if m[p] != Dug {
+			outside = append(outside, p)
+		}
+		p = Point{maxP.x, y}
+		if m[p] != Dug {
+			outside = append(outside, p)
+		}
+	}
+	for x := minP.x; x <= maxP.x; x++ {
+		p := Point{x, minP.y}
+		if m[p] != Dug {
+			outside = append(outside, p)
+		}
+		p = Point{x, maxP.y}
+		if m[p] != Dug {
+			outside = append(outside, p)
+		}
+	}
+
+	done := make(map[Point]bool)
+	for len(outside) > 0 {
+		op := outside[0]
+		outside = outside[1:]
+		done[op] = true
+		if m[op] == Outside {
+			continue
+		}
+		m[op] = Outside
+		for _, d := range Moves {
+			op1 := move(op, d)
+			if isIn(minP, maxP, op1) {
+				if m[op1] != Dug && m[op1] != Outside {
+					_, found := done[op1]
+					if !found {
+						outside = append(outside, op1)
+					}
+				}
+			}
+		}
+	}
+
 	for y := minP.y; y <= maxP.y; y++ {
 		for x := minP.x; x <= maxP.x; x++ {
-			fmt.Print(aoc.Ifelse(m[Point{x, y}], "#", "."))
+			// fmt.Print(aoc.Ifelse(m[Point{x, y}] == Dug, "#", "."))
+			ch := m[Point{x, y}]
+			part1 += aoc.Ifelse(ch != Outside, 1, 0)
+			fmt.Print(string(ch))
 		}
 		fmt.Println()
 	}
+
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
