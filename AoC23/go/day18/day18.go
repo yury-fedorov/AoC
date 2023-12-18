@@ -46,7 +46,7 @@ func minMax(points []Point) (min Point, max Point) {
 
 func (day Day18) Solve() aoc.Solution {
 	var part1, part2 int
-	var digPlan = aoc.ReadFile("18-1")
+	var digPlan = aoc.ReadFile("18")
 	m := make(map[Point]bool)
 	var p Point
 	m[p] = Dug
