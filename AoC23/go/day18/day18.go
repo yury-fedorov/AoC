@@ -131,11 +131,34 @@ func orderedGrid(m2 []Line, getZ func(Point) int) []int {
 	return result
 }
 
+// distance between close items
+func diff(s []int) []int {
+	s1 := s[1:]
+	n := len(s1)
+	result := make([]int, n)
+	for i := 0; i < n; i++ {
+		result[i] = s1[i] - s[i]
+	}
+	return result
+}
+
+func midGrid(grid []int) []int {
+	d := diff(grid)
+	var result []int
+	for i, v := range grid {
+		result = append(result, v+d[i])
+	}
+	return result
+}
+
 func part2(m2 []Line) int {
 	var part2 int
 	xGrid := orderedGrid(m2, func(p Point) int { return p.x })
 	yGrid := orderedGrid(m2, func(p Point) int { return p.y })
-	part2 = len(xGrid) * len(yGrid)
+	midX := midGrid(xGrid)
+	midY := midGrid(yGrid)
+
+	part2 = len(xGrid) * len(yGrid) * (len(midX) - len(midY))
 	return part2
 }
 
