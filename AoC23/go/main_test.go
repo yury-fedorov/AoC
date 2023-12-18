@@ -22,6 +22,7 @@ import (
 	"github.com/yury-fedorov/AoC/AoC23/day16"
 	"github.com/yury-fedorov/AoC/AoC23/day17"
 	"github.com/yury-fedorov/AoC/AoC23/day18"
+	"github.com/yury-fedorov/AoC/AoC23/day19"
 )
 
 const runSlowTests = false
@@ -47,6 +48,7 @@ func TestDays(t *testing.T) {
 		{day: &day15.Day15{}, want: aoc.Solution{Part1: "512283", Part2: "215827"}},
 		{day: &day16.Day16{}, want: aoc.Solution{Part1: "6978", Part2: "7315"}},
 		{day: &day18.Day18{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
+		{day: &day19.Day19{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
 	}
 	// Slow tests and TODO zone.
 	slowTests := []Test{
