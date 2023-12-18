@@ -8,7 +8,7 @@
 1. Day10 Part2 - count properly if we are in or out of the tube.
 2. Day12 Part2 - combinatorics
 3. Day17 - Clumsy Crucible
-4. Day18 - Lavaduct Lagoon
+4. Day18 Part2 - Lavaduct Lagoon (big space calcs)
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
