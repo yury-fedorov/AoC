@@ -123,6 +123,6 @@ func (d Day17) Solve() aoc.Solution {
 	*/
 	part1 = minHeatLoss[end]
 	// 1254 - too low
-	// 1282 ... 1285 - too high
+	// 1281 ... 1285 - too high
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
