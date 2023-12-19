@@ -243,14 +243,17 @@ func part2(m2 []Line) int {
 			if inBottom {
 				part2 -= length(xGrid[ix], xGrid[ix+1])
 			}
-			// one single piece on corner at right and bottom
-			inRightBottom := isInCache[Point{ix + 1, iy + 1}]
-			if inRightBottom {
-				//part2--
-			}
-			if inRight && inBottom {
-				part2++
-			}
+			/*
+				// one single piece on corner at right and bottom
+				inRightBottom := isInCache[Point{ix + 1, iy + 1}]
+				part2 -= aoc.Ifelse(inRi)
+				if inRightBottom {
+					part2--
+				}
+				if inRight && inBottom {
+					part2++
+				}
+			*/
 		}
 	}
 
@@ -291,9 +294,6 @@ func (day Day18) Solve() aoc.Solution {
 }
 
 // 952408144115 - right
-// 1407387173222
-// 952413211789
-// 952408170675 (right now - closest)
-// 952399900391 (removing + 1)
-// 952408170666
-// 952408144101-952408144115
+// 952408144116 - without latest +1 +1
+// 952408144129
+// 952408144110
