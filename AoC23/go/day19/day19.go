@@ -2,7 +2,9 @@ package day19
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/maps"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -117,13 +119,30 @@ func runWorkflow(workflows map[WorkflowName]Workflow, p Part) bool {
 // WorkflowStats contains border lines mentioned in workflows conditions.
 type WorkflowStats map[string][]int
 
+func uniqueOrdered(s []int) []int {
+	r := make(map[int]bool)
+	for _, v := range s {
+		r[v] = true
+	}
+	var result []int = maps.Keys(r)
+	sort.Ints(result)
+	return result
+}
+
 func (day Day19) Solve() aoc.Solution {
 	var part1, part2 int
-	data := aoc.ReadFile("19")
+	data := aoc.ReadFile("19-1")
 	workflows := make(map[WorkflowName]Workflow)
 	var parts []Part
 	parsingWorkflows := true
-	wstats := make(WorkflowStats)
+	const kMin = 1
+	const kMax = 4000
+	var wstats = WorkflowStats{
+		"x": {kMin, kMax},
+		"m": {kMin, kMax},
+		"a": {kMin, kMax},
+		"s": {kMin, kMax},
+	}
 	for _, line := range data {
 		if len(line) == 0 {
 			parsingWorkflows = false
@@ -144,7 +163,37 @@ func (day Day19) Solve() aoc.Solution {
 	}
 
 	// part 2
-	part2 = len(wstats["x"])*len(wstats["m"])*len(wstats["a"]) + len(wstats["s"])
+	xl := uniqueOrdered(wstats["x"])
+	ml := uniqueOrdered(wstats["m"])
+	al := uniqueOrdered(wstats["a"])
+	sl := uniqueOrdered(wstats["s"])
 
+	x0 := kMin
+	for _, x := range xl {
+		dx := x - x0
+		m0 := kMin
+		for _, m := range ml {
+			dm := m - m0
+			a0 := kMin
+			for _, a := range al {
+				da := a - a0
+				s0 := kMin
+				for _, s := range sl {
+					isAccepted := runWorkflow(workflows, Part{x: x, m: m, a: a, s: s})
+					if isAccepted {
+						part2 += dx * dm * da * (s - s0)
+					}
+					s0 = s
+				}
+				a0 = a
+			}
+			m0 = m
+		}
+		x0 = x
+	}
+
+	// part2 = len(xl)*len(ml)*len(al) + len(sl)
+	// 167409079868000
+	// 137340235422129
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
