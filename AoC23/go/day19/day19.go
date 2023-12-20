@@ -51,7 +51,7 @@ type Workflow []WorkflowStep
 var rewf = regexp.MustCompile("(.+)\\{(.+)\\}")
 var rewfs = regexp.MustCompile("([xmas])([^0-9]+)([0-9]+):(.+)")
 
-func parseWorkflow(line string) (WorkflowName, Workflow) {
+func parseWorkflow(line string, wstats *WorkflowStats) (WorkflowName, Workflow) {
 	// pv{a>1716:R,A}
 	match := rewf.FindStringSubmatch(line)
 	steps := strings.Split(match[2], ",")
@@ -65,13 +65,14 @@ func parseWorkflow(line string) (WorkflowName, Workflow) {
 		} else {
 			v := match1[1]
 			op := match1[2]
-			co := aoc.Atoi(match1[3])
+			var co int = aoc.Atoi(match1[3])
 			dist := WorkflowName(match1[4])
 			ws = func(p Part) WorkflowName {
 				vv := getPart(p, v)
 				f := toFunc(op)
 				return aoc.Ifelse(f(vv, co), dist, Next)
 			}
+			(*wstats)[v] = append((*wstats)[v], co)
 		}
 		w = append(w, ws)
 	}
@@ -91,48 +92,59 @@ func parsePart(line string) Part {
 	return Part{x: parseValue(sets[0]), m: parseValue(sets[1]), a: parseValue(sets[2]), s: parseValue(sets[3])}
 }
 
+func runWorkflow(workflows map[WorkflowName]Workflow, p Part) bool {
+	ws := workflows[In]
+	for {
+		for _, wsi := range ws {
+			wfn := wsi(p)
+			if wfn == Next {
+				continue
+			}
+			if wfn == Accepted {
+				return true
+			}
+			if wfn == Rejected {
+				return false
+			}
+			ws = workflows[wfn]
+			break
+		}
+	}
+}
+
+// -- part 2 --
+
+// WorkflowStats contains border lines mentioned in workflows conditions.
+type WorkflowStats map[string][]int
+
 func (day Day19) Solve() aoc.Solution {
 	var part1, part2 int
 	data := aoc.ReadFile("19")
 	workflows := make(map[WorkflowName]Workflow)
 	var parts []Part
 	parsingWorkflows := true
+	wstats := make(WorkflowStats)
 	for _, line := range data {
 		if len(line) == 0 {
 			parsingWorkflows = false
 			continue
 		}
 		if parsingWorkflows {
-			workflowName, workflow := parseWorkflow(line)
+			workflowName, workflow := parseWorkflow(line, &wstats)
 			workflows[workflowName] = workflow
 		} else {
 			parts = append(parts, parsePart(line))
 		}
 	}
-	var acceptedParts []Part
 	for _, p := range parts {
-		ws := workflows[In]
-		isTerminated := false
-		for !isTerminated {
-			for _, wsi := range ws {
-				wfn := wsi(p)
-				if wfn == Next {
-					continue
-				}
-				if wfn == Accepted {
-					acceptedParts = append(acceptedParts, p)
-					isTerminated = true
-				} else if wfn == Rejected {
-					isTerminated = true
-				} else {
-					ws = workflows[wfn]
-				}
-				break
-			}
+		isAccepted := runWorkflow(workflows, p)
+		if isAccepted {
+			part1 += p.x + p.m + p.a + p.s
 		}
 	}
-	for _, ap := range acceptedParts {
-		part1 += ap.x + ap.m + ap.a + ap.s
-	}
+
+	// part 2
+	part2 = len(wstats["x"])*len(wstats["m"])*len(wstats["a"]) + len(wstats["s"])
+
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
