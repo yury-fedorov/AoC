@@ -93,7 +93,7 @@ func parsePart(line string) Part {
 
 func (day Day19) Solve() aoc.Solution {
 	var part1, part2 int
-	data := aoc.ReadFile("19-1")
+	data := aoc.ReadFile("19")
 	workflows := make(map[WorkflowName]Workflow)
 	var parts []Part
 	parsingWorkflows := true
