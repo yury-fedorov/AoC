@@ -20,6 +20,7 @@ import (
 	"github.com/yury-fedorov/AoC/AoC23/day14"
 	"github.com/yury-fedorov/AoC/AoC23/day15"
 	"github.com/yury-fedorov/AoC/AoC23/day16"
+	"github.com/yury-fedorov/AoC/AoC23/day17"
 	"github.com/yury-fedorov/AoC/AoC23/day18"
 	"github.com/yury-fedorov/AoC/AoC23/day19"
 	"github.com/yury-fedorov/AoC/AoC23/day20"
