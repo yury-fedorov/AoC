@@ -151,22 +151,26 @@ func pointsToRanges(pp []int) []Range {
 
 func rangeSize(r Range) int { return r.b - r.a + 1 }
 
-func countAccepted(xr, mr, ar, sr []Range, xi, mi, ai int, isAccepted func(Part) bool) int {
+// Global variables to make it faster.
+var xr, mr, ar, sr []Range
+var isAccepted func(Part) bool
+
+func countAccepted(xi, mi, ai int) int {
 	var result int
 	if xi < 0 {
 		// go through x ranges
 		for xi = 0; xi < len(xr); xi++ {
-			result += countAccepted(xr, mr, ar, sr, xi, mi, ai, isAccepted)
+			result += countAccepted(xi, mi, ai)
 		}
 	} else if mi < 0 {
 		// go through m ranges
 		for mi = 0; mi < len(mr); mi++ {
-			result += countAccepted(xr, mr, ar, sr, xi, mi, ai, isAccepted)
+			result += countAccepted(xi, mi, ai)
 		}
 	} else if ai < 0 {
 		// go through a ranges
 		for ai = 0; ai < len(ar); ai++ {
-			result += countAccepted(xr, mr, ar, sr, xi, mi, ai, isAccepted)
+			result += countAccepted(xi, mi, ai)
 		}
 	} else {
 		// go through s ranges
@@ -216,12 +220,13 @@ func (day Day19) Solve() aoc.Solution {
 	}
 
 	// part 2
-	xr := pointsToRanges(uniqueOrdered(wstats["x"]))
-	mr := pointsToRanges(uniqueOrdered(wstats["m"]))
-	ar := pointsToRanges(uniqueOrdered(wstats["a"]))
-	sr := pointsToRanges(uniqueOrdered(wstats["s"]))
-	isAccepted := func(p Part) bool { return runWorkflow(workflows, p) }
-	part2 = countAccepted(xr, mr, ar, sr, -1, -1, -1, isAccepted)
+	// Global variables initialization.
+	xr = pointsToRanges(uniqueOrdered(wstats["x"]))
+	mr = pointsToRanges(uniqueOrdered(wstats["m"]))
+	ar = pointsToRanges(uniqueOrdered(wstats["a"]))
+	sr = pointsToRanges(uniqueOrdered(wstats["s"]))
+	isAccepted = func(p Part) bool { return runWorkflow(workflows, p) }
+	part2 = countAccepted(-1, -1, -1)
 
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
