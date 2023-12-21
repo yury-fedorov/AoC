@@ -129,19 +129,72 @@ func uniqueOrdered(s []int) []int {
 	return result
 }
 
+const kMin = 1
+const kMax = 4000
+
+type Range struct {
+	a, b int
+}
+
+func pointsToRanges(pp []int) []Range {
+	// kMin, kMax, all points in between -1, 0, 1
+	var result []Range
+	a := kMin
+	for _, p := range pp {
+		result = append(result, Range{a: a, b: p - 1})
+		result = append(result, Range{a: p, b: p})
+		a = p + 1
+	}
+	result = append(result, Range{a: a, b: kMax})
+	return result
+}
+
+func rangeSize(r Range) int { return r.b - r.a + 1 }
+
+func countAccepted(xr, mr, ar, sr []Range, xi, mi, ai int, isAccepted func(Part) bool) int {
+	var result int
+	if xi < 0 {
+		// go through x ranges
+		for xi = 0; xi < len(xr); xi++ {
+			result += countAccepted(xr, mr, ar, sr, xi, mi, ai, isAccepted)
+		}
+	} else if mi < 0 {
+		// go through m ranges
+		for mi = 0; mi < len(mr); mi++ {
+			result += countAccepted(xr, mr, ar, sr, xi, mi, ai, isAccepted)
+		}
+	} else if ai < 0 {
+		// go through a ranges
+		for ai = 0; ai < len(ar); ai++ {
+			result += countAccepted(xr, mr, ar, sr, xi, mi, ai, isAccepted)
+		}
+	} else {
+		// go through s ranges
+		x := xr[xi]
+		m := mr[mi]
+		a := ar[ai]
+		k := rangeSize(x) * rangeSize(m) * rangeSize(a)
+		for _, srv := range sr {
+			if isAccepted(Part{x: x.a, m: m.a, a: a.a, s: srv.a}) {
+				result += k * rangeSize(srv)
+			}
+		}
+	}
+	return result
+}
+
 func (day Day19) Solve() aoc.Solution {
 	var part1, part2 int
-	data := aoc.ReadFile("19-1")
+	data := aoc.ReadFile("19")
 	workflows := make(map[WorkflowName]Workflow)
 	var parts []Part
 	parsingWorkflows := true
-	const kMin = 1
-	const kMax = 4000
+
 	var wstats = WorkflowStats{
-		"x": {kMin, kMax},
-		"m": {kMin, kMax},
-		"a": {kMin, kMax},
-		"s": {kMin, kMax},
+		"x": {},
+		"m": {},
+		"a": {},
+		"s": {},
 	}
 	for _, line := range data {
 		if len(line) == 0 {
@@ -163,37 +216,12 @@ func (day Day19) Solve() aoc.Solution {
 	}
 
 	// part 2
-	xl := uniqueOrdered(wstats["x"])
-	ml := uniqueOrdered(wstats["m"])
-	al := uniqueOrdered(wstats["a"])
-	sl := uniqueOrdered(wstats["s"])
+	xr := pointsToRanges(uniqueOrdered(wstats["x"]))
+	mr := pointsToRanges(uniqueOrdered(wstats["m"]))
+	ar := pointsToRanges(uniqueOrdered(wstats["a"]))
+	sr := pointsToRanges(uniqueOrdered(wstats["s"]))
+	isAccepted := func(p Part) bool { return runWorkflow(workflows, p) }
+	part2 = countAccepted(xr, mr, ar, sr, -1, -1, -1, isAccepted)
 
-	x0 := kMin
-	for _, x := range xl {
-		dx := x - x0
-		m0 := kMin
-		for _, m := range ml {
-			dm := m - m0
-			a0 := kMin
-			for _, a := range al {
-				da := a - a0
-				s0 := kMin
-				for _, s := range sl {
-					isAccepted := runWorkflow(workflows, Part{x: x, m: m, a: a, s: s})
-					if isAccepted {
-						part2 += dx * dm * da * (s - s0)
-					}
-					s0 = s
-				}
-				a0 = a
-			}
-			m0 = m
-		}
-		x0 = x
-	}
-
-	// part2 = len(xl)*len(ml)*len(al) + len(sl)
-	// 167409079868000
-	// 137340235422129
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
