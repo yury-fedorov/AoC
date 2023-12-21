@@ -9,6 +9,8 @@
 2. Day12 Part2 - combinatorics
 3. Day17 - Clumsy Crucible
 4. Day18 Part2 - Lavaduct Lagoon (big space calcs)
+5. Day20 - Pulse Propagation
+6. Day21 Part2 - expansion of map / long running
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
