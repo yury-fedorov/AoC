@@ -53,8 +53,7 @@ func TestDays(t *testing.T) {
 		{day: &day13.Day13{}, want: aoc.Solution{Part1: "42974", Part2: "27587"}},
 		{day: &day15.Day15{}, want: aoc.Solution{Part1: "512283", Part2: "215827"}},
 		{day: &day16.Day16{}, want: aoc.Solution{Part1: "6978", Part2: "7315"}},
-		{day: &day18.Day18{}, want: aoc.Solution{Part1: "40745", Part2: "0"}}, // TODO - part 2
-		{day: &day20.Day20{}, want: aoc.Solution{Part1: "0", Part2: "0"}},     // TODO - both parts
+		{day: &day20.Day20{}, want: aoc.Solution{Part1: "0", Part2: "0"}}, // TODO - both parts
 		{day: &day21.Day21{}, want: aoc.Solution{Part1: "3699", Part2: "0"}},
 		{day: &day22.Day22{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
 		{day: &day23.Day23{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
@@ -72,6 +71,7 @@ func TestDays(t *testing.T) {
 		{day: &day10.Day10{}, want: aoc.Solution{Part1: "6613", Part2: "0"}}, // TODO - part 2
 		// takes 5 secs, TODO - both parts
 		{day: &day17.Day17{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
+		{day: &day18.Day18{}, want: aoc.Solution{Part1: "40745", Part2: "0"}}, // TODO - part 2
 	}
 	tests := fastTests
 	if runSlowTests {
