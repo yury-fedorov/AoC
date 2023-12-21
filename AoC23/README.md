@@ -19,3 +19,4 @@
 
 ## Tech Debt
 1. `Day05` - `Sort` and (binary) `Search`
+2. `Day19` - may be scaled with goroutines (part 2 is the slowest so far)
