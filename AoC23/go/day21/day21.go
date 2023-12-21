@@ -51,5 +51,8 @@ func (day Day21) Solve() aoc.Solution {
 		pp = pp1
 	}
 	part1 = len(pp)
+	const kPart2 = 26501365
+	// TODO - map repeats infinitely
+	// In exactly 5000 steps, he can reach 16_733_044 garden plots.
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
