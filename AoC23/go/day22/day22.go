@@ -49,7 +49,7 @@ func isOnGround(b Brick) bool {
 
 func (day Day22) Solve() aoc.Solution {
 	var part1, part2 int
-	bricks := parseBricks(aoc.ReadFile("22-1"))
-	part1 = len(bricks)
+	// bricks := parseBricks(aoc.ReadFile("22-1"))
+	// TODO part1 = len(bricks)
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
