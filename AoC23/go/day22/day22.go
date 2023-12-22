@@ -16,6 +16,19 @@ type Brick struct {
 	a, b Point3
 }
 
+func brickToCubes(b Brick) []Point3 {
+	var result []Point3
+	mod := func(a int) int { return aoc.Ifelse(a == 0, 0, aoc.Ifelse(a > 0, 1, -1)) }
+	for x := b.a.x; x <= b.b.x; x += mod(b.b.x - b.a.x) {
+		for y := b.a.y; y <= b.b.y; y += mod(b.b.y - b.a.y) {
+			for z := b.a.z; z <= b.b.z; z += mod(b.b.z - b.a.z) {
+				result = append(result, Point3{x, y, z})
+			}
+		}
+	}
+	return result
+}
+
 func parseBricks(data []string) []Brick {
 	var result []Brick
 	pp := func(p string) Point3 {
@@ -31,7 +44,7 @@ func parseBricks(data []string) []Brick {
 
 func (day Day22) Solve() aoc.Solution {
 	var part1, part2 int
-	bricks := parseBricks(aoc.ReadFile("22"))
+	bricks := parseBricks(aoc.ReadFile("22-1"))
 	part1 = len(bricks)
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
