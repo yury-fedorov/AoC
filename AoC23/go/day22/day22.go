@@ -42,6 +42,11 @@ func parseBricks(data []string) []Brick {
 	return result
 }
 
+// The ground is at z=0 and is perfectly flat; the lowest z value a brick can have is therefore 1.
+func isOnGround(b Brick) bool {
+	return aoc.Min(b.a.z, b.b.z) <= 1
+}
+
 func (day Day22) Solve() aoc.Solution {
 	var part1, part2 int
 	bricks := parseBricks(aoc.ReadFile("22-1"))
