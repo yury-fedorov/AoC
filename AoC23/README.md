@@ -11,6 +11,8 @@
 4. Day18 Part2 - Lavaduct Lagoon (big space calcs)
 5. Day20 - Pulse Propagation
 6. Day21 Part2 - expansion of map / long running
+7. Day22 - Sand Slabs (wip)
+8. Day23 - A Long Walk
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
