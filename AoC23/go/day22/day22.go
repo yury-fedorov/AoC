@@ -2,6 +2,7 @@ package day22
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/maps"
 	"strconv"
 	"strings"
 )
@@ -56,7 +57,7 @@ func zProjection(bb [] Brick)[] Point {
   m := make(map[Point] bool)
   for _, b := range bb {
     for _, p3 := range brickToCubes(b) {
-      m[Point(p3.x, p3.y)] = true
+      m[Point{p3.x, p3.y} ] = true
     } 
   } 
   return maps.Keys(m)
