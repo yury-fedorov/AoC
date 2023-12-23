@@ -8,6 +8,10 @@ import (
 
 type Day22 struct{}
 
+type Point struct {
+  x, y int
+} 
+
 type Point3 struct {
 	x, y, z int
 }
@@ -47,9 +51,20 @@ func isOnGround(b Brick) bool {
 	return aoc.Min(b.a.z, b.b.z) <= 1
 }
 
+// all points covered on z projection
+func zProjection(bb [] Brick)[] Point {
+  m := make(map[Point] bool)
+  for _, b := range bb {
+    for _, p3 := range brickToCubes(b) {
+      m[Point(p3.x, p3.y)] = true
+    } 
+  } 
+  return maps.Keys(m)
+} 
+
 func (day Day22) Solve() aoc.Solution {
 	var part1, part2 int
-	// bricks := parseBricks(aoc.ReadFile("22-1"))
-	// TODO part1 = len(bricks)
+	bricks := parseBricks(aoc.ReadFile("22-1"))
+	part1 = len(zProjection(bricks)) 
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
