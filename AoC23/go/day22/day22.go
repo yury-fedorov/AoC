@@ -10,8 +10,8 @@ import (
 type Day22 struct{}
 
 type Point struct {
-  x, y int
-} 
+	x, y int
+}
 
 type Point3 struct {
 	x, y, z int
@@ -23,7 +23,8 @@ type Brick struct {
 
 func brickToCubes(b Brick) []Point3 {
 	var result []Point3
-	mod := func(a int) int { return aoc.Ifelse(a == 0, 0, aoc.Ifelse(a > 0, 1, -1)) }
+	// XXX: not real mod, if 0 - exit from the loop with a big increment (no 1 mln in input)
+	mod := func(a int) int { return aoc.Ifelse(a == 0, 1_000_000, aoc.Ifelse(a > 0, 1, -1)) }
 	for x := b.a.x; x <= b.b.x; x += mod(b.b.x - b.a.x) {
 		for y := b.a.y; y <= b.b.y; y += mod(b.b.y - b.a.y) {
 			for z := b.a.z; z <= b.b.z; z += mod(b.b.z - b.a.z) {
@@ -53,19 +54,19 @@ func isOnGround(b Brick) bool {
 }
 
 // all points covered on z projection
-func zProjection(bb [] Brick)[] Point {
-  m := make(map[Point] bool)
-  for _, b := range bb {
-    for _, p3 := range brickToCubes(b) {
-      m[Point{p3.x, p3.y} ] = true
-    } 
-  } 
-  return maps.Keys(m)
-} 
+func zProjection(bb []Brick) []Point {
+	m := make(map[Point]bool)
+	for _, b := range bb {
+		for _, p3 := range brickToCubes(b) {
+			m[Point{p3.x, p3.y}] = true
+		}
+	}
+	return maps.Keys(m)
+}
 
 func (day Day22) Solve() aoc.Solution {
 	var part1, part2 int
-	bricks := parseBricks(aoc.ReadFile("22-1"))
-	part1 = len(zProjection(bricks)) 
+	// bricks := parseBricks(aoc.ReadFile("22-1"))
+	// part1 = len(zProjection(bricks))
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
