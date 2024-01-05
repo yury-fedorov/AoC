@@ -60,7 +60,7 @@ func travel(input Input, start string, skip []Link) []string {
 
 func (day Day25) Solve() aoc.Solution {
 	var part1, part2 int
-	input := parse("25-1") // 13, 1261
+	input := parse("25") // 13, 1261
 	firstComponent := maps.Keys(input)[0]
 	all := travel(input, firstComponent, nil)
 	targetMax := len(all) - 1 /* min size of second group is 1 element */
