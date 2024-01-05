@@ -4,6 +4,7 @@ import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"golang.org/x/exp/maps"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -58,6 +59,20 @@ func travel(input Input, start string, skip []Link) []string {
 	return maps.Keys(result)
 }
 
+func countFrequency(input Input, all []string) map[string]int {
+	result := make(map[string]int)
+	for _, c := range all {
+		counter := len(input[c])
+		for _, v := range input {
+			if slices.Contains(v, c) {
+				counter++
+			}
+		}
+		result[c] = counter
+	}
+	return result
+}
+
 func (day Day25) Solve() aoc.Solution {
 	var part1, part2 int
 	input := parse("25") // 13, 1261
@@ -65,6 +80,7 @@ func (day Day25) Solve() aoc.Solution {
 	all := travel(input, firstComponent, nil)
 	targetMax := len(all) - 1 /* min size of second group is 1 element */
 
+	freq := countFrequency(input, all)
 	var allLinks []Link
 	for from, list := range input {
 		for _, to := range list {
@@ -72,7 +88,10 @@ func (day Day25) Solve() aoc.Solution {
 		}
 	}
 	allSize := len(allLinks)
-
+	sort.Slice(allLinks, func(i, j int) bool {
+		sf := func(l Link) int { return freq[l.from] * freq[l.to] }
+		return sf(allLinks[i]) < sf(allLinks[j])
+	})
 	for i := 0; i < allSize; i++ {
 		for j := i + 1; j < allSize; j++ {
 			for k := j + 1; k < allSize; k++ {
