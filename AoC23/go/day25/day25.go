@@ -12,6 +12,8 @@ type Day25 struct{}
 
 type Input map[string][]string
 
+type Link struct{ from, to string }
+
 func parse(file string) Input {
 	result := make(Input)
 	for _, line := range aoc.ReadFile(file) {
@@ -21,7 +23,7 @@ func parse(file string) Input {
 	return result
 }
 
-func travel(input Input, start string, skip []string) []string {
+func travel(input Input, start string, skip []Link) []string {
 	toProcess := []string{start}
 	visited := make(map[string]bool)
 	result := make(map[string]bool)
@@ -40,7 +42,7 @@ func travel(input Input, start string, skip []string) []string {
 			next = append(next, k)
 		}
 		for _, n := range next {
-			if slices.Contains(skip, n) {
+			if slices.Contains(skip, Link{n, cur}) || slices.Contains(skip, Link{cur, n}) {
 				continue
 			}
 			_, seenAlready := visited[n]
@@ -61,29 +63,41 @@ func (day Day25) Solve() aoc.Solution {
 	input := parse("25-1") // 13, 1261
 	firstComponent := maps.Keys(input)[0]
 	all := travel(input, firstComponent, nil)
-	allSize := len(all)
-	targetMax := allSize - 3 /* skipped components */ - 1 /* min size of second group is 1 element */
+	targetMax := len(all) - 1 /* min size of second group is 1 element */
+
+	var allLinks []Link
+	for from, list := range input {
+		for _, to := range list {
+			allLinks = append(allLinks, Link{from, to})
+		}
+	}
+	allSize := len(allLinks)
+
 	for i := 0; i < allSize; i++ {
 		for j := i + 1; j < allSize; j++ {
 			for k := j + 1; k < allSize; k++ {
-				skip := []string{all[i], all[j], all[k]}
+				skip := []Link{allLinks[i], allLinks[j], allLinks[k]}
 				toSearch := firstComponent
-				if slices.Contains(skip, firstComponent) {
-					for _, c := range all {
-						if !slices.Contains(skip, c) {
-							toSearch = c
-							break
+				/*
+					if slices.Contains(skip, firstComponent) {
+						for _, c := range all {
+							if !slices.Contains(skip, c) {
+								toSearch = c
+								break
+							}
 						}
 					}
-				}
+				*/
 				firstGroup := travel(input, toSearch, skip)
 				if len(firstGroup) < targetMax {
 					// The first group is found!
 					var componentInSecondGroup string
 					for _, c := range all {
-						if slices.Contains(skip, c) {
-							continue
-						}
+						/*
+							if slices.Contains(skip, c) {
+								continue
+							}
+						*/
 						if slices.Contains(firstGroup, c) {
 							continue
 						}
@@ -91,7 +105,7 @@ func (day Day25) Solve() aoc.Solution {
 						break
 					}
 					secondGroup := travel(input, componentInSecondGroup, skip)
-					part1 = len(firstGroup) * len(secondGroup) * 0 // TODO - alpha
+					part1 = len(firstGroup) * len(secondGroup) // TODO - alpha
 					break
 				}
 			}
