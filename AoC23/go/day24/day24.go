@@ -11,22 +11,35 @@ type Day24 struct{}
 type Point struct{ x, y, z float64 }
 
 // 2D basics: https://www.cuemath.com/geometry/intersection-of-two-lines/
-// Line in form: ax + by + cz + d = 0
-type LineCoefficients struct{ a, b, c, d float64 }
+// Line in form: ax + by + c = 0
+type Line2DCoefficients struct{ a, b, c float64 }
 
 // Input
 type PointShift struct{ point, shift Point }
 
-func toLineCoefficients(ps PointShift) LineCoefficients {
-	return LineCoefficients{} // TODO implement
+func toLineCoefficients(ps PointShift) Line2DCoefficients {
+	x0 := ps.point.x
+	y0 := ps.point.y
+	dx := ps.shift.x
+	dy := ps.shift.y
+	// assume ax + by + c = 0 and b = -1 => y = ax + c
+	// y0 - ax0 = y1 - ax1 => a = dy/dx
+	a := dy / dx
+	// c = y0 - ax0
+	c := y0 - (a * x0)
+	return Line2DCoefficients{a: a, b: -1.0, c: c}
 }
 
-func intersectionPoint(one, two LineCoefficients) Point {
-	base := (one.a * two.b) - (two.a * one.b) // a1 * b2 - a2 * b1
-	x := ((one.b * two.d) - (two.b - one.d)) / base
-	y := ((one.d * two.a) - (two.d - one.a)) / base
-	z := 0.0 // TODO - add z dimension in the calculation
-	return Point{x: x, y: y, z: z}
+func intersectionPoint2D(one, two Line2DCoefficients) Point {
+	/*
+		base := (one.a * two.b) - (two.a * one.b) // a1 * b2 - a2 * b1
+		x := ((one.b * two.c) - (two.b - one.c)) / base
+		y := ((one.c * two.a) - (two.c - one.a)) / base
+		return Point{x: x, y: y, z: 0.0}
+	*/
+	x := (two.c - one.c) / (one.a - two.a)
+	y := one.a*x + one.c
+	return Point{x: x, y: y, z: 0.0}
 }
 
 func parse(line string) PointShift {
@@ -62,6 +75,7 @@ func (day Day24) Solve() aoc.Solution {
 	*/
 
 	input := read("24-1") // sample - 5 element, my input - 300 elements
-	part1 = 0 * len(input)
+	i := intersectionPoint2D(toLineCoefficients(input[0]), toLineCoefficients(input[1]))
+	part1 = int(i.x)
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
