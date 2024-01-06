@@ -9,7 +9,7 @@ import (
 
 type Day23 struct{}
 
-type Point struct{ x, y int }
+type Point struct{ x, y int16 }
 
 var shifts = []Point{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
 
@@ -17,15 +17,16 @@ const Forrest = '#'
 const Path = '.'
 const Slopes = "v^><" // same sequence as shifts
 
-var m = aoc.ReadFile("23")
-var x0 = slices.Index([]rune(m[0]), Path)
-var yMax = len(m) - 1
-var xEnd = slices.Index([]rune(m[yMax]), Path)
+var m = aoc.ReadFile("23-1")
+var x0 = int16(slices.Index([]rune(m[0]), Path))
+var yMax = int16(len(m) - 1)
+var xMax = int16(len(m[0]) - 1)
+var xEnd = int16(slices.Index([]rune(m[yMax]), Path))
 var pStart = Point{x0, 0}
 var pEnd = Point{xEnd, yMax}
 
 func at(p Point) rune {
-	if p.x < 0 || p.y < 0 || p.y >= len(m) || p.x >= len(m[0]) {
+	if p.x < 0 || p.y < 0 || p.y > yMax || p.x > xMax {
 		return Forrest
 	}
 	return ([]rune(m[p.y]))[p.x]
@@ -43,11 +44,13 @@ func checkSlope(material rune) (bool, Point) {
 
 func shift(p, s Point) Point { return Point{x: p.x + s.x, y: p.y + s.y} }
 
-func next(p0 Point) []Point {
+func next(p0 Point, part aoc.Part) []Point {
 	material := at(p0)
-	isSlope, slopeShift := checkSlope(material)
-	if isSlope {
-		return []Point{shift(p0, slopeShift)}
+	if part == aoc.Part1 {
+		isSlope, slopeShift := checkSlope(material)
+		if isSlope {
+			return []Point{shift(p0, slopeShift)}
+		}
 	}
 	var result []Point
 	for _, s := range shifts {
@@ -60,10 +63,10 @@ func next(p0 Point) []Point {
 	return result
 }
 
-func paths(path0 []Point) [][]Point {
+func paths(path0 []Point, part aoc.Part) [][]Point {
 	n := len(path0)
 	lastPoint := path0[n-1]
-	nn := next(lastPoint)
+	nn := next(lastPoint, part)
 	var result [][]Point
 	for _, n := range nn {
 		if slices.Contains(path0, n) {
@@ -73,17 +76,21 @@ func paths(path0 []Point) [][]Point {
 		if n == pEnd {
 			result = append(result, path1)
 		} else {
-			result = append(result, paths(path1)...)
+			result = append(result, paths(path1, part)...)
 		}
 	}
 	return result
 }
 
-func (day Day23) Solve() aoc.Solution {
-	var part1, part2 int
-	allPaths := paths([]Point{pStart})
+func solution(part aoc.Part) int {
+	allPaths := paths([]Point{pStart}, part)
+	var result int
 	for _, pi := range allPaths {
-		part1 = aoc.Max(part1, len(pi)-1) // the starting point is not counted
+		result = aoc.Max(result, len(pi)-1) // the starting point is not counted
 	}
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return result
+}
+
+func (day Day23) Solve() aoc.Solution {
+	return aoc.Solution{strconv.Itoa(solution(aoc.Part1)), strconv.Itoa(solution(aoc.Part2))}
 }
