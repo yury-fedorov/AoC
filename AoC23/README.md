@@ -7,14 +7,14 @@
 ## TODO
 1. Day10 Part2 - count properly if we are in or out of the tube.
 2. Day12 Part2 - combinatorics
-3. Day17 - Clumsy Crucible
+3. [Day17](https://adventofcode.com/2023/day/17) - Clumsy Crucible
 4. Day18 Part2 - Lavaduct Lagoon (big space calcs)
-5. Day20 - Pulse Propagation
+5. [Day20](https://adventofcode.com/2023/day/20) - Pulse Propagation
 6. Day21 Part2 - expansion of map / long running
-7. Day22 - Sand Slabs (wip)
-8. Day23 - A Long Walk (no code)
-9. Day24 - Never Tell Me The Odds (no code)
-10. Day25 - Snowverload (no code)
+7. [Day22](https://adventofcode.com/2023/day/22) - Sand Slabs (wip)
+8. [Day23](https://adventofcode.com/2023/day/23) - A Long Walk (no code)
+9. [Day24](https://adventofcode.com/2023/day/24) - Never Tell Me The Odds (no code)
+10. [Day25](https://adventofcode.com/2023/day/25) - Snowverload (slow)
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
