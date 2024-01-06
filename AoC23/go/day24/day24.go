@@ -3,6 +3,7 @@ package day24
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
+	"strings"
 )
 
 type Day24 struct{}
@@ -29,7 +30,17 @@ func intersectionPoint(one, two LineCoefficients) Point {
 }
 
 func parse(line string) PointShift {
-	return PointShift{} // TODO implement
+	// 19, 13, 30 @ -2, 1, -2
+	pp := strings.Split(line, " @ ")
+	f := func(p string) Point {
+		n := func(p int64) float64 { return float64(p) }
+		t := strings.ReplaceAll(p, ", ", " ")
+		t = strings.ReplaceAll(t, "  ", " ")
+		t = strings.Trim(t, " ")
+		a := aoc.ToSlice(t)
+		return Point{x: n(a[0]), y: n(a[1]), z: n(a[2])}
+	}
+	return PointShift{point: f(pp[0]), shift: f(pp[1])}
 }
 
 func read(file string) []PointShift {
