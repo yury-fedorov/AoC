@@ -156,6 +156,7 @@ func (day Day25) Solve() aoc.Solution {
 	*/
 	for i := 0; i < allSize; i++ {
 		for j := i + 1; j < allSize; j++ {
+			// XXX - fmt.Printf("i %d, j %d\n", i, j)
 			for k := j + 1; k < allSize; k++ {
 				skip := []Link{allLinks[i], allLinks[j], allLinks[k]}
 				toSearch := firstComponent
