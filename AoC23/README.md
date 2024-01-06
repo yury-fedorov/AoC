@@ -13,7 +13,7 @@
 6. Day21 Part2 - expansion of map / long running (**no code**)
 7. [Day22](https://adventofcode.com/2023/day/22) - Sand Slabs (**wip**)
 8. [Day23](https://adventofcode.com/2023/day/23) - A Long Walk (**no code**)
-9. [Day24](https://adventofcode.com/2023/day/24) - Never Tell Me The Odds (**no code**)
+9. [Day24 Part2](https://adventofcode.com/2023/day/24) - Never Tell Me The Odds (**no code for part 2**)
 10. [Day25](https://adventofcode.com/2023/day/25) - Snowverload (slow)
 
 ## Interesting Parts
