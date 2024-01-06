@@ -11,7 +11,7 @@ type Day24 struct{}
 type Point struct{ x, y, z float64 }
 
 // 2D basics: https://www.cuemath.com/geometry/intersection-of-two-lines/
-// Line in form: ax + by + c = 0
+// Line in form: ax + by + c = 0 . Simplified in our case with assuming b=-1, to the form y = ax + c
 type Line2DCoefficients struct{ a, b, c float64 }
 
 // Input
@@ -31,12 +31,6 @@ func toLineCoefficients(ps PointShift) Line2DCoefficients {
 }
 
 func intersectionPoint2D(one, two Line2DCoefficients) Point {
-	/*
-		base := (one.a * two.b) - (two.a * one.b) // a1 * b2 - a2 * b1
-		x := ((one.b * two.c) - (two.b - one.c)) / base
-		y := ((one.c * two.a) - (two.c - one.a)) / base
-		return Point{x: x, y: y, z: 0.0}
-	*/
 	x := (two.c - one.c) / (one.a - two.a)
 	y := one.a*x + one.c
 	return Point{x: x, y: y, z: 0.0}
@@ -66,16 +60,33 @@ func read(file string) []PointShift {
 
 func (day Day24) Solve() aoc.Solution {
 	var part1, part2 int
-
-	// sample 1
-	/* TODO:
-	Hailstone A: 19, 13, 30 @ -2, 1, -2
-	Hailstone B: 18, 19, 22 @ -1, -1, -2
-	Hailstones' paths will cross inside the test area (at x=14.333, y=15.333)
-	*/
-
-	input := read("24-1") // sample - 5 element, my input - 300 elements
-	i := intersectionPoint2D(toLineCoefficients(input[0]), toLineCoefficients(input[1]))
-	part1 = int(i.x)
+	input := read("24") // sample - 5 element, my input - 300 elements
+	// for sample: in := func(v float64) bool { return v >= 7.0 && v <= 27 }
+	in := func(v float64) bool { return v >= 200000000000000 && v <= 400000000000000 }
+	isPast := func(p Point, ps PointShift) bool {
+		x := func(p Point) float64 { return p.x }
+		y := func(p Point) float64 { return p.y }
+		past := func(p Point, ps PointShift, v func(p Point) float64) bool {
+			px := v(p)
+			p0 := v(ps.point)
+			sx := v(ps.shift)
+			if p0 == px {
+				return false
+			}
+			return (sx > 0 && p0 > px) || (sx < 0 && p0 < px)
+		}
+		return past(p, ps, x) || past(p, ps, y)
+	}
+	n := len(input)
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
+			psi := input[i]
+			psj := input[j]
+			p := intersectionPoint2D(toLineCoefficients(psi), toLineCoefficients(psj))
+			if in(p.x) && in(p.y) && !isPast(p, psi) && !isPast(p, psj) {
+				part1++
+			}
+		}
+	}
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
