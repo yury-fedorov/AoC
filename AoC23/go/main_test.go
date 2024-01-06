@@ -56,7 +56,7 @@ func TestDays(t *testing.T) {
 		{day: &day20.Day20{}, want: aoc.Solution{Part1: "0", Part2: "0"}}, // TODO - both parts
 		{day: &day21.Day21{}, want: aoc.Solution{Part1: "3699", Part2: "0"}},
 		{day: &day22.Day22{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
-		{day: &day23.Day23{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
+		{day: &day23.Day23{}, want: aoc.Solution{Part1: "2430", Part2: "0"}},
 		{day: &day24.Day24{}, want: aoc.Solution{Part1: "13910", Part2: "0"}},
 		{day: &day25.Day25{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
 	}
