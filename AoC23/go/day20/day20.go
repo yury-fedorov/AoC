@@ -85,14 +85,14 @@ func (c *Conjunction) process(p Pulse) []Pulse {
 	c.recentPulse[p.from] = p.pulseType
 
 	// Then, if it remembers high pulses for all inputs, it sends a low pulse; otherwise, it sends a high pulse.
-	outPulse := aoc.Ifelse(len(c.recentPulse) > 0, true, false)
+	allHigh := true
 	for _, pulse := range c.recentPulse {
-		outPulse = outPulse && (pulse == HighPulse)
+		allHigh = allHigh && (pulse == HighPulse)
 	}
 
 	var result []Pulse
 	for _, d := range c.to {
-		result = append(result, Pulse{from: c.name, to: d, pulseType: outPulse})
+		result = append(result, Pulse{from: c.name, to: d, pulseType: !allHigh})
 	}
 	return result
 }
@@ -133,8 +133,7 @@ func (day Day20) Solve() aoc.Solution {
 	var part1, part2 int
 	var output []Pulse
 	m := parse("20-1")
-	// for i := 0; i < 1000; i++
-	{
+	for i := 0; i < 1000; i++ {
 		output = append(output, Pulse{ButtonModuleName, BroadcasterModuleName, false})
 		for j := len(output) - 1; j < len(output); j++ {
 			nextPulse := output[j]
@@ -148,6 +147,6 @@ func (day Day20) Solve() aoc.Solution {
 		high += aoc.Ifelse(p.pulseType == HighPulse, 1, 0)
 		low += aoc.Ifelse(p.pulseType == LowPulse, 1, 0)
 	}
-	// part1 = low * high
+	part1 = low * high
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
