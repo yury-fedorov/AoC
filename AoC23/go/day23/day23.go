@@ -2,7 +2,7 @@ package day23
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"slices"
+	"golang.org/x/exp/slices"
 	"strconv"
 	"strings"
 )
