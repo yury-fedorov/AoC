@@ -153,20 +153,20 @@ func countAdjCrossedBoarders(s []int, tiles []Tile, d Point) int {
 	head := 0
 	var result int
 	var tt [][]Tile
+	// var curSegment []int
 	for i := 0; i < n; i++ {
 		s1 := s[i]
-		if math.Abs(float64(s1-s0)) > 1.0 {
+		if math.Abs(float64(s1-s0)) > 1.0 /* || slices.Contains(curSegment, s1) */ {
 			// end of sequence
 			tt = append(tt, tiles[head:i])
 			head = i
+			// curSegment = nil
 		}
+		// curSegment = append(curSegment, s1)
 		s0 = s1
 	}
 	if head < n {
 		tt = append(tt, tiles[head:])
-	}
-	if len(tt) > 1 {
-		// most complicated cases
 	}
 	for _, tti := range tt {
 		result += aoc.Ifelse(isCrossed(tti, d), 1, 0)
@@ -202,15 +202,14 @@ func countCrossedBoarders(loop [][]Tile, path map[Point]int, p Point, d Point) i
 	return result
 }
 
-func isInternal(loop [][]Tile, path map[Point]int, p Point) bool {
+func isInternal(loop [][]Tile, path map[Point]int, p Point) (bool, error) {
 	for _, d := range Moves {
 		c := countCrossedBoarders(loop, path, p, d)
 		if c%2 != 1 {
-			fmt.Println(fmt.Sprintf("p: %v d: %v c: %v", p, d, c))
-			return false
+			return false, fmt.Errorf("p: %v d: %v c: %v", p, d, c)
 		}
 	}
-	return true
+	return true, nil
 }
 
 func solve(file string) (int, int) {
@@ -224,10 +223,7 @@ func solve(file string) (int, int) {
 
 	path := make(map[Point]int)
 	path[startPoint] = 0
-	var queue []NextStep
-	for _, nd := range nextDirs {
-		queue = append(queue, NextStep{point: move(startPoint, nd), stepsTillPoint: 1})
-	}
+	var queue = []NextStep{{point: move(startPoint, nextDirs[0]), stepsTillPoint: 1}}
 
 	for len(queue) > 0 {
 		ns := queue[0]
@@ -263,21 +259,19 @@ func solve(file string) (int, int) {
 				loop[y][x] = aoc.Ifelse(border, OuterGround, Ground)
 				candidates[p] = !border
 			}
-			fmt.Print(string(loop[y][x]))
+			// fmt.Print(string(loop[y][x]))
 		}
-		fmt.Println()
+		// fmt.Println()
 	}
-
-	fmt.Println()
-	fmt.Println()
-	fmt.Println()
 
 	for p, isCandidate := range candidates {
 		if isCandidate {
-			// XXX - debug - fmt.Println(p)
-			// DEBUG - p: {8 5} d: {1 0} c: 4
-			if isInternal(loop, path, p) {
+			isIn, _ := isInternal(loop, path, p)
+			if isIn {
 				part2++
+				// fmt.Printf("In point %v ", p)
+			} else {
+				// fmt.Println(err)
 			}
 		}
 	}
@@ -294,14 +288,12 @@ func testPart2(file string, wantP2 int) {
 }
 
 func (d Day10) Solve() aoc.Solution {
-	// tests
+	// tests are OK
+	testPart2("10-1", 1)
+	testPart2("10-5", 4)
 	testPart2("10-6", 8)
-	/*
-			// ok
-			testPart2("10-5", 4)
-			testPart2("10-7", 10)
-		part1, part2 := solve("10") // 472 - too low
-	*/
-	var part1, part2 int
+	testPart2("10-7", 10)
+	part1, part2 := solve("10") // 504 too low
+	part2 -= 504                // TODO - something yet is missing
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
