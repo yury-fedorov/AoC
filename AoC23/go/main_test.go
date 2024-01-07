@@ -55,7 +55,6 @@ func TestDays(t *testing.T) {
 		{day: &day16.Day16{}, want: aoc.Solution{Part1: "6978", Part2: "7315"}},
 		{day: &day20.Day20{}, want: aoc.Solution{Part1: "832957356", Part2: "0"}}, // TODO - part 	2
 		{day: &day21.Day21{}, want: aoc.Solution{Part1: "3699", Part2: "0"}},
-		{day: &day22.Day22{}, want: aoc.Solution{Part1: "398", Part2: "0"}},
 		{day: &day24.Day24{}, want: aoc.Solution{Part1: "13910", Part2: "0"}},
 		{day: &day25.Day25{}, want: aoc.Solution{Part1: "0", Part2: "0"}},
 	}
@@ -66,6 +65,7 @@ func TestDays(t *testing.T) {
 		{day: &day14.Day14{}, want: aoc.Solution{Part1: "109755", Part2: "90928"}}, // takes 4-5 secs
 		// part 2 takes 6hr 52 min
 		{day: &day19.Day19{}, want: aoc.Solution{Part1: "399284", Part2: "121964982771486"}},
+		{day: &day22.Day22{}, want: aoc.Solution{Part1: "398", Part2: "70727"}}, // part 2 takes 18.5 seconds
 		{day: &day23.Day23{}, want: aoc.Solution{Part1: "2430", Part2: "6534"}}, // part 2 takes 7h 57m
 
 		{day: &day10.Day10{}, want: aoc.Solution{Part1: "6613", Part2: "0"}}, // TODO - part 2

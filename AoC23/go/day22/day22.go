@@ -2,9 +2,7 @@ package day22
 
 import (
 	"cmp"
-	"fmt"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"strconv"
 	"strings"
@@ -62,11 +60,6 @@ func parseBricks(data []string) []*Brick {
 	return result
 }
 
-// The ground is at z=0 and is perfectly flat; the lowest z value a brick can have is therefore 1.
-func isOnGround(b Brick) bool {
-	return aoc.Min(b.a.z, b.b.z) <= 1
-}
-
 func zBrickProjection(b Brick) []Point {
 	var result []Point
 	for _, p3 := range brickToCubes(b) {
@@ -84,26 +77,14 @@ func areOverlapping(a, b []Point) bool {
 	return false
 }
 
-// all points covered on z projection
-func zProjection(bb []Brick) []Point {
-	m := make(map[Point]bool)
-	for _, b := range bb {
-		for _, p3 := range zBrickProjection(b) {
-			m[Point{p3.x, p3.y}] = true
-		}
-	}
-	return maps.Keys(m)
-}
-
 func orderBricks(bricks []*Brick) {
 	slices.SortFunc(bricks, func(a, b *Brick) int { return cmp.Compare(a.bottom(), b.bottom()) })
 }
 
-const lowestAboveGround = 1
-
 func isInAir(b Brick, bricks []*Brick, idToSkip int) bool {
 	base := b.bottom()
-	if base == lowestAboveGround {
+	// The ground is at z=0 and is perfectly flat; the lowest z value a brick can have is therefore 1.
+	if base == 1 {
 		return false
 	}
 	baseZProjection := zBrickProjection(b)
@@ -152,18 +133,36 @@ func solution1(bricks []*Brick) int {
 	return result
 }
 
+func countInAirDestroyingBrick(brickIdToDestroy int, bricks []*Brick) int {
+	var bb []*Brick           // deep copy of bricks
+	zMap := make(map[int]int) // id to a.z
+	for _, b := range bricks {
+		if b.id == brickIdToDestroy {
+			continue
+		}
+		var b1 = *b // copy of the object
+		bb = append(bb, &b1)
+		zMap[b.id] = b.a.z
+	}
+	fallDown(bb)
+	var result int
+	for _, b := range bb {
+		result += aoc.Ifelse(b.a.z != zMap[b.id], 1, 0) // if fallen down, then counted
+	}
+	return result
+}
+
+func solution2(bricks []*Brick) int {
+	var result int
+	for _, b := range bricks {
+		result += countInAirDestroyingBrick(b.id, bricks)
+	}
+	return result
+}
+
 func (day Day22) Solve() aoc.Solution {
-	var part1, part2 int
 	bricks := parseBricks(aoc.ReadFile("22"))
-	// the lowest z value a brick can have is therefore 1
-	// part1 = len(zProjection(bricks))
 	orderBricks(bricks)
 	fallDown(bricks)
-	for _, b := range bricks {
-		if isInAir(*b, bricks, b.id) {
-			fmt.Println(b)
-		}
-	}
-	part1 = solution1(bricks)
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{strconv.Itoa(solution1(bricks)), strconv.Itoa(solution2(bricks))}
 }

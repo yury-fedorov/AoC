@@ -11,9 +11,8 @@
 4. Day18 Part2 - Lavaduct Lagoon (big space calcs)
 5. [Day20](https://adventofcode.com/2023/day/20) - Pulse Propagation (**no code for part2**)
 6. Day21 Part2 - expansion of map / long running (**no code for part 2**)
-7. [Day22](https://adventofcode.com/2023/day/22) - Sand Slabs (**wip**) - (**2 stars missing**)
-8. [Day24 Part2](https://adventofcode.com/2023/day/24) - Never Tell Me The Odds (**no code for part 2**)
-9. [Day25](https://adventofcode.com/2023/day/25) - Snowverload (slow)
+7. [Day24 Part2](https://adventofcode.com/2023/day/24) - Never Tell Me The Odds (**no code for part 2**)
+8. [Day25](https://adventofcode.com/2023/day/25) - Snowverload (slow)
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
