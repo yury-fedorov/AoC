@@ -7,11 +7,11 @@
 ## TODO
 1. Day10 Part2 - count properly if we are in or out of the tube.
 2. Day12 Part2 - combinatorics
-3. [Day17](https://adventofcode.com/2023/day/17) - Clumsy Crucible
+3. [Day17](https://adventofcode.com/2023/day/17) - Clumsy Crucible - (**2 stars missing**)
 4. Day18 Part2 - Lavaduct Lagoon (big space calcs)
-5. [Day20](https://adventofcode.com/2023/day/20) - Pulse Propagation (**no code**)
+5. [Day20](https://adventofcode.com/2023/day/20) - Pulse Propagation (**no code for part2**)
 6. Day21 Part2 - expansion of map / long running (**no code for part 2**)
-7. [Day22](https://adventofcode.com/2023/day/22) - Sand Slabs (**wip**)
+7. [Day22](https://adventofcode.com/2023/day/22) - Sand Slabs (**wip**) - (**2 stars missing**)
 8. [Day24 Part2](https://adventofcode.com/2023/day/24) - Never Tell Me The Odds (**no code for part 2**)
 9. [Day25](https://adventofcode.com/2023/day/25) - Snowverload (slow)
 
