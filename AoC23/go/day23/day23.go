@@ -17,7 +17,7 @@ const Forrest = '#'
 const Path = '.'
 const Slopes = "v^><" // same sequence as shifts
 
-var m = aoc.ReadFile("23-1")
+var m = aoc.ReadFile("23")
 var x0 = int16(slices.Index([]rune(m[0]), Path))
 var yMax = int16(len(m) - 1)
 var xMax = int16(len(m[0]) - 1)
@@ -44,7 +44,20 @@ func checkSlope(material rune) (bool, Point) {
 
 func shift(p, s Point) Point { return Point{x: p.x + s.x, y: p.y + s.y} }
 
+type CacheNextKey struct {
+	point Point
+	part  aoc.Part
+}
+
+var cacheNext = make(map[CacheNextKey][]Point)
+
 func next(p0 Point, part aoc.Part) []Point {
+	key := CacheNextKey{point: p0, part: part}
+	v, ok := cacheNext[key]
+	if ok {
+		return v
+	}
+
 	material := at(p0)
 	if part == aoc.Part1 {
 		isSlope, slopeShift := checkSlope(material)
@@ -60,36 +73,32 @@ func next(p0 Point, part aoc.Part) []Point {
 			result = append(result, p1)
 		}
 	}
+	cacheNext[key] = result
 	return result
 }
 
-func paths(path0 []Point, part aoc.Part) [][]Point {
+func paths(path0 []Point, part aoc.Part) int {
 	n := len(path0)
-	lastPoint := path0[n-1]
-	nn := next(lastPoint, part)
-	var result [][]Point
+	last := path0[n-1]
+	nn := next(last, part)
+	twoBack := Point{} // path0 greater than 1 element is dominant
+	if n >= 2 {
+		twoBack = path0[n-2]
+	}
+	var result int
 	for _, n := range nn {
-		if slices.Contains(path0, n) {
+		if n == twoBack || slices.Contains(path0, n) {
 			continue
 		}
-		path1 := append(path0, n)
 		if n == pEnd {
-			result = append(result, path1)
-		} else {
-			result = append(result, paths(path1, part)...)
+			return len(path0)
 		}
+		result = aoc.Max(result, paths(append(path0, n), part))
 	}
 	return result
 }
 
-func solution(part aoc.Part) int {
-	allPaths := paths([]Point{pStart}, part)
-	var result int
-	for _, pi := range allPaths {
-		result = aoc.Max(result, len(pi)-1) // the starting point is not counted
-	}
-	return result
-}
+func solution(part aoc.Part) int { return paths([]Point{pStart}, part) }
 
 func (day Day23) Solve() aoc.Solution {
 	return aoc.Solution{strconv.Itoa(solution(aoc.Part1)), strconv.Itoa(solution(aoc.Part2))}
