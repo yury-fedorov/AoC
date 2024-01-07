@@ -153,16 +153,16 @@ func countAdjCrossedBoarders(s []int, tiles []Tile, d Point) int {
 	head := 0
 	var result int
 	var tt [][]Tile
-	// var curSegment []int
 	for i := 0; i < n; i++ {
 		s1 := s[i]
-		if math.Abs(float64(s1-s0)) > 1.0 /* || slices.Contains(curSegment, s1) */ {
-			// end of sequence
-			tt = append(tt, tiles[head:i])
-			head = i
-			// curSegment = nil
+		if math.Abs(float64(s1-s0)) > 1.0 {
+			isStartEnd := aoc.Min(s1, s0) == minPathStep && aoc.Max(s1, s0) == maxPathStep
+			if !isStartEnd {
+				// end of sequence
+				tt = append(tt, tiles[head:i])
+				head = i
+			}
 		}
-		// curSegment = append(curSegment, s1)
 		s0 = s1
 	}
 	if head < n {
@@ -212,6 +212,10 @@ func isInternal(loop [][]Tile, path map[Point]int, p Point) (bool, error) {
 	return true, nil
 }
 
+const minPathStep = 0
+
+var maxPathStep int
+
 func solve(file string) (int, int) {
 	var part1, part2 int
 	loop := parse(file)
@@ -222,7 +226,7 @@ func solve(file string) (int, int) {
 	loop[startPoint.y][startPoint.x] = startTile
 
 	path := make(map[Point]int)
-	path[startPoint] = 0
+	path[startPoint] = minPathStep
 	var queue = []NextStep{{point: move(startPoint, nextDirs[0]), stepsTillPoint: 1}}
 
 	for len(queue) > 0 {
@@ -242,6 +246,11 @@ func solve(file string) (int, int) {
 		}
 	}
 
+	maxPathStep = minPathStep
+	for _, si := range path {
+		maxPathStep = aoc.Max(maxPathStep, si)
+	}
+
 	part1 = len(path) / 2
 
 	// part 2
@@ -259,9 +268,7 @@ func solve(file string) (int, int) {
 				loop[y][x] = aoc.Ifelse(border, OuterGround, Ground)
 				candidates[p] = !border
 			}
-			// fmt.Print(string(loop[y][x]))
 		}
-		// fmt.Println()
 	}
 
 	for p, isCandidate := range candidates {
@@ -269,9 +276,6 @@ func solve(file string) (int, int) {
 			isIn, _ := isInternal(loop, path, p)
 			if isIn {
 				part2++
-				// fmt.Printf("In point %v ", p)
-			} else {
-				// fmt.Println(err)
 			}
 		}
 	}
@@ -282,8 +286,7 @@ func solve(file string) (int, int) {
 func testPart2(file string, wantP2 int) {
 	_, gotP2 := solve(file)
 	if gotP2 != wantP2 {
-		fmt.Printf(`%s got %d want %d`, file, gotP2, wantP2)
-		fmt.Println()
+		panic(fmt.Sprintf(`%s got %d want %d`, file, gotP2, wantP2))
 	}
 }
 
@@ -293,7 +296,6 @@ func (d Day10) Solve() aoc.Solution {
 	testPart2("10-5", 4)
 	testPart2("10-6", 8)
 	testPart2("10-7", 10)
-	part1, part2 := solve("10") // 504 too low
-	part2 -= 504                // TODO - something yet is missing
+	part1, part2 := solve("10")
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
