@@ -1,7 +1,6 @@
 package day22
 
 import (
-	"cmp"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"golang.org/x/exp/slices"
 	"strconv"
@@ -78,7 +77,7 @@ func areOverlapping(a, b []Point) bool {
 }
 
 func orderBricks(bricks []*Brick) {
-	slices.SortFunc(bricks, func(a, b *Brick) int { return cmp.Compare(a.bottom(), b.bottom()) })
+	slices.SortFunc(bricks, func(a, b *Brick) int { return aoc.Compare(a.bottom(), b.bottom()) })
 }
 
 func isInAir(b Brick, bricks []*Brick, idToSkip int) bool {
