@@ -33,6 +33,7 @@ func (am *AbstractModule) moduleName() string { return am.name }
 
 const ButtonModuleName = "button"
 const BroadcasterModuleName = "broadcaster"
+const OutputModuleName = "output"
 
 type Button struct {
 	ModuleProcessor
@@ -132,12 +133,18 @@ func parse(file string) map[string]*ModuleProcessor {
 func (day Day20) Solve() aoc.Solution {
 	var part1, part2 int
 	var output []Pulse
-	m := parse("20-1")
+	m := parse("20")
 	for i := 0; i < 1000; i++ {
 		output = append(output, Pulse{ButtonModuleName, BroadcasterModuleName, false})
 		for j := len(output) - 1; j < len(output); j++ {
 			nextPulse := output[j]
-			var processor = m[nextPulse.to]
+			if nextPulse.to == OutputModuleName {
+				continue
+			}
+			var processor, ok = m[nextPulse.to]
+			if !ok {
+				continue
+			}
 			pulses := (*processor).process(nextPulse)
 			output = append(output, pulses...)
 		}
@@ -147,6 +154,7 @@ func (day Day20) Solve() aoc.Solution {
 		high += aoc.Ifelse(p.pulseType == HighPulse, 1, 0)
 		low += aoc.Ifelse(p.pulseType == LowPulse, 1, 0)
 	}
+	// 857592831 - too high
 	part1 = low * high
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
