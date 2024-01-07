@@ -1,6 +1,7 @@
 package day20
 
 import (
+	"fmt"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
 	"strings"
@@ -98,6 +99,23 @@ func (c *Conjunction) process(p Pulse) []Pulse {
 	return result
 }
 
+var input []string
+
+func initConjuctionMap(name string) map[string]bool {
+	var result = make(map[string]bool)
+	for _, line := range input {
+		a := strings.Split(line, " -> ")
+		if strings.Contains(a[1], name) {
+			name := a[0]
+			if strings.HasPrefix(name, "%") || strings.HasPrefix(name, "&") {
+				name = name[1:]
+			}
+			result[name] = false
+		}
+	}
+	return result
+}
+
 func parseModule(line string) *ModuleProcessor {
 	a := strings.Split(line, " -> ")
 	name := a[0]
@@ -105,7 +123,8 @@ func parseModule(line string) *ModuleProcessor {
 	var mp ModuleProcessor
 	if strings.HasPrefix(name, "&") {
 		// conjunction
-		mp = &Conjunction{AbstractModule{name: name[1:], to: to}, make(map[string]bool)}
+		n := name[1:]
+		mp = &Conjunction{AbstractModule{name: n, to: to}, initConjuctionMap(n)}
 	} else if strings.HasPrefix(name, "%") {
 		// flip flop
 		mp = &FlipFlop{AbstractModule{name: name[1:], to: to}, false} // they are initially off
@@ -122,8 +141,8 @@ func parse(file string) map[string]*ModuleProcessor {
 	result := make(map[string]*ModuleProcessor)
 	var button ModuleProcessor = &Button{}
 	result[ButtonModuleName] = &button
-	// TODO
-	for _, line := range aoc.ReadFile(file) {
+	input = aoc.ReadFile(file)
+	for _, line := range input {
 		mp := parseModule(line)
 		result[(*mp).moduleName()] = mp
 	}
@@ -138,11 +157,8 @@ func (day Day20) Solve() aoc.Solution {
 		output = append(output, Pulse{ButtonModuleName, BroadcasterModuleName, false})
 		for j := len(output) - 1; j < len(output); j++ {
 			nextPulse := output[j]
-			if nextPulse.to == OutputModuleName {
-				continue
-			}
-			var processor, ok = m[nextPulse.to]
-			if !ok {
+			var processor, isTypedModule = m[nextPulse.to]
+			if !isTypedModule {
 				continue
 			}
 			pulses := (*processor).process(nextPulse)
@@ -154,7 +170,45 @@ func (day Day20) Solve() aoc.Solution {
 		high += aoc.Ifelse(p.pulseType == HighPulse, 1, 0)
 		low += aoc.Ifelse(p.pulseType == LowPulse, 1, 0)
 	}
-	// 857592831 - too high
 	part1 = low * high
+
+	// Part 2
+	if false {
+		for index, p := range output {
+			if p.to == "rx" && p.pulseType == LowPulse {
+				for i := 0; i < index; i++ {
+					if p.from == ButtonModuleName {
+						part2++
+					}
+				}
+				break
+			}
+		}
+		if part2 == 0 {
+			// one was already executed is not enough
+			found := false
+			for part2 = 1001; !found; part2++ {
+				output = []Pulse{{ButtonModuleName, BroadcasterModuleName, false}}
+				for j := 0; j < len(output) && !found; j++ {
+					nextPulse := output[j]
+					var processor, isTypedModule = m[nextPulse.to]
+					if !isTypedModule {
+						continue
+					}
+					pulses := (*processor).process(nextPulse)
+					for _, p := range pulses {
+						if p.to == "rx" && p.pulseType == LowPulse {
+							found = true
+						}
+					}
+					output = append(output, pulses...)
+				}
+				// 1905000000 - till no answer yet
+				if part2%1000000 == 0 {
+					fmt.Println(part2)
+				}
+			}
+		}
+	}
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
