@@ -243,26 +243,24 @@ func part2(m2 []Line) int {
 			if inBottom {
 				part2 -= length(xGrid[ix], xGrid[ix+1])
 			}
-			/*
-				// one single piece on corner at right and bottom
-				inRightBottom := isInCache[Point{ix + 1, iy + 1}]
-				part2 -= aoc.Ifelse(inRi)
-				if inRightBottom {
-					part2--
-				}
-				if inRight && inBottom {
-					part2++
-				}
-			*/
+			// one single piece on corner at right and bottom
+			inRightBottom := isInCache[Point{ix + 1, iy + 1}]
+			if inRight && inBottom && inRightBottom {
+				// Controintuitive but indeed in the case of square of 5 x 5 dots,
+				// splitted in 4 blocks (2 horizontally and 2 vertically).
+				// We need to get square of 25 (5*5) but summing up 4*3*3 we get 36
+				// We remove 4 borders between blocks (each of length 3) = 36 - 4*3 = 24
+				// So we are missing the single dot right in the cross of 4 blocks.
+				part2++
+			}
 		}
 	}
-
 	return part2
 }
 
 func (day Day18) Solve() aoc.Solution {
 	// Initialization requires different maps for part1 and part 2.
-	var digPlan = aoc.ReadFile("18-1")
+	var digPlan = aoc.ReadFile("18")
 	m := make(map[Point]rune) // part 1 version fo the map
 	var m2 []Line             // part 2 version of the map
 	var p, p2 Point           // starting points
@@ -292,8 +290,3 @@ func (day Day18) Solve() aoc.Solution {
 	}
 	return aoc.Solution{strconv.Itoa(part1(m)), strconv.Itoa(part2(m2))}
 }
-
-// 952408144115 - right
-// 952408144116 - without latest +1 +1
-// 952408144129
-// 952408144110
