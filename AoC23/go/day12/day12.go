@@ -152,20 +152,25 @@ func countPossibleArrangements3(pattern []State, groups []int64) int {
 
 // -- alternative solution 3 - (Jan 8 2024)
 
-func couldBeValid(dc, uc, gs int) bool {
+func couldBeValid(dc, uc, gs int) (could bool, precise bool) {
 	if dc > gs {
-		return false
+		return false, true
 	}
 	if dc == gs {
-		return true
+		return true, true
 	}
-	return (uc + dc) >= gs
+	return (uc + dc) >= gs, false
 }
 
 // like 1st but with couldBeValid
 func countPossibleArrangements4(pattern []State, groups []int64, dc, uc, gs int) int {
-	if !couldBeValid(dc, uc, gs) {
+	could, precise := couldBeValid(dc, uc, gs)
+	if !could {
 		return 0
+	}
+	if precise {
+		// No need for further undefined parsing, the Damages count is set exact, all others are operational.
+		return aoc.Ifelse(isValid(pattern, groups), 1, 0)
 	}
 	i := slices.Index(pattern, Unknown)
 	if i < 0 {
@@ -191,17 +196,17 @@ func countPossibleArrangementsI(pattern []State, groups []int64) int {
 	// 3 - 3rd impl (with regex), slowest so far
 	// 4 - 4th impl (1st + couldBeValid), fastest so far
 	switch mode {
-	case 1:
-		return countPossibleArrangements(pattern, groups) // 56.32 sec (3 instead of 5)
-	case 3:
-		return countPossibleArrangements3(pattern, groups) // 166.49s (3 instead of 5)
 	case 4:
 		var dc, uc int
 		for _, e := range pattern {
 			dc += aoc.Ifelse(e == Damaged, 1, 0)
 			uc += aoc.Ifelse(e == Unknown, 1, 0)
 		}
-		return countPossibleArrangements4(pattern, groups, dc, uc, sum(groups)) // 11.7 (3 instead of 5)
+		return countPossibleArrangements4(pattern, groups, dc, uc, sum(groups)) // 10 (3 instead of 5)
+	case 1:
+		return countPossibleArrangements(pattern, groups) // 56.32 sec (3 instead of 5)
+	case 3:
+		return countPossibleArrangements3(pattern, groups) // 166.49s (3 instead of 5)
 	}
 	return countPossibleArrangements(pattern, groups)
 }
