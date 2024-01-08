@@ -56,24 +56,23 @@ func sum(groups []int64) int {
 
 func isValid(states []State, groups []int64) bool {
 	var curGroup int64
+	gn := len(groups)
 	gi := 0
-	for _, s := range append(states, Operational) {
+	for _, s := range states { // append(states, Operational) {
 		if s == Damaged {
 			curGroup++
-		} else {
-			if curGroup > 0 {
-				if len(groups) <= gi {
-					return false
-				}
-				if groups[gi] != curGroup {
-					return false
-				}
-				gi++
+		} else if curGroup > 0 {
+			if (gn <= gi) || (groups[gi] != curGroup) {
+				return false
 			}
+			gi++
 			curGroup = 0
 		}
 	}
-	return gi == len(groups)
+	if curGroup == 0 {
+		return gi == gn
+	}
+	return (gi+1 == gn) && (groups[gi] == curGroup)
 }
 
 var options = []State{Damaged, Operational}
@@ -153,22 +152,19 @@ func countPossibleArrangements3(pattern []State, groups []int64) int {
 
 // -- alternative solution 3 - (Jan 8 2024)
 
-func couldBeValid(pattern []State, groups []int64) bool {
-	dc := count(pattern, Damaged)
-	gs := sum(groups)
+func couldBeValid(dc, uc, gs int) bool {
 	if dc > gs {
 		return false
 	}
 	if dc == gs {
 		return true
 	}
-	uc := count(pattern, Unknown)
 	return (uc + dc) >= gs
 }
 
 // like 1st but with couldBeValid
-func countPossibleArrangements4(pattern []State, groups []int64) int {
-	if !couldBeValid(pattern, groups) {
+func countPossibleArrangements4(pattern []State, groups []int64, dc, uc, gs int) int {
+	if !couldBeValid(dc, uc, gs) {
 		return 0
 	}
 	i := slices.Index(pattern, Unknown)
@@ -180,7 +176,8 @@ func countPossibleArrangements4(pattern []State, groups []int64) int {
 		newPattern := make([]State, len(pattern))
 		copy(newPattern, pattern)
 		newPattern[i] = o
-		result += countPossibleArrangements4(newPattern, groups)
+		ddc := aoc.Ifelse(o == Damaged, 1, 0)
+		result += countPossibleArrangements4(newPattern, groups, dc+ddc, uc-ddc, gs)
 	}
 	return result
 }
@@ -199,7 +196,12 @@ func countPossibleArrangementsI(pattern []State, groups []int64) int {
 	case 3:
 		return countPossibleArrangements3(pattern, groups) // 166.49s (3 instead of 5)
 	case 4:
-		return countPossibleArrangements4(pattern, groups) // 14s (3 instead of 5)
+		var dc, uc int
+		for _, e := range pattern {
+			dc += aoc.Ifelse(e == Damaged, 1, 0)
+			uc += aoc.Ifelse(e == Unknown, 1, 0)
+		}
+		return countPossibleArrangements4(pattern, groups, dc, uc, sum(groups)) // 11.7 (3 instead of 5)
 	}
 	return countPossibleArrangements(pattern, groups)
 }
@@ -212,7 +214,7 @@ func (day Day12) Solve() aoc.Solution {
 	for _, r := range records {
 		c1 := countPossibleArrangementsI(r.record, r.damagedGroups)
 		part1 += c1
-		fmt.Printf("%q - %q - %d\n", toPatternString(r.record), toRegexp(r.damagedGroups), c1)
+		fmt.Printf("%q - %v - %d\n", toPatternString(r.record), r.damagedGroups, c1)
 		part2 += countPossibleArrangements2(r.record, r.damagedGroups)
 	}
 	part1, part2 = 7221, 0 // TODO - not yet implemented
