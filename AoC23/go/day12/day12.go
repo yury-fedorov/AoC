@@ -162,6 +162,30 @@ func couldBeValid(dc, uc, gs int) (could bool, precise bool) {
 	return (uc + dc) >= gs, false
 }
 
+func couldBeValid2(pattern []State, groups []int64) bool {
+	var curGroup int64
+	gn := len(groups)
+	gi := 0
+	for _, s := range pattern {
+		if s == Unknown {
+			return true // so far no logic for Unknown states
+		}
+		if s == Damaged {
+			curGroup++
+		} else if curGroup > 0 {
+			if (gn <= gi) || (groups[gi] != curGroup) {
+				return false
+			}
+			gi++
+			curGroup = 0
+		}
+	}
+	if curGroup == 0 {
+		return gi == gn
+	}
+	return (gi+1 == gn) && (groups[gi] == curGroup)
+}
+
 // like 1st but with couldBeValid
 func countPossibleArrangements4(pattern []State, groups []int64, dc, uc, gs int) int {
 	could, precise := couldBeValid(dc, uc, gs)
@@ -171,6 +195,9 @@ func countPossibleArrangements4(pattern []State, groups []int64, dc, uc, gs int)
 	if precise {
 		// No need for further undefined parsing, the Damages count is set exact, all others are operational.
 		return aoc.Ifelse(isValid(pattern, groups), 1, 0)
+	}
+	if !couldBeValid2(pattern, groups) {
+		return 0
 	}
 	i := slices.Index(pattern, Unknown)
 	if i < 0 {
@@ -187,7 +214,31 @@ func countPossibleArrangements4(pattern []State, groups []int64, dc, uc, gs int)
 	return result
 }
 
-const copiedForPart2 = 3 // switching to 4 takes too long
+const copiedForPart2 = 5 // switching to 4 takes too long
+
+func optimizePattern(pattern []State, groups []int64) []State {
+	/* TODO - draft
+	longestGroup := 1
+	longestGroupCount := 0
+	for _, g := range groups {
+		gi := int(g)
+		if gi > longestGroup {
+			longestGroup = gi
+			longestGroupCount = 1
+		} else if longestGroup == gi {
+			longestGroupCount += 1
+		}
+	}
+	ps := "." + toPatternString(pattern) + "."
+	reStr := fmt.Sprintf("\\.[#\\?]{%d}\\.", longestGroup)
+	re := regexp.MustCompile(reStr)
+	for j := 0; j < longestGroupCount; j++ {
+		i := re.FindStringIndex(ps) // TODO - doesn't work here
+		ps = ps[:i[0]]
+	}
+	*/
+	return pattern
+}
 
 func countPossibleArrangementsI(pattern []State, groups []int64) int {
 	const mode = 4
@@ -202,7 +253,7 @@ func countPossibleArrangementsI(pattern []State, groups []int64) int {
 			dc += aoc.Ifelse(e == Damaged, 1, 0)
 			uc += aoc.Ifelse(e == Unknown, 1, 0)
 		}
-		return countPossibleArrangements4(pattern, groups, dc, uc, sum(groups)) // 10 (3 instead of 5)
+		return countPossibleArrangements4(optimizePattern(pattern, groups), groups, dc, uc, sum(groups)) // 6.3 sec (5 instead of 5!)
 	case 1:
 		return countPossibleArrangements(pattern, groups) // 56.32 sec (3 instead of 5)
 	case 3:
@@ -215,13 +266,13 @@ func (day Day12) Solve() aoc.Solution {
 	var part1, part2 int
 	// 12-1 - 6
 	// 12-2 - 21
-	records := parse("12-2") // lines: 1000 max chr in line: 20
+	records := parse("12") // lines: 1000 max chr in line: 20
 	for _, r := range records {
 		c1 := countPossibleArrangementsI(r.record, r.damagedGroups)
 		part1 += c1
 		fmt.Printf("%q - %v - %d\n", toPatternString(r.record), r.damagedGroups, c1)
 		part2 += countPossibleArrangements2(r.record, r.damagedGroups)
 	}
-	part1, part2 = 7221, 0 // TODO - not yet implemented
+	// part1, part2 = 7221, 0 // TODO - not yet implemented
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
