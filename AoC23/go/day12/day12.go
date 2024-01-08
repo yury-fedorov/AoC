@@ -126,17 +126,18 @@ func fastCountPossibleArrangements3(pattern string, groups *regexp.Regexp) int {
 	return result
 }
 
+func nDemages(n int) string {
+	var result string
+	for i := 0; i < n; i++ {
+		result += "#"
+	}
+	return result
+}
+
 func toRegexp(groups []int64) string {
 	// 1, 2 -> .*#.*##.*
 	const anyAmountOperational = "\\.*"
 	const atLeastOneOperational = "\\.+"
-	nDemages := func(n int) string {
-		var result string
-		for i := 0; i < n; i++ {
-			result += "#"
-		}
-		return result
-	}
 	reStr := "^" + anyAmountOperational
 	for _, g := range groups {
 		reStr += nDemages((int)(g)) + atLeastOneOperational
@@ -214,10 +215,9 @@ func countPossibleArrangements4(pattern []State, groups []int64, dc, uc, gs int)
 	return result
 }
 
-const copiedForPart2 = 5 // switching to 4 takes too long
+const copiedForPart2 = 5
 
 func optimizePattern(pattern []State, groups []int64) []State {
-	/* TODO - draft
 	longestGroup := 1
 	longestGroupCount := 0
 	for _, g := range groups {
@@ -230,14 +230,25 @@ func optimizePattern(pattern []State, groups []int64) []State {
 		}
 	}
 	ps := "." + toPatternString(pattern) + "."
-	reStr := fmt.Sprintf("\\.[#\\?]{%d}\\.", longestGroup)
+	reStr := fmt.Sprintf("[\\.\\?][#\\?]{%d}[\\.\\?]", longestGroup)
 	re := regexp.MustCompile(reStr)
+	var result, tail string
 	for j := 0; j < longestGroupCount; j++ {
 		i := re.FindStringIndex(ps) // TODO - doesn't work here
-		ps = ps[:i[0]]
+		if i == nil {
+			// too few options
+			return pattern
+		}
+		head := ps[:i[0]]
+		tail = ps[i[1]:]
+		result += head + "." + nDemages(longestGroup)
+		ps = "." + tail
 	}
-	*/
-	return pattern
+	if re.FindStringIndex(ps) != nil {
+		// too many options
+		return pattern
+	}
+	return []State(result + ps)
 }
 
 func countPossibleArrangementsI(pattern []State, groups []int64) int {
@@ -253,7 +264,10 @@ func countPossibleArrangementsI(pattern []State, groups []int64) int {
 			dc += aoc.Ifelse(e == Damaged, 1, 0)
 			uc += aoc.Ifelse(e == Unknown, 1, 0)
 		}
-		return countPossibleArrangements4(optimizePattern(pattern, groups), groups, dc, uc, sum(groups)) // 6.3 sec (5 instead of 5!)
+		pattern1 := optimizePattern(pattern, groups)
+		fmt.Printf("%q -> %q", string(pattern), string(pattern1))
+		fmt.Println()
+		return countPossibleArrangements4(pattern, groups, dc, uc, sum(groups)) // 6.3 sec (5 instead of 5!)
 	case 1:
 		return countPossibleArrangements(pattern, groups) // 56.32 sec (3 instead of 5)
 	case 3:
@@ -266,13 +280,19 @@ func (day Day12) Solve() aoc.Solution {
 	var part1, part2 int
 	// 12-1 - 6
 	// 12-2 - 21
-	records := parse("12") // lines: 1000 max chr in line: 20
+	records := parse("12-2") // lines: 1000 max chr in line: 20
 	for _, r := range records {
 		c1 := countPossibleArrangementsI(r.record, r.damagedGroups)
 		part1 += c1
-		fmt.Printf("%q - %v - %d\n", toPatternString(r.record), r.damagedGroups, c1)
-		part2 += countPossibleArrangements2(r.record, r.damagedGroups)
+		fmt.Printf("%q - %v - %d ", toPatternString(r.record), r.damagedGroups, c1)
+		c2 := countPossibleArrangements2(r.record, r.damagedGroups)
+		part2 += c2
+		fmt.Printf("p2: %d \n", c2)
 	}
-	// part1, part2 = 7221, 0 // TODO - not yet implemented
+	part1, part2 = 7221, 0 // TODO - not yet implemented
+	// TODO: fast enough for 5 repetitions of part2 but doesn't calculate properly the part 2
+	// TODO: direction - optimize the input pattern (replacing ? with deduced values)
+	// ie. "?###????????" - [3 2 1] x 5 -> may be formalized with .###. instead of ?###?
+	// ie. "?????.???.????#?." - [1 1 1 6] - x5 -> very long execution - also much be solvable in the same way
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
