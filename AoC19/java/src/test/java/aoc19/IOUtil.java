@@ -12,10 +12,16 @@ public abstract class IOUtil {
         try {
             final var rootDir = System.getProperty("user.dir");
             var path = Paths.get( rootDir ).toAbsolutePath();
-            while ( true ) {
-                var path1 = path.getParent();
-                if ( !path1.toString().contains("AoC19") ) break;
-                path = path1;
+            if ( path.toString().contains("AoC19") ) {
+                // Out of container
+                while ( true ) {
+                    var path1 = path.getParent();
+                    if ( !path1.toString().contains("AoC19") ) break;
+                    path = path1;
+                }
+            } else {
+                // Dockerized path
+                path = Path.of("/usr/src/aoc");
             }
             return Files.readAllLines( Path.of( path.toString(),"data", file ) );
         } catch (IOException e) {
