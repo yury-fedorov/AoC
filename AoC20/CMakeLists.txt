@@ -25,7 +25,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 file( GLOB SOURCES */*.cpp )
-set(CMAKE_CXX_CPPCHECK "cppcheck")
+# set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc20 test.cpp ${SOURCES} )
 
