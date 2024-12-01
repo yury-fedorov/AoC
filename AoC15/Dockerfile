@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 RUN apt-get update \
-    && apt-get --no-install-recommends -y install git cmake make clang
+    && apt-get --no-install-recommends -y install git cmake make clang clang-tidy
 RUN clang --version
 
 RUN git config --global http.sslverify false
