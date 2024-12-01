@@ -32,7 +32,7 @@ fn group( input : &HashMap<i32, Vec<i32>>, element : i32 ) -> HashSet<i32> {
         for id in to_process {
             group.insert(id);
             processed.insert(id);
-            let subgroup = &input[(&id)];
+            let subgroup = &input[&id];
             to_process_1.extend( subgroup.into_iter()
                 .filter( |e| !processed.contains( e ) ) );
         }
