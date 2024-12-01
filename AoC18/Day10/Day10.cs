@@ -1,10 +1,10 @@
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day10
 {
@@ -17,10 +17,10 @@ namespace AdventOfCode2018.Day10
         public Point AtTime(int time) => new Point(point0.X + (velocity.X * time), point0.Y + (velocity.Y * time));
     }
 
-    public record Rectangle (Point min, Point max) // topLeft, bottomRight
+    public record Rectangle(Point min, Point max) // topLeft, bottomRight
     {
-	    public int Width => max.X - min.X;
-	    public int Height => max.Y - min.Y;
+        public int Width => max.X - min.X;
+        public int Height => max.Y - min.Y;
     }
 
     public class Day10
@@ -32,18 +32,18 @@ namespace AdventOfCode2018.Day10
             var matches = Regex.Matches(line, pattern);
             foreach (Match match in matches)
             {
-                    return new Light
+                return new Light
+                (
+                    new Point
                     (
-                        new Point
-                        (
-                            Convert.ToInt32(match.Groups[1].Value), 
-                            Convert.ToInt32(match.Groups[2].Value)
-                        ),
-                        new Velocity (
-                            Convert.ToInt32(match.Groups[3].Value),
-                            Convert.ToInt32(match.Groups[4].Value)
-                        )
-                    );
+                        Convert.ToInt32(match.Groups[1].Value),
+                        Convert.ToInt32(match.Groups[2].Value)
+                    ),
+                    new Velocity(
+                        Convert.ToInt32(match.Groups[3].Value),
+                        Convert.ToInt32(match.Groups[4].Value)
+                    )
+                );
             }
             throw new ArgumentException(line);
         }
@@ -60,11 +60,11 @@ namespace AdventOfCode2018.Day10
                 points.Select(p => p.X).Max(),
                 points.Select(p => p.Y).Max()
             );
-            return new Rectangle( min, max );
+            return new Rectangle(min, max);
         }
 
 
-        [TestCase("Day10/sample.txt",3)]
+        [TestCase("Day10/sample.txt", 3)]
         [TestCase("Day10/input.txt", 10003)]
         public void Test(string file, long et)
         {
@@ -75,14 +75,14 @@ namespace AdventOfCode2018.Day10
             int t = 0;
             for (; yPrev > 0; t++)
             {
-		        var b1 = Bounds(lights.Select(l => l.AtTime(t+1)));
+                var b1 = Bounds(lights.Select(l => l.AtTime(t + 1)));
                 var y = b1.Height;
                 if (yPrev <= y) break;
-		        yPrev = y;
-		        b = b1;
+                yPrev = y;
+                b = b1;
             }
-		    ClassicAssert.GreaterOrEqual( 50, b.Height );
-            ClassicAssert.GreaterOrEqual( 80, b.Width );
+            ClassicAssert.GreaterOrEqual(50, b.Height);
+            ClassicAssert.GreaterOrEqual(80, b.Width);
             // Console.WriteLine( $"{b.min.X} , {b.min.Y} - {b.max.X} {b.max.Y}" );
 
             var ol = lights.Select(l => l.AtTime(t)).ToArray();

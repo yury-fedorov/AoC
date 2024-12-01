@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode2018.Day3
@@ -44,7 +44,8 @@ namespace AdventOfCode2018.Day3
         }
     }
 
-    public record Rectangle(int Left, int Top, int Width, int Height) {
+    public record Rectangle(int Left, int Top, int Width, int Height)
+    {
         /// The number of inches between the left edge of the fabric and the left edge of the rectangle.
         /// The number of inches between the top edge of the fabric and the top edge of the rectangle.
         /// The width of the rectangle in inches.
@@ -66,7 +67,7 @@ namespace AdventOfCode2018.Day3
             if (!x.HasValue) return null; // no intersection by x
             var y = Intersection(Top, Bottom, other.Top, other.Bottom);
             if (!y.HasValue) return null; // no intersection by y
-            return new Rectangle( (int)x?.X, (int)y?.X, (int)(x?.Y - x?.X), (int)(y?.Y - y?.X));
+            return new Rectangle((int)x?.X, (int)y?.X, (int)(x?.Y - x?.X), (int)(y?.Y - y?.X));
         }
 
         public static IEnumerable<Rectangle> UnifiedCoverage(Rectangle a, Rectangle b)
@@ -105,7 +106,8 @@ namespace AdventOfCode2018.Day3
         }
     }
 
-    public record Claim : Rectangle {
+    public record Claim : Rectangle
+    {
         public int Id { get; set; }
         public Claim(int left, int top, int width, int height)
             : base(left, top, width, height) { }
@@ -141,24 +143,26 @@ namespace AdventOfCode2018.Day3
         private readonly Day3 day3 = new Day3();
 
         [Test]
-        public void TestParsing() {
+        public void TestParsing()
+        {
             const string text = "#123 @ 3,2: 5x4";
             // means that claim ID 123 specifies a rectangle 
             // 3 inches from the left edge, 2 inches from the top edge, 5 inches wide, and 4 inches tall.
             var claim = day3.ParseClaim(text);
-            ClassicAssert.AreEqual(123,claim.Id, "Id is wrong");
-            ClassicAssert.AreEqual(3,claim.Left, "Left is wrong");
-            ClassicAssert.AreEqual(2,claim.Top, "Top is wrong");
-            ClassicAssert.AreEqual(5,claim.Width, "Width is wrong");
-            ClassicAssert.AreEqual(4,claim.Height, "Height is wrong");
+            ClassicAssert.AreEqual(123, claim.Id, "Id is wrong");
+            ClassicAssert.AreEqual(3, claim.Left, "Left is wrong");
+            ClassicAssert.AreEqual(2, claim.Top, "Top is wrong");
+            ClassicAssert.AreEqual(5, claim.Width, "Width is wrong");
+            ClassicAssert.AreEqual(4, claim.Height, "Height is wrong");
         }
 
-        [TestCase("#1 @ 1,3: 4x4","#2 @ 3,1: 4x4",4)]
-        public void TestIntersection(string claim1, string claim2, int expected) {
+        [TestCase("#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", 4)]
+        public void TestIntersection(string claim1, string claim2, int expected)
+        {
             var c1 = day3.ParseClaim(claim1);
             var c2 = day3.ParseClaim(claim2);
             var calculated = c1.IntersectionSquare(c2).Area;
-            ClassicAssert.AreEqual(expected,calculated,"Wrong intersection area");
+            ClassicAssert.AreEqual(expected, calculated, "Wrong intersection area");
             var detector = new Detector();
             detector.Add(c1);
             detector.Add(c2);
@@ -166,15 +170,16 @@ namespace AdventOfCode2018.Day3
         }
 
         [TestCase("Day03/input.txt")]
-        public void TestFile(string file) {
-            var lines = File.ReadAllLines(Path.Combine(App.Directory,file));
+        public void TestFile(string file)
+        {
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var detector = new Detector();
             var claims = lines.Select(l => day3.ParseClaim(l)).ToArray();
             foreach (var claim in claims)
             {
                 detector.Add(claim);
             }
-            ClassicAssert.AreEqual(97218,detector.Count(), "Number of intersections"); // task 1
+            ClassicAssert.AreEqual(97218, detector.Count(), "Number of intersections"); // task 1
 
             // task 2 
             var set = new HashSet<int>();
@@ -184,7 +189,7 @@ namespace AdventOfCode2018.Day3
                 var claim = claims[i];
                 for (int j = 0; j < claims.Length; j++)
                 {
-                    if ( j == i ) continue;
+                    if (j == i) continue;
                     if (claim.IntersectionSquare(claims[j]) != null)
                     {
                         claim = null;
@@ -197,7 +202,7 @@ namespace AdventOfCode2018.Day3
                     set.Add(claim.Id);
                 }
             }
-            ClassicAssert.AreEqual(717,set.Single(),"Not overlapping area");
+            ClassicAssert.AreEqual(717, set.Single(), "Not overlapping area");
         }
     }
 }

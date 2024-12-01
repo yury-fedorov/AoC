@@ -1,12 +1,14 @@
-﻿using System;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
 
-namespace AdventOfCode2018.Day09 {
+namespace AdventOfCode2018.Day09
+{
 
-    public class MarbleCircle {
+    public class MarbleCircle
+    {
         public readonly LinkedList<int> sequence = new LinkedList<int>();
         public LinkedListNode<int> currentMarble;
         public Dictionary<int, long> playerKeptMarbles = new Dictionary<int, long>();
@@ -15,30 +17,36 @@ namespace AdventOfCode2018.Day09 {
         // In addition, the marble 7 marbles counter-clockwise from the current marble is removed 
         // from the circle and also added to the current player's score. 
         // The marble located immediately clockwise of the marble that was removed becomes the new current marble.
-        const int special = 23; 
+        const int special = 23;
 
-        public MarbleCircle() {
+        public MarbleCircle()
+        {
             // First, the marble numbered 0 is placed in the circle. 
             // At this point, while it contains only a single marble, 
             // it is still a circle: the marble is both clockwise from itself 
             // and counter-clockwise from itself. 
             // This marble is designated the current marble.
-            currentMarble = sequence.AddLast(0);             
+            currentMarble = sequence.AddLast(0);
         }
 
-        void Turn(int player, int marble) { 
-            if ((marble % special) == 0 ) {
+        void Turn(int player, int marble)
+        {
+            if ((marble % special) == 0)
+            {
                 long points;
 
                 // special case
-                if ( playerKeptMarbles.ContainsKey(player) ) {
+                if (playerKeptMarbles.ContainsKey(player))
+                {
                     points = playerKeptMarbles[player];
-                } else {
-                    playerKeptMarbles.Add(player,points = 0);
-                } 
+                }
+                else
+                {
+                    playerKeptMarbles.Add(player, points = 0);
+                }
 
                 points += marble;
-                for ( int j = 0; j < 7; j++)
+                for (int j = 0; j < 7; j++)
                 {
                     currentMarble = currentMarble.Previous ?? sequence.Last;
                 }
@@ -57,7 +65,7 @@ namespace AdventOfCode2018.Day09 {
             }
         }
 
-        public Tuple<int,long> Winner()
+        public Tuple<int, long> Winner()
         {
             if (playerKeptMarbles.Any())
             {
@@ -73,7 +81,7 @@ namespace AdventOfCode2018.Day09 {
         {
             var game = new MarbleCircle();
             var player = 1;
-            for (int currentMarble = 1; currentMarble <= lastMarble; currentMarble++ )
+            for (int currentMarble = 1; currentMarble <= lastMarble; currentMarble++)
             {
                 game.Turn(player, currentMarble);
                 player = player < players ? player + 1 : 1;
@@ -84,8 +92,8 @@ namespace AdventOfCode2018.Day09 {
 
     public class Day9Test
     {
-        
-        [TestCase( 9, 25,32)]
+
+        [TestCase(9, 25, 32)]
 
         /*
         10 players; last marble is worth 1618 points: high score is 8317

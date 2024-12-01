@@ -3,9 +3,11 @@ using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day11
 {
-    public class Field { 
-        readonly int [,] map = new int[300, 300];
-        public Field(int input) {
+    public class Field
+    {
+        readonly int[,] map = new int[300, 300];
+        public Field(int input)
+        {
             for (int x = 1; x <= 300; x++)
             {
                 for (int y = 1; y <= 300; y++)
@@ -47,7 +49,8 @@ namespace AdventOfCode2018.Day11
 
     public class Day11
     {
-        public static int PowerAt(int x, int y, int input) {
+        public static int PowerAt(int x, int y, int input)
+        {
             /* Find the fuel cell's rack ID, which is its X coordinate plus 10.
 Begin with a power level of the rack ID times the Y coordinate.
 Increase the power level by the value of the grid serial number (your puzzle input).
@@ -58,14 +61,14 @@ Subtract 5 from the power level. */
             var b = rankId * y;
             var c = b + input;
             var d = rankId * c;
-            int e = ( d / 100 ) % 10;
+            int e = (d / 100) % 10;
             var f = e - 5;
             return f;
         }
 
         const int Serial = 7347;
 
-        [TestCase(3, 5,8,4)]
+        [TestCase(3, 5, 8, 4)]
         // Fuel cell at  122,79, grid serial number 57: power level -5.
         [TestCase(122, 79, 57, -5)]
         // Fuel cell at 217,196, grid serial number 39: power level  0.
@@ -83,9 +86,11 @@ Subtract 5 from the power level. */
         public void Day11Part1(int side, int input, int ex, int ey)
             => ClassicAssert.AreEqual((ex, ey), Test1(side, input));
 
-        public (int,int) Test1(int side, int input) {
-            var map = new int[300,300];
-            for ( int x = 1; x <= 300; x++ ) {
+        public (int, int) Test1(int side, int input)
+        {
+            var map = new int[300, 300];
+            for (int x = 1; x <= 300; x++)
+            {
                 for (int y = 1; y <= 300; y++)
                 {
                     map[x - 1, y - 1] = PowerAt(x, y, input);
@@ -108,7 +113,8 @@ Subtract 5 from the power level. */
                             sum += map[x - 1 + dx, y - 1 + dy];
                         }
                     }
-                    if ( rValue < sum ) {
+                    if (rValue < sum)
+                    {
                         rx = x;
                         ry = y;
                         rValue = sum;
@@ -126,18 +132,21 @@ Subtract 5 from the power level. */
         [TestCase(18, 90, 269, 16)]
         [TestCase(42, 232, 251, 12)]
         [TestCase(Serial, 233, 228, 12)] // answer 2
-        public void Day11Part2( int input, int ex, int ey, int side ) {
+        public void Day11Part2(int input, int ex, int ey, int side)
+        {
             var r = (-1, -1, -1);
             var os = -1;
             var f = new Field(input);
-            for ( int s = 1; s <= 300; s++ ) {
+            for (int s = 1; s <= 300; s++)
+            {
                 var por = f.Max(s);
-                if (por.Item3 > r.Item3) {
+                if (por.Item3 > r.Item3)
+                {
                     r = por;
                     os = s;
                 }
             }
-            ClassicAssert.AreEqual( (ex,ey,side), (r.Item1,r.Item2,os) );
+            ClassicAssert.AreEqual((ex, ey, side), (r.Item1, r.Item2, os));
         }
     }
 }

@@ -1,17 +1,18 @@
-﻿using System;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day25
 {
-    public record Point4D (int A, int B, int C, int D) {
+    public record Point4D(int A, int B, int C, int D)
+    {
         public readonly HashSet<Point4D> Neighbours = new HashSet<Point4D>();
     }
 
-    public class Castellation 
+    public class Castellation
     {
         public const int MaxDistance = 3;
 
@@ -26,14 +27,14 @@ namespace AdventOfCode2018.Day25
             var set = new HashSet<Point4D>();
             set.Add(firstPoint);
             var toProcess = new HashSet<Point4D>(firstPoint.Neighbours);
-            while(toProcess.Any())
+            while (toProcess.Any())
             {
                 var point = toProcess.First();
                 if (!set.Contains(point))
                 {
                     // this point to be within castellation but was not processed
                     set.Add(point);
-                    foreach(var n in point.Neighbours)
+                    foreach (var n in point.Neighbours)
                     {
                         if (!set.Contains(n))
                         {
@@ -53,7 +54,8 @@ namespace AdventOfCode2018.Day25
         public static IEnumerable<Point4D> Read(string file)
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
-            return lines.Select(l => {
+            return lines.Select(l =>
+            {
                 var a = l.Split(",").Select(s => Convert.ToInt32(s)).ToArray();
                 return new Point4D(a[0], a[1], a[2], a[3]);
             });
@@ -65,13 +67,13 @@ namespace AdventOfCode2018.Day25
             var pl = Read(file).ToArray();
 
             // search for neigbours
-            for ( int a = 0; a < pl.Length; a++ )
+            for (int a = 0; a < pl.Length; a++)
             {
-                for ( int b = 0; b < a; b++ )
+                for (int b = 0; b < a; b++)
                 {
                     var pa = pl[a];
                     var pb = pl[b];
-                    if (Castellation.Distance(pa,pb) <= Castellation.MaxDistance)
+                    if (Castellation.Distance(pa, pb) <= Castellation.MaxDistance)
                     {
                         pa.Neighbours.Add(pb);
                         pb.Neighbours.Add(pa);
@@ -82,12 +84,12 @@ namespace AdventOfCode2018.Day25
             // ready to count castellations
             var pointsToProcess = new HashSet<Point4D>(pl);
             var castellations = new List<HashSet<Point4D>>();
-            while ( pointsToProcess.Any() )
+            while (pointsToProcess.Any())
             {
                 var point = pointsToProcess.First();
                 var castellation = Castellation.DefineCastellation(point);
                 castellations.Add(castellation);
-                foreach( var p in castellation )
+                foreach (var p in castellation)
                 {
                     pointsToProcess.Remove(p);
                 }

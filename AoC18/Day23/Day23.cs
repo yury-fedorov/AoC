@@ -1,19 +1,20 @@
-﻿using System;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
 
-namespace AdventOfCode2018.Day23 {
+namespace AdventOfCode2018.Day23
+{
     public record Point3D(int X, int Y, int Z) { }
 
     public record Nanobot(Point3D C, int R) { } // center, radius
 
-    public record Range( int Min, int Max ) { }
+    public record Range(int Min, int Max) { }
 
-    public record Cuboid( Range X, Range Y, Range Z ) { } // right (rectangular) cuboid
+    public record Cuboid(Range X, Range Y, Range Z) { } // right (rectangular) cuboid
 
     public class Day23
     {
@@ -23,7 +24,7 @@ namespace AdventOfCode2018.Day23 {
             foreach (Match match in matches)
             {
                 var center = new Point3D(Convert.ToInt32(match.Groups[1].Value), Convert.ToInt32(match.Groups[2].Value), Convert.ToInt32(match.Groups[3].Value));
-                return new Nanobot ( center, Convert.ToInt32(match.Groups[4].Value) );
+                return new Nanobot(center, Convert.ToInt32(match.Groups[4].Value));
             }
             throw new Exception("unexpected format");
         }
@@ -37,9 +38,9 @@ namespace AdventOfCode2018.Day23 {
         public static int CountPoint(IEnumerable<Nanobot> bots, Point3D p)
             => InRange(bots, p).Count();
 
-        public static Range ? Overlapping( Range a, Range b )
+        public static Range? Overlapping(Range a, Range b)
         {
-            var r = new Range( Math.Max( a.Min, b.Min ), Math.Min( a.Max, b.Max ) );
+            var r = new Range(Math.Max(a.Min, b.Min), Math.Min(a.Max, b.Max));
             return r.Min <= r.Max ? r : null;
         }
 
@@ -50,19 +51,19 @@ namespace AdventOfCode2018.Day23 {
             return Overlapping(ar, br);
         }
 
-        static Range? OverlappingAxis( Range ar, (int C, int R) b)
+        static Range? OverlappingAxis(Range ar, (int C, int R) b)
         {
             var br = new Range(b.C - b.R, b.C + b.R);
             return Overlapping(ar, br);
         }
 
-        public static Cuboid ? Overlapping( Nanobot a, Nanobot b )
+        public static Cuboid? Overlapping(Nanobot a, Nanobot b)
         {
             var x = OverlappingAxis((a.C.X, a.R), (b.C.X, b.R));
             var y = OverlappingAxis((a.C.Y, a.R), (b.C.Y, b.R));
             var z = OverlappingAxis((a.C.Z, a.R), (b.C.Z, b.R));
             if (x == null || y == null || z == null) return null;
-            return new Cuboid( x, y, z );
+            return new Cuboid(x, y, z);
         }
 
         public static Cuboid? Overlapping(Cuboid c, Nanobot b)
@@ -74,21 +75,21 @@ namespace AdventOfCode2018.Day23 {
             return new Cuboid(x, y, z);
         }
 
-        public static bool AreTouching( Nanobot a, Nanobot b )
+        public static bool AreTouching(Nanobot a, Nanobot b)
         {
             return AreTouching((a.C.X, a.R), (b.C.X, b.R))
                 && AreTouching((a.C.Y, a.R), (b.C.Y, b.R))
                 && AreTouching((a.C.Z, a.R), (b.C.Z, b.R));
-            
-            static bool AreTouching( (int C, int R) a, (int C, int R) b )
+
+            static bool AreTouching((int C, int R) a, (int C, int R) b)
             {
-                var ar = new Range( a.C - a.R, a.C + a.R );
-                var br = new Range( b.C - b.R, b.C + b.R );
+                var ar = new Range(a.C - a.R, a.C + a.R);
+                var br = new Range(b.C - b.R, b.C + b.R);
                 return Overlapping(ar, br) != null;
             }
         }
 
-        public int GetRealShortestDistance( Cuboid area, HashSet<Nanobot> s0 )
+        public int GetRealShortestDistance(Cuboid area, HashSet<Nanobot> s0)
         {
             var minD = Distance(P0, new Point3D(area.X.Min, area.Y.Min, area.Z.Min));
             var maxD = Distance(P0, new Point3D(area.X.Max, area.Y.Max, area.Z.Max));
@@ -104,11 +105,11 @@ namespace AdventOfCode2018.Day23 {
                 var dy = Math.Max(1, (area.Y.Max - area.Y.Min) >> bits);
                 var dz = Math.Max(1, (area.Z.Max - area.Z.Min) >> bits);
                 var area1 = area;
-                for (int x = area.X.Min; x <= area.X.Max; x += dx )
+                for (int x = area.X.Min; x <= area.X.Max; x += dx)
                 {
-                    for (int y = area.Y.Min; y <= area.Y.Max; y += dy )
+                    for (int y = area.Y.Min; y <= area.Y.Max; y += dy)
                     {
-                        for (int z = area.Z.Min; z <= area.Z.Max; z += dz )
+                        for (int z = area.Z.Min; z <= area.Z.Max; z += dz)
                         {
                             var pi = new Point3D(x, y, z);
                             var ci = CountPoint(s0, pi);
@@ -121,7 +122,7 @@ namespace AdventOfCode2018.Day23 {
                                 shortest = di;
                                 toUpdate = true;
                             }
-                            else if (ci == maxCount && di < shortest )
+                            else if (ci == maxCount && di < shortest)
                             {
                                 shortest = di;
                                 toUpdate = true;
@@ -157,7 +158,7 @@ namespace AdventOfCode2018.Day23 {
         readonly Point3D P0 = new Point3D(0, 0, 0);
 
         [TestCase("Day23/sample2.txt", 36)]
-        [TestCase( FileName, 124276103)]
+        [TestCase(FileName, 124276103)]
         public void Task2(string file, int answer2)
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
@@ -165,20 +166,20 @@ namespace AdventOfCode2018.Day23 {
 
             var pc = list.ToDictionary(b => b.C, b => CountPoint(list, b.C));
             var maxNumber = pc.Values.Max();
-            
+
             var p = pc.Where(a => a.Value == maxNumber)
-                .OrderBy( a => Distance( P0, a.Key ) ).First();
+                .OrderBy(a => Distance(P0, a.Key)).First();
 
             var d0 = Distance(P0, p.Key);
 
-            var s0 = new HashSet<Nanobot>( InRange(list, p.Key) );
+            var s0 = new HashSet<Nanobot>(InRange(list, p.Key));
             var intersection = Overlapping(s0.First(), s0.Last());
             s0.ToList().ForEach(b => intersection = Overlapping(intersection, b));
             var toAdd = new HashSet<Nanobot>(list);
             toAdd.RemoveWhere(e => s0.Contains(e));
-            foreach ( var b in toAdd )
+            foreach (var b in toAdd)
             {
-                var isToAdd = s0.All(ba => AreTouching(ba, b) );
+                var isToAdd = s0.All(ba => AreTouching(ba, b));
                 if (isToAdd)
                 {
                     s0.Add(b);
@@ -186,7 +187,7 @@ namespace AdventOfCode2018.Day23 {
                 }
             }
 
-            ClassicAssert.True( maxNumber < s0.Count, "we optimized more" );
+            ClassicAssert.True(maxNumber < s0.Count, "we optimized more");
 
             var shortest = GetRealShortestDistance(intersection, s0);
 

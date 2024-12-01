@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace AdventOfCode2018.Day08 {
-    class Node {
+namespace AdventOfCode2018.Day08
+{
+    class Node
+    {
         // header
         public int countChildNodes;
         public int countMetaData;
@@ -17,12 +19,16 @@ namespace AdventOfCode2018.Day08 {
         public int Length() => 2 + countMetaData + childNodes.Select(n => n.Length()).Sum();
     }
 
-    public class Day8 {
-        Node Read(List<int> tree) {
-            var node = new Node { 
+    public class Day8
+    {
+        Node Read(List<int> tree)
+        {
+            var node = new Node
+            {
                 countChildNodes = tree[0],
                 countMetaData = tree[1],
-                rawData = tree };
+                rawData = tree
+            };
             ClassicAssert.True(node.countMetaData > 0);
             node.metadata = tree.GetRange(
                 tree.Count - node.countMetaData,
@@ -39,7 +45,8 @@ namespace AdventOfCode2018.Day08 {
         }
 
         // bounds here are precise
-        IEnumerable<Node> ReadKids(int missingChildren, List<int> allChildren) {
+        IEnumerable<Node> ReadKids(int missingChildren, List<int> allChildren)
+        {
             ClassicAssert.True(missingChildren > 0);
             if (missingChildren == 1)
             {
@@ -47,7 +54,7 @@ namespace AdventOfCode2018.Day08 {
                 return new[] { Read(allChildren) };
             }
             // we are here when we have at least 2 nodes
-            var nextChildNodes = allChildren[0]; 
+            var nextChildNodes = allChildren[0];
             var nextMetaData = allChildren[1];
 
             if (nextChildNodes == 0)
@@ -56,7 +63,7 @@ namespace AdventOfCode2018.Day08 {
                 var nodeLength = 2 + nextMetaData;
                 var child = Read(allChildren.GetRange(0, nodeLength));
                 var newKids = allChildren.GetRange(nodeLength, allChildren.Count - nodeLength);
-                return ( new[] { child } ).Concat( ReadKids(missingChildren-1,newKids) );
+                return (new[] { child }).Concat(ReadKids(missingChildren - 1, newKids));
             }
 
             // we are hear when we cannot parse current level, go deeper
@@ -68,7 +75,7 @@ namespace AdventOfCode2018.Day08 {
             return (new[] { deepNode }).Concat(ReadKids(missingChildren - 1, newKidsAfterDeep));
         }
 
-        Node ReadDeepNode(List<int> uncertainKids ) // end is not precise
+        Node ReadDeepNode(List<int> uncertainKids) // end is not precise
         {
             var nextChildNodes = uncertainKids[0];
             var nextMetaData = uncertainKids[1];
@@ -79,13 +86,14 @@ namespace AdventOfCode2018.Day08 {
                 return Read(uncertainKids.GetRange(0, nodeLength));
             }
             // one node approach cannot be used, the end is not precise
-            var deepNode = new Node {
+            var deepNode = new Node
+            {
                 countChildNodes = nextChildNodes,
                 countMetaData = nextMetaData
             };
             ClassicAssert.True(deepNode.countMetaData > 0);
             deepNode.childNodes = new List<Node>();
-            while( deepNode.childNodes.Count < deepNode.countChildNodes )
+            while (deepNode.childNodes.Count < deepNode.countChildNodes)
             {
                 var shift = 2 + deepNode.childNodes.Select(c => c.Length()).Sum();
                 var child = ReadDeepNode(uncertainKids.GetRange(shift, uncertainKids.Count - shift - nextMetaData));
@@ -111,11 +119,12 @@ namespace AdventOfCode2018.Day08 {
 
         [TestCase("Day08/sample.txt", 138, 66)]
         [TestCase("Day08/input.txt", 42472, 21810)]
-        public void TestCase1(string file, int answer1,int answer2) {
+        public void TestCase1(string file, int answer1, int answer2)
+        {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
-            var tree = Read( lines.Single().Split(" ").Select(a=>Convert.ToInt32(a)).ToList() );
+            var tree = Read(lines.Single().Split(" ").Select(a => Convert.ToInt32(a)).ToList());
             ClassicAssert.AreEqual(answer1, Task1(tree), "answer 1");
-            ClassicAssert.AreEqual(answer2, Task2(tree), "anser 2");    
+            ClassicAssert.AreEqual(answer2, Task2(tree), "anser 2");
         }
     }
 }

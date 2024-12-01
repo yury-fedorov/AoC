@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AdventOfCode2018.Day14
 {
@@ -9,24 +9,24 @@ namespace AdventOfCode2018.Day14
     {
         public static LinkedListNode<byte> CiclicMoveNext(LinkedList<byte> list, LinkedListNode<byte> node, int times)
         {
-            for ( int i = 0; i < times; i++)
+            for (int i = 0; i < times; i++)
             {
                 node = node.Next ?? list.First;
             }
             return node;
         }
 
-        public string Rewind( int rewind, int size=10 )
+        public string Rewind(int rewind, int size = 10)
         {
             var list = new LinkedList<byte>();
             var elf1 = list.AddLast(3);
             var elf2 = list.AddLast(7);
             var count = 2;
             var end = rewind + size;
-            while ( count < end)
+            while (count < end)
             {
                 var sum = elf1.Value + elf2.Value;
-                if ( sum >= 10)
+                if (sum >= 10)
                 {
                     // we have 2 new numbers
                     var firstDigit = sum / 10;
@@ -34,8 +34,8 @@ namespace AdventOfCode2018.Day14
                     var secondDigit = sum - 10;
                     list.AddLast((byte)secondDigit);
                     count += 2;
-                } 
-                else 
+                }
+                else
                 {
                     // only 1 new number
                     list.AddLast((byte)sum);
@@ -71,9 +71,9 @@ namespace AdventOfCode2018.Day14
         public bool IsSequence(LinkedList<byte> list, LinkedListNode<byte> last, LinkedList<byte> sequence)
         {
             var seqNode = sequence.Last;
-            while ( seqNode != null)
+            while (seqNode != null)
             {
-                if ( seqNode.Value != last.Value)
+                if (seqNode.Value != last.Value)
                 {
                     return false;
                 }
@@ -102,7 +102,7 @@ namespace AdventOfCode2018.Day14
                     list.AddLast((byte)secondDigit);
                     count += 2;
 
-                    if ( IsSequence(list,lastButOne,sequenceList))
+                    if (IsSequence(list, lastButOne, sequenceList))
                     {
                         return count - 1 - sequence.Length;
                     }

@@ -1,13 +1,14 @@
 ﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
-using System.IO;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace AdventOfCode2018.Day02
 {
-    public class Day2 {
+    public class Day2
+    {
 
         public IDictionary<char, int> GroupLetters(string boxId)
         {
@@ -64,40 +65,44 @@ namespace AdventOfCode2018.Day02
             return set.Single();
         }
 
-        [TestCase("abcdef",0,0)] // contains no letters that appear exactly two or three times.
-        [TestCase("bababc",1,1)] // contains two a and three b, so it counts for both.
-        [TestCase("abbcde",1,0)] // contains two b, but no letter appears exactly three times.
-        [TestCase("abcccd",0,1)] // contains three c, but no letter appears exactly two times.
-        [TestCase("aabcdd",2,0)] // contains two a and two d, but it only counts once.
-        [TestCase("abcdee",1,0)] // contains two e.
-        [TestCase("ababab",0,2)] // contains three a and three b, but it only counts once.
-        public void CheckOccurancies(string boxId, int expectedTwoTimes, int expectedThreeTimes) {            
+        [TestCase("abcdef", 0, 0)] // contains no letters that appear exactly two or three times.
+        [TestCase("bababc", 1, 1)] // contains two a and three b, so it counts for both.
+        [TestCase("abbcde", 1, 0)] // contains two b, but no letter appears exactly three times.
+        [TestCase("abcccd", 0, 1)] // contains three c, but no letter appears exactly two times.
+        [TestCase("aabcdd", 2, 0)] // contains two a and two d, but it only counts once.
+        [TestCase("abcdee", 1, 0)] // contains two e.
+        [TestCase("ababab", 0, 2)] // contains three a and three b, but it only counts once.
+        public void CheckOccurancies(string boxId, int expectedTwoTimes, int expectedThreeTimes)
+        {
             var result = CalculateRudimentaryChecksum(boxId);
-            ClassicAssert.AreEqual( Tuple.Create(expectedTwoTimes>0?1:0,expectedThreeTimes>0?1:0), result, "Wrong checksum");
+            ClassicAssert.AreEqual(Tuple.Create(expectedTwoTimes > 0 ? 1 : 0, expectedThreeTimes > 0 ? 1 : 0), result, "Wrong checksum");
             var dictionary = GroupLetters(boxId);
-            ClassicAssert.AreEqual(expectedTwoTimes, CountOccurancies(dictionary,2), "Wrong 2 times count" );            
-            ClassicAssert.AreEqual(expectedThreeTimes, CountOccurancies(dictionary,3), "Wrong 3 times count" );            
+            ClassicAssert.AreEqual(expectedTwoTimes, CountOccurancies(dictionary, 2), "Wrong 2 times count");
+            ClassicAssert.AreEqual(expectedThreeTimes, CountOccurancies(dictionary, 3), "Wrong 3 times count");
         }
 
-        [TestCase("Day02/sample.txt",12)]
-        [TestCase("Day02/input.txt",5658)]
-        public void Test3(string file, int expected) {
-            var lines = File.ReadAllLines(Path.Combine(App.Directory,file));
+        [TestCase("Day02/sample.txt", 12)]
+        [TestCase("Day02/input.txt", 5658)]
+        public void Test3(string file, int expected)
+        {
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var result = lines.Select(line => CalculateRudimentaryChecksum(line))
-                .Aggregate(Tuple.Create(0,0), (a,b) => Tuple.Create(a.Item1+b.Item1,a.Item2+b.Item2) );
+                .Aggregate(Tuple.Create(0, 0), (a, b) => Tuple.Create(a.Item1 + b.Item1, a.Item2 + b.Item2));
             var checksum = result.Item1 * result.Item2;
-            ClassicAssert.AreEqual(expected,checksum,"Wrong checksum");
+            ClassicAssert.AreEqual(expected, checksum, "Wrong checksum");
         }
 
-        [TestCase("fghij","fguij","fgij")]
-        public void TestCommon(string a, string b, string ab) {
-            var ab1 = IdentifyCorrectBoxId(a,b);
-            ClassicAssert.AreEqual(ab,ab1,"Wrong correct box ID");
+        [TestCase("fghij", "fguij", "fgij")]
+        public void TestCommon(string a, string b, string ab)
+        {
+            var ab1 = IdentifyCorrectBoxId(a, b);
+            ClassicAssert.AreEqual(ab, ab1, "Wrong correct box ID");
         }
 
         [TestCase("Day02/input.txt", "nmgyjkpruszlbaqwficavxneo")]
-        public void Test4(string file, string commonBoxId) {
-            var lines = File.ReadAllLines(Path.Combine(App.Directory,file));            
+        public void Test4(string file, string commonBoxId)
+        {
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             ClassicAssert.AreEqual(commonBoxId, IdentifyCorrectBoxId(lines), "Final result");
         }
     }
