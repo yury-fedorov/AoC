@@ -11,4 +11,4 @@
  [2018](https://adventofcode.com/2018) | C# 7.3 (.NET Core 2.1) -> **.NET 8**    | 3009 
  [2017](https://adventofcode.com/2017) | Rust 2018 -> **Rust 2021**, Scala 3, C# | 5483 
  [2016](https://adventofcode.com/2016) | Java 11 -> **Java 21**                  | 2403 
- [2015](https://adventofcode.com/2015) | **C++ 17**                              | 3532 
+ [2015](https://adventofcode.com/2015) | C++17 -> **C++ 23**                     | 3532 
