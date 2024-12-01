@@ -8,10 +8,13 @@ public enum Command {
     JumpIfTrue(5),
     JumpIfFalse(6),
     LessThan(7),
-    Equals( 8),
+    Equals(8),
     AdjustRelativeBase(9),
     End(99);
 
     public final int code;
-    private Command(int code) { this.code = code; }
+
+    private Command(int code) {
+        this.code = code;
+    }
 }

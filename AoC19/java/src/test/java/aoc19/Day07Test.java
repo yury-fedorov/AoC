@@ -22,18 +22,18 @@ public class Day07Test {
         return out.poll();
     }
 
-    static long allRuns1( ArrayList<Long> code, List<Long> settings ) {
+    static long allRuns1(ArrayList<Long> code, List<Long> settings) {
         long input = 0;
-        for ( var setting : settings ) {
-            input = singleRun( code, setting, input );
+        for (var setting : settings) {
+            input = singleRun(code, setting, input);
         }
         return input;
     }
 
-    static long allRuns2( ArrayList<Long> code, List<Long> settings ) {
+    static long allRuns2(ArrayList<Long> code, List<Long> settings) {
         boolean isHalt = false;
         var ampList = new ArrayList<IntcodeComputer>();
-        for ( var setting : settings ) {
+        for (var setting : settings) {
             var in = new LinkedBlockingQueue<Long>();
             var out = new LinkedBlockingQueue<Long>();
             in.add(setting);
@@ -43,45 +43,45 @@ public class Day07Test {
         ampList.get(0).in(0); // the very first input is zero
         final var n = settings.size();
         final var lastIndex = n - 1;
-        final var lastAmp = ampList.get( lastIndex );
+        final var lastAmp = ampList.get(lastIndex);
         do {
-            for ( var i = 0; i < n; i++ ) {
+            for (var i = 0; i < n; i++) {
                 var amp = ampList.get(i);
                 isHalt = amp.run() == IntcodeComputer.RunPhase.HALT;
-                if ( isHalt && i == lastIndex ) break;
-                final var nextIndex = ( i + 1 ) % n;
+                if (isHalt && i == lastIndex) break;
+                final var nextIndex = (i + 1) % n;
                 final var nextAmp = ampList.get(nextIndex);
-                if ( amp.outSize() > 0 ) nextAmp.in( amp.out() );
+                if (amp.outSize() > 0) nextAmp.in(amp.out());
             }
-        } while ( !isHalt );
+        } while (!isHalt);
         return lastAmp.out();
     }
 
-    static long solution( ArrayList<Long> code, List<Long> settings, boolean isTask1 ) {
+    static long solution(ArrayList<Long> code, List<Long> settings, boolean isTask1) {
         long result = Long.MIN_VALUE;
         var i = new PermutationIterator(settings);
         while (i.hasNext()) {
             var curSettings = i.next();
             final long r = isTask1 ? allRuns1(code, curSettings) : allRuns2(code, curSettings);
-            result = Math.max( result, r );
+            result = Math.max(result, r);
         }
         return result;
     }
 
-    static long answer1( ArrayList<Long> code ) {
-        var settings = List.of(0L,1L,2L,3L,4L);
+    static long answer1(ArrayList<Long> code) {
+        var settings = List.of(0L, 1L, 2L, 3L, 4L);
         return solution(code, settings, true);
     }
 
-    static long answer2( ArrayList<Long> code ) {
-        var settings = List.of(5L,6L,7L,8L,9L);
+    static long answer2(ArrayList<Long> code) {
+        var settings = List.of(5L, 6L, 7L, 8L, 9L);
         return solution(code, settings, false);
     }
 
     @Test
     public void solution() {
         final var code = IntcodeComputer.loadMemory(IOUtil.input("day07").get(0));
-        assertEquals( "answer 1", 70597L, answer1(code) );
-        assertEquals( "answer 2", 30872528L, answer2(code) );
+        assertEquals("answer 1", 70597L, answer1(code));
+        assertEquals("answer 2", 30872528L, answer2(code));
     }
 }

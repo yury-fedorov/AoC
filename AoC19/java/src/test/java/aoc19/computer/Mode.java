@@ -5,5 +5,8 @@ public enum Mode {
     Immediate(1),
     Relative(2);
     public int code;
-    private Mode( int code ) { this.code = code; }
+
+    private Mode(int code) {
+        this.code = code;
+    }
 }
