@@ -11,15 +11,15 @@ import java.util.ListIterator;
 
 public class Day19Test {
 
-    static ListIterator<Integer> next( LinkedList<Integer> list, ListIterator<Integer> it ) {
-        if ( !it.hasNext() ) it = list.listIterator();
+    static ListIterator<Integer> next(LinkedList<Integer> list, ListIterator<Integer> it) {
+        if (!it.hasNext()) it = list.listIterator();
         it.next();
         return it;
     }
 
-    static int detectWinner( final int n ) {
+    static int detectWinner(final int n) {
         final LinkedList<Integer> list = init(n);
-        var it = next(list, list.listIterator() );
+        var it = next(list, list.listIterator());
         while (list.size() > 1) {
             it = next(list, it);
             it.remove();
@@ -28,24 +28,24 @@ public class Day19Test {
         return list.peek();
     }
 
-    static int detectWinner21( final int initialSize ) {
-        final List<Integer> list = new ArrayList<>( init(initialSize) );
+    static int detectWinner21(final int initialSize) {
+        final List<Integer> list = new ArrayList<>(init(initialSize));
         int position = 0;
-        for ( int n = list.size(); n > 1; ) {
-            if ( ( n % 10000 ) == 0 ) System.out.println( n );
-            final int half = ( n >> 1 ); // divide by 2
-            final int outIndex = ( position + half ) % n;
-            list.remove( outIndex );
+        for (int n = list.size(); n > 1; ) {
+            if ((n % 10000) == 0) System.out.println(n);
+            final int half = (n >> 1); // divide by 2
+            final int outIndex = (position + half) % n;
+            list.remove(outIndex);
             --n;
-            position += ( outIndex >= position ) ? 1 : 0; // we increment position only, if removed is ahead in numbering
-            position = ( position >= n ) ? 0 : position;
+            position += (outIndex >= position) ? 1 : 0; // we increment position only, if removed is ahead in numbering
+            position = (position >= n) ? 0 : position;
         }
         return list.get(0);
     }
 
     private static LinkedList<Integer> init(int n) {
         final var list = new LinkedList<Integer>();
-        for (int i = 1; i <= n; i++ ) {
+        for (int i = 1; i <= n; i++) {
             list.addLast(i);
         }
         return list;
@@ -54,10 +54,10 @@ public class Day19Test {
     @Test
     public void solution() {
         final var INPUT = 3018458;
-        Assert.assertEquals( "test 1", 3, detectWinner(5));
-        Assert.assertEquals( "answer 1", 1842613, detectWinner(INPUT));
-        Assert.assertEquals( "test 2", 2, detectWinner21(5));
-        if ( Config.isFast() ) return; // 59m 36s
-        Assert.assertEquals( "answer 2", 1424135, detectWinner21(INPUT));
+        Assert.assertEquals("test 1", 3, detectWinner(5));
+        Assert.assertEquals("answer 1", 1842613, detectWinner(INPUT));
+        Assert.assertEquals("test 2", 2, detectWinner21(5));
+        if (Config.isFast()) return; // 59m 36s
+        Assert.assertEquals("answer 2", 1424135, detectWinner21(INPUT));
     }
 }
