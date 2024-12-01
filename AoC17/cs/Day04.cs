@@ -1,7 +1,7 @@
-﻿using System.IO;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
+using System.IO;
+using System.Linq;
 
 namespace AoC17
 {
@@ -36,8 +36,9 @@ namespace AoC17
         }
 
         [TestCase("Day04Input.txt", 386, 208)]
-        public void Test1(string file, int expected, int expected2) {
-            var lines = File.ReadAllLines( Path.Combine( App.Directory, file ) );
+        public void Test1(string file, int expected, int expected2)
+        {
+            var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             ClassicAssert.IsNotEmpty(lines);
             ClassicAssert.AreEqual(expected, lines.Count(IsValid));
             ClassicAssert.AreEqual(expected2, lines.Count(IsValid2));
