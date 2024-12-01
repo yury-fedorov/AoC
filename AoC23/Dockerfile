@@ -1,9 +1,5 @@
 FROM golang:latest
 
-RUN go version
-
-RUN git config --global http.sslverify false
-
 ARG src=/usr/src/aoc
 
 COPY . $src
