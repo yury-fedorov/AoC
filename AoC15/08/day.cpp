@@ -1,80 +1,79 @@
-#include <iostream>
+#include <catch2/catch.hpp>
 #include <deque>
-#include <vector>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string_view>
-#include <catch2/catch.hpp>
+#include <vector>
 
 using namespace std;
 
-template<class T>
-char pop(deque<T> & c) {
-    const T ch = c[0];
-    c.pop_front();
-    return ch;
+template <class T> char pop(deque<T> &c) {
+  const T ch = c[0];
+  c.pop_front();
+  return ch;
 }
 
 // question 1
-string toMemory( string_view line ) {
-    const auto l = line.length();
-    const auto d = line.data();
-    deque<char> c( d + 1, d + l - 1 ); // remove first and last
-    vector<char> v;
-    while (!c.empty()) {
-        const auto next = pop(c);
-        if ( next != '\\' ) {
-            v.push_back(next);
-        } else {
-            const auto next1 = pop(c);
-            if ( next1 != 'x' ) {
-                v.push_back(next1);
-            } else {
-                pop(c);
-                pop(c);
-                v.push_back('?'); // we care only about size
-            }
-        }
+string toMemory(string_view line) {
+  const auto l = line.length();
+  const auto d = line.data();
+  deque<char> c(d + 1, d + l - 1); // remove first and last
+  vector<char> v;
+  while (!c.empty()) {
+    const auto next = pop(c);
+    if (next != '\\') {
+      v.push_back(next);
+    } else {
+      const auto next1 = pop(c);
+      if (next1 != 'x') {
+        v.push_back(next1);
+      } else {
+        pop(c);
+        pop(c);
+        v.push_back('?'); // we care only about size
+      }
     }
-    return string(v.begin(), v.end());
+  }
+  return string(v.begin(), v.end());
 }
 
 // question 2
 string fromMemory(string_view line) {
-    const auto l = line.length();
-    const auto d = line.data();
-    deque<char> c( d, d + l );
-    vector<char> v;
-    v.push_back('\"');
-    while (!c.empty()) {
-        const auto next = pop(c);
-        if ( next == '\\' || next == '"' ) {
-            v.push_back( '\\' );
-        }
-        v.push_back(next);
+  const auto l = line.length();
+  const auto d = line.data();
+  deque<char> c(d, d + l);
+  vector<char> v;
+  v.push_back('\"');
+  while (!c.empty()) {
+    const auto next = pop(c);
+    if (next == '\\' || next == '"') {
+      v.push_back('\\');
     }
-    v.push_back('\"');
-    return string(v.begin(), v.end());
+    v.push_back(next);
+  }
+  v.push_back('\"');
+  return string(v.begin(), v.end());
 }
 
-auto day08( const bool isFirstAnswer ) {
-    ifstream f("08/input.txt");
+auto day08(const bool isFirstAnswer) {
+  ifstream f("08/input.txt");
 
-    int codeLength = 0;
-    int textLength = 0;
+  int codeLength = 0;
+  int textLength = 0;
 
-    string line;
-    while (getline(f, line)) {
-        const int l = line.length();
-        codeLength += l;
-        const string s = isFirstAnswer ? toMemory(line) : fromMemory(line);
-        const int l1 = s.length();
-        textLength += l1;
-    }
-    return abs(codeLength - textLength);
+  string line;
+  while (getline(f, line)) {
+    const int l = line.length();
+    codeLength += l;
+    const string s = isFirstAnswer ? toMemory(line) : fromMemory(line);
+    const int l1 = s.length();
+    textLength += l1;
+  }
+  return abs(codeLength - textLength);
 }
 
-TEST_CASE( "Day08", "[08]" ) {
-    REQUIRE(1333 == day08(true));
-    REQUIRE(2046  == day08(false));
+TEST_CASE("Day08", "[08]") {
+  REQUIRE(1333 == day08(true));
+  REQUIRE(2046 == day08(false));
 }
