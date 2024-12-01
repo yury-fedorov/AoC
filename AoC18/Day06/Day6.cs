@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day06 {
     public record Point(int X, int Y) { 
@@ -56,7 +57,7 @@ namespace AdventOfCode2018.Day06 {
                 }
             }
             var max = idArea.Max(a => a.Value);
-            Assert.AreEqual(expectedLargestArea, max, "answer 1" );
+            ClassicAssert.AreEqual(expectedLargestArea, max, "answer 1" );
 
             int area = 0;
             for (int x = 0; x <= maxX; x++)
@@ -68,7 +69,7 @@ namespace AdventOfCode2018.Day06 {
                     area += isOut ? 0 : 1;
                 }
             }
-            Assert.AreEqual(maxDistanceArea, area, "answer 2");
+            ClassicAssert.AreEqual(maxDistanceArea, area, "answer 2");
         }
     }
 }

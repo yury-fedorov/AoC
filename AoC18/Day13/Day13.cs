@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day13 {
     public record Point(int X, int Y) { 
@@ -40,7 +41,7 @@ namespace AdventOfCode2018.Day13 {
                 case Turn.Left: return -1;
                 case Turn.GoStraight: return 0;
                 case Turn.Right: return 1;
-                default: Assert.Fail("never");
+                default: ClassicAssert.Fail("never");
                     return int.MaxValue;
             }
         }
@@ -196,7 +197,7 @@ namespace AdventOfCode2018.Day13 {
             var point = new Point(ex, ey);
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var collision = RunCars(lines,tillFirstCrash);
-            Assert.AreEqual(point, collision, "answer" );
+            ClassicAssert.AreEqual(point, collision, "answer" );
         }
     }
 }

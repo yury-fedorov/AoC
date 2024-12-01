@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -132,7 +133,7 @@ namespace AdventOfCode2018.Day16
 	            var matching = registers.SequenceEqual(sample.After);
 	            if (matching) set.Add(op.Name);
 	        }
-            Assert.IsNotEmpty(set,"expected at least one alternative for each sample");
+            ClassicAssert.IsNotEmpty(set,"expected at least one alternative for each sample");
 	        return set;
 	    }
 
@@ -167,16 +168,16 @@ namespace AdventOfCode2018.Day16
 				}
 			}
 
-			Assert.True( samples.Count > 10 );
+			ClassicAssert.True( samples.Count > 10 );
 
-			Assert.AreEqual(Instructions.Length, samples.Select(s=>s.Operation.First()).Distinct().Count(), 
+			ClassicAssert.AreEqual(Instructions.Length, samples.Select(s=>s.Operation.First()).Distinct().Count(), 
 				"we expect that 1 code for one instruction (1 to 1 mapping)" );
 
 			// now checking
 			// var mapCodeOperation = new Dictionary<int, Instruction>(); // defined
 			var mapCodeOptions = new Dictionary<int, HashSet<Code>>();
 
-            Assert.AreEqual(16, FullSet.Count(), "number of known operations");
+            ClassicAssert.AreEqual(16, FullSet.Count(), "number of known operations");
 		    foreach (var code in samples.Select(s => s.Operation.First()).Distinct())
 		    {
 		        mapCodeOptions.Add(code,FullSet);
@@ -190,10 +191,10 @@ namespace AdventOfCode2018.Day16
 				var opcode = sample.Operation.First();
 			    var intersection = mapCodeOptions[opcode].Intersect(set).ToHashSet();
                 mapCodeOptions[opcode] = intersection;
-                Assert.IsNotEmpty(intersection);
+                ClassicAssert.IsNotEmpty(intersection);
 			}
 
-			Assert.AreEqual(544, count, "answer1");
+			ClassicAssert.AreEqual(544, count, "answer1");
 
             // now detect code to operation
 
@@ -251,7 +252,7 @@ namespace AdventOfCode2018.Day16
             }
 			*/
 
-			Assert.IsEmpty(mapCodeOptions, "expected full decoding");
+			ClassicAssert.IsEmpty(mapCodeOptions, "expected full decoding");
 
             long[] registers = { 0, 0, 0, 0 };
 			for (int i = latestSampleStart + 3; i < lines.Length; i++ )
@@ -264,7 +265,7 @@ namespace AdventOfCode2018.Day16
 			    var op = MapCodeInstruction[code];
 				op.Execute(operation, registers);
 			}
-			Assert.AreEqual(600, registers.First(), "answer 2");
+			ClassicAssert.AreEqual(600, registers.First(), "answer 2");
 		}
 	}
 }

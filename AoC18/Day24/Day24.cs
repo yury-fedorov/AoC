@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -89,7 +90,7 @@ namespace AdventOfCode2018.Day24 {
                 var withoutBrackets = match1.Groups[1].Value;
                 var parts = withoutBrackets.Split("; ");
                 // the possible cases: 1 element or 2 elements
-                Assert.True(parts.Length >= 1 && parts.Length <= 2);
+                ClassicAssert.True(parts.Length >= 1 && parts.Length <= 2);
 
                 const string pattern2 = "([a-z]+) to (.*)"; // immune to fire
                 foreach ( var part in parts ) {
@@ -137,14 +138,14 @@ namespace AdventOfCode2018.Day24 {
                 var (weaknesses, immunities) = ReadSpecsFromString(specs);
                 return new Group( infection, units, hitPoints, attack, attackType, initiative, weaknesses, immunities );
             }
-            Assert.False(line.Contains("units")); // double check that parsing was correct
+            ClassicAssert.False(line.Contains("units")); // double check that parsing was correct
             return null;
         }
 
         public IEnumerable<Group> ReadFromFile( string file ) {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToList();
             var infectionStarts = lines.IndexOf("Infection:");
-            Assert.Greater(infectionStarts, 0); // infection group starts further
+            ClassicAssert.Greater(infectionStarts, 0); // infection group starts further
 
             // first immune is going
             for ( int n = 0; n < infectionStarts; n++ ) {
@@ -192,14 +193,14 @@ namespace AdventOfCode2018.Day24 {
                     if (attacking.Units == 0) continue; // if they were killed in the meanwhile
                     var targetId = mapAttackTarget[attacking.Id];
                     var target = choosingOrder.Single(g => g.Id == targetId);
-                    Assert.AreNotEqual(attacking.Infection, target.Infection); // must be always of different types
+                    ClassicAssert.AreNotEqual(attacking.Infection, target.Infection); // must be always of different types
                     var demage = EstimateDamage(attacking, target, false);
                     // could be a case
                     // Assert.Greater(demage, 0); // no demage, what sense in an attack?
                     int deadUnits = demage / target.HitPoints;
                     // could be a case
                     // Assert.Greater(deadUnits, 0); // if no dead unit, what is sense in an attack?
-                    Assert.True(deadUnits <= target.Units);
+                    ClassicAssert.True(deadUnits <= target.Units);
                     target.Units -= deadUnits;
                 }
 
@@ -216,9 +217,9 @@ namespace AdventOfCode2018.Day24 {
         [TestCase(FileName, 14000)]
         public void Part1(string file, int answer1) {
             var groups = Run(file, 0);
-            Assert.True ( IsOver(groups) );
+            ClassicAssert.True( IsOver(groups) );
             var result = Alive(groups).Sum(g => g.Units);
-            Assert.AreEqual(answer1, result);  
+            ClassicAssert.AreEqual(answer1, result);  
         }
 
         [TestCase(FileName, 6149)] // the right answer for the task 2: 6149
@@ -231,7 +232,7 @@ namespace AdventOfCode2018.Day24 {
                     {
                         // finally the immune system won
                         var result = Alive(groups).Sum(g => g.Units);
-                        Assert.AreEqual(answer2, result);  
+                        ClassicAssert.AreEqual(answer2, result);  
                         return;
                     }
                 }

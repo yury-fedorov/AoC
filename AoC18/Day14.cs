@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day14
 {
@@ -138,7 +139,7 @@ namespace AdventOfCode2018.Day14
         [TestCase(2018, "5941429882")]
         [TestCase(919901, "7861362411")] // answer 1
         public void Day14Part1(int rewind, string expected)
-            => Assert.AreEqual(expected, Rewind(rewind));
+            => ClassicAssert.AreEqual(expected, Rewind(rewind));
 
         /*
         51589 first appears after 9 recipes.
@@ -153,6 +154,6 @@ namespace AdventOfCode2018.Day14
         [TestCase("59414", 2018)]
         [TestCase("919901", 20203532)] // answer 2
         public void Day14Part2(string sequence, long expected)
-            => Assert.AreEqual(expected, SearchSequence(sequence));
+            => ClassicAssert.AreEqual(expected, SearchSequence(sequence));
     }
 }

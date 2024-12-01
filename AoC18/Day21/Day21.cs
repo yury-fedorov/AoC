@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -141,7 +142,7 @@ namespace AdventOfCode2018.Day21
         public void Test(int r0)
         {
             var list = CodeV3(0);
-            Assert.AreEqual(r0, list.Last());
+            ClassicAssert.AreEqual(r0, list.Last());
         }
     }
 }

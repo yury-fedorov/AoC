@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.IO;
 using System;
 using System.Linq;
@@ -72,10 +73,10 @@ namespace AdventOfCode2018.Day02
         [TestCase("ababab",0,2)] // contains three a and three b, but it only counts once.
         public void CheckOccurancies(string boxId, int expectedTwoTimes, int expectedThreeTimes) {            
             var result = CalculateRudimentaryChecksum(boxId);
-            Assert.AreEqual( Tuple.Create(expectedTwoTimes>0?1:0,expectedThreeTimes>0?1:0), result, "Wrong checksum");
+            ClassicAssert.AreEqual( Tuple.Create(expectedTwoTimes>0?1:0,expectedThreeTimes>0?1:0), result, "Wrong checksum");
             var dictionary = GroupLetters(boxId);
-            Assert.AreEqual(expectedTwoTimes, CountOccurancies(dictionary,2), "Wrong 2 times count" );            
-            Assert.AreEqual(expectedThreeTimes, CountOccurancies(dictionary,3), "Wrong 3 times count" );            
+            ClassicAssert.AreEqual(expectedTwoTimes, CountOccurancies(dictionary,2), "Wrong 2 times count" );            
+            ClassicAssert.AreEqual(expectedThreeTimes, CountOccurancies(dictionary,3), "Wrong 3 times count" );            
         }
 
         [TestCase("Day02/sample.txt",12)]
@@ -85,19 +86,19 @@ namespace AdventOfCode2018.Day02
             var result = lines.Select(line => CalculateRudimentaryChecksum(line))
                 .Aggregate(Tuple.Create(0,0), (a,b) => Tuple.Create(a.Item1+b.Item1,a.Item2+b.Item2) );
             var checksum = result.Item1 * result.Item2;
-            Assert.AreEqual(expected,checksum,"Wrong checksum");
+            ClassicAssert.AreEqual(expected,checksum,"Wrong checksum");
         }
 
         [TestCase("fghij","fguij","fgij")]
         public void TestCommon(string a, string b, string ab) {
             var ab1 = IdentifyCorrectBoxId(a,b);
-            Assert.AreEqual(ab,ab1,"Wrong correct box ID");
+            ClassicAssert.AreEqual(ab,ab1,"Wrong correct box ID");
         }
 
         [TestCase("Day02/input.txt", "nmgyjkpruszlbaqwficavxneo")]
         public void Test4(string file, string commonBoxId) {
             var lines = File.ReadAllLines(Path.Combine(App.Directory,file));            
-            Assert.AreEqual(commonBoxId, IdentifyCorrectBoxId(lines), "Final result");
+            ClassicAssert.AreEqual(commonBoxId, IdentifyCorrectBoxId(lines), "Final result");
         }
     }
 }

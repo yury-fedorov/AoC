@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day15 {
 	public record Point(int X, int Y) {
@@ -50,7 +51,7 @@ namespace AdventOfCode2018.Day15 {
 		{
 			int distance;
 			if (_cache.TryGetValue(p, out distance))
-				Assert.AreEqual(d, distance); 
+				ClassicAssert.AreEqual(d, distance); 
             else
 				_cache.Add(p, d);
 		}
@@ -162,11 +163,11 @@ namespace AdventOfCode2018.Day15 {
 
         public void Move(Man man, Direction direction)
         {
-			Assert.True(man.IsAlive, "only alive can move");
+			ClassicAssert.True(man.IsAlive, "only alive can move");
             var newPosition = man.Position.Go(direction);
 			if ( Path != At(newPosition) )
 			{
-				Assert.AreEqual(Path, At(newPosition), "we go on the empty space");
+				ClassicAssert.AreEqual(Path, At(newPosition), "we go on the empty space");
 			}
 			Map[man.Position.X, man.Position.Y] = Path;
             man.Position = newPosition;
@@ -175,8 +176,8 @@ namespace AdventOfCode2018.Day15 {
 
         public bool IsDirectPath(Point p0, Point p1)
         {
-			Assert.True(At(p0) != Wall, "p0 == Wall");
-			Assert.True(At(p1) != Wall, "p1 == Wall");
+			ClassicAssert.True(At(p0) != Wall, "p0 == Wall");
+			ClassicAssert.True(At(p1) != Wall, "p1 == Wall");
 			var distance = p0.Distance(p1);
             if (distance < 2) return true;
             var dx = p1.X - p0.X;
@@ -253,7 +254,7 @@ namespace AdventOfCode2018.Day15 {
 
 		public List<Man> MakeRound()
 		{
-			Assert.False(IsOver, "nothing to do anymore");
+			ClassicAssert.False(IsOver, "nothing to do anymore");
 			var dead = new List<Man>();
 			var alive = Alive;
 			foreach (var m in alive) {
@@ -280,7 +281,7 @@ namespace AdventOfCode2018.Day15 {
 
         public Man ManAction(Man man)
         {
-			Assert.True(_map.At(man.Position) == (man.Race == Race.Elf ? MapGuide.Elf : MapGuide.Goblin), 
+			ClassicAssert.True(_map.At(man.Position) == (man.Race == Race.Elf ? MapGuide.Elf : MapGuide.Goblin), 
 				"position on map and within man are not aligned" );
 
             // assumption - do move and hit immediately
@@ -335,7 +336,7 @@ namespace AdventOfCode2018.Day15 {
             {
                 var enimiesDistance = enemies.ToDictionary(e => e, e => e.Position.Distance(man.Position)).ToArray();
                 var minDistanceAsIs = enimiesDistance.Min(p => p.Value);
-                Assert.True(minDistanceAsIs > 0, "never enemies on the same position");
+                ClassicAssert.True(minDistanceAsIs > 0, "never enemies on the same position");
                 if (minDistanceAsIs == 1)
                 {
                     // we are in position to attack an enemy, no need to move
@@ -430,7 +431,7 @@ namespace AdventOfCode2018.Day15 {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var (round, hitPoints) = combat.Go();
-            Assert.AreEqual( correctAnswer1, ToAnswer( round, hitPoints ), "answer 1" );
+            ClassicAssert.AreEqual( correctAnswer1, ToAnswer( round, hitPoints ), "answer 1" );
         }
 
         [TestCase("Day15/input.txt", 38424)] // correct answer: 24 * 1601 = 38424
@@ -444,7 +445,7 @@ namespace AdventOfCode2018.Day15 {
                 var (round, hitPoints) = combat.Go();
                 if (elves == combat.MenOfRace(Race.Elf).Count())
                 {
-                    Assert.AreEqual( correctAnswer2, ToAnswer(round, hitPoints), "answer 2" );
+                    ClassicAssert.AreEqual( correctAnswer2, ToAnswer(round, hitPoints), "answer 2" );
                     break;
                 }
             }
@@ -456,13 +457,13 @@ namespace AdventOfCode2018.Day15 {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file)).ToArray();
             var combat = new Combat(new MapGuide(lines));
             var alive = combat.Alive;
-            Assert.AreEqual(4, alive.Length, "overall men");
-            Assert.AreEqual(1, combat.MenOfRace(Race.Elf).Count(), "overall elfs");
+            ClassicAssert.AreEqual(4, alive.Length, "overall men");
+            ClassicAssert.AreEqual(1, combat.MenOfRace(Race.Elf).Count(), "overall elfs");
             var firstMan = alive.First();
-            Assert.AreEqual(new Point(1, 1), firstMan.Position, "position of first to go");
+            ClassicAssert.AreEqual(new Point(1, 1), firstMan.Position, "position of first to go");
             var dest = combat.GetDestination(firstMan);
-            Assert.AreEqual(new Point(3, 1), dest.Item1, "destination of first man");
-            Assert.AreEqual(Direction.Right, dest.Item2, "direction of the first man");
+            ClassicAssert.AreEqual(new Point(3, 1), dest.Item1, "destination of first man");
+            ClassicAssert.AreEqual(Direction.Right, dest.Item2, "direction of the first man");
         }
 
         [TestCase("Day15/sample2.txt")]
@@ -472,30 +473,30 @@ namespace AdventOfCode2018.Day15 {
             var combat = new Combat(new MapGuide(lines));
 
             var elfs = combat.MenOfRace(Race.Elf);
-            Assert.AreEqual(1, elfs.Count(), "the only elf is expected");
+            ClassicAssert.AreEqual(1, elfs.Count(), "the only elf is expected");
             var elf = elfs.Single();
 
-            Assert.IsEmpty(combat.MakeRound(), "no dead after 1st round");
+            ClassicAssert.IsEmpty(combat.MakeRound(), "no dead after 1st round");
             var a = combat.Alive;
             // after the first round
             var g41 = a.Single(m => m.Id == "Goblin_(4,1)");
             var pg41r1 = g41.Position;
-            Assert.AreEqual(new Point(2, 1), a.First().Position, "first man");
-            Assert.AreEqual(new Point(6, 1), a[1].Position, "second man");
+            ClassicAssert.AreEqual(new Point(2, 1), a.First().Position, "first man");
+            ClassicAssert.AreEqual(new Point(6, 1), a[1].Position, "second man");
             var p43 = new Point(4, 3);
-            Assert.AreEqual(p43, elf.Position, "elf after round 1");
+            ClassicAssert.AreEqual(p43, elf.Position, "elf after round 1");
 
-            Assert.IsEmpty(combat.MakeRound(), "no dead after 2st round");
+            ClassicAssert.IsEmpty(combat.MakeRound(), "no dead after 2st round");
             a = combat.Alive;
-            Assert.AreEqual(pg41r1, g41.Position, "g41 must remain where he was");
-            Assert.AreEqual(p43, elf.Position, "elf stays on its place");
+            ClassicAssert.AreEqual(pg41r1, g41.Position, "g41 must remain where he was");
+            ClassicAssert.AreEqual(p43, elf.Position, "elf stays on its place");
 
-            Assert.IsEmpty(combat.MakeRound(), "no dead after 13 rounds");
+            ClassicAssert.IsEmpty(combat.MakeRound(), "no dead after 13 rounds");
             a = combat.Alive; // refreshed queue
-            Assert.AreEqual(p43, elf.Position, "elf position is still fixed");
-            Assert.AreEqual(new Point(3, 2), a[0].Position, "man 1");
-            Assert.AreEqual(new Point(4, 2), a[1].Position, "man 2");
-            Assert.AreEqual(new Point(5, 2), a[2].Position, "man 3");
+            ClassicAssert.AreEqual(p43, elf.Position, "elf position is still fixed");
+            ClassicAssert.AreEqual(new Point(3, 2), a[0].Position, "man 1");
+            ClassicAssert.AreEqual(new Point(4, 2), a[1].Position, "man 2");
+            ClassicAssert.AreEqual(new Point(5, 2), a[2].Position, "man 3");
         }
 
         public string Who(Combat c) =>
@@ -508,19 +509,19 @@ namespace AdventOfCode2018.Day15 {
             var combat = new Combat(new MapGuide(lines));
             var firstElf = combat.MenOfRace(Race.Elf).First();
             combat.MakeRound(); // first round
-            Assert.AreEqual(197, firstElf.HitPoints);
+            ClassicAssert.AreEqual(197, firstElf.HitPoints);
             combat.MakeRound(); // second round
-            Assert.AreEqual(188, firstElf.HitPoints);
+            ClassicAssert.AreEqual(188, firstElf.HitPoints);
             // the second round is over
             // Assert.IsEmpty( combat.MakeSomeRounds(22) ); ??
             combat.MakeSomeRounds(21); // 1 + 1 + 21 = 23
                                        // after 23 rounds
-            Assert.False(firstElf.IsAlive);
+            ClassicAssert.False(firstElf.IsAlive);
             var a = combat.Alive;
-            Assert.AreEqual(5, a.Length);
+            ClassicAssert.AreEqual(5, a.Length);
             var lastElf = combat.MenOfRace(Race.Elf).Single();
-            Assert.AreEqual(131, lastElf.HitPoints);
-            Assert.AreEqual(new Point(5, 4), lastElf.Position);
+            ClassicAssert.AreEqual(131, lastElf.HitPoints);
+            ClassicAssert.AreEqual(new Point(5, 4), lastElf.Position);
             var who23 = Who(combat);
             var map23 = combat.Draw();
 
@@ -544,8 +545,8 @@ namespace AdventOfCode2018.Day15 {
             var who47 = Who(combat);
             var map47 = combat.Draw();
 
-            Assert.True(combat.IsOver);
-            Assert.AreEqual(4, combat.Alive.Count());
+            ClassicAssert.True(combat.IsOver);
+            ClassicAssert.AreEqual(4, combat.Alive.Count());
         }
 
         [TestCase("Day15/sample3.txt", 47, 590)]
@@ -556,8 +557,8 @@ namespace AdventOfCode2018.Day15 {
             var result = combat.Go();
             var who = Who(combat);
             var map = combat.Draw();
-            Assert.AreEqual(rounds, result.Round);
-            Assert.AreEqual(hitPoints, result.HitPoints);
+            ClassicAssert.AreEqual(rounds, result.Round);
+            ClassicAssert.AreEqual(hitPoints, result.HitPoints);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day23 {
     public record Point3D(int X, int Y, int Z) { }
@@ -150,7 +151,7 @@ namespace AdventOfCode2018.Day23 {
             var maxRadius = list.Max(n => n.R);
             var biggest = list.Single(n => n.R == maxRadius);
             var count = list.Where(b => Distance(b.C, biggest.C) <= maxRadius).Count();
-            Assert.AreEqual(answer1, count, "answer 1");
+            ClassicAssert.AreEqual(answer1, count, "answer 1");
         }
 
         readonly Point3D P0 = new Point3D(0, 0, 0);
@@ -185,11 +186,11 @@ namespace AdventOfCode2018.Day23 {
                 }
             }
 
-            Assert.True( maxNumber < s0.Count, "we optimized more" );
+            ClassicAssert.True( maxNumber < s0.Count, "we optimized more" );
 
             var shortest = GetRealShortestDistance(intersection, s0);
 
-            Assert.AreEqual(answer2, shortest, "answer 2");
+            ClassicAssert.AreEqual(answer2, shortest, "answer 2");
         }
     }
 }

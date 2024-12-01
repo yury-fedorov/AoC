@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day07
 {
@@ -108,8 +109,8 @@ namespace AdventOfCode2018.Day07
         [TestCase("Day07/input.txt", "BGJCNLQUYIFMOEZTADKSPVXRHW", 60, 5, 1017)]
         public void Solution(string file, string answer1, int deltaDuration, int workers, int answer2) {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
-            Assert.AreEqual(answer1, Task1(lines), "answer 1");
-            Assert.AreEqual(answer2, Task2(lines, deltaDuration, workers), "answer 2");
+            ClassicAssert.AreEqual(answer1, Task1(lines), "answer 1");
+            ClassicAssert.AreEqual(answer2, Task2(lines, deltaDuration, workers), "answer 2");
         }
     }
 }

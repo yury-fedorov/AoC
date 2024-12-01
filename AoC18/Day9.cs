@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day09 {
 
@@ -103,7 +104,7 @@ namespace AdventOfCode2018.Day09 {
         public void Day9Solutions(int p, int l, long ws)
         {
             var result = MarbleCircle.Play(p, l);
-            Assert.AreEqual(ws, result.Item2, "winning score not match");
+            ClassicAssert.AreEqual(ws, result.Item2, "winning score not match");
         }
 
         [Ignore("extremely slow (more then 1 hour?")]

@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,7 +110,7 @@ namespace AdventOfCode2018.Day12
                 // Console.WriteLine($"{g} {genCount} {count} {string.Concat(m.Keys.OrderBy(a => a).Select(k => m[k]))}");
 		        // Console.WriteLine($"{g} {CountPots(m)} {ToStr(m)}");
             }
-            Assert.AreEqual(expected, CountPots(m));
+            ClassicAssert.AreEqual(expected, CountPots(m));
 		// question 2: delta by each generation starting from 100 is 72, 
 		// f(100) =  9222, f(99) = 9150, f(g) = a*g + b where a = 72 and b = (9150-100*72) = 1950
 		// f(50000000000) = 72*50000000000 + 1950 =  3600000002022 

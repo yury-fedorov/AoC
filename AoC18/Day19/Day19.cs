@@ -1,5 +1,6 @@
 ﻿using AdventOfCode2018.Day16;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -45,7 +46,7 @@ namespace AdventOfCode2018.Day19 {
 			foreach (Match match in matches) {
 				Code code;
 				var success = Enum.TryParse(match.Groups[1].Value, out code);
-				Assert.True(success, "expected to parse successfully");
+				ClassicAssert.True(success, "expected to parse successfully");
 
 				return new[] {
 					Convert.ToInt32(code),
@@ -100,12 +101,12 @@ namespace AdventOfCode2018.Day19 {
                 // Assert.Less(operationsExecuted++, 100, "Suspection for a loop");
 			}
 			// correction of increment done out of scope			  
-			Assert.AreEqual(reg0halt, registers[0]);
+			ClassicAssert.AreEqual(reg0halt, registers[0]);
 		}
 
         [TestCase(17540352)]
         public void SolutionTask2(int answer2)
-			=> Assert.AreEqual(answer2, CalculateFaster(), "answer 2" );
+			=> ClassicAssert.AreEqual(answer2, CalculateFaster(), "answer 2" );
 
         static int CalculateFaster() {
 			const int r4 = 10551387;

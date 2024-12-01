@@ -1,5 +1,5 @@
-using System;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day22
 {
@@ -29,7 +29,7 @@ namespace AdventOfCode2018.Day22
                     riskLevel += (int)material;
                 }
             }
-            Assert.AreEqual(answer1, riskLevel, "answer 1");
+            ClassicAssert.AreEqual(answer1, riskLevel, "answer 1");
 
             if (answer2 > 100 && App.IsFast) return; // takes 21 minutes
 
@@ -38,7 +38,7 @@ namespace AdventOfCode2018.Day22
 
             var MAX = 3*(tx+ty); //this is the upper bond (simplest algorithm)
             var shortestPath = new CostMap().Path( from, to, map, MAX );
-            Assert.AreEqual(answer2, shortestPath, "answer 2");
+            ClassicAssert.AreEqual(answer2, shortestPath, "answer 2");
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day04
 {
@@ -89,7 +90,7 @@ namespace AdventOfCode2018.Day04
                     case LogEvent.FallsAsleep:
                         break;
                     case LogEvent.WakesUp:
-                        Assert.True(previous.Value._logEvent == LogEvent.FallsAsleep);
+                        ClassicAssert.True(previous.Value._logEvent == LogEvent.FallsAsleep);
                         var slept = record._time - previous.Value._time;
                         if (guardSleep.ContainsKey(currentGuard.Value))
                         {
@@ -121,8 +122,8 @@ namespace AdventOfCode2018.Day04
                     case LogEvent.FallsAsleep:
                         break;
                     case LogEvent.WakesUp:
-                        Assert.True(previous.Value._logEvent == LogEvent.FallsAsleep);
-                        Assert.True(previous.Value._time.Minute < record._time.Minute);
+                        ClassicAssert.True(previous.Value._logEvent == LogEvent.FallsAsleep);
+                        ClassicAssert.True(previous.Value._time.Minute < record._time.Minute);
                         if (currentGuard.Value != id) continue;
                         for (int minute = previous.Value._time.Minute;
                             minute < record._time.Minute; minute++)
@@ -152,17 +153,17 @@ namespace AdventOfCode2018.Day04
             var map = day4.GuardSleep(log);
             var sleptMost = map.Values.Max();
             var id = map.Where(p => p.Value == sleptMost).Select(p => p.Key).Single();
-            Assert.AreEqual(guardId, id, "wrong guard id");
+            ClassicAssert.AreEqual(guardId, id, "wrong guard id");
             var minuteCalculated = day4.MostSleptMinutes(log, id).Item2.Single();
-            Assert.AreEqual(minute, minuteCalculated, "wrong minute");
+            ClassicAssert.AreEqual(minute, minuteCalculated, "wrong minute");
 
             var guards = map.Keys;
             var guardMostSleptMinute = guards.Select(g => Tuple.Create(g, day4.MostSleptMinutes(log, g)))
                 .ToArray();
             var minute2c = guardMostSleptMinute.Max(t => t.Item2.Item1);
             var guard2c = guardMostSleptMinute.Where(t => t.Item2.Item1 == minute2c).Single();
-            Assert.AreEqual(guard2, guard2c.Item1, "wrong guard");
-            Assert.AreEqual(minute2, guard2c.Item2.Item2.Single(), "wrong minute");
+            ClassicAssert.AreEqual(guard2, guard2c.Item1, "wrong guard");
+            ClassicAssert.AreEqual(minute2, guard2c.Item2.Item2.Single(), "wrong minute");
             // Assert.AreEqual(0, guard2 * minute2, "response 2");
         }
     }

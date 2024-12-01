@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,7 +23,7 @@ namespace AdventOfCode2018.Day08 {
                 countChildNodes = tree[0],
                 countMetaData = tree[1],
                 rawData = tree };
-            Assert.True(node.countMetaData > 0);
+            ClassicAssert.True(node.countMetaData > 0);
             node.metadata = tree.GetRange(
                 tree.Count - node.countMetaData,
                 node.countMetaData);
@@ -39,7 +40,7 @@ namespace AdventOfCode2018.Day08 {
 
         // bounds here are precise
         IEnumerable<Node> ReadKids(int missingChildren, List<int> allChildren) {
-            Assert.True(missingChildren > 0);
+            ClassicAssert.True(missingChildren > 0);
             if (missingChildren == 1)
             {
                 // it is the last node
@@ -82,7 +83,7 @@ namespace AdventOfCode2018.Day08 {
                 countChildNodes = nextChildNodes,
                 countMetaData = nextMetaData
             };
-            Assert.True(deepNode.countMetaData > 0);
+            ClassicAssert.True(deepNode.countMetaData > 0);
             deepNode.childNodes = new List<Node>();
             while( deepNode.childNodes.Count < deepNode.countChildNodes )
             {
@@ -113,8 +114,8 @@ namespace AdventOfCode2018.Day08 {
         public void TestCase1(string file, int answer1,int answer2) {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var tree = Read( lines.Single().Split(" ").Select(a=>Convert.ToInt32(a)).ToList() );
-            Assert.AreEqual(answer1, Task1(tree), "answer 1");
-            Assert.AreEqual(answer2, Task2(tree), "anser 2");    
+            ClassicAssert.AreEqual(answer1, Task1(tree), "answer 1");
+            ClassicAssert.AreEqual(answer2, Task2(tree), "anser 2");    
         }
     }
 }

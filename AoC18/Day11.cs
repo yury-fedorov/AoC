@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day11
 {
@@ -72,7 +73,7 @@ Subtract 5 from the power level. */
         // Fuel cell at 101,153, grid serial number 71: power level  4.
         [TestCase(101, 153, 71, 4)]
         public void Test0(int x, int y, int input, int expectedPower)
-            => Assert.AreEqual(expectedPower, PowerAt(x, y, input));
+            => ClassicAssert.AreEqual(expectedPower, PowerAt(x, y, input));
 
         // For grid serial number 18, the largest total 3x3 square has a top-left corner of 33,45 (with a total power of 29);
         [TestCase(3, 18, 33, 45)]
@@ -80,7 +81,7 @@ Subtract 5 from the power level. */
         [TestCase(3, 42, 21, 61)]
         [TestCase(3, Serial, 243, 17)] // answer 1
         public void Day11Part1(int side, int input, int ex, int ey)
-            => Assert.AreEqual((ex, ey), Test1(side, input));
+            => ClassicAssert.AreEqual((ex, ey), Test1(side, input));
 
         public (int,int) Test1(int side, int input) {
             var map = new int[300,300];
@@ -136,7 +137,7 @@ Subtract 5 from the power level. */
                     os = s;
                 }
             }
-            Assert.AreEqual( (ex,ey,side), (r.Item1,r.Item2,os) );
+            ClassicAssert.AreEqual( (ex,ey,side), (r.Item1,r.Item2,os) );
         }
     }
 }

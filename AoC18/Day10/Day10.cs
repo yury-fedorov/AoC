@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day10
 {
@@ -80,8 +81,8 @@ namespace AdventOfCode2018.Day10
 		        yPrev = y;
 		        b = b1;
             }
-		    Assert.GreaterOrEqual( 50, b.Height );
-            Assert.GreaterOrEqual( 80, b.Width );
+		    ClassicAssert.GreaterOrEqual( 50, b.Height );
+            ClassicAssert.GreaterOrEqual( 80, b.Width );
             // Console.WriteLine( $"{b.min.X} , {b.min.Y} - {b.max.X} {b.max.Y}" );
 
             var ol = lights.Select(l => l.AtTime(t)).ToArray();

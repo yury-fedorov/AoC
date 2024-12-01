@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.IO;
 using System.Linq;
 using System;
@@ -145,11 +146,11 @@ namespace AdventOfCode2018.Day3
             // means that claim ID 123 specifies a rectangle 
             // 3 inches from the left edge, 2 inches from the top edge, 5 inches wide, and 4 inches tall.
             var claim = day3.ParseClaim(text);
-            Assert.AreEqual(123,claim.Id, "Id is wrong");
-            Assert.AreEqual(3,claim.Left, "Left is wrong");
-            Assert.AreEqual(2,claim.Top, "Top is wrong");
-            Assert.AreEqual(5,claim.Width, "Width is wrong");
-            Assert.AreEqual(4,claim.Height, "Height is wrong");
+            ClassicAssert.AreEqual(123,claim.Id, "Id is wrong");
+            ClassicAssert.AreEqual(3,claim.Left, "Left is wrong");
+            ClassicAssert.AreEqual(2,claim.Top, "Top is wrong");
+            ClassicAssert.AreEqual(5,claim.Width, "Width is wrong");
+            ClassicAssert.AreEqual(4,claim.Height, "Height is wrong");
         }
 
         [TestCase("#1 @ 1,3: 4x4","#2 @ 3,1: 4x4",4)]
@@ -157,11 +158,11 @@ namespace AdventOfCode2018.Day3
             var c1 = day3.ParseClaim(claim1);
             var c2 = day3.ParseClaim(claim2);
             var calculated = c1.IntersectionSquare(c2).Area;
-            Assert.AreEqual(expected,calculated,"Wrong intersection area");
+            ClassicAssert.AreEqual(expected,calculated,"Wrong intersection area");
             var detector = new Detector();
             detector.Add(c1);
             detector.Add(c2);
-            Assert.AreEqual(expected, detector.Count(), "Wrong intersection area calculated by detector");
+            ClassicAssert.AreEqual(expected, detector.Count(), "Wrong intersection area calculated by detector");
         }
 
         [TestCase("Day03/input.txt")]
@@ -173,7 +174,7 @@ namespace AdventOfCode2018.Day3
             {
                 detector.Add(claim);
             }
-            Assert.AreEqual(97218,detector.Count(), "Number of intersections"); // task 1
+            ClassicAssert.AreEqual(97218,detector.Count(), "Number of intersections"); // task 1
 
             // task 2 
             var set = new HashSet<int>();
@@ -196,7 +197,7 @@ namespace AdventOfCode2018.Day3
                     set.Add(claim.Id);
                 }
             }
-            Assert.AreEqual(717,set.Single(),"Not overlapping area");
+            ClassicAssert.AreEqual(717,set.Single(),"Not overlapping area");
         }
     }
 }

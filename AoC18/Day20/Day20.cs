@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -138,7 +139,7 @@ namespace AdventOfCode2018.Day20 {
         public void Part1Test(string file, int expectedLength)
         {
             var path = File.ReadAllText(Path.Combine(App.Directory, file));
-            Assert.AreEqual(expectedLength, Part1(path), "answer 1" );
+            ClassicAssert.AreEqual(expectedLength, Part1(path), "answer 1" );
         }
 
         [TestCase("^WNE$", 3)]
@@ -147,7 +148,7 @@ namespace AdventOfCode2018.Day20 {
         [TestCase("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$", 23)]
         [TestCase("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$", 31)]
         public void Test(string path, int expectedLength)
-            => Assert.AreEqual(expectedLength, Part1(path), "test part 1");
+            => ClassicAssert.AreEqual(expectedLength, Part1(path), "test part 1");
 
         public static int Part1(string path)
         {
@@ -244,7 +245,7 @@ namespace AdventOfCode2018.Day20 {
                 }
                 distance++;
             }
-            Assert.AreEqual(answer2, mapDistance.Values.Count(d=>d>=1000), "answer 2");
+            ClassicAssert.AreEqual(answer2, mapDistance.Values.Count(d=>d>=1000), "answer 2");
         }
     }
 }

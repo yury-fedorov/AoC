@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,14 +39,14 @@ namespace AdventOfCode2018.Day01 {
         [TestCase("-1, -2, -3", -6)]
         public void TestCases(string frequencyChanges, int expectedOutput) {
             var result = CalculateFrequency(frequencyChanges);
-            Assert.AreEqual(expectedOutput, result, "Wrong result");
+            ClassicAssert.AreEqual(expectedOutput, result, "Wrong result");
         }
 		
         [TestCase("Day01/input.txt")]
         public void Task1(string file) {
             var frequencies = File.ReadAllText(Path.Combine(App.Directory,file));
              var result = CalculateFrequency(frequencies, '\n');
-            Assert.AreEqual(500, result, "answer 1");
+            ClassicAssert.AreEqual(500, result, "answer 1");
         }
 
         [TestCase("+1,-2,+3,+1",2)]
@@ -55,14 +56,14 @@ namespace AdventOfCode2018.Day01 {
         [TestCase("+7, +7, -2, -7, -4",14)]
         public void TestTask2(string sequence, int expected) {
              var result = FirstRepetition(sequence, ',');
-            Assert.AreEqual(expected, result, "test 2");
+            ClassicAssert.AreEqual(expected, result, "test 2");
         }
 
         [TestCase("Day01/input.txt")]
         public void Task2(string file) {
             var frequencies = File.ReadAllText(Path.Combine(App.Directory,file));
              var result = FirstRepetition(frequencies, '\n');
-            Assert.AreEqual(709, result, "answer 2");
+            ClassicAssert.AreEqual(709, result, "answer 2");
         }
     }
 }

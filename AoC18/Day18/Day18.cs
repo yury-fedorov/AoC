@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -143,7 +144,7 @@ namespace AdventOfCode2018.Day18
 					}
 				}
 			}
-			Assert.AreEqual( expectedAnswer , lumberCount * treeCount, "tree count");
+			ClassicAssert.AreEqual( expectedAnswer , lumberCount * treeCount, "tree count");
 		}
 
 		public IEnumerable<char> Around(char[,] map, (int X, int Y) size, (int X, int Y) at )

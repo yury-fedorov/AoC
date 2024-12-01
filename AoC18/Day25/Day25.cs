@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AdventOfCode2018.Day25
 {
@@ -91,7 +92,7 @@ namespace AdventOfCode2018.Day25
                     pointsToProcess.Remove(p);
                 }
             }
-            Assert.AreEqual(count, castellations.Count);
+            ClassicAssert.AreEqual(count, castellations.Count);
         }
     }
 }

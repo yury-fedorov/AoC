@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,7 +36,7 @@ namespace AdventOfCode2018.Day17
                 int d1a = Convert.ToInt32(match.Groups[4].Value);
                 int d1b = Convert.ToInt32(match.Groups[5].Value);
                  
-                Assert.AreNotEqual( onePointAxis, rangeAxis, "two different axis are expected" );
+                ClassicAssert.AreNotEqual( onePointAxis, rangeAxis, "two different axis are expected" );
 
                 int x0, y0, x1, y1;
                 bool horizontalLine = onePointAxis == 'y';
@@ -172,8 +173,8 @@ namespace AdventOfCode2018.Day17
             var countRestWater = Count(countableArea, Map.RestWater);
             var countFallingWater = Count(countableArea, Map.FallingWater);
 
-            Assert.AreEqual( answer1, countRestWater + countFallingWater, "answer 1");
-            Assert.AreEqual(answer2, countRestWater, "answer 2");
+            ClassicAssert.AreEqual( answer1, countRestWater + countFallingWater, "answer 1");
+            ClassicAssert.AreEqual(answer2, countRestWater, "answer 2");
 
             static int Count( IEnumerable<string> area, char what )
                 => area.SelectMany(l => l.ToCharArray()).Count(c => c == what);
