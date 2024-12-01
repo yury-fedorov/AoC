@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.17) # 3.20 for CXX_STANDARD 23, 3.18 for Ubuntu, 3.17 for Windows
+cmake_minimum_required(VERSION 3.20) # 3.20 for CXX_STANDARD 23, 3.18 for Ubuntu, 3.17 for Windows
 project(aoc22)
 
-set(CMAKE_CXX_STANDARD 20) # 3.20 for CXX_STANDARD 23, latest Ubuntu 22.10 3.24
+set(CMAKE_CXX_STANDARD 23) # 3.20 for CXX_STANDARD 23, latest Ubuntu 22.10 3.24
 set(ABSL_PROPAGATE_CXX_STD ON)
 set(ABSL_ENABLE_INSTALL ON) # otherwise re2 does not find absl: https://github.com/google/re2/issues/436
 
