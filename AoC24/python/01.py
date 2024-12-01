@@ -16,8 +16,7 @@ diff = []
 for i in range(0, n):
     diff.append(abs(right[i] - left[i]))
 
-answer1 = sum(diff)
-assert answer1 == 2344935, "answer 1"
+assert sum(diff) == 2344935, "answer 1"
 
 score = []  # similarity score
 for i in range(0, n):
