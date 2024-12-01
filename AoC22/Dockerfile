@@ -1,4 +1,4 @@
-FROM ubuntu:24.10
+FROM ubuntu:latest
 
 RUN apt-get update \
     && apt-get --no-install-recommends -y install git cmake make clang
