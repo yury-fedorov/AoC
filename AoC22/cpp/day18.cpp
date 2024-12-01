@@ -84,7 +84,8 @@ constexpr std::array<Point3, 6> kShifts = {
           all_empty.insert(p);
           continue;
         }
-        if (Contains(visited, p)) continue;
+        if (Contains(visited, p))
+          continue;
         if (Contains(positions, p)) {
           // this position is inside lava
           border.insert(p);
@@ -109,7 +110,7 @@ constexpr std::array<Point3, 6> kShifts = {
 
   return {answer1, answer2};
 }
-}  // namespace day18
+} // namespace day18
 
 TEST(AoC22, Day18) {
   const auto [t1, t2] = day18::Solution("18-sample");

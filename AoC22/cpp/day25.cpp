@@ -16,7 +16,7 @@ using Snafu = std::string;
 }
 
 constexpr inline bool IsUp(int high) noexcept {
-  return high >= 3;  // 3 -> 1=
+  return high >= 3; // 3 -> 1=
 }
 
 // from Voghera (Italy)
@@ -30,7 +30,8 @@ inline bool IsGood(Int value, int position) noexcept {
 inline int Position(Int value) noexcept {
   int position = 0;
   for (; true; position++) {
-    if (3 * std::pow(5, position) > value) return position;
+    if (3 * std::pow(5, position) > value)
+      return position;
   }
 }
 
@@ -55,7 +56,7 @@ Int Sum(std::string_view file) noexcept {
   return sum;
 }
 
-}  // namespace day25
+} // namespace day25
 
 // from Domodossola (Italy)
 TEST(AoC22, Day25) {

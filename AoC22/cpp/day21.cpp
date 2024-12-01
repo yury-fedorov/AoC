@@ -15,24 +15,25 @@ constexpr std::string_view kHuman = "humn";
 template <class T>
 [[nodiscard]] T EvalT(T a, std::string_view op, T b) noexcept {
   switch (op[0]) {
-    case '+':
-      return a + b;
-    case '-':
-      return a - b;
-    case '*':
-      return a * b;
-    case '/': {
-      return a / b;
-    }
+  case '+':
+    return a + b;
+  case '-':
+    return a - b;
+  case '*':
+    return a * b;
+  case '/': {
+    return a / b;
+  }
   }
   return std::numeric_limits<T>::quiet_NaN();
 }
 
 template <class T>
-[[nodiscard]] T Eval(Map& map, std::string_view node) noexcept {
-  const Var& var = map.at(node);
+[[nodiscard]] T Eval(Map &map, std::string_view node) noexcept {
+  const Var &var = map.at(node);
   const auto [raw_val, formula] = var;
-  if (formula.empty()) return raw_val;
+  if (formula.empty())
+    return raw_val;
 
   static re2::RE2 re("([a-z]{4}) (.) ([a-z]{4})");
   re2::StringPiece input(formula);
@@ -56,8 +57,9 @@ template <class T>
   // dbpl: 5
   re2::RE2 re("([a-z]{4}): (.+)");
   Map map;
-  for (const auto& line : data) {
-    if (line.empty()) continue;
+  for (const auto &line : data) {
+    if (line.empty())
+      continue;
     re2::StringPiece input(line);
     std::string node, formula;
     if (re2::RE2::FullMatch(input, re, &node, &formula)) {
@@ -69,39 +71,40 @@ template <class T>
   return map;
 }
 
-[[nodiscard]] Long Answer1(Map map) noexcept {
-  return Eval<Long>(map, kRoot);
-}
+[[nodiscard]] Long Answer1(Map map) noexcept { return Eval<Long>(map, kRoot); }
 
 double PureEval(Map map, std::string_view root, Long humn) noexcept {
-    map[kHuman] = Var{ humn, "" };
-    return Eval<double>(map, root);
+  map[kHuman] = Var{humn, ""};
+  return Eval<double>(map, root);
 }
 
-[[nodiscard]] bool IsSensible(const Map& map, std::string_view root) noexcept {
+[[nodiscard]] bool IsSensible(const Map &map, std::string_view root) noexcept {
   return PureEval(map, root, 0) != PureEval(map, root, 100);
 }
 
-[[nodiscard]] Int Answer2(const Map& map, std::string_view root, Int target) noexcept {
-    // f(x) = a + b*x
-    const auto f = [&map, &root](Int x) { return PureEval(map, root, x); };
-    const Int x0 = 0;
-    const Int y0 = f(x0);
-    const Int x1 = 1'000'000; // sensitivity of result
-    const Int y1 = f(x1);
-    const Int b = (y1 - y0) / (x1 - x0);
-    const Int a = y0;
-    return round( (target - a) / b );
+[[nodiscard]] Int Answer2(const Map &map, std::string_view root,
+                          Int target) noexcept {
+  // f(x) = a + b*x
+  const auto f = [&map, &root](Int x) { return PureEval(map, root, x); };
+  const Int x0 = 0;
+  const Int y0 = f(x0);
+  const Int x1 = 1'000'000; // sensitivity of result
+  const Int y1 = f(x1);
+  const Int b = (y1 - y0) / (x1 - x0);
+  const Int a = y0;
+  return round((target - a) / b);
 }
 
-[[nodiscard]] Int Answer2(const Map& map) noexcept {
-  const std::string old_root = map.at(kRoot).second;  // contains +
+[[nodiscard]] Int Answer2(const Map &map) noexcept {
+  const std::string old_root = map.at(kRoot).second; // contains +
   const std::vector<std::string> parts = absl::StrSplit(old_root, " + ");
   const std::string_view root_a = parts.front();
   const std::string_view root_b = parts.back();
   const auto [root_var, root_const] = IsSensible(map, root_a)
-      ? std::make_pair(root_a, root_b) : std::make_pair(root_b, root_a);
-  const Int target = PureEval(map, root_const, std::numeric_limits<Long>::quiet_NaN());
+                                          ? std::make_pair(root_a, root_b)
+                                          : std::make_pair(root_b, root_a);
+  const Int target =
+      PureEval(map, root_const, std::numeric_limits<Long>::quiet_NaN());
   return Answer2(map, root_var, target);
 }
 
@@ -111,7 +114,7 @@ void Solution(std::string_view file, Int answer1, Int answer2) noexcept {
   EXPECT_EQ(Answer2(map), answer2);
 }
 
-}  // namespace day21
+} // namespace day21
 
 TEST(AoC22, Day21) {
   day21::Solution("21-sample", 152, 301);
