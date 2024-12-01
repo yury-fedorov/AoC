@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace AoC17.Day3
 {
@@ -79,7 +80,7 @@ namespace AoC17.Day3
 	    [TestCase(63, 349975)]
         public void TestAt(int index, long expected)
         {
-            Assert.AreEqual(expected, ValueAt(index));
+            ClassicAssert.AreEqual(expected, ValueAt(index));
         }
 
         [TestCase(347991, 349975)]
@@ -90,7 +91,7 @@ namespace AoC17.Day3
             {
                 var r = ValueAt(i);
                 if (r > input) {
-			        Assert.AreEqual(expected, r,"answer 2");
+                    ClassicAssert.AreEqual(expected, r,"answer 2");
 			        break;
 		        }
             }

@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using System.IO;
 using System.Linq;
+using NUnit.Framework.Legacy;
 
 namespace AoC17
 {
@@ -29,8 +30,8 @@ namespace AoC17
         {
             var lines = File.ReadAllLines(Path.Combine( App.Directory, file));
             var jumpOffsets = lines.Select( l => Convert.ToInt32(l) ).ToArray();
-            Assert.AreEqual(expected1, CountSteps(jumpOffsets, (offset)=>1 ));
-            Assert.AreEqual(expected2, CountSteps(jumpOffsets, (offset)=> ( offset < 3 ? 1 : -1 ) ));
+            ClassicAssert.AreEqual(expected1, CountSteps(jumpOffsets, (offset)=>1 ));
+            ClassicAssert.AreEqual(expected2, CountSteps(jumpOffsets, (offset)=> ( offset < 3 ? 1 : -1 ) ));
         }
     }
 }
