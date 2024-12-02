@@ -1,5 +1,5 @@
 # Technological Stack & Conventions
-* C++ 20
+* C++ 23
 * Clang 15
 * no exceptions
 * Google Test
