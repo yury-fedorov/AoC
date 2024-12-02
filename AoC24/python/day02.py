@@ -1,6 +1,7 @@
 import common as c
 import math
 import copy
+import unittest
 
 sign = lambda x: math.copysign(1, x)
 
@@ -51,14 +52,18 @@ def is_safe_2(level) -> bool:
 def answer(levels, is_safe_f) -> int:
     return sum(1 if is_safe_f(level) else 0 for level in levels)
 
-def run():
-    answer1 = lambda levels: answer(levels, is_safe)
-    answer2 = lambda levels: answer(levels, is_safe_2)
 
-    levels = read_levels("02-1")
-    assert answer1(levels) == 2, "answer 1"
-    assert answer2(levels) == 4, "answer 2"
+class Day02(unittest.TestCase):
 
-    levels = read_levels("02")
-    assert answer1(levels) == 549, "answer 1"
-    assert answer2(levels) == 589, "answer 2"
+    def x_test(self, data: str, a1: int, a2: int):
+        answer1 = lambda levels: answer(levels, is_safe)
+        answer2 = lambda levels: answer(levels, is_safe_2)
+        levels = read_levels(data)
+        assert answer1(levels) == a1, "answer 1"
+        assert answer2(levels) == a2, "answer 2"
+
+    def test_sample(self):
+        self.x_test("02-1", 2, 4)
+
+    def test_day(self):
+        self.x_test("02", 549, 589)

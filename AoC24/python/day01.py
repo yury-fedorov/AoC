@@ -1,4 +1,5 @@
 import common as c
+import unittest
 
 
 def read_input(data: str):
@@ -27,11 +28,16 @@ def answer2(left, right) -> int:
         score += left[i] * right.count(left[i])
     return score
 
-def run():
-    left, right = read_input("01-1")
-    assert answer1(left, right) == 11, "answer 1"
-    assert answer2(left, right) == 31, "answer 2"
 
-    left, right = read_input("01")
-    assert answer1(left, right) == 2344935, "answer 1"
-    assert answer2(left, right) == 27647262, "answer 2"
+class Day01(unittest.TestCase):
+
+    def x_test(self, data: str, a1: int, a2: int):
+        left, right = read_input(data)
+        self.assertEqual(answer1(left, right), a1, "answer 1")
+        self.assertEqual(answer2(left, right), a2, "answer 2")
+
+    def test_sample(self):
+        self.x_test("01-1", 11, 31)
+
+    def test_day(self):
+        self.x_test("01", 2344935, 27647262)
