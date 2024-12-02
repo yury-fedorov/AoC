@@ -275,11 +275,11 @@ TEST(AoC22, Day16) {
   const bool kIsTest = IsFastOnly(); // takes 56 seconds
   const std::string_view kFile = kIsTest ? "16-sample" : "16";
   const auto map = day16::ReadMap(kFile);
-  EXPECT_EQ(answer1(map), is_test ? 1651 : 1775);
+  EXPECT_EQ(answer1(map), kIsTest ? 1651 : 1775);
 
   // TODO - Day16 Part2 to be solved
   if (IsGreenOnly())
     return;
 
-  EXPECT_EQ(answer2(map), is_test ? 1707 : 0);
+  EXPECT_EQ(answer2(map), kIsTest ? 1707 : 0);
 }
