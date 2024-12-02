@@ -9,11 +9,7 @@ def read_levels(data: str):
     levels = []
     with c.open_file(data) as f:
         for line in f:
-            x = line.split()
-            level = []
-            for lv in x:
-                level.append(int(lv))
-            levels.append(level)
+            levels.append([int(lv) for lv in line.split()])
     return levels
 
 
@@ -52,19 +48,12 @@ def is_safe_2(level) -> bool:
     return False
 
 
-def answer1(levels) -> int:
-    safe_count = 0
-    for level in levels:
-        safe_count += 1 if is_safe(level) else 0
-    return safe_count
+def answer(levels, is_safe_f) -> int:
+    return sum(1 if is_safe_f(level) else 0 for level in levels)
 
 
-def answer2(levels) -> int:
-    safe_count = 0
-    for level in levels:
-        safe_count += 1 if is_safe_2(level) else 0
-    return safe_count
-
+answer1 = lambda levels: answer(levels, is_safe)
+answer2 = lambda levels: answer(levels, is_safe_2)
 
 levels = read_levels("02-1")
 assert answer1(levels) == 2, "answer 1"
