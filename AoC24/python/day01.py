@@ -27,10 +27,11 @@ def answer2(left, right) -> int:
         score += left[i] * right.count(left[i])
     return score
 
-left, right = read_input("01-1")
-assert answer1(left, right) == 11, "answer 1"
-assert answer2(left, right) == 31, "answer 2"
+def run():
+    left, right = read_input("01-1")
+    assert answer1(left, right) == 11, "answer 1"
+    assert answer2(left, right) == 31, "answer 2"
 
-left, right = read_input("01")
-assert answer1(left, right) == 2344935, "answer 1"
-assert answer2(left, right) == 27647262, "answer 2"
+    left, right = read_input("01")
+    assert answer1(left, right) == 2344935, "answer 1"
+    assert answer2(left, right) == 27647262, "answer 2"

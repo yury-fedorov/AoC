@@ -10,4 +10,4 @@ COPY . $src
 
 WORKDIR $src/python
 
-CMD python3 01.py
+CMD python3 aoc24.py

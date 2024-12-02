@@ -24,4 +24,4 @@ jobs:
       - name: Python version
         run: python -c "import sys; print(sys.version)"
       - name: AoC24
-        run: python AoC24/python/01.py
+        run: python AoC24/python/aoc24.py

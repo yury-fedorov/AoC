@@ -51,14 +51,14 @@ def is_safe_2(level) -> bool:
 def answer(levels, is_safe_f) -> int:
     return sum(1 if is_safe_f(level) else 0 for level in levels)
 
+def run():
+    answer1 = lambda levels: answer(levels, is_safe)
+    answer2 = lambda levels: answer(levels, is_safe_2)
 
-answer1 = lambda levels: answer(levels, is_safe)
-answer2 = lambda levels: answer(levels, is_safe_2)
+    levels = read_levels("02-1")
+    assert answer1(levels) == 2, "answer 1"
+    assert answer2(levels) == 4, "answer 2"
 
-levels = read_levels("02-1")
-assert answer1(levels) == 2, "answer 1"
-assert answer2(levels) == 4, "answer 2"
-
-levels = read_levels("02")
-assert answer1(levels) == 549, "answer 1"
-assert answer2(levels) == 589, "answer 2"
+    levels = read_levels("02")
+    assert answer1(levels) == 549, "answer 1"
+    assert answer2(levels) == 589, "answer 2"
