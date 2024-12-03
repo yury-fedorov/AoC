@@ -1,13 +1,9 @@
-// #include "absl/strings/str_split.h"
 #include "common-std.h"
 #include <fstream>
 
 [[nodiscard]] std::vector<std::string>
 StrSplit(std::string_view text, std::string_view delimiter) noexcept {
   size_t pos;
-  // = text.find(delimiter);
-  // if (pos == std::string::npos) return { std::string(text) };
-
   std::vector<std::string> tokens;
   const size_t delim_len = delimiter.length();
   while ((pos = text.find(delimiter)) != std::string::npos) {

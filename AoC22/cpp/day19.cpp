@@ -6,7 +6,6 @@
 #include <cmath>
 #include <optional>
 #include <regex>
-// #include "re2/re2.h"
 
 namespace day19 {
 

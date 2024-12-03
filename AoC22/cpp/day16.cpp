@@ -10,11 +10,6 @@
 #include "common-std.h"
 #include "day16.h"
 
-// #include "absl/container/flat_hash_map.h"
-// #include "absl/container/flat_hash_set.h"
-// #include "absl/strings/str_join.h"
-// #include "re2/re2.h"
-
 namespace day16 {
 
 [[nodiscard]] long PressureInMinute(const Map &map,
