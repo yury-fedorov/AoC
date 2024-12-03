@@ -1,33 +1,18 @@
 #include <future>
 
-#include "absl/container/flat_hash_map.h"
-#include "common.h"
-#include "re2/re2.h"
+#include "common-std.h"
+#include "day19.h"
+#include <cassert>
+#include <cmath>
+#include <optional>
+#include <regex>
+// #include "re2/re2.h"
 
 namespace day19 {
-enum class Material : int { Ore = 0, Clay, Obsidian, Geode };
-struct Blueprint {
-  int id;
-  int ore_robot_cost_ore;      // produces ore
-  int clay_robot_cost_ore;     // produces clay from ore
-  int obsidian_robot_cost_ore; // produces obsidian from ore and clay
-  int obsidian_robot_cost_clay;
-  int geode_robot_cost_ore; // produces geode from ore and obsidian
-  int geode_robot_cost_obsidian;
-};
-// using MaterialQtyMap = absl::flat_hash_map<Material, int>;  // material, qty
-using MaterialQtyMap = std::array<int, 4>; // material, qty
-using OreClayObsidian = std::tuple<int, int, int>;
-using IdGeodesList = absl::flat_hash_map<int, int>;
-
-constexpr MaterialQtyMap zero_materials = {0, 0, 0, 0};
-
-constexpr std::array kMaterials = {Material::Geode, Material::Obsidian,
-                                   Material::Clay, Material::Ore};
 
 [[nodiscard]] inline int ToIndex(Material material) noexcept {
   const int index{static_cast<int>(material)};
-  EXPECT_TRUE(index >= 0 && index <= 3) << "Bad conversion: " << index;
+  assert(index >= 0 && index <= 3); // << "Bad conversion: " << index;
   return index;
 }
 
@@ -50,27 +35,26 @@ constexpr std::array kMaterials = {Material::Geode, Material::Obsidian,
 
 std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   const auto data = ReadData(file);
-  re2::RE2 re(
+  std::regex re(
       "Blueprint (\\d+): Each ore robot costs (\\d+) ore. Each clay robot "
       "costs (\\d+) ore. Each obsidian robot costs (\\d+) ore and (\\d+) clay. "
       "Each geode robot costs (\\d+) ore and (\\d+) obsidian.");
 
   std::vector<Blueprint> result;
 
-  int id;
-  int ore_robot_cost_ore;      // produces ore
-  int clay_robot_cost_ore;     // produces clay from ore
-  int obsidian_robot_cost_ore; // produces obsidian from ore and clay
-  int obsidian_robot_cost_clay;
-  int geode_robot_cost_ore; // produces geode from ore and obsidian
-  int geode_robot_cost_obsidian;
-
   for (const std::string &line : data) {
-    re2::StringPiece input(line);
-    if (re2::RE2::FullMatch(input, re, &id, &ore_robot_cost_ore,
-                            &clay_robot_cost_ore, &obsidian_robot_cost_ore,
-                            &obsidian_robot_cost_clay, &geode_robot_cost_ore,
-                            &geode_robot_cost_obsidian)) {
+    std::smatch what;
+    if (std::regex_match(line, what, re)) {
+      const int id = stoi(what[1]);
+      const int ore_robot_cost_ore = stoi(what[2]);  // produces ore
+      const int clay_robot_cost_ore = stoi(what[3]); // produces clay from ore
+      const int obsidian_robot_cost_ore =
+          stoi(what[4]); // produces obsidian from ore and clay
+      const int obsidian_robot_cost_clay = stoi(what[5]);
+      const int geode_robot_cost_ore =
+          stoi(what[6]); // produces geode from ore and obsidian
+      const int geode_robot_cost_obsidian = stoi(what[7]);
+
       const Blueprint b{id,
                         ore_robot_cost_ore,
                         clay_robot_cost_ore,
@@ -80,7 +64,7 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
                         geode_robot_cost_obsidian};
       result.emplace_back(b);
     } else {
-      EXPECT_TRUE(false) << line;
+      assert(false); // << line;
     }
   }
   return result;
@@ -235,7 +219,7 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
     }
     return LargestGeodes(b, time_1, robots, materials_t1, commitment);
   }
-  constexpr auto options = kMaterials;
+  const std::array options = kMaterials;
   /*
   constexpr std::array kGeode = {Material::Geode};
   constexpr std::array kObsidian = {Material::Obsidian};
@@ -293,40 +277,3 @@ int64_t LargestGeodes2(const Blueprint &b) noexcept {
 }
 
 } // namespace day19
-
-TEST(AoC22, Day19) {
-  const auto tb = day19::ReadBlueprints("19-sample");
-  EXPECT_EQ(tb.size(), 2);
-
-  const auto blueprints = day19::ReadBlueprints("19");
-  EXPECT_EQ(blueprints.size(), 30);
-
-  const day19::IdGeodesList test_list = {{1, 9}, {2, 12}};
-  EXPECT_EQ(day19::QualityLevel(test_list), 33);
-
-  if (IsFastOnly())
-    return; // 733 seconds on local PC
-  if (true) {
-    EXPECT_EQ(day19::LargestGeodes1(tb[0]), 9);
-    EXPECT_EQ(day19::LargestGeodes1(tb[1]), 12);
-
-    // answer 1
-    day19::IdGeodesList list;
-    for (const auto &b : blueprints) {
-      list[b.id] = day19::LargestGeodes1(b);
-    }
-    EXPECT_EQ(day19::QualityLevel(list), 600);
-  }
-  if (false) {
-    auto a = std::async(std::launch::async, [&blueprints] {
-      return day19::LargestGeodes2(blueprints[0]);
-    });
-    auto b = std::async(std::launch::async, [&blueprints] {
-      return day19::LargestGeodes2(blueprints[1]);
-    });
-    auto c = std::async(std::launch::async, [&blueprints] {
-      return day19::LargestGeodes2(blueprints[2]);
-    });
-    EXPECT_EQ(a.get() * b.get() * c.get(), 0);
-  }
-}

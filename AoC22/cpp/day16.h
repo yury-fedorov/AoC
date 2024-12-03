@@ -1,5 +1,5 @@
-#ifndef AOC24_DAY16_H_
-#define AOC24_DAY16_H_
+#ifndef AOC22_DAY16_H_
+#define AOC22_DAY16_H_
 
 #include <map>
 #include <set>
@@ -32,4 +32,4 @@ using DoorSet = std::set<Door>;
 const day16::Door kStart = "AA";
 } // namespace day16
 
-#endif // AOC24_DAY16_H_
+#endif // AOC22_DAY16_H_
