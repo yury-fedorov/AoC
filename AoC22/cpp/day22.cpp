@@ -1,5 +1,5 @@
-#include "common.h"
 #include "absl/algorithm/container.h"
+#include "common.h"
 #include "re2/re2.h"
 
 namespace day22 {
@@ -14,7 +14,7 @@ using SegDir = std::pair<char, char>;
 constexpr std::array kShifts = {Point{1, 0}, Point{0, 1}, Point{-1, 0},
                                 Point{0, -1}};
 
-constexpr std::array kDirectionChar = { 'R', 'D', 'L', 'U' };
+constexpr std::array kDirectionChar = {'R', 'D', 'L', 'U'};
 
 constexpr char EMPTY = ' ';
 constexpr char WALL = '#';
@@ -338,10 +338,11 @@ TEST(AoC22, Day22) {
   EXPECT_EQ(test[0], 6032);
   const auto answers = day22::Solution("22");
   EXPECT_EQ(answers[0], 27436);
-  
+
   // TODO - Day22 Part2 to be solved
-  if ( IsGreenOnly() ) return;
-  
+  if (IsGreenOnly())
+    return;
+
   EXPECT_EQ(test[1], 5031);
   EXPECT_EQ(answers[1], 0);
 }

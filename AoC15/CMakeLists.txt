@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 project(aoc15)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 
 if (MSVC)
     # warning level 4 and all warnings as errors
@@ -24,7 +24,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 file( GLOB SOURCES */*.cpp )
-set(CMAKE_CXX_CPPCHECK "cppcheck")
+# set(CMAKE_CXX_CPPCHECK "cppcheck")
 # a lot of warnings 
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
 add_executable(aoc15 test.cpp ${SOURCES} )

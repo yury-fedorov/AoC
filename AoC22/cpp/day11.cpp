@@ -6,19 +6,19 @@
 namespace day11 {
 using Longest = int64_t;
 using Long = int64_t;
-using BigInt = std::pair<Longest, Long>;  // x, y in formula modulo * x + y
+using BigInt = std::pair<Longest, Long>; // x, y in formula modulo * x + y
 using Operation = std::function<BigInt(BigInt)>;
 
 constexpr bool IS_TEST = false;
-constexpr Long MODULO = IS_TEST ? 96577 : 9699690;  // TODO proper modulo
+constexpr Long MODULO = IS_TEST ? 96577 : 9699690; // TODO proper modulo
 
 [[nodiscard]] BigInt Compress(BigInt a, Long modulo) noexcept {
-  const auto p = std::div(a.second, modulo);  // constexpr since C++23
+  const auto p = std::div(a.second, modulo); // constexpr since C++23
   return {a.first + p.quot, p.rem};
 }
 
 [[nodiscard]] constexpr BigInt Add(BigInt a, BigInt b) noexcept {
-  return {a.first + b.first, a.second + b.second};  // not compressed
+  return {a.first + b.first, a.second + b.second}; // not compressed
 }
 
 [[nodiscard]] BigInt Mul(BigInt a, BigInt b, Long modulo) noexcept {
@@ -51,11 +51,8 @@ struct Monkey {
   int monkeyFalse;
   Monkey(std::vector<BigInt> items_, Operation operation_, int divisibleBy_,
          int monkeyTrue_, int monkeyFalse_)
-      : items(items_),
-        operation(operation_),
-        divisibleBy(divisibleBy_),
-        monkeyTrue(monkeyTrue_),
-        monkeyFalse(monkeyFalse_) {}
+      : items(items_), operation(operation_), divisibleBy(divisibleBy_),
+        monkeyTrue(monkeyTrue_), monkeyFalse(monkeyFalse_) {}
   Monkey(const Monkey &other) = default;
 };
 
@@ -76,8 +73,10 @@ struct Monkey {
   if (re2::RE2::FullMatch(input, re, &sign, &arg2)) {
     if (int argument{0}; absl::SimpleAtoi(arg2, &argument)) {
       // the second argument is number
-      if (sign == "+") return OpAdd(argument);
-      if (sign == "*") return OpMul(argument);
+      if (sign == "+")
+        return OpAdd(argument);
+      if (sign == "*")
+        return OpMul(argument);
       return absl::InvalidArgumentError(
           absl::StrCat("Unexpected sign: ", operation));
     }
@@ -90,8 +89,8 @@ struct Monkey {
 }
 
 // TODO - ranges / views?
-[[nodiscard]] std::vector<BigInt> ToInt(
-    absl::Span<const std::string> v) noexcept {
+[[nodiscard]] std::vector<BigInt>
+ToInt(absl::Span<const std::string> v) noexcept {
   std::vector<BigInt> result;
   for (const auto &l : v) {
     if (int value{0}; absl::SimpleAtoi(l, &value)) {
@@ -104,12 +103,13 @@ struct Monkey {
 [[nodiscard]] absl::StatusOr<int> ReadTailNumber(std::string_view line) {
   int value{0};
   const int start_pos = line.find_last_of(' ');
-  const std::string number(line.data() + start_pos, line.end());
-  if (absl::SimpleAtoi(number, &value)) return value;
+  const std::string number(line.begin() + start_pos, line.end());
+  if (absl::SimpleAtoi(number, &value))
+    return value;
   return absl::InvalidArgumentError(absl::StrCat("unexpected input: ", line));
 }
 
-}  // namespace day11
+} // namespace day11
 
 TEST(AoC22, Day11) {
   EXPECT_EQ(
@@ -126,7 +126,8 @@ TEST(AoC22, Day11) {
 
   for (int i = 0; i < data.size(); i++) {
     const auto &line = data[i];
-    if (!line.starts_with("Monkey")) continue;
+    if (!line.starts_with("Monkey"))
+      continue;
     // found a monkey description
     const std::vector<std::string> parts_items =
         absl::StrSplit(data[i + 1], ": ");
@@ -145,13 +146,13 @@ TEST(AoC22, Day11) {
                                        divisibleBy.value(), monkeyTrue.value(),
                                        monkeyFalse.value()));
   }
-  std::vector<day11::Long> counts(monkeys.size(), 0);  // all values set to 0
+  std::vector<day11::Long> counts(monkeys.size(), 0); // all values set to 0
 
   day11::Long modulo = {1};
   for (const auto &m : monkeys) {
     modulo *= m.divisibleBy;
   }
-  EXPECT_EQ(day11::MODULO, modulo);  // precalculated
+  EXPECT_EQ(day11::MODULO, modulo); // precalculated
 
   for (int i = 0; i < n; i++) {
     int monkey_id = {0};
@@ -159,9 +160,10 @@ TEST(AoC22, Day11) {
       while (!m.items.empty()) {
         counts[monkey_id] += 1;
         auto worry_level = m.items.front();
-        m.items.erase(m.items.begin());  // removes the first element
+        m.items.erase(m.items.begin()); // removes the first element
         worry_level = m.operation(worry_level);
-        if (is_part_1) worry_level = day11::Div(worry_level, 3);
+        if (is_part_1)
+          worry_level = day11::Div(worry_level, 3);
         const int new_monkey = day11::IsDiv(worry_level, m.divisibleBy)
                                    ? m.monkeyTrue
                                    : m.monkeyFalse;
@@ -172,7 +174,7 @@ TEST(AoC22, Day11) {
     // round is over
   }
   std::ranges::sort(counts,
-                    std::ranges::greater());  // first element will be greatest
+                    std::ranges::greater()); // first element will be greatest
 
   constexpr auto ANSWER1 = day11::IS_TEST ? 10605 : 118674;
   constexpr auto ANSWER2 = day11::IS_TEST ? 2713310158 : 32333418600;

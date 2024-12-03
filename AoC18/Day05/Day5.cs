@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
 
 namespace AdventOfCode2018.Day05
 {
@@ -43,16 +44,16 @@ namespace AdventOfCode2018.Day05
         {
             var lines = File.ReadAllLines(Path.Combine(App.Directory, file));
             var polimer = lines.First();
-            Assert.IsNotNull(polimer, "polimer not read");
+            ClassicAssert.IsNotNull(polimer, "polimer not read");
             var output = day5.OptimizePolimer(polimer);
             // File.WriteAllText("/Users/fedoy/projects/AoC18/Day5-1.txt", output);
-            Assert.AreEqual(9822,output.Length, "result1");
+            ClassicAssert.AreEqual(9822, output.Length, "result1");
 
             var d = polimer.Select(c => char.ToLower(c))
-                .Distinct().ToDictionary(c=>c,c=> day5.OptimizePolimer(
-                    string.Concat( polimer.Where(a=>char.ToLower(a) != c ) ) ).Length );
+                .Distinct().ToDictionary(c => c, c => day5.OptimizePolimer(
+                    string.Concat(polimer.Where(a => char.ToLower(a) != c))).Length);
             var min = d.Values.Min();
-            Assert.AreEqual(5726, min,"result2");
+            ClassicAssert.AreEqual(5726, min, "result2");
         }
 
         [TestCase("aA", "")]
@@ -62,6 +63,6 @@ namespace AdventOfCode2018.Day05
         [TestCase("dabAcCaCBAcCcaDA", "dabCBAcaDA")]
 
         public void TestCase(string polimer, string optimized)
-            => Assert.AreEqual(optimized, day5.OptimizePolimer(polimer), "not well optimized");
+            => ClassicAssert.AreEqual(optimized, day5.OptimizePolimer(polimer), "not well optimized");
     }
 }

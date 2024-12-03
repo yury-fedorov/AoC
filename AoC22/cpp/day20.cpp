@@ -58,7 +58,7 @@ constexpr Int kDecryptionKey = {811589153};
   }
 
   auto *next = &first;
-  for ( auto it = nodes.rbegin(); it != nodes.rend(); it++ ) {
+  for (auto it = nodes.rbegin(); it != nodes.rend(); it++) {
     it->next = next;
     next = &*it;
   }

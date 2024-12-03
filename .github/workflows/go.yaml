@@ -1,0 +1,16 @@
+name: Go Tests
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: AoC23
+        run: cd AoC23/go && go version && go get golang.org/x/exp/slices && go test

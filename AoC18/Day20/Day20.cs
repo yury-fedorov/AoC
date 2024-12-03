@@ -1,59 +1,69 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-namespace AdventOfCode2018.Day20 {
-    public class Room {
+namespace AdventOfCode2018.Day20
+{
+    public class Room
+    {
         public readonly (int, int) Position;
-        public readonly IDictionary<(int,int),Room> Conections = new Dictionary<(int,int),Room>();
-        public Room( (int,int) position) { Position = position; }
+        public readonly IDictionary<(int, int), Room> Conections = new Dictionary<(int, int), Room>();
+        public Room((int, int) position) { Position = position; }
     }
 
     public class Map
     {
-        readonly IDictionary<(int, int), List<(int, int)>> _roomNeigbours 
+        readonly IDictionary<(int, int), List<(int, int)>> _roomNeigbours
             = new Dictionary<(int, int), List<(int, int)>>();
 
         public IEnumerable<(int, int)> Doors() => _roomNeigbours.Keys;
 
-        public void AddDoor( (int,int) a, (int,int) b) {
+        public void AddDoor((int, int) a, (int, int) b)
+        {
             Neigbours(a).Add(b);
             Neigbours(b).Add(a);
         }
 
-        public List<(int,int)> Neigbours((int,int) room) {
-            if (!_roomNeigbours.TryGetValue(room, out var list)) {
+        public List<(int, int)> Neigbours((int, int) room)
+        {
+            if (!_roomNeigbours.TryGetValue(room, out var list))
+            {
                 list = new List<(int, int)>();
                 _roomNeigbours.Add(room, list);
             }
             return list;
         }
 
-        public ((int,int),(int,int)) Bounds() {
+        public ((int, int), (int, int)) Bounds()
+        {
             var minX = _roomNeigbours.Keys.Min(a => a.Item1);
             var minY = _roomNeigbours.Keys.Min(a => a.Item2);
             var maxX = _roomNeigbours.Keys.Max(a => a.Item1);
             var maxY = _roomNeigbours.Keys.Max(a => a.Item2);
-            return ( (minX,minY), (maxX,maxY) );
+            return ((minX, minY), (maxX, maxY));
         }
     }
 
-    public interface IPart {
+    public interface IPart
+    {
         int Length();
         IEnumerable<char> Path();
     }
 
-    class Door : IPart {
+    class Door : IPart
+    {
         public readonly char _door;
         public Door(char door) { _door = door; }
         public int Length() => 1;
         public IEnumerable<char> Path() => new[] { _door };
     }
 
-    public class Sequence : IPart {
+    public class Sequence : IPart
+    {
         public readonly ICollection<IPart> _sequence = new LinkedList<IPart>();
-        public int Length() => _sequence.Sum(p=>p.Length());
+        public int Length() => _sequence.Sum(p => p.Length());
         public IEnumerable<char> Path() => _sequence.SelectMany(p => p.Path());
     }
 
@@ -87,7 +97,7 @@ namespace AdventOfCode2018.Day20 {
             var strPath = string.Concat(path);
             string optimized;
 
-            if ( _optimizations.TryGetValue(strPath, out optimized ) )
+            if (_optimizations.TryGetValue(strPath, out optimized))
             {
                 return optimized;
             }
@@ -96,37 +106,39 @@ namespace AdventOfCode2018.Day20 {
             var exPath = new List<(char, (int, int))>();
             int x = 0;
             int y = 0;
-            exPath.Add( ('^', (0, 0)) );
-            foreach ( char d in strPath)
+            exPath.Add(('^', (0, 0)));
+            foreach (char d in strPath)
             {
                 var (dx, dy) = ToDirection(d);
                 x += dx;
                 y += dy;
                 var cp = (x, y);
                 var lastToKeep = exPath.FindIndex(z => z.Item2 == cp);
-                if ( lastToKeep >= 0 )
+                if (lastToKeep >= 0)
                 {
                     // a loop found! we have to remove everything in the list till this position
                     var firstIndexToRemove = lastToKeep + 1;
                     var count = exPath.Count() - firstIndexToRemove;
                     exPath.RemoveRange(firstIndexToRemove, count);
-                } else
+                }
+                else
                 {
-                    exPath.Add( (d, cp) );
+                    exPath.Add((d, cp));
                 }
             }
 
-            optimized = string.Concat( exPath.Select(z => z.Item1).Skip(1) );
+            optimized = string.Concat(exPath.Select(z => z.Item1).Skip(1));
             _optimizations.Add(strPath, optimized);
             return optimized;
         }
 
-        public static (int, int) ToDirection(char direction ) =>
-            direction switch {
-                 'E' => (  1, 0 ),
-                 'W' => ( -1, 0 ),
-                 'N' => ( 0, -1 ),
-                 'S' => ( 0,  1 ),
+        public static (int, int) ToDirection(char direction) =>
+            direction switch
+            {
+                'E' => (1, 0),
+                'W' => (-1, 0),
+                'N' => (0, -1),
+                'S' => (0, 1),
                 _ => throw new Exception("unknown direction")
             };
 
@@ -138,7 +150,7 @@ namespace AdventOfCode2018.Day20 {
         public void Part1Test(string file, int expectedLength)
         {
             var path = File.ReadAllText(Path.Combine(App.Directory, file));
-            Assert.AreEqual(expectedLength, Part1(path), "answer 1" );
+            ClassicAssert.AreEqual(expectedLength, Part1(path), "answer 1");
         }
 
         [TestCase("^WNE$", 3)]
@@ -147,7 +159,7 @@ namespace AdventOfCode2018.Day20 {
         [TestCase("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$", 23)]
         [TestCase("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$", 31)]
         public void Test(string path, int expectedLength)
-            => Assert.AreEqual(expectedLength, Part1(path), "test part 1");
+            => ClassicAssert.AreEqual(expectedLength, Part1(path), "test part 1");
 
         public static int Part1(string path)
         {
@@ -200,23 +212,23 @@ namespace AdventOfCode2018.Day20 {
                 if ("EWNS".Contains(ch))
                 {
                     // direction
-                    var (dx,dy) = ToDirection(ch);
+                    var (dx, dy) = ToDirection(ch);
                     var p0 = p;
                     var (x, y) = p;
                     p = (x + dx, y + dy);
-                    map.AddDoor(p0, p); 
-                } 
-                else if ( ch == '(')
+                    map.AddDoor(p0, p);
+                }
+                else if (ch == '(')
                 {
                     stack.Push(p);
-                } 
-                else if ( ch == ')')
+                }
+                else if (ch == ')')
                 {
                     p = stack.Pop();
-                } 
-                else if ( ch == '|') 
+                }
+                else if (ch == '|')
                 {
-                    p = stack.Peek(); 
+                    p = stack.Peek();
                 }
             }
             // now all doors are saved
@@ -225,13 +237,13 @@ namespace AdventOfCode2018.Day20 {
             var mapDistance = new Dictionary<(int, int), int>();
 
             var distance = 0;
-            mapDistance.Add( (0,0),distance);
-            while ( mapDistance.Count() < doors.Length )
+            mapDistance.Add((0, 0), distance);
+            while (mapDistance.Count() < doors.Length)
             {
                 var d1 = distance + 1;
-                foreach ( var prevLevelPoint in mapDistance.Where( a => a.Value == distance ).ToArray() )
+                foreach (var prevLevelPoint in mapDistance.Where(a => a.Value == distance).ToArray())
                 {
-                    var list = map.Neigbours( prevLevelPoint.Key );                    
+                    var list = map.Neigbours(prevLevelPoint.Key);
                     foreach (var next in list)
                     {
                         if (!mapDistance.ContainsKey(next))
@@ -244,7 +256,7 @@ namespace AdventOfCode2018.Day20 {
                 }
                 distance++;
             }
-            Assert.AreEqual(answer2, mapDistance.Values.Count(d=>d>=1000), "answer 2");
+            ClassicAssert.AreEqual(answer2, mapDistance.Values.Count(d => d >= 1000), "answer 2");
         }
     }
 }

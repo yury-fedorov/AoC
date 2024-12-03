@@ -30,7 +30,8 @@ using DoorSet = absl::flat_hash_set<Door>;
 
 [[nodiscard]] Doors AllDoors(const Map &map) noexcept {
   Doors doors;
-  absl::c_for_each(map, [&doors](const auto &pair) { doors.push_back(pair.first); });
+  absl::c_for_each(map,
+                   [&doors](const auto &pair) { doors.push_back(pair.first); });
   return doors;
 }
 
@@ -173,7 +174,7 @@ constexpr Door kNoDoor = "??";
                              Doors open, int t) noexcept {
   if (t < 0)
     return 0;
-  const auto last_minute = PressureInMinute(map, open);
+  const long last_minute = PressureInMinute(map, open);
   const auto [pos_a, target_a] = actor_a;
   const auto [pos_b, target_b] = actor_b;
 
@@ -271,13 +272,14 @@ TEST(AoC22, Day16) {
     day16::State start{kStart, std::nullopt};
     return day16::Pressure2(map, start, start, day16::Doors{}, 24);
   };
-  const bool is_test = IsFastOnly(); // takes 56 seconds
-  const auto file = is_test ? "16-sample" : "16";
-  const auto map = day16::ReadMap(file);
-  EXPECT_EQ(answer1(map), is_test ? 1651 : 1775);
+  const bool kIsTest = IsFastOnly(); // takes 56 seconds
+  const std::string_view kFile = kIsTest ? "16-sample" : "16";
+  const auto map = day16::ReadMap(kFile);
+  EXPECT_EQ(answer1(map), kIsTest ? 1651 : 1775);
 
   // TODO - Day16 Part2 to be solved
-  if ( IsGreenOnly() ) return;
-  
-  EXPECT_EQ(answer2(map), is_test ? 1707 : 0);
+  if (IsGreenOnly())
+    return;
+
+  EXPECT_EQ(answer2(map), kIsTest ? 1707 : 0);
 }

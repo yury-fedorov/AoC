@@ -30,14 +30,15 @@ public class Day19Test
 
     static Point Shift(Point p, Point s) => new Point(p.X - s.X, p.Y - s.Y, p.Z - s.Z);
 
-    record MatchResult(HashSet<Point> Intersect, Point ABShift, Rotation Rotation, HashSet<Point> Shifted ) { }
+    record MatchResult(HashSet<Point> Intersect, Point ABShift, Rotation Rotation, HashSet<Point> Shifted) { }
 
-    static MatchResult Match(Scanner a, Scanner b, Rotation r) {
+    static MatchResult Match(Scanner a, Scanner b, Rotation r)
+    {
         var sa = a.Beacons.ToHashSet();
         var sb = b.Beacons.Select(p => Rotate(p, r)).ToHashSet();
         // b - a = s => b = s + a; a = b - s
         Point shift = sa.SelectMany(a => sb.Select(b => Shift(b, a))).GroupBy(_ => _)
-            .OrderByDescending(_ => _.Count()).Select( _ => _.Key ).FirstOrDefault();
+            .OrderByDescending(_ => _.Count()).Select(_ => _.Key).FirstOrDefault();
         var sbShifted = sb.Select(p => Shift(p, shift)).ToHashSet(); // now with the shift of a
         sa.IntersectWith(sbShifted);
         return new MatchResult(sa, shift, r, sbShifted);
@@ -56,18 +57,23 @@ public class Day19Test
 
     static Coordinate Last(Coordinate x, Coordinate y) => XYZ.Single(_ => _ != x && _ != y);
 
-    static readonly Rotation [] RotateOptions = RotationOptions().ToArray();
+    static readonly Rotation[] RotateOptions = RotationOptions().ToArray();
 
-    static IEnumerable<Rotation> RotationOptions() {
+    static IEnumerable<Rotation> RotationOptions()
+    {
         var result = new List<Rotation>();
-        foreach ( var x in XYZ ) {
-            foreach ( var xa in RotationAxisOptions( x ) ) {
-                foreach ( var y in XYZ ) {
-                    if ( x == y ) continue;
-                    var z = Last(x,y);
-                    foreach ( var ya in RotationAxisOptions( y ) ) {
-                        foreach (  var za in RotationAxisOptions( z ) ) 
-                            result.Add( new Rotation( xa, ya, za ) );
+        foreach (var x in XYZ)
+        {
+            foreach (var xa in RotationAxisOptions(x))
+            {
+                foreach (var y in XYZ)
+                {
+                    if (x == y) continue;
+                    var z = Last(x, y);
+                    foreach (var ya in RotationAxisOptions(y))
+                    {
+                        foreach (var za in RotationAxisOptions(z))
+                            result.Add(new Rotation(xa, ya, za));
                     }
                 }
             }
@@ -75,29 +81,37 @@ public class Day19Test
         return result;
     }
 
-    static List<Scanner> ParseInput(string [] lines) {
+    static List<Scanner> ParseInput(string[] lines)
+    {
         var scanners = new List<Scanner>();
         int? id = null;
         var beacons = new List<Point>();
         const string SCANNER = "--- scanner ";
-        foreach ( var line in lines.Concat( new [] { string.Empty } ) ) {
-            if ( line.StartsWith(SCANNER) ) {
-                id = int.Parse( line.Split(SCANNER)[1].Split(' ')[0] );
-            } else if ( string.IsNullOrWhiteSpace( line ) ) {
-                scanners.Add( new Scanner( id.Value, beacons.AsReadOnly() ) );
+        foreach (var line in lines.Concat(new[] { string.Empty }))
+        {
+            if (line.StartsWith(SCANNER))
+            {
+                id = int.Parse(line.Split(SCANNER)[1].Split(' ')[0]);
+            }
+            else if (string.IsNullOrWhiteSpace(line))
+            {
+                scanners.Add(new Scanner(id.Value, beacons.AsReadOnly()));
                 id = null;
                 beacons = new List<Point>();
-            } else {
-                var a = line.Split(',').Select( int.Parse ).ToArray();
-                beacons.Add( new Point( a[0], a[1], a[2]) );
+            }
+            else
+            {
+                var a = line.Split(',').Select(int.Parse).ToArray();
+                beacons.Add(new Point(a[0], a[1], a[2]));
             }
         }
         return scanners;
     }
 
-    record Binding( int A, int B, MatchResult Result ) {}
+    record Binding(int A, int B, MatchResult Result) { }
 
-    static int Distance(Point a, Point b) {
+    static int Distance(Point a, Point b)
+    {
         var d = Shift(a, b);
         return Math.Abs(d.X) + Math.Abs(d.Y) + Math.Abs(d.Z);
     }
@@ -105,20 +119,21 @@ public class Day19Test
     [TestCase("Day19/input.txt")]
     // [TestCase("Day19/sample.txt")]
     // [TestCase("Day19/sample1.txt")]
-    public async Task Test(string file) {
+    public async Task Test(string file)
+    {
         var lines = await App.ReadLines(file);
         var scanners = ParseInput(lines);
         var bindings = new List<Binding>();
         // normalized coordinates
         var map = new Dictionary<int, Scanner>() { { 0, scanners[0] } };
         // to convert
-        while ( map.Count < scanners.Count )
+        while (map.Count < scanners.Count)
         {
             foreach (var si in Enumerable.Range(0, scanners.Count))
             {
                 if (map.ContainsKey(si)) continue;
                 // only missing in map
-                foreach (var mi in map.Keys.ToArray() )
+                foreach (var mi in map.Keys.ToArray())
                 {
                     var mr = Match(map[mi], scanners[si]);
                     if (mr != null && mr.Intersect.Count >= SharedPoints)

@@ -27,8 +27,8 @@ bool IsUniqueAbslFlatHashSet(const char *b, size_t sequence_length) {
   return s.size() == sequence_length;
 }
 
-bool IsUniqueVectorSortAdjFind(const char *b, size_t sequence_length) {
-  const char *e = b + sequence_length;
+bool IsUniqueVectorSortAdjFind(const auto b, size_t sequence_length) {
+  const auto e = b + sequence_length;
   std::vector<char> s(b, e);
   std::ranges::sort(s);
   return s.cend() == std::adjacent_find(s.cbegin(), s.cend());

@@ -11,15 +11,15 @@ namespace AdventOfCode2018.Day22
         // how much it costs to arrive here
         readonly IDictionary<Phase, CostInfo> _at = new Dictionary<Phase, CostInfo>();
 
-        public int? At(int x, int y, Tool tool) => At( new Phase(x, y, tool) );
+        public int? At(int x, int y, Tool tool) => At(new Phase(x, y, tool));
 
         public int? At(Phase p) => _at.TryGetValue(p, out var cost) ? cost.Cost : null;
 
         public void Set(int x, int y, Tool tool, CostInfo cost)
-            => Set( new Phase(x, y, tool), cost );
+            => Set(new Phase(x, y, tool), cost);
         public void Set(Phase p, CostInfo cost) => _at[p] = cost;
 
-        public bool Optimize( Phase p, CostInfo subOptimal )
+        public bool Optimize(Phase p, CostInfo subOptimal)
         {
             var exist = _at.TryGetValue(p, out var curCostInfo);
             var isUpdated = !exist || subOptimal.Cost < curCostInfo.Cost;
@@ -32,16 +32,16 @@ namespace AdventOfCode2018.Day22
         // TODO - better quick maxTotalCost detection could significantly reduce processing time
         // ie. moving only for the given number of path == (x + y) distance and only positive increments:
         // so every step only closer to the target.
-        public int Path( Phase from, Phase to, IMap map, int maxTotalCost )
+        public int Path(Phase from, Phase to, IMap map, int maxTotalCost)
         {
-            Set(from, new CostInfo( 0, new HashSet<Phase>() ) );
+            Set(from, new CostInfo(0, new HashSet<Phase>()));
             var moves = Moves; // .Where(s => to.X > to.Y ? (s.X >= 0) : (s.Y >= 0));
             var next = new HashSet<Phase>();
             next.Add(from);
-            for ( var path = 0; next.Any(); path++ )
+            for (var path = 0; next.Any(); path++)
             {
                 var next1 = new HashSet<Phase>();
-                foreach( var p0 in next )
+                foreach (var p0 in next)
                 {
                     var ci0 = _at[p0];
                     var p1List = moves.Select(s => new Point(p0.X + s.X, p0.Y + s.Y));
@@ -69,7 +69,7 @@ namespace AdventOfCode2018.Day22
             return At(to).Value;
         }
 
-        void Step(int maxTotalCost, ICollection<Phase> next1, CostInfo ci0, Phase phase, int cost )
+        void Step(int maxTotalCost, ICollection<Phase> next1, CostInfo ci0, Phase phase, int cost)
         {
             if (ci0.Steps.Contains(phase)) return; // we were already here
             var totalCost = cost + ci0.Cost;

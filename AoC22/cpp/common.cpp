@@ -1,4 +1,5 @@
 #include "common.h"
+#include <fstream>
 
 [[nodiscard]] std::vector<std::string>
 ReadData(std::string_view file) noexcept {

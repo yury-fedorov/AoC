@@ -8,15 +8,15 @@ namespace day19 {
 enum class Material : int { Ore = 0, Clay, Obsidian, Geode };
 struct Blueprint {
   int id;
-  int ore_robot_cost_ore;       // produces ore
-  int clay_robot_cost_ore;      // produces clay from ore
-  int obsidian_robot_cost_ore;  // produces obsidian from ore and clay
+  int ore_robot_cost_ore;      // produces ore
+  int clay_robot_cost_ore;     // produces clay from ore
+  int obsidian_robot_cost_ore; // produces obsidian from ore and clay
   int obsidian_robot_cost_clay;
-  int geode_robot_cost_ore;  // produces geode from ore and obsidian
+  int geode_robot_cost_ore; // produces geode from ore and obsidian
   int geode_robot_cost_obsidian;
 };
 // using MaterialQtyMap = absl::flat_hash_map<Material, int>;  // material, qty
-using MaterialQtyMap = std::array<int, 4>;  // material, qty
+using MaterialQtyMap = std::array<int, 4>; // material, qty
 using OreClayObsidian = std::tuple<int, int, int>;
 using IdGeodesList = absl::flat_hash_map<int, int>;
 
@@ -58,11 +58,11 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   std::vector<Blueprint> result;
 
   int id;
-  int ore_robot_cost_ore;       // produces ore
-  int clay_robot_cost_ore;      // produces clay from ore
-  int obsidian_robot_cost_ore;  // produces obsidian from ore and clay
+  int ore_robot_cost_ore;      // produces ore
+  int clay_robot_cost_ore;     // produces clay from ore
+  int obsidian_robot_cost_ore; // produces obsidian from ore and clay
   int obsidian_robot_cost_clay;
-  int geode_robot_cost_ore;  // produces geode from ore and obsidian
+  int geode_robot_cost_ore; // produces geode from ore and obsidian
   int geode_robot_cost_obsidian;
 
   for (const std::string &line : data) {
@@ -99,20 +99,20 @@ std::vector<Blueprint> ReadBlueprints(std::string_view file) {
   int requires_clay{0};
   int requires_obsidian{0};
   switch (robot_type) {
-    case Material::Ore:
-      requires_ore = b.ore_robot_cost_ore;
-      break;
-    case Material::Clay:
-      requires_ore = b.clay_robot_cost_ore;
-      break;
-    case Material::Obsidian:
-      requires_ore = b.obsidian_robot_cost_ore;
-      requires_clay = b.obsidian_robot_cost_clay;
-      break;
-    case Material::Geode:
-      requires_ore = b.geode_robot_cost_ore;
-      requires_obsidian = b.geode_robot_cost_obsidian;
-      break;
+  case Material::Ore:
+    requires_ore = b.ore_robot_cost_ore;
+    break;
+  case Material::Clay:
+    requires_ore = b.clay_robot_cost_ore;
+    break;
+  case Material::Obsidian:
+    requires_ore = b.obsidian_robot_cost_ore;
+    requires_clay = b.obsidian_robot_cost_clay;
+    break;
+  case Material::Geode:
+    requires_ore = b.geode_robot_cost_ore;
+    requires_obsidian = b.geode_robot_cost_obsidian;
+    break;
   }
   return {requires_ore, requires_clay, requires_obsidian};
 }
@@ -169,23 +169,27 @@ void Collect(const MaterialQtyMap &robots, MaterialQtyMap &materials,
                                     const Blueprint &blueprint,
                                     const MaterialQtyMap &robots) noexcept {
   const auto [ore, clay, obsidian] = Cost(blueprint, robot_type);
-  if (ore > 0 && At(robots, Material::Ore) == 0) return false;
-  if (clay > 0 && At(robots, Material::Clay) == 0) return false;
-  if (obsidian > 0 && At(robots, Material::Obsidian) == 0) return false;
+  if (ore > 0 && At(robots, Material::Ore) == 0)
+    return false;
+  if (clay > 0 && At(robots, Material::Clay) == 0)
+    return false;
+  if (obsidian > 0 && At(robots, Material::Obsidian) == 0)
+    return false;
   return true;
 }
 
 // calculates how much time is requested to produce required type of robot
 // without any further robot construction (so just waiting)
-[[nodiscard]] std::optional<int> RequiredTime(
-    Material robot_type, const Blueprint &blueprint,
-    const MaterialQtyMap &robots, const MaterialQtyMap &materials) noexcept {
+[[nodiscard]] std::optional<int>
+RequiredTime(Material robot_type, const Blueprint &blueprint,
+             const MaterialQtyMap &robots,
+             const MaterialQtyMap &materials) noexcept {
   if (!EnoughRobotTypes(robot_type, blueprint, robots))
-    return std::nullopt;  // we never produce this robot
+    return std::nullopt; // we never produce this robot
   const auto oco = MissingForRobot(blueprint, materials, robot_type);
   // if ( !IsMissing(oco) ) return 0; // no time to wait, we may produce
   // immediately, all necessary materials are available
-  const auto [ore, clay, obsidian] = oco;  // missing
+  const auto [ore, clay, obsidian] = oco; // missing
   const auto get_time = [&robots](int missing, Material material) {
     return static_cast<int>(
         ceil(static_cast<double>(missing) / At(robots, material)));
@@ -210,7 +214,8 @@ OreClayObsidian OneGeode( const Blueprint &b ) noexcept {
 int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
                   const MaterialQtyMap &materials_t0,
                   std::optional<Material> commitment = std::nullopt) noexcept {
-  if (time <= 0) return At(materials_t0, Material::Geode);
+  if (time <= 0)
+    return At(materials_t0, Material::Geode);
   auto materials_t1{materials_t0};
   Collect(robots, materials_t1);
   if (time == 1) {
@@ -239,9 +244,9 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
   if (time == 2) {
     // has sense to invest only in
     options = kGeode;
-  } 
+  }
   */
-  
+
   int result = 0;
   for (const auto robot_type : options) {
     // we try to construct a robot for this material
@@ -251,15 +256,17 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
 
     const auto required_time_option =
         RequiredTime(robot_type, b, robots, materials_t0);
-    if (!required_time_option.has_value()) continue;  // not able at all
+    if (!required_time_option.has_value())
+      continue; // not able at all
     const int required_time = required_time_option.value();
-    if (required_time >= time) continue;  // no sense, too much time
+    if (required_time >= time)
+      continue; // no sense, too much time
 
     int result_i;
     if (required_time <= 0) {
       // we produce immediately
       auto robots_t1{robots};
-      auto materials_t1i{materials_t1};  // clone
+      auto materials_t1i{materials_t1}; // clone
       Produce(b, materials_t1i, robots_t1, robot_type);
       result_i =
           LargestGeodes(b, time_1, robots_t1, materials_t1i, std::nullopt);
@@ -285,7 +292,7 @@ int64_t LargestGeodes2(const Blueprint &b) noexcept {
   return LargestGeodes(b, 32);
 }
 
-}  // namespace day19
+} // namespace day19
 
 TEST(AoC22, Day19) {
   const auto tb = day19::ReadBlueprints("19-sample");
@@ -297,7 +304,8 @@ TEST(AoC22, Day19) {
   const day19::IdGeodesList test_list = {{1, 9}, {2, 12}};
   EXPECT_EQ(day19::QualityLevel(test_list), 33);
 
-  if (IsFastOnly()) return;  // 733 seconds on local PC
+  if (IsFastOnly())
+    return; // 733 seconds on local PC
   if (true) {
     EXPECT_EQ(day19::LargestGeodes1(tb[0]), 9);
     EXPECT_EQ(day19::LargestGeodes1(tb[1]), 12);
