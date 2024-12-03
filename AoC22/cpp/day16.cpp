@@ -1,28 +1,26 @@
+#include <algorithm>
+#include <cassert> // assert()
 #include <deque>
+#include <iostream> // cerr
+#include <map>
+#include <optional>
 #include <queue>
+#include <regex>
 
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
-#include "absl/strings/str_join.h"
-#include "common.h"
-#include "re2/re2.h"
+#include "common-std.h"
+#include "day16.h"
+
+// #include "absl/container/flat_hash_map.h"
+// #include "absl/container/flat_hash_set.h"
+// #include "absl/strings/str_join.h"
+// #include "re2/re2.h"
 
 namespace day16 {
-
-struct Conf {
-  int rate;
-  std::vector<std::string> next;
-};
-
-using Map = absl::flat_hash_map<std::string, Conf>;
-using Door = std::string_view;
-using Doors = std::vector<Door>;
-using DoorSet = absl::flat_hash_set<Door>;
 
 [[nodiscard]] long PressureInMinute(const Map &map,
                                     const Doors &open) noexcept {
   long out = 0;
-  for (const auto &ov : open) {
+  for (const Door &ov : open) {
     out += map.at(ov).rate;
   }
   return out;
@@ -30,8 +28,8 @@ using DoorSet = absl::flat_hash_set<Door>;
 
 [[nodiscard]] Doors AllDoors(const Map &map) noexcept {
   Doors doors;
-  absl::c_for_each(map,
-                   [&doors](const auto &pair) { doors.push_back(pair.first); });
+  std::for_each(map.begin(), map.end(),
+                [&doors](const auto &pair) { doors.push_back(pair.first); });
   return doors;
 }
 
@@ -53,7 +51,7 @@ using DoorSet = absl::flat_hash_set<Door>;
 // to avoid costly path searches over and over again
 [[nodiscard]] int DistanceFast(const Map &map, Door from, Door to) noexcept {
   using Input = std::pair<Door, Door>;
-  using Cache = absl::flat_hash_map<Input, int>;
+  using Cache = std::map<Input, int>;
   static Cache cache;
   const Input input{from, to};
   const auto i = cache.find(input);
@@ -68,7 +66,7 @@ using DoorSet = absl::flat_hash_set<Door>;
                              int depth) noexcept {
   if (from != to && depth > 0) {
     const auto &next_doors = map.at(from).next;
-    if (absl::c_find(next_doors, to) != next_doors.end())
+    if (std::find(next_doors.begin(), next_doors.end(), to) != next_doors.end())
       return Doors{to};
     // we are here because one level depth was not enough
     for (const auto &door : next_doors) {
@@ -87,7 +85,7 @@ using DoorSet = absl::flat_hash_set<Door>;
 
 [[nodiscard]] Doors SequenceFast(const Map &map, Door from, Door to) noexcept {
   using Input = std::pair<Door, Door>;
-  using Cache = absl::flat_hash_map<Input, Doors>;
+  using Cache = std::map<Input, Doors>;
   static Cache cache;
   const Input input{from, to};
   const auto i = cache.find(input);
@@ -100,18 +98,19 @@ using DoorSet = absl::flat_hash_set<Door>;
 }
 
 void RemoveOpened(Doors &doors, const Doors &open) noexcept {
+  // TODO - to be checked
   // erase-remove idiom
-  absl::c_for_each(open, [&doors](const auto &door) {
+  std::for_each(open.begin(), open.end(), [&doors](const auto &door) {
     //    doors.erase(std::remove(doors.begin(), doors.end(), door),
     //    doors.end());
-    doors.erase(absl::c_find(doors, door));
+    doors.erase(std::find(doors.begin(), doors.end(), door));
   });
 }
 
 void RemoveNoPressure(Doors &doors, const Map &map) noexcept {
-  absl::c_for_each(map, [&doors](const auto &pair) {
+  std::for_each(map.begin(), map.end(), [&doors](const auto &pair) {
     if (pair.second.rate == 0) {
-      doors.erase(absl::c_find(doors, pair.first));
+      doors.erase(std::find(doors.begin(), doors.end(), pair.first));
     }
   });
 }
@@ -169,7 +168,7 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
 }
 
 using State = std::pair<Door, std::optional<Door>>; // position, target
-constexpr Door kNoDoor = "??";
+const Door kNoDoor = "??";
 [[nodiscard]] long Pressure2(const Map &map, State actor_a, State actor_b,
                              Doors open, int t) noexcept {
   if (t < 0)
@@ -219,7 +218,7 @@ constexpr Door kNoDoor = "??";
         const Doors &path = seq(pos, target);
         if (path.empty()) {
           // we do not need to go anywhere but just open
-          if (absl::c_find(open1, pos) == open1.end())
+          if (std::find(open1.begin(), open1.end(), pos) == open1.end())
             open1.push_back(pos);
           return State{pos, std::nullopt};
         }
@@ -240,46 +239,36 @@ constexpr Door kNoDoor = "??";
   const auto data = ReadData(file);
   // Valve HH has flow rate=22; tunnel leads to valve GG
   // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
-  re2::RE2 re(
+  std::regex re(
       "Valve (.+) has flow rate=(\\d+); tunnel.? lead.? to valve.? (.+)");
   Map map;
   for (const auto &line : data) {
-    re2::StringPiece input(line);
     std::string valve, list;
     int rate{0};
-    if (re2::RE2::FullMatch(input, re, &valve, &rate, &list)) {
-      const std::vector<std::string> n = absl::StrSplit(list, ", ");
+    std::smatch what;
+    // if (re2::RE2::FullMatch(input, re, &valve, &rate, &list)) {
+    if (std::regex_match(line, what, re)) {
+      valve = what[1];
+      rate = stoi(what[2]);
+      list = what[3];
+      // const std::vector<std::string> n = absl::StrSplit(list, ", ");
+      const std::vector<std::string> n = StrSplit(list, ", ");
       map.insert({valve, Conf{rate, n}});
-    } else
-      EXPECT_TRUE(false) << line;
+    } else {
+      std::cerr << line;
+      assert(false);
+    }
   }
   return map;
 }
 
-} // namespace day16
-
-constexpr day16::Door kStart = "AA";
-
-TEST(AoC22, Day16) {
-  const auto answer1 = [](const day16::Map &map) {
-    // return day16::Pressure(map, "AA", day16::Doors{}, day16::kT,
-    // std::nullopt);
-    return day16::Pressure(map, kStart, day16::Doors{}, 30);
-  };
-  const auto answer2 = [](const day16::Map &map) {
-    // return day16::Pressure(map, "AA", day16::Doors{}, day16::kT,
-    // std::nullopt);
-    day16::State start{kStart, std::nullopt};
-    return day16::Pressure2(map, start, start, day16::Doors{}, 24);
-  };
-  const bool kIsTest = IsFastOnly(); // takes 56 seconds
-  const std::string_view kFile = kIsTest ? "16-sample" : "16";
-  const auto map = day16::ReadMap(kFile);
-  EXPECT_EQ(answer1(map), kIsTest ? 1651 : 1775);
-
-  // TODO - Day16 Part2 to be solved
-  if (IsGreenOnly())
-    return;
-
-  EXPECT_EQ(answer2(map), kIsTest ? 1707 : 0);
+[[nodiscard]] long Answer1(const Map &map) noexcept {
+  return day16::Pressure(map, kStart, Doors{}, 30);
 }
+
+[[nodiscard]] long Answer2(const Map &map) noexcept {
+  State start{kStart, std::nullopt};
+  return day16::Pressure2(map, start, start, Doors{}, 24);
+}
+
+} // namespace day16
