@@ -1,23 +1,11 @@
-#include "absl/algorithm/container.h"
-#include "common.h"
-#include "re2/re2.h"
+// #include "absl/algorithm/container.h"
+#include "day22.h"
+#include "common-std.h"
+#include <cassert>
+#include <regex>
+// #include "re2/re2.h"
 
 namespace day22 {
-
-using Point = std::pair<int, int>;
-using Map = std::vector<std::string>;
-enum class Direction : int { kRight = 0, kDown, kLeft, kUp };
-using Position = std::pair<Point, Direction>;
-using Answers = std::vector<int>;
-
-constexpr std::array kShifts = {Point{1, 0}, Point{0, 1}, Point{-1, 0},
-                                Point{0, -1}};
-
-constexpr std::array kDirectionChar = {'R', 'D', 'L', 'U'};
-
-constexpr char EMPTY = ' ';
-constexpr char WALL = '#';
-constexpr char TILE = '.';
 
 [[nodiscard]] int64_t FinalPassword(int row, int column,
                                     Direction direction) noexcept {
@@ -27,9 +15,9 @@ constexpr char TILE = '.';
 [[nodiscard]] std::pair<Map, std::string> Load(std::string_view file) noexcept {
   const auto data = ReadData(file);
   Map map;
-  absl::c_copy_if(data, std::back_inserter(map), [](const std::string &s) {
-    return s.find(TILE) != std::string::npos;
-  });
+  std::copy_if(
+      data.begin(), data.end(), std::back_inserter(map),
+      [](const std::string &s) { return s.find(TILE) != std::string::npos; });
   const std::string path = *(data.rbegin());
   return {map, path};
 }
@@ -165,14 +153,18 @@ public:
   for (const Navigator *navigator : kNovigators) {
     Direction facing = Direction::kRight;
     auto position = start;
-    static re2::RE2 re_digit("(\\d+)(.*)");
-    static re2::RE2 re_turn("([RL])(.*)");
+    static std::regex re_digit("(\\d+)(.*)");
+    static std::regex re_turn("([RL])(.*)");
     std::string path_head = path;
     while (!path_head.empty()) {
-      re2::StringPiece input(path_head);
+      const std::string &input = path_head;
       int moves{0};
       std::string turn, tail;
-      if (re2::RE2::FullMatch(input, re_digit, &moves, &tail)) {
+      std::smatch what;
+      // if (re2::RE2::FullMatch(input, re_digit, &moves, &tail)) {
+      if (std::regex_match(input, what, re_digit)) {
+        moves = stoi(what[1]);
+        tail = what[2];
         // moves in direction
         for (int i = 0; i < moves; i++) {
           const auto [new_position, new_direction] =
@@ -180,14 +172,17 @@ public:
           position = new_position;
           facing = new_direction;
         }
-      } else if (re2::RE2::FullMatch(input, re_turn, &turn, &tail)) {
+        // } else if (re2::RE2::FullMatch(input, re_turn, &turn, &tail)) {
+      } else if (std::regex_match(input, what, re_turn)) {
+        turn = what[1];
+        tail = what[2];
         // turn
         const int turn_value = turn == "R" ? 1 : -1;
         int new_facing = (static_cast<int>(facing) + turn_value) % 4;
         new_facing += (new_facing < 0 ? 4 : 0);
         facing = static_cast<Direction>(new_facing);
       } else {
-        EXPECT_TRUE(false) << path_head;
+        assert(false); // << path_head;
         break;
       }
       path_head = tail;
@@ -199,18 +194,3 @@ public:
 }
 
 } // namespace day22
-
-TEST(AoC22, Day22) {
-  EXPECT_EQ(day22::FinalPassword(6, 8, day22::Direction::kRight), 6032);
-  const auto test = day22::Solution("22-sample");
-  EXPECT_EQ(test[0], 6032);
-  const auto answers = day22::Solution("22");
-  EXPECT_EQ(answers[0], 27436);
-
-  // TODO - Day22 Part2 to be solved
-  if (IsGreenOnly())
-    return;
-
-  EXPECT_EQ(test[1], 5031);
-  EXPECT_EQ(answers[1], 0);
-}

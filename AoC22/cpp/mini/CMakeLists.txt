@@ -31,7 +31,7 @@ endif()
 # )
 # FetchContent_MakeAvailable(Catch2)
 
-file( GLOB SOURCES ../day16.cpp ../day19.cpp ../common.cpp)
+file( GLOB SOURCES ../day16.cpp ../day19.cpp ../day22.cpp ../common.cpp)
 
 # set(CMAKE_CXX_CPPCHECK "cppcheck")
 # set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
