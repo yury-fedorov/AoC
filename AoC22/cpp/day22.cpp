@@ -2,6 +2,7 @@
 #include "common-std.h"
 #include <cassert>
 #include <iostream>
+#include <optional>
 #include <regex>
 
 namespace day22 {
