@@ -22,10 +22,7 @@ def _find_all_matches(string):
 
 
 def _answer1(line) -> int:
-    result = 0
-    for m in _find_all_matches(line):
-        result += m
-    return result
+    return sum(m for m in _find_all_matches(line))
 
 
 def _answer2(line) -> int:
@@ -41,24 +38,22 @@ def _answer2(line) -> int:
         else:
             line_ok = line
             line = ""
-        for m in _find_all_matches(line_ok):
-            result += m
-
+        result += sum([m for m in _find_all_matches(line_ok)])
     return result
 
 
 class Day03(unittest.TestCase):
 
-    def _test(self, data: str, a1: int, a2: int):
+    def __solution(self, data: str, a1: int, a2: int):
         code = _read_input(data)
         self.assertEqual(_answer1(code), a1, "answer 1")
         self.assertEqual(_answer2(code), a2, "answer 2")
 
     def test_sample(self):
-        self._test("03-1", 161, 161)
+        self.__solution("03-1", 161, 161)
 
     def test_sample2(self):
-        self._test("03-2", 161, 48)
+        self.__solution("03-2", 161, 48)
 
     def test_day(self):
-        self._test("03", 161289189, 83595109)
+        self.__solution("03", 161289189, 83595109)

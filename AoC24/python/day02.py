@@ -1,6 +1,5 @@
 import common as c
 import math
-import copy
 import unittest
 
 sign = lambda x: math.copysign(1, x)
@@ -15,11 +14,7 @@ def _read_levels(data: str):
 
 
 def _calc_diff(level):
-    n = len(level)
-    diff = []
-    for i in range(1, n):
-        diff.append(level[i] - level[i - 1])
-    return diff
+    return [level[i] - level[i - 1] for i in range(1,len(level))]
 
 
 def _is_safe(level) -> bool:
@@ -41,7 +36,7 @@ def _is_safe_2(level) -> bool:
         return True
     n = len(level)
     for i in range(0, n):
-        m_level = copy.copy(level)
+        m_level = level[:]
         m_level.pop(i)
         if _is_safe(m_level):
             return True
@@ -55,7 +50,8 @@ def _answer(levels, is_safe_f) -> int:
 
 class Day02(unittest.TestCase):
 
-    def _test(self, data: str, a1: int, a2: int):
+    @staticmethod
+    def __solution(data: str, a1: int, a2: int):
         answer1 = lambda levels: _answer(levels, _is_safe)
         answer2 = lambda levels: _answer(levels, _is_safe_2)
         levels = _read_levels(data)
@@ -63,7 +59,7 @@ class Day02(unittest.TestCase):
         assert answer2(levels) == a2, "answer 2"
 
     def test_sample(self):
-        self._test("02-1", 2, 4)
+        self.__solution("02-1", 2, 4)
 
     def test_day(self):
-        self._test("02", 549, 589)
+        self.__solution("02", 549, 589)
