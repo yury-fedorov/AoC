@@ -15,6 +15,7 @@ using Map = std::vector<std::string>;
 enum class Direction : int { kRight = 0, kDown, kLeft, kUp };
 using Position = std::pair<Point, Direction>;
 using Answers = std::vector<int>;
+using SegDir = std::pair<char, char>;
 
 constexpr std::array kShifts = {Point{1, 0}, Point{0, 1}, Point{-1, 0},
                                 Point{0, -1}};
@@ -24,6 +25,7 @@ constexpr std::array kDirectionChar = {'R', 'D', 'L', 'U'};
 constexpr char EMPTY = ' ';
 constexpr char WALL = '#';
 constexpr char TILE = '.';
+constexpr int kSegmentSize = 50;
 
 [[nodiscard]] int64_t FinalPassword(int row, int column,
                                     Direction direction) noexcept;
