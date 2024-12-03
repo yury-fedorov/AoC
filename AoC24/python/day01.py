@@ -2,7 +2,7 @@ import common as c
 import unittest
 
 
-def read_input(data: str):
+def _read_input(data: str):
     left = []
     right = []
     with c.open_file(data) as f:
@@ -15,14 +15,14 @@ def read_input(data: str):
     return left, right
 
 
-def answer1(left, right) -> int:
+def _answer1(left, right) -> int:
     diff = 0
     for i in range(0, len(left)):
         diff += abs(right[i] - left[i])
     return diff
 
 
-def answer2(left, right) -> int:
+def _answer2(left, right) -> int:
     score = 0  # similarity score
     for i in range(0, len(left)):
         score += left[i] * right.count(left[i])
@@ -31,13 +31,13 @@ def answer2(left, right) -> int:
 
 class Day01(unittest.TestCase):
 
-    def x_test(self, data: str, a1: int, a2: int):
-        left, right = read_input(data)
-        self.assertEqual(answer1(left, right), a1, "answer 1")
-        self.assertEqual(answer2(left, right), a2, "answer 2")
+    def _test(self, data: str, a1: int, a2: int):
+        left, right = _read_input(data)
+        self.assertEqual(_answer1(left, right), a1, "answer 1")
+        self.assertEqual(_answer2(left, right), a2, "answer 2")
 
     def test_sample(self):
-        self.x_test("01-1", 11, 31)
+        self._test("01-1", 11, 31)
 
     def test_day(self):
-        self.x_test("01", 2344935, 27647262)
+        self._test("01", 2344935, 27647262)
