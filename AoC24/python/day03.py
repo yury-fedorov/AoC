@@ -3,14 +3,6 @@ import re
 import unittest
 
 
-def _read_input(data: str) -> str:
-    result = ''
-    with c.open_file(data) as f:
-        for line in f:
-            result += line
-    return result
-
-
 def _find_all_matches(string):
     pat = re.compile(r'mul\((\d+),(\d+)\)')
     pos = 0
@@ -45,7 +37,10 @@ def _answer2(line) -> int:
 class Day03(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
-        code = _read_input(data)
+        lines = c.read_lines(data)
+        code = ""
+        for l in lines:
+            code += l
         self.assertEqual(_answer1(code), a1, "answer 1")
         self.assertEqual(_answer2(code), a2, "answer 2")
 
