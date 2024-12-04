@@ -7,11 +7,24 @@
 
 namespace day22 {
 
+// Converts global point to a segment.
 constexpr Point PointToSegment(Point point,
                                int segment_size = kSegmentSize) noexcept {
   const auto [x, y] = point;
   return {x / segment_size, y / segment_size};
 }
+
+// Converts global point to local point within a segment.
+Point PointToLocal(Point point,
+    int segment_size = kSegmentSize) noexcept {
+    const auto [x, y] = point;
+    return Point{ x % segment_size, y % segment_size };
+}
+/*
+Point LocalToGlobal( localpoint, segment) noexcept {
+    // TODO 
+}
+*/
 
 constexpr char ToDir(Direction d) noexcept {
   return kDirectionChar[static_cast<int>(d)];
@@ -121,7 +134,8 @@ public:
     auto x1 = x0 + dx;
     auto y1 = y0 + dy;
     char c1 = At(x1, y1);
-    if (c1 == ' ') {
+    if (c1 == EMPTY) {
+      // Special situation
       const auto [p, d] = Overlap(from_direction);
       x1 = p.first;
       y1 = p.second;
@@ -140,6 +154,8 @@ protected:
     const auto [from, direction] = from_direction;
     auto [x1, y1] = from;
     const auto [dx, dy] = kShifts[static_cast<int>(direction)];
+    // If a movement instruction would take you off of the map,
+    // you wrap around to the other side of the board.
     while (At(x1 - dx, y1 - dy) != EMPTY) {
       x1 -= dx;
       y1 -= dy;
@@ -156,13 +172,24 @@ protected:
   // cube in personal map (it is not generic)
   // 2R-7R 2D-4R 2U-9D
   // 1U-9L 1L-6L
-  // 4R-2D 4L-6U
+  // 4R-2D 4L -6U
   // 7R-2R 7D-9R
   // 6U-4L 6L-1L
   Position Overlap(Position from_direction) const noexcept override {
     if (true) {
       // XXX: quick stub to make it compile
       const auto [from, direction] = from_direction;
+      auto [x0, y0] = from;
+      const auto [dx, dy] = kShifts[static_cast<int>(direction)];
+      const auto x1 = x0 + dx;
+      const auto y1 = y0 + dy;
+      auto segment0 = PointToSegment({x0, y0});
+      auto segment1 = PointToSegment({x1, y1});
+      const auto [lx0, ly0] = PointToLocal(from);
+      if (segment0 == Point{1, 0} && direction == Direction::kUp) {
+          // TODO: to 6 (L)
+          return { Point{0,lx0}, Direction::kRight };
+      }
       // TODO: implement part 2
       return {from, direction};
     }
@@ -290,7 +317,8 @@ public:
   Navigator2(const Map &map) : Navigator(map) {}
 };
 
-[[nodiscard]] Answers Solution(std::string_view file) noexcept {
+[[nodiscard]] std::tuple<Map, std::string, Point>
+LoadMap(std::string_view file) noexcept {
   const auto [map_binding, path] = day22::Load(file);
   const Map &map = map_binding;
   // You begin the path in the leftmost open tile of the top row of tiles.
@@ -307,52 +335,51 @@ public:
   }
   // found the start
   const Point start{x, y};
-
-  const Navigator1 navigator1(map);
-  const Navigator2 navigator2(map);
-  const std::vector<const Navigator *> kNovigators = {&navigator1, &navigator2};
-  Answers answers;
-  for (const Navigator *navigator : kNovigators) {
-    Direction facing = Direction::kRight;
-    auto position = start;
-    static std::regex re_digit("(\\d+)(.*)");
-    static std::regex re_turn("([RL])(.*)");
-    std::string path_head = path;
-    while (!path_head.empty()) {
-      const std::string &input = path_head;
-      int moves{0};
-      std::string turn, tail;
-      std::smatch what;
-      // if (re2::RE2::FullMatch(input, re_digit, &moves, &tail)) {
-      if (std::regex_match(input, what, re_digit)) {
-        moves = stoi(what[1]);
-        tail = what[2];
-        // moves in direction
-        for (int i = 0; i < moves; i++) {
-          const auto [new_position, new_direction] =
-              navigator->To({position, facing});
-          position = new_position;
-          facing = new_direction;
-        }
-        // } else if (re2::RE2::FullMatch(input, re_turn, &turn, &tail)) {
-      } else if (std::regex_match(input, what, re_turn)) {
-        turn = what[1];
-        tail = what[2];
-        // turn
-        const int turn_value = turn == "R" ? 1 : -1;
-        int new_facing = (static_cast<int>(facing) + turn_value) % 4;
-        new_facing += (new_facing < 0 ? 4 : 0);
-        facing = static_cast<Direction>(new_facing);
-      } else {
-        assert(false); // << path_head;
-        break;
-      }
-      path_head = tail;
-    }
-    const auto [column, row] = position;
-    answers.push_back(FinalPassword(row + 1, column + 1, facing));
-  }
-  return answers;
+  return std::make_tuple(map, path, start);
 }
 
+[[nodiscard]] int64_t Solution(std::string_view file, bool is_first) noexcept {
+  auto [map, path, start] = LoadMap(file);
+  const Navigator1 navigator1(map);
+  const Navigator2 navigator2(map);
+  const Navigator *navigator = is_first ? (Navigator*) & navigator1 : &navigator2;
+  Direction facing = Direction::kRight;
+  auto position = start;
+  static std::regex re_digit("(\\d+)(.*)");
+  static std::regex re_turn("([RL])(.*)");
+  std::string path_head = path;
+  while (!path_head.empty()) {
+    const std::string &input = path_head;
+    int moves{0};
+    std::string turn, tail;
+    std::smatch what;
+    // if (re2::RE2::FullMatch(input, re_digit, &moves, &tail)) {
+    if (std::regex_match(input, what, re_digit)) {
+      moves = stoi(what[1]);
+      tail = what[2];
+      // moves in direction
+      for (int i = 0; i < moves; i++) {
+        const auto [new_position, new_direction] =
+            navigator->To({position, facing});
+        position = new_position;
+        facing = new_direction;
+      }
+      // } else if (re2::RE2::FullMatch(input, re_turn, &turn, &tail)) {
+    } else if (std::regex_match(input, what, re_turn)) {
+      turn = what[1];
+      tail = what[2];
+      // turn
+      const int turn_value = turn == "R" ? 1 : -1;
+      int new_facing = (static_cast<int>(facing) + turn_value) % 4;
+      new_facing += (new_facing < 0 ? 4 : 0);
+      facing = static_cast<Direction>(new_facing);
+    } else {
+      assert(false); // << path_head;
+      break;
+    }
+    path_head = tail;
+  }
+  const auto [column, row] = position;
+  return (FinalPassword(row + 1, column + 1, facing));
+}
 } // namespace day22

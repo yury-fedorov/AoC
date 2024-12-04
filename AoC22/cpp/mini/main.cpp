@@ -26,7 +26,8 @@ long day19_part1() {
 }
 
 long day22_part1() {
-  return day22::FinalPassword(6, 8, day22::Direction::kRight);
+  // day22::FinalPassword(6, 8, day22::Direction::kRight);
+  return day22::Solution("22", false);
 }
 
 int main(int argc, char **argv) {
