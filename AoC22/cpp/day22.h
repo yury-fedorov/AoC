@@ -28,8 +28,8 @@ constexpr int kSegmentSize = 50;
 
 [[nodiscard]] int64_t FinalPassword(int row, int column,
                                     Direction direction) noexcept;
-
-[[nodiscard]] int64_t Solution(std::string_view file, bool is_first) noexcept;
+[[nodiscard]] int64_t Answer1(std::string_view file) noexcept;
+[[nodiscard]] int64_t Answer2(std::string_view file) noexcept;
 
 } // namespace day22
 

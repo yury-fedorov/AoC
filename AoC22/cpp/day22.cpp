@@ -7,95 +7,12 @@
 
 namespace day22 {
 
-// Converts global point to a segment.
-constexpr Point PointToSegment(Point point,
-                               int segment_size = kSegmentSize) noexcept {
-  const auto [x, y] = point;
-  return {x / segment_size, y / segment_size};
-}
-
-// Converts global point to local point within a segment.
-Point PointToLocal(Point point,
-    int segment_size = kSegmentSize) noexcept {
-    const auto [x, y] = point;
-    return Point{ x % segment_size, y % segment_size };
-}
-/*
-Point LocalToGlobal( localpoint, segment) noexcept {
-    // TODO 
-}
-*/
-
-constexpr char ToDir(Direction d) noexcept {
-  return kDirectionChar[static_cast<int>(d)];
-}
-
-constexpr Direction ToDirection(char d) noexcept {
-  return static_cast<Direction>(d);
-}
-
-constexpr std::string_view kSegments = "123456789ABC";
-
-constexpr char Tile(Point segment) noexcept {
-  // 1 2 3
-  // 4 5 6
-  // 7 8 9
-  // A B C
-  const auto [x, y] = segment;
-  const auto index = x + (y * 3);
-  return kSegments[index];
-}
-
-constexpr SegDir ToSegDir(Point point, Direction d) noexcept {
-  return {Tile(PointToSegment(point)), ToDir(d)};
-}
-
-constexpr std::optional<SegDir> NewSegDir(const std::string_view sdsd,
-                                          SegDir sd) noexcept {
-  if (SegDir{sdsd[0], sdsd[1]} == sd)
-    return SegDir{sdsd[2], sdsd[3]};
-  return std::nullopt;
-}
-
-constexpr Direction Back(Direction d) noexcept {
-  return static_cast<Direction>((static_cast<int>(d) + 2) % 4);
-}
-
-constexpr char Back(char direction) noexcept {
-  return ToDir(Back(ToDirection(direction)));
-}
-
-constexpr std::pair<SegDir, SegDir>
-Back(const std::string_view from_to) noexcept {
-  return {SegDir{from_to[2], Back(from_to[3])}, SegDir{from_to[0], from_to[1]}};
-}
-
-Point GlobalToSegment(Point global) noexcept {
-  const auto [x, y] = global;
-  return {x % kSegmentSize, y % kSegmentSize};
-}
-
-Point SegmentToGlobal(Point local, char segment) noexcept {
-  const auto index = kSegments.find(segment);
-  const auto di = div(index, 3);
-  const auto dy = di.quot, dx = di.rem;
-  const auto [x, y] = local;
-  return {x + (dx * kSegmentSize), y + (dy * kSegmentSize)};
-}
-
-constexpr Point Transform(Point point, char method) noexcept {
-  auto [x, y] = point;
-  if (method == 's') {
-    std::swap(x, y);
-  }
-  return {x, y};
-}
-
 [[nodiscard]] int64_t FinalPassword(int row, int column,
                                     Direction direction) noexcept {
   return (1000 * row) + (4 * column) + static_cast<int>(direction);
 }
 
+// Loading the map and the path
 [[nodiscard]] std::pair<Map, std::string> Load(std::string_view file) noexcept {
   const auto data = ReadData(file);
   Map map;
@@ -104,6 +21,22 @@ constexpr Point Transform(Point point, char method) noexcept {
       [](const std::string &s) { return s.find(TILE) != std::string::npos; });
   const std::string path = *(data.rbegin());
   return {map, path};
+}
+
+// Find the starting point.
+[[nodiscard]] Point FindStart(const Map &map) noexcept {
+  // You begin the path in the leftmost open tile of the top row of tiles.
+  // Initially, you are facing to the right (from the perspective of how the map
+  // is drawn).
+  const std::string &line = map.front();
+  const size_t x_n = line.size();
+  int x = 0;
+  for (; x < x_n; x++) {
+    if (line[x] == TILE)
+      break;
+  }
+  // found the start
+  return Point{x, 0};
 }
 
 class Navigator {
@@ -167,6 +100,92 @@ public:
   Navigator1(const Map &map) : Navigator(map) {}
 };
 
+// Part 2 -------------------------------
+
+// Converts global point to a segment.
+constexpr Point PointToSegment(Point point,
+                               int segment_size = kSegmentSize) noexcept {
+  const auto [x, y] = point;
+  return {x / segment_size, y / segment_size};
+}
+
+// Converts global point to local point within a segment.
+Point PointToLocal(Point point, int segment_size = kSegmentSize) noexcept {
+  const auto [x, y] = point;
+  return Point{x % segment_size, y % segment_size};
+}
+/*
+Point LocalToGlobal( localpoint, segment) noexcept {
+    // TODO
+}
+
+constexpr char ToDir(Direction d) noexcept {
+    return kDirectionChar[static_cast<int>(d)];
+}
+
+constexpr Direction ToDirection(char d) noexcept {
+    return static_cast<Direction>(d);
+}
+
+constexpr std::string_view kSegments = "123456789ABC";
+
+constexpr char Tile(Point segment) noexcept {
+    // 1 2 3
+    // 4 5 6
+    // 7 8 9
+    // A B C
+    const auto [x, y] = segment;
+    const auto index = x + (y * 3);
+    return kSegments[index];
+}
+
+constexpr SegDir ToSegDir(Point point, Direction d) noexcept {
+    return { Tile(PointToSegment(point)), ToDir(d) };
+}
+
+constexpr std::optional<SegDir> NewSegDir(const std::string_view sdsd,
+    SegDir sd) noexcept {
+    if (SegDir{ sdsd[0], sdsd[1] } == sd)
+        return SegDir{ sdsd[2], sdsd[3] };
+    return std::nullopt;
+}
+
+constexpr Direction Back(Direction d) noexcept {
+    return static_cast<Direction>((static_cast<int>(d) + 2) % 4);
+}
+
+constexpr char Back(char direction) noexcept {
+    return ToDir(Back(ToDirection(direction)));
+}
+
+constexpr std::pair<SegDir, SegDir>
+Back(const std::string_view from_to) noexcept {
+    return { SegDir{from_to[2], Back(from_to[3])}, SegDir{from_to[0],
+from_to[1]} };
+}
+
+Point GlobalToSegment(Point global) noexcept {
+    const auto [x, y] = global;
+    return { x % kSegmentSize, y % kSegmentSize };
+}
+
+Point SegmentToGlobal(Point local, char segment) noexcept {
+    const auto index = kSegments.find(segment);
+    const auto di = div(index, 3);
+    const auto dy = di.quot, dx = di.rem;
+    const auto [x, y] = local;
+    return { x + (dx * kSegmentSize), y + (dy * kSegmentSize) };
+}
+
+constexpr Point Transform(Point point, char method) noexcept {
+    auto [x, y] = point;
+    if (method == 's') {
+        std::swap(x, y);
+    }
+    return { x, y };
+}
+*/
+
 class Navigator2 : public Navigator {
 protected:
   // cube in personal map (it is not generic)
@@ -187,8 +206,8 @@ protected:
       auto segment1 = PointToSegment({x1, y1});
       const auto [lx0, ly0] = PointToLocal(from);
       if (segment0 == Point{1, 0} && direction == Direction::kUp) {
-          // TODO: to 6 (L)
-          return { Point{0,lx0}, Direction::kRight };
+        // TODO: to 6 (L)
+        return {Point{0, lx0}, Direction::kRight};
       }
       // TODO: implement part 2
       return {from, direction};
@@ -317,44 +336,24 @@ public:
   Navigator2(const Map &map) : Navigator(map) {}
 };
 
-[[nodiscard]] std::tuple<Map, std::string, Point>
-LoadMap(std::string_view file) noexcept {
-  const auto [map_binding, path] = day22::Load(file);
-  const Map &map = map_binding;
-  // You begin the path in the leftmost open tile of the top row of tiles.
-  // Initially, you are facing to the right (from the perspective of how the map
-  // is drawn).
-  int y = 0;
-  const std::string &line = map.front();
-  int x = 0;
-  const int y_n = map.size();
-  const int x_n = line.size();
-  for (; x < x_n; x++) {
-    if (line[x] == TILE)
-      break;
-  }
-  // found the start
-  const Point start{x, y};
-  return std::make_tuple(map, path, start);
-}
-
+// Generic solution dependent from both navigator implementations
 [[nodiscard]] int64_t Solution(std::string_view file, bool is_first) noexcept {
-  auto [map, path, start] = LoadMap(file);
+  auto [map, path] = Load(file);
   const Navigator1 navigator1(map);
   const Navigator2 navigator2(map);
-  const Navigator *navigator = is_first ? (Navigator*) & navigator1 : &navigator2;
+  const Navigator *navigator =
+      is_first ? (Navigator *)&navigator1 : &navigator2;
   Direction facing = Direction::kRight;
-  auto position = start;
+  auto position = FindStart(map);
   static std::regex re_digit("(\\d+)(.*)");
   static std::regex re_turn("([RL])(.*)");
   std::string path_head = path;
   while (!path_head.empty()) {
-    const std::string &input = path_head;
     int moves{0};
     std::string turn, tail;
     std::smatch what;
     // if (re2::RE2::FullMatch(input, re_digit, &moves, &tail)) {
-    if (std::regex_match(input, what, re_digit)) {
+    if (std::regex_match(path_head, what, re_digit)) {
       moves = stoi(what[1]);
       tail = what[2];
       // moves in direction
@@ -365,7 +364,7 @@ LoadMap(std::string_view file) noexcept {
         facing = new_direction;
       }
       // } else if (re2::RE2::FullMatch(input, re_turn, &turn, &tail)) {
-    } else if (std::regex_match(input, what, re_turn)) {
+    } else if (std::regex_match(path_head, what, re_turn)) {
       turn = what[1];
       tail = what[2];
       // turn
@@ -382,4 +381,13 @@ LoadMap(std::string_view file) noexcept {
   const auto [column, row] = position;
   return (FinalPassword(row + 1, column + 1, facing));
 }
+
+[[nodiscard]] int64_t Answer1(std::string_view file) noexcept {
+  return Solution(file, true);
+}
+
+[[nodiscard]] int64_t Answer2(std::string_view file) noexcept {
+  return Solution(file, false);
+}
+
 } // namespace day22
