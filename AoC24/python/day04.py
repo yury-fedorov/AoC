@@ -27,37 +27,39 @@ def _diagonals(input: []) -> []:
             return False
         return True
 
+    def diagonal( x: int, y: int, dx: int, dy: int ) -> str:
+        result = ""
+        for _ in iter(int, 1):
+            result += input[y][x]
+            x += dx
+            y += dy
+            if not is_in( (x,y) ):
+                return result
+
     # Right and down
     dx, dy = 1, 1
+    x0, y0 = xn, 0
     for i in range(yn+xn):
-        if i < yn:
-            p = (0,yn-i-1)
+        if x0 > 0:
+            x0 -= 1
         else:
-            p = (i-yn, 0)
-        line = ""
-        for _ in iter(int, 1):
-            x, y = p
-            line += input[y][x]
-            p = (x+dx, y+dy)
-            if not is_in(p):
-                break
-        result.append(line)
+            y0 += 1
+        if not is_in((x0,y0)):
+            break
+        result.append(diagonal(x0, y0, dx, dy))
 
     # Right and up
     dx, dy = 1, -1
+    x0, y0 = 0, 0
     for i in range(yn+xn):
-        if i < yn:
-            p = (0,i)
+        # (0,0), (0,1), ...
+        if i < (yn - 1):
+            y0 += 1
         else:
-            p = (i-yn, yn-1)
-        line = ""
-        for _ in iter(int, 1):
-            x, y = p
-            line += input[y][x]
-            p = (x+dx, y+dy)
-            if not is_in(p):
-                break
-        result.append(line)
+            x0 += 1
+        if not is_in((x0,y0)):
+            break
+        result.append(diagonal(x0, y0, dx, dy))
 
     return result
 
@@ -122,6 +124,6 @@ class Day04(unittest.TestCase):
         self.__solution("04-1a", 5, 0)
 
     def test_day(self):
-        # 2463 -- too high, 2057 -- too low, 2271 - not right, 2252 - not right
-        self.__solution("04", 0, 0)
+        # 2463 -- too high, 2057 -- too low, 2271, 2252, 2467, 2036 - not right
+        self.__solution("04", 2454, 0)
 
