@@ -105,11 +105,11 @@ def _answer2(input: []) -> int:
     xn = len(input[0])
     yn = len(input)
 
-    def is_x(x:int,y:int) -> bool:
+    def is_x(x: int, y: int) -> bool:
         # Is the position is suitable for X?
         if x < 1 or y < 1:
             return False
-        if x >= (xn-1) or y >= (yn-1):
+        if x >= (xn - 1) or y >= (yn - 1):
             return False
 
         # Is the center is 'A'?
@@ -117,19 +117,17 @@ def _answer2(input: []) -> int:
         if center != 'A':
             return False
 
-        a = input[y-1][x-1] + 'A' + input[y+1][x+1]
-        b = input[y+1][x-1] + 'A' + input[y-1][x+1]
+        a = input[y - 1][x - 1] + 'A' + input[y + 1][x + 1]
+        b = input[y + 1][x - 1] + 'A' + input[y - 1][x + 1]
         ai = a[::-1]
         bi = b[::-1]
 
         return (a + b + ai + bi).count("MAS") == 2
 
-    result = 0
-    for x in range(xn):
-        for y in range(yn):
-            if is_x(x, y):
-                result += 1
-    return result
+    return sum([1 for x in range(xn)
+                for y in range(yn)
+                if is_x(x, y)])
+
 
 class Day04(unittest.TestCase):
     def __solution(self, data: str, a1: int, a2: int):
@@ -137,7 +135,7 @@ class Day04(unittest.TestCase):
         self.assertEqual(a1, _answer1(input), "answer 1")
         self.assertEqual(a2, _answer2(input), "answer 2")
 
-    def __answer1(self, data:str) -> int:
+    def __answer1(self, data: str) -> int:
         return _answer1(c.read_lines(data))
 
     def test_rotate(self):
