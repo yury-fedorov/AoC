@@ -1,0 +1,70 @@
+import common as c
+import unittest
+
+
+def _read_input(data: str) -> ([], []):
+    rules = []
+    updates = []
+    is_rule = True
+    with c.open_file(data) as f:
+        for line in f:
+            if len(line) <= 1:
+                is_rule = False
+            elif is_rule:
+                rules.append(line.strip().split('|'))
+            else:
+                updates.append(line.strip().split(','))
+    return rules, updates
+
+
+def _middle_page(order: str) -> int:
+    return int(order[int(len(order) / 2)])
+
+
+def _is_correct(rules: [], update: []) -> bool:
+    if len(update) <= 1:
+        return True
+
+    later = update[1:]
+    page = update[0]
+
+    for before, after in rules:
+        if after == page:
+            if any(x == before for x in  later):
+                print(f"Rule {before}, {after} is broken for page {page} and later {later}")
+                return False
+
+    return _is_correct(rules, later)
+
+def _answer1(rules, updates) -> int:
+    result = 0
+    for u in updates:
+        if _is_correct(rules, u):
+            result += _middle_page(u)
+        else:
+            print(f"Bad rule: {u}")
+    return result
+    # return sum([_middle_page(u) for u in updates if _is_correct(rules, u)])
+
+
+def _answer2(left, right) -> int:
+    return 0
+
+
+class Day05(unittest.TestCase):
+
+    def __solution(self, data: str, a1: int, a2: int):
+        rules, updates = _read_input(data)
+        self.assertEqual(_answer1(rules, updates), a1, "answer 1")
+        # self.assertEqual(_answer2(left, right), a2, "answer 2")
+
+    def test_middle_page(self):
+        self.assertEqual(_middle_page([75, 47, 61, 53, 29]), 61, "of five")
+        self.assertEqual(_middle_page([97, 61, 53, 29, 13]), 53, "of five for 53")
+        self.assertEqual(_middle_page([75, 29, 13]), 29, "of three")
+
+    def test_sample(self):
+        self.__solution("05-1", 143, 0)
+
+    def test_day(self):
+        self.__solution("05", 7307, 0)
