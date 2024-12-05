@@ -114,6 +114,18 @@ Point PointToLocal(Point point, int segment_size = kSegmentSize) noexcept {
   const auto [x, y] = point;
   return Point{x % segment_size, y % segment_size};
 }
+
+// constexpr std::string_view kSegments = "0123456789AB";
+
+constexpr int Tile(Point segment) noexcept {
+    // 0 1 2
+    // 3 4 5
+    // 6 7 8
+    // 9 A B
+    const auto [x, y] = segment;
+    return x + (y * 3);
+}
+
 /*
 Point LocalToGlobal( localpoint, segment) noexcept {
     // TODO
@@ -125,18 +137,6 @@ constexpr char ToDir(Direction d) noexcept {
 
 constexpr Direction ToDirection(char d) noexcept {
     return static_cast<Direction>(d);
-}
-
-constexpr std::string_view kSegments = "123456789ABC";
-
-constexpr char Tile(Point segment) noexcept {
-    // 1 2 3
-    // 4 5 6
-    // 7 8 9
-    // A B C
-    const auto [x, y] = segment;
-    const auto index = x + (y * 3);
-    return kSegments[index];
 }
 
 constexpr SegDir ToSegDir(Point point, Direction d) noexcept {
@@ -189,6 +189,12 @@ constexpr Point Transform(Point point, char method) noexcept {
 class Navigator2 : public Navigator {
 protected:
   // cube in personal map (it is not generic)
+  // 
+  // . 1 2
+  // . 4 .
+  // 6 7 .
+  // 9 . .
+  // 
   // 2R-7R 2D-4R 2U-9D
   // 1U-9L 1L-6L
   // 4R-2D 4L -6U
@@ -205,7 +211,8 @@ protected:
       auto segment0 = PointToSegment({x0, y0});
       auto segment1 = PointToSegment({x1, y1});
       const auto [lx0, ly0] = PointToLocal(from);
-      if (segment0 == Point{1, 0} && direction == Direction::kUp) {
+      const int tile0 = Tile(segment0);
+      if ( tile0 == 1 && direction == Direction::kUp) {
         // TODO: to 6 (L)
         return {Point{0, lx0}, Direction::kRight};
       }
