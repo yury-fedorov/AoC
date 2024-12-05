@@ -24,15 +24,12 @@ def _middle_page(order: str) -> int:
 def _is_correct(rules: [], update: []) -> bool:
     if len(update) <= 1:
         return True
-
     later = update[1:]
     page = update[0]
-
     for before, after in rules:
         if after == page:
             if any(x == before for x in later):
                 return False
-
     return _is_correct(rules, later)
 
 
@@ -55,13 +52,11 @@ def _correct(rules: [], update: []) -> []:
         next_to_correct = to_correct[0]
         to_correct = to_correct[1:]
         corrected = sub_correct(rules, corrected, next_to_correct)
-
     return corrected
 
 
 def _answer2(rules, updates) -> int:
     incorrect = [u for u in updates if not _is_correct(rules, u)]
-
     return sum([_middle_page(_correct(rules, u)) for u in incorrect])
 
 
