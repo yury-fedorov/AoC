@@ -13,3 +13,8 @@ def open_file(data_file: str):
 def read_lines(data_file: str) -> []:
     with open_file(data_file) as f:
         return f.read().splitlines()
+
+
+def is_fast_only() -> bool:
+    """Indicates if only fast tests to be executed."""
+    return True
