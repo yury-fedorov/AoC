@@ -5,9 +5,9 @@
 #include <cassert>
 #include <iostream>
 
-long day16_part1() {
+long day16_part2() {
   const auto map = day16::ReadMap("16-sample");
-  const long pressure = day16::Answer1(map);
+  const long pressure = day16::Answer2(map);
   return pressure;
 }
 
@@ -25,16 +25,16 @@ long day19_part1() {
   return day19::QualityLevel(list);
 }
 
-long day22_part1() {
+long day22_part2() {
   // day22::FinalPassword(6, 8, day22::Direction::kRight);
   return day22::Answer2("22");
 }
 
 int main(int argc, char **argv) {
-  std::cout << "Day 16 Part 1: " << day16_part1() << std::endl;
+  std::cout << "Day 16 Part 2 Sample (1707): " << day16_part2() << std::endl;
 
   std::cout << "Day 19 Part 1: " << day19_part1() << std::endl;
 
-  std::cout << "Day 22 Part 1: " << day22_part1() << std::endl;
+  std::cout << "Day 22 Part 2: " << day22_part2() << std::endl;
   return 0;
 }

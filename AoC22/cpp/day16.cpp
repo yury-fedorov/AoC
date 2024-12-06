@@ -263,7 +263,7 @@ const Door kNoDoor = "??";
 
 [[nodiscard]] long Answer2(const Map &map) noexcept {
   State start{kStart, std::nullopt};
-  return day16::Pressure2(map, start, start, Doors{}, 24);
+  return day16::Pressure2(map, start, start, Doors{}, 26);
 }
 
 } // namespace day16
