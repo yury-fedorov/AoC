@@ -1,7 +1,6 @@
 #include "day22.h"
 #include "common-std.h"
 #include <cassert>
-#include <format>
 #include <functional>
 #include <iostream>
 #include <optional>
@@ -171,8 +170,8 @@ protected:
     const Point local0 = PointToLocal(from);
     // Tile and direction of the starting point
     const std::string td0 =
-        std::format("{}{}", PointToTile(from), ToDir(direction));
-    const int kMax = kSegmentSize - 1;
+        std::to_string(PointToTile(from)) + ToDir(direction);
+    constexpr int kMax = kSegmentSize - 1; // Max value within a segment/tile.
 
     // converters
     const auto U2L = [](const Point &local, int index) {
@@ -183,19 +182,19 @@ protected:
       const auto [x, y] = local;
       return LocalToGlobal(Point{y, 0}, index);
     };
-    const auto D2R = [](const Point &local, int index) {
+    const auto D2R = [&kMax](const Point &local, int index) {
       const auto [x, y] = local;
       return LocalToGlobal(Point{kMax, x}, index);
     };
-    const auto R2D = [](const Point &local, int index) {
+    const auto R2D = [&kMax](const Point &local, int index) {
       const auto [_, y] = local;
       return LocalToGlobal(Point{y, kMax}, index);
     };
-    const auto R2R = [](const Point &local, int index) {
+    const auto R2R = [&kMax](const Point &local, int index) {
       const auto [x, y] = local;
       return LocalToGlobal(Point{kMax, kMax - y}, index);
     };
-    const auto U2D = [](const Point &local, int index) {
+    const auto U2D = [&kMax](const Point &local, int index) {
       const auto [x, y] = local; // ie. 2U-9D
       return LocalToGlobal(Point{x, kMax}, index);
     };
@@ -203,7 +202,7 @@ protected:
       const auto [x, y] = local;
       return LocalToGlobal(Point{x, 0}, index);
     };
-    const auto L2L = [](const Point &local, int index) {
+    const auto L2L = [&kMax](const Point &local, int index) {
       const auto [x, y] = local;
       return LocalToGlobal(Point{0, kMax - y}, index);
     };
