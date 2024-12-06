@@ -13,27 +13,43 @@ def _start(the_map: []) -> (int, int):
         if x != -1:
             return x, y
 
-_DIRECTIONS = [(0,-1), (1,0), (0,1), (-1,0)] 
+
+_DIRECTIONS = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+
+
+def _rotate(direction: (int, int)) -> (int, int):
+    index = _DIRECTIONS.index(direction)
+    return _DIRECTIONS[(index + 1) % len(_DIRECTIONS)]
+
+
+def _is_wall(material: str) -> bool:
+    return material == '#'
+
 
 def _answer1(the_map: [], start_point: (int, int)) -> int:
-    
-    def is_in(p:(int, int)) -> bool:
-        return True
-    
-    path ={start_point}
-    p=start_point
-    d=_DIRECTIONS[0]
+    xmax = len(the_map[0])
+    ymax = len(the_map)
+
+    def is_in(p: (int, int)) -> bool:
+        x, y = p
+        return False if x < 0 or y < 0 or x >= xmax or y >= ymax else True
+
+    path = {start_point}
+    p = start_point
+    d = _DIRECTIONS[0]
 
     while is_in(p):
         x0, y0 = p
         dx, dy = d
-        p1 = x0+dx, y0+dy
-        if is_wall(p1):
-            d = rotate(d) 
-        if is_in(p):
-            path.add(p)
+        p1 = x0 + dx, y0 + dy
+        if not is_in(p1):
+            return len(path)
+        x1, y1 = p1
+        if _is_wall(the_map[y1][x1]):
+            d = _rotate(d)
         else:
-            return len(path) 
+            p = p1
+            path.add(p)
 
 
 def _answer2(the_map: []) -> int:
@@ -52,4 +68,4 @@ class Day06(unittest.TestCase):
         self.__solution("06-1", 41, 0)
 
     def test_day(self):
-        self.__solution("06", 0, 0)
+        self.__solution("06", 5331, 0)
