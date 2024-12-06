@@ -6,14 +6,13 @@ def _read_input(data: str) -> ([], []):
     rules = []
     updates = []
     is_rule = True
-    with c.open_file(data) as f:
-        for line in f:
-            if len(line) <= 1:
-                is_rule = False
-            elif is_rule:
-                rules.append(line.strip().split('|'))
-            else:
-                updates.append(line.strip().split(','))
+    for line in c.read_lines(data):
+        if len(line) <= 1:
+            is_rule = False
+        elif is_rule:
+            rules.append(line.split('|'))
+        else:
+            updates.append(line.split(','))
     return rules, updates
 
 
