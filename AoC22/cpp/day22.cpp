@@ -196,7 +196,7 @@ protected:
       return LocalToGlobal(Point{kMax, kMax - y}, index);
     };
     const auto U2D = [](const Point &local, int index) {
-      const auto [x, y] = local;
+      const auto [x, y] = local; // ie. 2U-9D
       return LocalToGlobal(Point{x, kMax}, index);
     };
     const auto D2U = [](const Point &local, int index) {
