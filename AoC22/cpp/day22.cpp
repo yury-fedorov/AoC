@@ -163,11 +163,8 @@ protected:
   // 6 7 .
   // 9 . .
   //
-  //   2U-9D
-  //  1L-6L
-  // 4R-2D 4L -6U
-  // 7R-2R
-  //  6L-1L
+  // Mappings which were not necessary due to the path:
+  // 4R-2D 4L-6U 7R-2R 6L-1L
   Position Overlap(Position from_direction) const noexcept override {
     const auto [from, direction] = from_direction;
     auto [x0, y0] = from;
@@ -198,13 +195,28 @@ protected:
       const auto [x, y] = local;
       return LocalToGlobal(Point{kMax, kMax - y}, index);
     };
+    const auto U2D = [](const Point &local, int index) {
+      const auto [x, y] = local;
+      return LocalToGlobal(Point{x, kMax}, index);
+    };
+    const auto D2U = [](const Point &local, int index) {
+      const auto [x, y] = local;
+      return LocalToGlobal(Point{x, 0}, index);
+    };
+    const auto L2L = [](const Point &local, int index) {
+      const auto [x, y] = local;
+      return LocalToGlobal(Point{0, kMax - y}, index);
+    };
 
+    // Transform to the result (new global point and direction).
     const auto tx = [&local0](std::string_view to,
                               std::function<Point(Point, int)> tx) -> Position {
       const int index = stoi(std::string(to.substr(0, 1)));
+      // the side where enters in the new tile
       const Direction direction = ToDirection(to[1]);
+      // the direction is opposite of the side where enters
       const Direction opposite = Back(direction);
-      return Position{tx(local0, index), opposite}; // 7D-9R
+      return Position{tx(local0, index), opposite};
     };
 
     if (td0 == "1U") {
@@ -214,7 +226,7 @@ protected:
     } else if (td0 == "2D") {
       return {D2R(local0, 4), Direction::kLeft}; // 2D-4R
     } else if (td0 == "4R") {
-      // 4R-2D
+      return tx("2D", R2D); // 4R-2D
     } else if (td0 == "6U") {
       return {U2L(local0, 4), Direction::kRight}; // 6U-4L
     } else if (td0 == "4L") {
@@ -227,11 +239,20 @@ protected:
       return {D2R(local0, 9), Direction::kLeft}; // 7D-9R
     } else if (td0 == "9R") {
       return tx("7D", R2D); // 9R-7D
+    } else if (td0 == "2U") {
+      return tx("9D", U2D); // 2U-9D
+    } else if (td0 == "9D") {
+      return tx("2U", D2U); // 9D-2U
+    } else if (td0 == "1L") {
+      return tx("6L", L2L); //  1L-6L
+    } else if (td0 == "6L") {
+      return tx("1L", L2L); //  6L-1L
     }
-    //
+
+    // TODO: implement part 2
     std::cout << td0 << std::endl;
     assert(false);
-    // TODO: implement part 2
+
     return {from, direction};
   }
 
@@ -289,6 +310,7 @@ public:
   return Solution(file, true);
 }
 
+// too high: 158180
 [[nodiscard]] int64_t Answer2(std::string_view file) noexcept {
   return Solution(file, false);
 }
