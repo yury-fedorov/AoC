@@ -13,9 +13,27 @@ def _start(the_map: []) -> (int, int):
         if x != -1:
             return x, y
 
+_DIRECTIONS = [(0,-1), (1,0), (0,1), (-1,0)] 
 
 def _answer1(the_map: [], start_point: (int, int)) -> int:
-    return 0
+    
+    def is_in(p:(int, int)) -> bool:
+        return True
+    
+    path ={start_point}
+    p=start_point
+    d=_DIRECTIONS[0]
+
+    while is_in(p):
+        x0, y0 = p
+        dx, dy = d
+        p1 = x0+dx, y0+dy
+        if is_wall(p1):
+            d = rotate(d) 
+        if is_in(p):
+            path.add(p)
+        else:
+            return len(path) 
 
 
 def _answer2(the_map: []) -> int:
