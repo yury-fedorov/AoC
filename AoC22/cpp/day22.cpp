@@ -1,9 +1,12 @@
 #include "day22.h"
 #include "common-std.h"
 #include <cassert>
+#include <format>
+#include <functional>
 #include <iostream>
 #include <optional>
 #include <regex>
+#include <string>
 
 namespace day22 {
 
@@ -115,228 +118,121 @@ Point PointToLocal(Point point, int segment_size = kSegmentSize) noexcept {
   return Point{x % segment_size, y % segment_size};
 }
 
-// constexpr std::string_view kSegments = "0123456789AB";
-
 constexpr int Tile(Point segment) noexcept {
-    // 0 1 2
-    // 3 4 5
-    // 6 7 8
-    // 9 A B
-    const auto [x, y] = segment;
-    return x + (y * 3);
+  // 0 1 2
+  // 3 4 5
+  // 6 7 8
+  // 9 A B
+  const auto [x, y] = segment;
+  return x + (y * 3);
 }
 
-/*
-Point LocalToGlobal( localpoint, segment) noexcept {
-    // TODO
+constexpr int PointToTile(Point point,
+                          int segment_size = kSegmentSize) noexcept {
+  return Tile(PointToSegment(point, segment_size));
+}
+
+Point LocalToGlobal(Point local, int tile,
+                    int segment_size = kSegmentSize) noexcept {
+  const auto di = div(tile, 3);
+  const int dy = (di.quot * segment_size), dx = (di.rem * segment_size);
+  const auto [x, y] = local;
+  return Point{x + dx, y + dy};
 }
 
 constexpr char ToDir(Direction d) noexcept {
-    return kDirectionChar[static_cast<int>(d)];
+  return kDirectionChar[static_cast<int>(d)];
 }
 
 constexpr Direction ToDirection(char d) noexcept {
-    return static_cast<Direction>(d);
-}
-
-constexpr SegDir ToSegDir(Point point, Direction d) noexcept {
-    return { Tile(PointToSegment(point)), ToDir(d) };
-}
-
-constexpr std::optional<SegDir> NewSegDir(const std::string_view sdsd,
-    SegDir sd) noexcept {
-    if (SegDir{ sdsd[0], sdsd[1] } == sd)
-        return SegDir{ sdsd[2], sdsd[3] };
-    return std::nullopt;
+  return static_cast<Direction>(
+      std::find(kDirectionChar.begin(), kDirectionChar.end(), d) -
+      kDirectionChar.begin());
 }
 
 constexpr Direction Back(Direction d) noexcept {
-    return static_cast<Direction>((static_cast<int>(d) + 2) % 4);
+  return static_cast<Direction>((static_cast<int>(d) + 2) % 4);
 }
-
-constexpr char Back(char direction) noexcept {
-    return ToDir(Back(ToDirection(direction)));
-}
-
-constexpr std::pair<SegDir, SegDir>
-Back(const std::string_view from_to) noexcept {
-    return { SegDir{from_to[2], Back(from_to[3])}, SegDir{from_to[0],
-from_to[1]} };
-}
-
-Point GlobalToSegment(Point global) noexcept {
-    const auto [x, y] = global;
-    return { x % kSegmentSize, y % kSegmentSize };
-}
-
-Point SegmentToGlobal(Point local, char segment) noexcept {
-    const auto index = kSegments.find(segment);
-    const auto di = div(index, 3);
-    const auto dy = di.quot, dx = di.rem;
-    const auto [x, y] = local;
-    return { x + (dx * kSegmentSize), y + (dy * kSegmentSize) };
-}
-
-constexpr Point Transform(Point point, char method) noexcept {
-    auto [x, y] = point;
-    if (method == 's') {
-        std::swap(x, y);
-    }
-    return { x, y };
-}
-*/
 
 class Navigator2 : public Navigator {
 protected:
   // cube in personal map (it is not generic)
-  // 
+  //
   // . 1 2
   // . 4 .
   // 6 7 .
   // 9 . .
-  // 
-  // 2R-7R 2D-4R 2U-9D
-  // 1U-9L 1L-6L
+  //
+  //   2U-9D
+  //  1L-6L
   // 4R-2D 4L -6U
-  // 7R-2R 7D-9R
-  // 6U-4L 6L-1L
+  // 7R-2R
+  //  6L-1L
   Position Overlap(Position from_direction) const noexcept override {
-    if (true) {
-      // XXX: quick stub to make it compile
-      const auto [from, direction] = from_direction;
-      auto [x0, y0] = from;
-      const auto [dx, dy] = kShifts[static_cast<int>(direction)];
-      const auto x1 = x0 + dx;
-      const auto y1 = y0 + dy;
-      auto segment0 = PointToSegment({x0, y0});
-      auto segment1 = PointToSegment({x1, y1});
-      const auto [lx0, ly0] = PointToLocal(from);
-      const int tile0 = Tile(segment0);
-      if ( tile0 == 1 && direction == Direction::kUp) {
-        // TODO: to 6 (L)
-        return {Point{0, lx0}, Direction::kRight};
-      }
-      // TODO: implement part 2
-      return {from, direction};
-    }
-    /* TODO - early draft
-        constexpr std::array kMapping = { "2UAR", "AL2D" };
-        // only for the real case
-        constexpr int kss = 50;
+    const auto [from, direction] = from_direction;
+    auto [x0, y0] = from;
+    const Point local0 = PointToLocal(from);
+    // Tile and direction of the starting point
+    const std::string td0 =
+        std::format("{}{}", PointToTile(from), ToDir(direction));
+    const int kMax = kSegmentSize - 1;
 
-        auto [from, direction] = from_direction;
-        // global
-        auto [xg, yg] = from;
-        // local
-        int xl = xg / kss;
-        int yl = yg / kss;
-        if ( yl == 0 && xl == 1 && direction == Direction::kUp ) {
-          // 2U -> AL swap
-          std::swap(xl, yl);
-          xg = xl;
-          yg = yl + (3 * kss);
-          direction = Direction::kRight;
-        } else if ( xl == 0 && yl == 3 && direction == Direction::kLeft ) {
-          // AL -> 2U swap
-          std::swap(xl, yl);
-          xg = xl + (kss);
-          yg = yl;
-          direction = Direction::kDown;
-        } else {
-          std::cerr << xg << " " << yg << " " << (int)direction << " ";
-          throw;
-        }
-        // return {{-1, -1}, direction};
-        return {{xg, yg}, direction};
-      */
+    // converters
+    const auto U2L = [](const Point &local, int index) {
+      const auto [x, _] = local;
+      return LocalToGlobal(Point{0, x}, index);
+    };
+    const auto L2U = [](const Point &local, int index) {
+      const auto [x, y] = local;
+      return LocalToGlobal(Point{y, 0}, index);
+    };
+    const auto D2R = [](const Point &local, int index) {
+      const auto [x, y] = local;
+      return LocalToGlobal(Point{kMax, x}, index);
+    };
+    const auto R2D = [](const Point &local, int index) {
+      const auto [_, y] = local;
+      return LocalToGlobal(Point{y, kMax}, index);
+    };
+    const auto R2R = [](const Point &local, int index) {
+      const auto [x, y] = local;
+      return LocalToGlobal(Point{kMax, kMax - y}, index);
+    };
 
-    /*
-    // TODO - early draft - https://github.com/yury-fedorov/AoC/pull/123 -  Jul
-    9, 2023
-    // cube in personal map (it is not generic)
-    constexpr std::array kMapping = {"2UARs", "AL2Ds"};
+    const auto tx = [&local0](std::string_view to,
+                              std::function<Point(Point, int)> tx) -> Position {
+      const int index = stoi(std::string(to.substr(0, 1)));
+      const Direction direction = ToDirection(to[1]);
+      const Direction opposite = Back(direction);
+      return Position{tx(local0, index), opposite}; // 7D-9R
+    };
 
-    auto [from, direction] = from_direction;
-    // global
-    auto [xg, yg] = from;
-    // segment
-    auto segdir = ToSegDir(from, direction);
-    for (auto &sdsdt : kMapping) {
-      const auto nsd = NewSegDir(sdsdt, segdir);
-      if (!nsd.has_value())
-        continue;
-      const auto local_point = GlobalToSegment(from);
-      // transformation method ie swap
-      // [lx1,ly1] Transform( local, method )
-      // [gx1,gy1] SegmentToGlobal(local, segment)
-      // return { {gx1, gy1}, nsd.direction }
+    if (td0 == "1U") {
+      return tx("9L", U2L); // 1U-9L
+    } else if (td0 == "9L") {
+      return tx("1U", L2U); // 9L-1U
+    } else if (td0 == "2D") {
+      return {D2R(local0, 4), Direction::kLeft}; // 2D-4R
+    } else if (td0 == "4R") {
+      // 4R-2D
+    } else if (td0 == "6U") {
+      return {U2L(local0, 4), Direction::kRight}; // 6U-4L
+    } else if (td0 == "4L") {
+      return {L2U(local0, 6), Direction::kDown}; // 4L-6U
+    } else if (td0 == "2R") {
+      return {R2R(local0, 7), Direction::kLeft}; // 2R-7R
+    } else if (td0 == "7R") {
+      return {R2R(local0, 2), Direction::kLeft}; // 7R-2R
+    } else if (td0 == "7D") {
+      return {D2R(local0, 9), Direction::kLeft}; // 7D-9R
+    } else if (td0 == "9R") {
+      return tx("7D", R2D); // 9R-7D
     }
-    // missing mapping
-    std::cerr << xg << " " << yg << " " << (int)direction << " ";
-    */
-    /*
-    int xl = xg / kss;
-    int yl = yg / kss;
-    if ( yl == 0 && xl == 1 && direction == Direction::kUp ) {
-      // 2U -> AL swap
-      std::swap(xl, yl);
-      xg = xl;
-      yg = yl + (3 * kss);
-      direction = Direction::kRight;
-    } else if ( xl == 0 && yl == 3 && direction == Direction::kLeft ) {
-      // AL -> 2U swap
-      std::swap(xl, yl);
-      xg = xl + (kss);
-      yg = yl;
-      direction = Direction::kDown;
-    } else {
-      std::cerr << xg << " " << yg << " " << (int)direction << " ";
-      throw;
-    }
-    // return {{-1, -1}, direction};
-    return {{xg, yg}, direction};
-  */
-    /*
-    auto [from, direction] = from_direction;
-    // global
-    auto [xg, yg] = from;
-    // segment
-    auto segdir = ToSegDir(from, direction);
-    for (auto &sdsdt : kMapping) {
-      const auto nsd = NewSegDir(sdsdt, segdir);
-      if (!nsd.has_value())
-        continue;
-      const auto local_point = GlobalToSegment(from);
-      // transformation method ie swap
-      // [lx1,ly1] Transform( local, method )
-      // [gx1,gy1] SegmentToGlobal(local, segment)
-      // return { {gx1, gy1}, nsd.direction }
-    }
-    // missing mapping
-    std::cerr << xg << " " << yg << " " << (int)direction << " ";
-
-    /*
-    int xl = xg / kss;
-    int yl = yg / kss;
-    if ( yl == 0 && xl == 1 && direction == Direction::kUp ) {
-      // 2U -> AL swap
-      std::swap(xl, yl);
-      xg = xl;
-      yg = yl + (3 * kss);
-      direction = Direction::kRight;
-    } else if ( xl == 0 && yl == 3 && direction == Direction::kLeft ) {
-      // AL -> 2U swap
-      std::swap(xl, yl);
-      xg = xl + (kss);
-      yg = yl;
-      direction = Direction::kDown;
-    } else {
-      std::cerr << xg << " " << yg << " " << (int)direction << " ";
-      throw;
-    }
-    // return {{-1, -1}, direction};
-    return {{xg, yg}, direction};
-  */
+    //
+    std::cout << td0 << std::endl;
+    assert(false);
+    // TODO: implement part 2
+    return {from, direction};
   }
 
 public:
