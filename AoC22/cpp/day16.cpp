@@ -14,6 +14,7 @@ namespace day16 {
 
 [[nodiscard]] long PressureInMinute(const Map &map,
                                     const Doors &open) noexcept {
+  // We may cache this method as well.
   long out = 0;
   for (const Door &ov : open) {
     out += map.at(ov).rate;
@@ -28,6 +29,9 @@ namespace day16 {
   return doors;
 }
 
+// Finds the distance but the method is slow.
+// It is invoked by DistanceFast only once to determine the distance between
+// doors.
 [[nodiscard]] int Distance(const Map &map, Door from, Door to) noexcept {
   int distance{0};
   DoorSet frontline{from};
@@ -93,11 +97,7 @@ namespace day16 {
 }
 
 void RemoveOpened(Doors &doors, const Doors &open) noexcept {
-  // TODO - to be checked
-  // erase-remove idiom
   std::for_each(open.begin(), open.end(), [&doors](const auto &door) {
-    //    doors.erase(std::remove(doors.begin(), doors.end(), door),
-    //    doors.end());
     doors.erase(std::find(doors.begin(), doors.end(), door));
   });
 }
@@ -110,16 +110,17 @@ void RemoveNoPressure(Doors &doors, const Map &map) noexcept {
   });
 }
 
-/*
 // highest rates at the beginning with shortest path to it
-void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
-  absl::c_sort(doors, [&map, from](const auto &a, const auto &b) {
-    const int ad = DistanceFast(map, from, a);
-    const int bd = DistanceFast(map, from, b);
-    return (map.at(a).rate - ad) > (map.at(b).rate - bd);
-  });
+void Order(const Map &map, Doors &doors, const Door &from) noexcept {
+  std::sort(doors.begin(), doors.end(),
+            [&map, &from](const auto &a, const auto &b) {
+              const auto vf = [&map, &from](const auto &x) {
+                const int d = DistanceFast(map, from, x);
+                return map.at(x).rate - d;
+              };
+              return vf(a) > vf(b);
+            });
 }
-*/
 
 [[nodiscard]] long Pressure(const Map &map, Door cur_door, Doors open,
                             int t_max) noexcept {
@@ -132,21 +133,7 @@ void Order(const Map &map, Doors &doors, std::string_view from) noexcept {
   RemoveOpened(doors, open);
   // 3. remove no pressure doors
   RemoveNoPressure(doors, map);
-  /*
-  constexpr bool kIsOptimized = false;
-  if (kIsOptimized) {
-    // 4. order first high rated doors (could try to optimize: top 50%)
-    Order(map, doors, cur_door);
-    const auto n{doors.size()};
-    // 4379 - not right answer -- 639s
-    constexpr size_t kMaxHead =
-        5;  // with 3 - 3735 (too high) 4 - 4149 (too high), 5 - 4149, no
-            // restrict - 4442 -- too high? - 635s
-    if (n > kMaxHead) {
-      doors.resize(kMaxHead);
-    }
-  }
-  */
+
   long pressure{t_max * last_minute};
   for (const auto &target : doors) {
     const auto dt = DistanceFast(map, cur_door, target) + 1;
@@ -168,39 +155,86 @@ const Door kNoDoor = "??";
                              Doors open, int t) noexcept {
   if (t < 0)
     return 0;
+
   const long last_minute = PressureInMinute(map, open);
+  if (t == 0)
+    // last step
+    return last_minute;
+
   const auto [pos_a, target_a] = actor_a;
   const auto [pos_b, target_b] = actor_b;
 
+  // XXX: this part can be cached one per all the times.
   // 1. get all doors
   Doors doors = AllDoors(map);
-  // 2. remove opened doors
-  RemoveOpened(doors, open);
-  // 3. remove no pressure doors
+  // 2. remove no pressure doors
   RemoveNoPressure(doors, map);
 
-  // no sense to provide among options doors we already go
-  // XXX - really? if no more doors are available, then target of other actor is
-  // also good
-  Doors targets;
-  if (target_a.has_value())
-    targets.push_back(target_a.value());
-  if (target_b.has_value())
-    targets.push_back(target_b.value());
-  RemoveOpened(doors, targets);
+  if (doors.size() == open.size()) {
+    // all doors are open
+    return last_minute + Pressure2(map, actor_a, actor_b, open, t - 1);
+  }
 
-  const auto init_targets = [&doors](std::optional<Door> target) -> Doors {
-    return target.has_value() ? Doors{target.value()}
-           : doors.empty()    ? Doors{kNoDoor}
-                              : doors;
-  };
+  // 3. remove opened doors
+  RemoveOpened(doors, open);
+  const size_t doors_count = doors.size();
+  Doors targets_a, targets_b;
+  if (doors_count == 1) {
+    const Door &d = doors[0];
+    const int a = SequenceFast(map, pos_a, d).size();
+    const int b = SequenceFast(map, pos_b, d).size();
+    if (a < b) {
+      targets_a.push_back(d);
+      targets_b.push_back(kNoDoor);
+    } else {
+      targets_a.push_back(kNoDoor);
+      targets_b.push_back(d);
+    }
+  } else if (doors_count == 2) {
+    // choice of targets is straightforward
+    const Door &d0 = doors[0];
+    const Door &d1 = doors[1];
+
+    // option 1
+    const int a0 = SequenceFast(map, pos_a, d0).size();
+    const int b1 = SequenceFast(map, pos_b, d1).size();
+
+    // option 2
+    const int a1 = SequenceFast(map, pos_a, d1).size();
+    const int b0 = SequenceFast(map, pos_b, d0).size();
+
+    // The longest of the distances is the real critical path.
+    if (std::max(a0, b1) < std::max(a1, b0)) {
+      // option 1 is better
+      targets_a.push_back(d0);
+      targets_b.push_back(d1);
+    } else {
+      targets_a.push_back(d1);
+      targets_b.push_back(d0);
+    }
+  } else {
+    // more then 2 doors to choice from
+    const auto is_valid_target = [&open](std::optional<Door> target) -> bool {
+      return target.has_value() &&
+             std::find(open.begin(), open.end(), target.value()) == open.end();
+    };
+
+    const auto init_targets =
+        [&doors, &is_valid_target](std::optional<Door> target) -> Doors {
+      return is_valid_target(target) ? Doors{target.value()}
+             : doors.empty()         ? Doors{kNoDoor}
+                                     : doors;
+    };
+
+    targets_a = init_targets(target_a);
+    Order(map, targets_a, pos_a);
+    targets_b = init_targets(target_b);
+    Order(map, targets_b, pos_b);
+  }
 
   const auto seq = [&map](Door pos, Door target) {
     return target == kNoDoor ? Doors{} : SequenceFast(map, pos, target);
   };
-
-  const Doors targets_a = init_targets(target_a);
-  const Doors targets_b = init_targets(target_b);
 
   long pressure{t * last_minute};
   for (const auto &target_ai : targets_a) {

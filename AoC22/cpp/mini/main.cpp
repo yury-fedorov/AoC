@@ -32,9 +32,11 @@ long day22_part2() {
 
 int main(int argc, char **argv) {
   std::cout << "Day 16 Part 2 Sample (1707): " << day16_part2() << std::endl;
-
-  std::cout << "Day 19 Part 1: " << day19_part1() << std::endl;
-
-  std::cout << "Day 22 Part 2: " << day22_part2() << std::endl;
+  if (IsFastOnly()) {
+    std::cout << "Also Day 19 and Day 22 are not solved yet!" << std::endl;
+  } else {
+    std::cout << "Day 19 Part 1: " << day19_part1() << std::endl;
+    std::cout << "Day 22 Part 2: " << day22_part2() << std::endl;
+  }
   return 0;
 }

@@ -14,6 +14,7 @@ struct Conf {
   std::vector<std::string> next;
 };
 
+// valve - configuration(rate, next doors)
 using Map = std::map<std::string, Conf>;
 // using Door = std::string_view;
 using Door = std::string;
