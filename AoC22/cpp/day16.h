@@ -24,6 +24,9 @@ struct Map : public std::map<std::string, Conf> {
   Doors all_doors;
   Doors openable;
   void Init();
+  bool IsOpenable(const Door &door) const {
+    return std::find(openable.begin(), openable.end(), door) != openable.end();
+  }
 };
 
 // input

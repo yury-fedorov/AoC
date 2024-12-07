@@ -9,7 +9,7 @@ long day16_part2() {
   auto map = day16::ReadMap("16-sample");
   assert(1707 == day16::Answer2(map));
 
-  // 1697 is too low
+  // 2318 is too low
   map = day16::ReadMap("16");
   return day16::Answer2(map);
 }
@@ -34,7 +34,7 @@ long day22_part2() {
 }
 
 int main(int argc, char **argv) {
-  std::cout << "Day 16 Part 2 Sample (1972 is too low): " << day16_part2()
+  std::cout << "Day 16 Part 2 Sample (2318 is too low): " << day16_part2()
             << std::endl;
   if (IsFastOnly()) {
     std::cout << "Also Day 19 and Day 22 are not solved yet!" << std::endl;

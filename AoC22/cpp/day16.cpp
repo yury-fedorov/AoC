@@ -89,7 +89,7 @@ void Order(const Map &map, Doors &doors, const Door &from) noexcept {
   const long v0 = vf(doors[0]);
   // 5 - 1697
   // 6,7 - 1972
-  constexpr long dv = 7; // this value changes the results, answers with 5 and 4
+  constexpr long dv = 8; // this value changes the results, answers with 5 and 4
   while (doors.size() >= 3) {
     const auto vi = vf(doors.back());
     if ((v0 - vi) < dv)
@@ -129,6 +129,10 @@ void Map::Init() {
   // 2. remove no pressure doors
   RemoveNoPressure(doors, *this);
   openable = doors;
+}
+
+bool Contains(const Doors &doors, const Door &door) noexcept {
+  return std::find(doors.begin(), doors.end(), door) != doors.end();
 }
 
 using State = std::pair<Door, std::optional<Door>>; // position, target
@@ -193,8 +197,7 @@ const Door kNoDoor = "??";
   } else {
     // more then 2 doors to choice from
     const auto is_valid_target = [&open](std::optional<Door> target) -> bool {
-      return target.has_value() &&
-             std::find(open.begin(), open.end(), target.value()) == open.end();
+      return target.has_value() && !Contains(open, target.value());
     };
 
     const auto init_targets =
@@ -236,15 +239,34 @@ const Door kNoDoor = "??";
         continue;
       Doors open1{open};
       // This is optimized version.
-      const auto step1 = [&open1, &seq1](Door pos, Door target) -> State {
+      const auto step1 = [&open1, &seq1, &map](Door pos, Door target) -> State {
         if (target == kNoDoor)
           return State{pos, std::nullopt};
+        const bool is_open = Contains(open1, pos);
         if (pos == target) {
           // we do not need to go anywhere but just open
-          open1.push_back(pos);
-          return State{pos, std::nullopt};
+          if (is_open) {
+            // the door is already opened (we are late) XXX?
+            return State{pos, std::nullopt}; // we lose a step not moving here
+          } else {
+            // the door is not yet opened, we do it now
+            open1.push_back(pos);
+            return State{pos, std::nullopt};
+          }
         }
-
+        if (map.IsOpenable(pos) && !is_open) {
+          // We may open this door on the way, should we waist the time for it?
+          const int distance_to_target = DistanceFast(map, pos, target);
+          const int rate_from = map.at(pos).rate;
+          const int rate_target = map.at(target).rate;
+          const int gain = distance_to_target * rate_from;
+          const int loss = rate_target;
+          if (gain >= loss) {
+            // We gain more if open the door now!
+            open1.push_back(pos);
+            return State{pos, target}; // we keep position and target
+          }
+        }
         const std::optional<Door> next_door = seq1(pos, target);
         if (!next_door.has_value()) {
           // XXX: what to do?
@@ -276,12 +298,10 @@ const Door kNoDoor = "??";
     std::string valve, list;
     int rate{0};
     std::smatch what;
-    // if (re2::RE2::FullMatch(input, re, &valve, &rate, &list)) {
     if (std::regex_match(line, what, re)) {
       valve = what[1];
       rate = stoi(what[2]);
       list = what[3];
-      // const std::vector<std::string> n = absl::StrSplit(list, ", ");
       const std::vector<std::string> n = StrSplit(list, ", ");
       map.insert({valve, Conf{rate, n}});
     } else {
