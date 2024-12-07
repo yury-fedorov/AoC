@@ -20,8 +20,10 @@ def _is_equation3(test_value: int, partial: int, numbers: []) -> bool:
         n = numbers[1:]
         if _is_equation3(test_value, partial + a, n):
             return True
-        if _is_equation3(test_value, partial * a, n):
-            return True
+        if partial > 0 and test_value / partial >= a:
+            # The check helps to avoid overflow
+            if _is_equation3(test_value, partial * a, n):
+                return True
     return False
 
 
@@ -51,6 +53,5 @@ class Day07(unittest.TestCase):
     def test_sample(self):
         self.__solution("07-1", 3749, 0)
 
-    # 5030892096384 - That's not the right answer.
     def test_day(self):
-        self.__solution("07", 0, 0)
+        self.__solution("07", 5030892084481, 0)
