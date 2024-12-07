@@ -14,12 +14,17 @@ struct Conf {
   std::vector<std::string> next;
 };
 
-// valve - configuration(rate, next doors)
-using Map = std::map<std::string, Conf>;
 // using Door = std::string_view;
 using Door = std::string;
 using Doors = std::vector<Door>;
 using DoorSet = std::set<Door>;
+
+// valve - configuration(rate, next doors)
+struct Map : public std::map<std::string, Conf> {
+  Doors all_doors;
+  Doors openable;
+  void Init();
+};
 
 // input
 [[nodiscard]] Map ReadMap(std::string_view file) noexcept;

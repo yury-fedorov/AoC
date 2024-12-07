@@ -61,42 +61,6 @@ namespace day16 {
   return distance;
 }
 
-// TODO - this method is too slow
-[[nodiscard]] Doors Sequence(const Map &map, Door from, Door to,
-                             int depth) noexcept {
-  if (from != to && depth > 0) {
-    const auto &next_doors = map.at(from).next;
-    if (std::find(next_doors.begin(), next_doors.end(), to) != next_doors.end())
-      return Doors{to};
-    // we are here because one level depth was not enough
-    for (const auto &door : next_doors) {
-      const auto d1 = depth - 1;
-      if (d1 > 0) {
-        auto s = Sequence(map, door, to, d1);
-        if (!s.empty() && s.back() == to) {
-          s.insert(s.begin(), door);
-          return s;
-        }
-      }
-    }
-  }
-  return Doors{};
-}
-
-[[nodiscard]] Doors SequenceFast(const Map &map, Door from, Door to) noexcept {
-  using Input = std::pair<Door, Door>;
-  using Cache = std::map<Input, Doors>;
-  static Cache cache;
-  const Input input{from, to};
-  const auto i = cache.find(input);
-  if (i != cache.end())
-    return i->second; // cache hitted
-  const int distance = DistanceFast(map, from, to);
-  const auto s = Sequence(map, from, to, distance);
-  cache[input] = s;
-  return s;
-}
-
 void RemoveOpened(Doors &doors, const Doors &open) noexcept {
   std::for_each(open.begin(), open.end(), [&doors](const auto &door) {
     doors.erase(std::find(doors.begin(), doors.end(), door));
@@ -113,22 +77,25 @@ void RemoveNoPressure(Doors &doors, const Map &map) noexcept {
 
 // highest rates at the beginning with shortest path to it
 void Order(const Map &map, Doors &doors, const Door &from) noexcept {
-    const auto vf = [&map, &from](const auto& x) -> long {
-        const int d = DistanceFast(map, from, x);
-        return map.at(x).rate - d;
-        };
-    std::sort(doors.begin(), doors.end(),
+  const auto vf = [&map, &from](const auto &x) -> long {
+    const int d = DistanceFast(map, from, x);
+    return map.at(x).rate - d;
+  };
+  std::sort(doors.begin(), doors.end(),
             [&map, &from, &vf](const auto &a, const auto &b) {
               return vf(a) > vf(b);
             });
-    // now the list is full
-    const long v0 = vf(doors[0]);
-    constexpr long dv = 6; // this value changes the results, answers with 5 and 4
-    while (doors.size() >= 3) {
-        const auto vi = vf(doors.back());
-        if ((v0 - vi) < dv) break;
-        doors.pop_back();
-    }
+  // now the list is full
+  const long v0 = vf(doors[0]);
+  // 5 - 1697
+  // 6,7 - 1972
+  constexpr long dv = 7; // this value changes the results, answers with 5 and 4
+  while (doors.size() >= 3) {
+    const auto vi = vf(doors.back());
+    if ((v0 - vi) < dv)
+      break;
+    doors.pop_back();
+  }
 }
 
 [[nodiscard]] long Pressure(const Map &map, Door cur_door, Doors open,
@@ -136,17 +103,14 @@ void Order(const Map &map, Doors &doors, const Door &from) noexcept {
   if (t_max < 0)
     return 0;
   const auto last_minute = PressureInMinute(map, open);
-  // 1. get all doors
-  Doors doors = AllDoors(map);
-  // 2. remove opened doors
+  Doors doors = map.openable;
+  // remove opened doors
   RemoveOpened(doors, open);
-  // 3. remove no pressure doors
-  RemoveNoPressure(doors, map);
 
   long pressure{t_max * last_minute};
   for (const auto &target : doors) {
-    const auto dt = DistanceFast(map, cur_door, target) + 1;
-    const auto t1 = t_max - dt;
+    const int dt = DistanceFast(map, cur_door, target) + 1;
+    const int t1 = t_max - dt;
     if (t1 < 0)
       continue; // no sense to go
     long cur_pressure = dt * last_minute;
@@ -156,6 +120,15 @@ void Order(const Map &map, Doors &doors, const Door &from) noexcept {
     pressure = std::max(pressure, cur_pressure);
   }
   return pressure;
+}
+
+void Map::Init() {
+  // 1. get all doors
+  Doors doors = AllDoors(*this);
+  all_doors = doors;
+  // 2. remove no pressure doors
+  RemoveNoPressure(doors, *this);
+  openable = doors;
 }
 
 using State = std::pair<Door, std::optional<Door>>; // position, target
@@ -173,11 +146,7 @@ const Door kNoDoor = "??";
   const auto [pos_a, target_a] = actor_a;
   const auto [pos_b, target_b] = actor_b;
 
-  // XXX: this part can be cached one per all the times.
-  // 1. get all doors
-  Doors doors = AllDoors(map);
-  // 2. remove no pressure doors
-  RemoveNoPressure(doors, map);
+  Doors doors = map.openable;
 
   if (doors.size() == open.size()) {
     // all doors are open
@@ -190,8 +159,8 @@ const Door kNoDoor = "??";
   Doors targets_a, targets_b;
   if (doors_count == 1) {
     const Door &d = doors[0];
-    const int a = SequenceFast(map, pos_a, d).size();
-    const int b = SequenceFast(map, pos_b, d).size();
+    const int a = DistanceFast(map, pos_a, d);
+    const int b = DistanceFast(map, pos_b, d);
     if (a < b) {
       targets_a.push_back(d);
       targets_b.push_back(kNoDoor);
@@ -205,12 +174,12 @@ const Door kNoDoor = "??";
     const Door &d1 = doors[1];
 
     // option 1
-    const int a0 = SequenceFast(map, pos_a, d0).size();
-    const int b1 = SequenceFast(map, pos_b, d1).size();
+    const int a0 = DistanceFast(map, pos_a, d0);
+    const int b1 = DistanceFast(map, pos_b, d1);
 
     // option 2
-    const int a1 = SequenceFast(map, pos_a, d1).size();
-    const int b0 = SequenceFast(map, pos_b, d0).size();
+    const int a1 = DistanceFast(map, pos_a, d1);
+    const int b0 = DistanceFast(map, pos_b, d0);
 
     // The longest of the distances is the real critical path.
     if (std::max(a0, b1) < std::max(a1, b0)) {
@@ -241,8 +210,22 @@ const Door kNoDoor = "??";
     Order(map, targets_b, pos_b);
   }
 
-  const auto seq = [&map](Door pos, Door target) {
-    return target == kNoDoor ? Doors{} : SequenceFast(map, pos, target);
+  // XXX: Consider that could be equally long alternative paths!
+  const auto seq1 = [&map](Door from, Door target) -> std::optional<Door> {
+    if (target == kNoDoor)
+      return std::nullopt;
+    std::optional<Door> result;
+    int shortest_distance = map.size(); // max
+    const auto &next_doors = map.at(from).next;
+    for (const auto &door : next_doors) {
+      const int cur_distance = DistanceFast(map, door, target);
+      if (cur_distance < shortest_distance) {
+        // Found better way
+        result = door;
+        shortest_distance = cur_distance;
+      }
+    }
+    return result;
   };
 
   long pressure = 0;
@@ -252,19 +235,28 @@ const Door kNoDoor = "??";
       if (target_ai == target_bi && target_ai != kNoDoor)
         continue;
       Doors open1{open};
-      const auto step = [&open1, &seq](Door pos, Door target) -> State {
-        const Doors &path = seq(pos, target);
-        if (path.empty()) {
+      // This is optimized version.
+      const auto step1 = [&open1, &seq1](Door pos, Door target) -> State {
+        if (target == kNoDoor)
+          return State{pos, std::nullopt};
+        if (pos == target) {
           // we do not need to go anywhere but just open
-          if (std::find(open1.begin(), open1.end(), pos) == open1.end())
-            open1.push_back(pos);
+          open1.push_back(pos);
           return State{pos, std::nullopt};
         }
+
+        const std::optional<Door> next_door = seq1(pos, target);
+        if (!next_door.has_value()) {
+          // XXX: what to do?
+          assert(false);
+          return State{};
+        }
         // we need to make the next step
-        return State{path.front(), target};
+        return State{next_door.value(), target};
       };
-      const auto actor_a1 = step(pos_a, target_ai);
-      const auto actor_b1 = step(pos_b, target_bi);
+
+      const auto actor_a1 = step1(pos_a, target_ai);
+      const auto actor_b1 = step1(pos_b, target_bi);
       const auto cur_pressure =
           last_minute + Pressure2(map, actor_a1, actor_b1, open1, t - 1);
       pressure = std::max(pressure, cur_pressure);
@@ -297,6 +289,7 @@ const Door kNoDoor = "??";
       assert(false);
     }
   }
+  map.Init();
   return map;
 }
 
