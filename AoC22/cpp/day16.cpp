@@ -61,6 +61,7 @@ namespace day16 {
   return distance;
 }
 
+// TODO - this method is too slow
 [[nodiscard]] Doors Sequence(const Map &map, Door from, Door to,
                              int depth) noexcept {
   if (from != to && depth > 0) {
@@ -112,14 +113,22 @@ void RemoveNoPressure(Doors &doors, const Map &map) noexcept {
 
 // highest rates at the beginning with shortest path to it
 void Order(const Map &map, Doors &doors, const Door &from) noexcept {
-  std::sort(doors.begin(), doors.end(),
-            [&map, &from](const auto &a, const auto &b) {
-              const auto vf = [&map, &from](const auto &x) {
-                const int d = DistanceFast(map, from, x);
-                return map.at(x).rate - d;
-              };
+    const auto vf = [&map, &from](const auto& x) -> long {
+        const int d = DistanceFast(map, from, x);
+        return map.at(x).rate - d;
+        };
+    std::sort(doors.begin(), doors.end(),
+            [&map, &from, &vf](const auto &a, const auto &b) {
               return vf(a) > vf(b);
             });
+    // now the list is full
+    const long v0 = vf(doors[0]);
+    constexpr long dv = 6; // this value changes the results, answers with 5 and 4
+    while (doors.size() >= 3) {
+        const auto vi = vf(doors.back());
+        if ((v0 - vi) < dv) break;
+        doors.pop_back();
+    }
 }
 
 [[nodiscard]] long Pressure(const Map &map, Door cur_door, Doors open,
