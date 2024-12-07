@@ -10,6 +10,9 @@
 #include "common-std.h"
 #include "day16.h"
 
+// An opportunity to visualize the graph:
+// https://www.geeksforgeeks.org/visualize-graphs-in-python/
+
 namespace day16 {
 
 [[nodiscard]] long PressureInMinute(const Map &map,
