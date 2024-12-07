@@ -6,9 +6,11 @@
 #include <iostream>
 
 long day16_part2() {
-  const auto map = day16::ReadMap("16-sample");
-  const long pressure = day16::Answer2(map);
-  return pressure;
+  auto map = day16::ReadMap("16-sample");
+  assert( 1707 == day16::Answer2(map) );
+
+  map = day16::ReadMap("16");
+  return day16::Answer2(map);
 }
 
 long day19_part1() {

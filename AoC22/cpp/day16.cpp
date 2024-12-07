@@ -153,11 +153,11 @@ using State = std::pair<Door, std::optional<Door>>; // position, target
 const Door kNoDoor = "??";
 [[nodiscard]] long Pressure2(const Map &map, State actor_a, State actor_b,
                              Doors open, int t) noexcept {
-  if (t < 0)
+  if (t <= 0)
     return 0;
 
   const long last_minute = PressureInMinute(map, open);
-  if (t == 0)
+  if (t == 1)
     // last step
     return last_minute;
 
@@ -236,7 +236,7 @@ const Door kNoDoor = "??";
     return target == kNoDoor ? Doors{} : SequenceFast(map, pos, target);
   };
 
-  long pressure{t * last_minute};
+  long pressure = 0;
   for (const auto &target_ai : targets_a) {
     for (const auto &target_bi : targets_b) {
       // no sense to follow for both the same door
