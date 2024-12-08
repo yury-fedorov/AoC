@@ -18,5 +18,8 @@ class Day24(unittest.TestCase):
         self.assertEqual(_answer1(lines), a1, "answer 1")
         self.assertEqual(_answer2(lines), a2, "answer 2")
 
+    def test_sample(self):
+        self.__solution("01-1", 0, 0)
+
     def test_day(self):
         self.__solution("01", 0, 0)
