@@ -10,14 +10,30 @@ def _all_frequencies(the_map: [str]) -> {}:
             if c != EMPTY}
 
 
-# TODO - early draft not sure it works in all a, b positions
-def _antinodes_limitless(a: (int, int), b: (int, int)) -> [(int, int)]:
-    ''' May produce antinodes outside the map. '''
+def _antinodes(a: (int, int), b: (int, int), map_size: (int, int), is_repeated: bool) -> [(int, int)]:
     ax, ay = a
     bx, by = b
     dx = ax - bx
     dy = ay - by
-    return [(ax + dx, ay + dy), (bx - dx, by - dy)]
+
+    x_n, y_n = map_size
+
+    def is_in(p: (int, int)) -> bool:
+        x, y = p
+        return (0 <= x) and (x < x_n) and (0 <= y) and (y < y_n)
+
+    result = []
+    # for repeated full map coverage, otherwise one iteration: range(1,2)
+    r = range(0, max(x_n, y_n)) if is_repeated else range(1, 2)
+    for i in r:
+        ai = (ax + (i * dx), ay + (i * dy))
+        bi = (bx - (i * dx), by - (i * dy))
+        valid_cases = [xi for xi in [ai, bi] if is_in(xi)]
+        result.extend(valid_cases)
+        if len(valid_cases) == 0:
+            break
+
+    return [e for e in result if is_in(e)]
 
 
 def _antennas_positions(the_map: [str], frequency: str) -> [(int, int)]:
@@ -26,7 +42,8 @@ def _antennas_positions(the_map: [str], frequency: str) -> [(int, int)]:
             if the_map[y][x] == frequency]
 
 
-def _answer1(the_map: [str]) -> int:
+def _answer(the_map: [str], is_repeated: bool) -> int:
+    map_size = (len(the_map[0]), len(the_map))
     frequencies = _all_frequencies(the_map)
     all_antinodes = set()
     for f in frequencies:
@@ -35,21 +52,16 @@ def _answer1(the_map: [str]) -> int:
         for i, a in enumerate(antennas):
             for j, b in enumerate(antennas):
                 if i < j:
-                    ij_antinodes = _antinodes_limitless(a, b)
-                    all_antinodes.update(ij_antinodes)
+                    all_antinodes.update(_antinodes(a, b, map_size, is_repeated))
+    return len(all_antinodes)
 
-    y_n = len(the_map)
-    x_n = len(the_map[0])
-    result = 0
-    for a in all_antinodes:
-        x, y = a
-        if (0 <= x) and (x < x_n) and (0 <= y) and (y < y_n):
-            result += 1
-    return result
+
+def _answer1(the_map: [str]) -> int:
+    return _answer(the_map, False)
 
 
 def _answer2(the_map: [str]) -> int:
-    return 0
+    return _answer(the_map, True)
 
 
 class Day08(unittest.TestCase):
@@ -60,7 +72,7 @@ class Day08(unittest.TestCase):
         self.assertEqual(_answer2(the_map), a2, "answer 2")
 
     def test_sample(self):
-        self.__solution("08-1", 14, 0)
+        self.__solution("08-1", 14, 34)
 
     def test_day(self):
-        self.__solution("08", 269, 0)
+        self.__solution("08", 269, 949)
