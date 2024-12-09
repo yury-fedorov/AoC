@@ -19,6 +19,7 @@ def _unpack_disk(disk: str) -> {}:
     return unpacked
 
 def _defrag(disk_map:{}):
+    '''Defragmentation for the answer 1 (fragmented files, empty space at the end is continuous).'''
     disk_end = max(disk_map.keys())
     position = disk_end
     low_bound_empty = 0 # before it there is no free space
@@ -47,12 +48,63 @@ def _checksum(disk_map:{}) -> int:
             result += (position * file_id)
     return result
 
+
+def _defrag2(disk_map:{}):
+    '''Defragmentation for the answer 2 (all files continues and moved only once).'''
+    disk_end = max(disk_map.keys())
+    position = disk_end
+    while position >= 0:
+        content = disk_map[position]
+        is_file = content != EMPTY_SPACE
+        if is_file:
+            # let's find sufficient empty space
+            file_size = 0
+            cur_position = position
+            while cur_position >= 0 and disk_map[cur_position] == content:
+                file_size += 1
+                cur_position -= 1
+
+            # find sufficient empty space
+            # empty_head = find_empty_space(disk_map, file_size)
+            empty_head = 0 # XXX here could be improved
+            while empty_head <= position:
+                if disk_map[empty_head] != EMPTY_SPACE:
+                    empty_head += 1
+                else:
+                    is_good = True
+                    for i in range(file_size):
+                        if disk_map[empty_head + i] != EMPTY_SPACE:
+                            # not big enough
+                            empty_head += i
+                            is_good = False
+                            break # out of internal continues empty space loop
+                    if is_good:
+                        break # out of searching loop, we have found the empty space
+
+            if empty_head < position:
+                # reallocate the file
+                for i in range(file_size):
+                    c = disk_map[position - i]
+                    if c != content:
+                        # shouldn't happen
+                        raise ValueError()
+                    e = disk_map[empty_head+i]
+                    if e != EMPTY_SPACE:
+                        # shouldn't happen
+                        raise ValueError()
+                    disk_map[empty_head+i] = content
+                    disk_map[position - i] = EMPTY_SPACE
+
+        position -= 1
+    return disk_map
+
+
 def _answer1(disk: str) -> {}:
     return _checksum(_defrag(_unpack_disk(disk)))
 
 
 def _answer2(disk: str) -> {}:
-    return 0
+    return _checksum(_defrag2(_unpack_disk(disk)))
 
 
 class Day09(unittest.TestCase):
@@ -63,7 +115,7 @@ class Day09(unittest.TestCase):
         self.assertEqual(a2, _answer2(disk), "answer 2")
 
     def test_sample(self):
-        self.__solution("09-1", 1928, 0)
+        self.__solution("09-1", 1928, 2858)
 
     def test_day(self):
         self.__solution("09", 6370402949053, 0)
