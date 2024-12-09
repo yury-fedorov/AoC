@@ -3,26 +3,28 @@ import unittest
 
 EMPTY_SPACE = -1
 
+
 def _unpack_disk(disk: str) -> {}:
     '''Returns map where key is global position and value is the file id or empty space marker.'''
-    unpacked = {} # common vector will supper on performance during the degfragmentation, alternative is linked list
+    unpacked = {}  # common vector will supper on performance during the degfragmentation, alternative is linked list
     file_id = 0
     global_index = 0
     for i, length in enumerate(disk):
         length = int(length)
-        is_file = (i % 2 == 0) # zero based index, first goes a file
-        content = file_id if is_file else EMPTY_SPACE # file id or empty space
+        is_file = (i % 2 == 0)  # zero based index, first goes a file
+        content = file_id if is_file else EMPTY_SPACE  # file id or empty space
         for _ in range(length):
             unpacked[global_index] = content
             global_index += 1
-        file_id += 1 if is_file else 0 # next file id
+        file_id += 1 if is_file else 0  # next file id
     return unpacked
 
-def _defrag(disk_map:{}):
+
+def _defrag(disk_map: {}):
     '''Defragmentation for the answer 1 (fragmented files, empty space at the end is continuous).'''
     disk_end = max(disk_map.keys())
     position = disk_end
-    low_bound_empty = 0 # before it there is no free space
+    low_bound_empty = 0  # before it there is no free space
     while position >= 0:
         content = disk_map[position]
         is_file = content != EMPTY_SPACE
@@ -40,8 +42,9 @@ def _defrag(disk_map:{}):
         position -= 1
     return disk_map
 
+
 # TODO may rewrite in shorter form
-def _checksum(disk_map:{}) -> int:
+def _checksum(disk_map: {}) -> int:
     result = 0
     for position, file_id in disk_map.items():
         if file_id != EMPTY_SPACE:
@@ -49,14 +52,16 @@ def _checksum(disk_map:{}) -> int:
     return result
 
 
-def _defrag2(disk_map:{}):
+def _defrag2(disk_map: {}):
     '''Defragmentation for the answer 2 (all files continues and moved only once).'''
     disk_end = max(disk_map.keys())
     position = disk_end
     while position >= 0:
         content = disk_map[position]
         is_file = content != EMPTY_SPACE
-        if is_file:
+        if not is_file:
+            position -= 1
+        else:
             # let's find sufficient empty space
             file_size = 0
             cur_position = position
@@ -66,7 +71,7 @@ def _defrag2(disk_map:{}):
 
             # find sufficient empty space
             # empty_head = find_empty_space(disk_map, file_size)
-            empty_head = 0 # XXX here could be improved
+            empty_head = 0  # XXX here could be improved
             while empty_head <= position:
                 if disk_map[empty_head] != EMPTY_SPACE:
                     empty_head += 1
@@ -77,9 +82,9 @@ def _defrag2(disk_map:{}):
                             # not big enough
                             empty_head += i
                             is_good = False
-                            break # out of internal continues empty space loop
+                            break  # out of internal continues empty space loop
                     if is_good:
-                        break # out of searching loop, we have found the empty space
+                        break  # out of searching loop, we have found the empty space
 
             if empty_head < position:
                 # reallocate the file
@@ -88,14 +93,16 @@ def _defrag2(disk_map:{}):
                     if c != content:
                         # shouldn't happen
                         raise ValueError()
-                    e = disk_map[empty_head+i]
+                    e = disk_map[empty_head + i]
                     if e != EMPTY_SPACE:
                         # shouldn't happen
                         raise ValueError()
-                    disk_map[empty_head+i] = content
+                    disk_map[empty_head + i] = content
                     disk_map[position - i] = EMPTY_SPACE
 
-        position -= 1
+            # we move in front of ex file in both cases: when it was moved and when not
+            position -= file_size
+
     return disk_map
 
 
@@ -112,10 +119,11 @@ class Day09(unittest.TestCase):
     def __solution(self, data: str, a1: int, a2: int):
         disk = c.read_lines(data)[0]
         self.assertEqual(a1, _answer1(disk), "answer 1")
-        self.assertEqual(a2, _answer2(disk), "answer 2")
+        if not c.is_fast_only():  # takes 34 seconds
+            self.assertEqual(a2, _answer2(disk), "answer 2")
 
     def test_sample(self):
         self.__solution("09-1", 1928, 2858)
 
     def test_day(self):
-        self.__solution("09", 6370402949053, 0)
+        self.__solution("09", 6370402949053, 6398096697992)
