@@ -5,8 +5,8 @@ EMPTY_SPACE = -1
 
 
 def _unpack_disk(disk: str) -> {}:
-    '''Returns map where key is global position and value is the file id or empty space marker.'''
-    unpacked = {}  # common vector will supper on performance during the degfragmentation, alternative is linked list
+    """Returns map where key is global position and value is the file id or empty space marker."""
+    unpacked = {}  # common vector will supper on performance during the defragmentation, alternative is linked list
     file_id = 0
     global_index = 0
     for i, length in enumerate(disk):
@@ -21,7 +21,7 @@ def _unpack_disk(disk: str) -> {}:
 
 
 def _defrag(disk_map: {}):
-    '''Defragmentation for the answer 1 (fragmented files, empty space at the end is continuous).'''
+    """Defragmentation for the answer 1 (fragmented files, empty space at the end is continuous)."""
     disk_end = max(disk_map.keys())
     position = disk_end
     low_bound_empty = 0  # before it there is no free space
@@ -43,19 +43,15 @@ def _defrag(disk_map: {}):
     return disk_map
 
 
-# TODO may rewrite in shorter form
 def _checksum(disk_map: {}) -> int:
-    result = 0
-    for position, file_id in disk_map.items():
-        if file_id != EMPTY_SPACE:
-            result += (position * file_id)
-    return result
+    return sum((position * file_id) for position, file_id in disk_map.items() if file_id != EMPTY_SPACE)
 
 
 def _defrag2(disk_map: {}):
-    '''Defragmentation for the answer 2 (all files continues and moved only once).'''
+    """Defragmentation for the answer 2 (all files continues and moved only once)."""
     disk_end = max(disk_map.keys())
     position = disk_end
+    global_empty_head = 0
     while position >= 0:
         content = disk_map[position]
         is_file = content != EMPTY_SPACE
@@ -69,13 +65,18 @@ def _defrag2(disk_map: {}):
                 file_size += 1
                 cur_position -= 1
 
-            # find sufficient empty space
-            # empty_head = find_empty_space(disk_map, file_size)
-            empty_head = 0  # XXX here could be improved
+            # find sufficient (file_size) empty space
+            is_global_empty_refreshed = False
+            empty_head = global_empty_head
             while empty_head <= position:
                 if disk_map[empty_head] != EMPTY_SPACE:
                     empty_head += 1
                 else:
+                    # first empty space on the disk was just found
+                    if not is_global_empty_refreshed:
+                        global_empty_head = empty_head
+                        is_global_empty_refreshed = True
+
                     is_good = True
                     for i in range(file_size):
                         if disk_map[empty_head + i] != EMPTY_SPACE:
@@ -119,8 +120,8 @@ class Day09(unittest.TestCase):
     def __solution(self, data: str, a1: int, a2: int):
         disk = c.read_lines(data)[0]
         self.assertEqual(a1, _answer1(disk), "answer 1")
-        if not c.is_fast_only():  # takes 34 seconds
-            self.assertEqual(a2, _answer2(disk), "answer 2")
+        # part 2 takes 6 seconds
+        self.assertEqual(a2, _answer2(disk), "answer 2")
 
     def test_sample(self):
         self.__solution("09-1", 1928, 2858)
