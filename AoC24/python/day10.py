@@ -12,18 +12,18 @@ def _all_trailheads(the_map: []) -> []:
 SHIFTS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 
-def _score_trailhead(the_map: [], trailhead: (int, int)) -> int:
-    """Scoring function for answer 1"""
+def _score_trailhead(the_map: [], trailhead: (int, int), is_part1: bool) -> int:
+    """Scoring function for both answers"""
     n_y, n_x = len(the_map), len(the_map[0])
 
     def is_in(p: (int, int)) -> bool:
         x, y = p
         return 0 <= x < n_x and 0 <= y < n_y
 
-    positions = {trailhead}
+    positions = {trailhead} if is_part1 else [trailhead]
     for cur_level in range(9):
         next_level = str(cur_level + 1)
-        next_positions = set()
+        next_positions = set() if is_part1 else []
         for p in positions:
             x0, y0 = p
             for s in SHIFTS:
@@ -32,44 +32,22 @@ def _score_trailhead(the_map: [], trailhead: (int, int)) -> int:
                 y1 = y0 + dy
                 p1 = x1, y1
                 if is_in(p1) and the_map[y1][x1] == next_level:
-                    next_positions.add(p1)
-        positions = next_positions
-    return len(positions)
-
-
-def _score_trailhead2(the_map: [], trailhead: (int, int)) -> int:
-    """Scoring function for answer 2"""
-    n_y, n_x = len(the_map), len(the_map[0])
-
-    def is_in(p: (int, int)) -> bool:
-        x, y = p
-        return 0 <= x < n_x and 0 <= y < n_y
-
-    positions = [trailhead]
-    for cur_level in range(9):
-        next_level = str(cur_level + 1)
-        next_positions = []
-        for p in positions:
-            x0, y0 = p
-            for s in SHIFTS:
-                dx, dy = s
-                x1 = x0 + dx
-                y1 = y0 + dy
-                p1 = x1, y1
-                if is_in(p1) and the_map[y1][x1] == next_level:
-                    next_positions.append(p1)
+                    if is_part1:
+                        next_positions.add(p1)
+                    else:
+                        next_positions.append(p1)
         positions = next_positions
     return len(positions)
 
 
 def _answer1(the_map: []) -> int:
     trailheads = _all_trailheads(the_map)
-    return sum(_score_trailhead(the_map, p) for p in trailheads)
+    return sum(_score_trailhead(the_map, p, True) for p in trailheads)
 
 
 def _answer2(the_map: []) -> int:
     trailheads = _all_trailheads(the_map)
-    return sum(_score_trailhead2(the_map, p) for p in trailheads)
+    return sum(_score_trailhead(the_map, p, False) for p in trailheads)
 
 
 class Day10(unittest.TestCase):
