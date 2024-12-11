@@ -99,7 +99,7 @@ def _a2_v3(stones: [], times: int) -> int:
 
 
 def _answer2(stones: []) -> int:
-    return _a2_v4(stones, 75)
+    return _a2_v5(stones, 75)
 
 
 CACHE25 = {}
@@ -130,6 +130,32 @@ def _a2_v4(stones: [], times: int) -> int:
         result += s_i_n * _a2_v4([s_i], times - DELTA)
     return result
 
+# (value,times) - amount of stones
+CACHE_V_T = {}
+
+def _a2_v5(stones: [], times: int) -> int:
+    if times <= 0:
+        return len(stones)
+    if times == 1:
+        return len(_blink(stones, times))
+
+    if len(stones) == 1:
+        s = stones[0]
+        key = (s, times)
+        try:
+            result = CACHE_V_T[key]
+        except KeyError:
+            result = _a2_v5(_blink(stones, 1), times - 1)
+            CACHE_V_T[key] = result
+        return result
+
+    counter = Counter(stones)
+    result = 0
+    for s_i in counter.keys():
+        s_i_n = counter[s_i]
+        result += s_i_n * _a2_v5([s_i], times)
+    return result
+
 
 class Day11(unittest.TestCase):
 
@@ -150,11 +176,13 @@ class Day11(unittest.TestCase):
         ts0 = time.time()
         a1 = _answer1(s)
         ts1 = time.time()
-        a2 = _a2(s, 25)
+        a2 = _a2_v5(s, 25)
         ts2 = time.time()
         dt1 = ts1 - ts0
         dt2 = ts2 - ts1
+        self.assertLess(dt2, dt1, "answer 2 must be faster")
         self.assertEqual(a1, a2, "answer 1 vs answer 2")
 
+
     def test_day(self):
-        self.__solution("11", 207683, 0)
+        self.__solution("11", 207683, 244782991106220)
