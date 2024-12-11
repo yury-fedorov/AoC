@@ -35,7 +35,7 @@ def _answer1(stones: []) -> int:
     return _brute_force(stones, 25)
 
 
-MAX_LENGTH = 40 # perfect length for performance (4 times faster on 25 times)
+MAX_LENGTH = 40  # perfect length for performance (4 times faster on 25 times)
 MAX_DEPTH = 5
 CACHE = {}
 
@@ -67,8 +67,68 @@ def _a2(stones: [], times: int) -> int:
     return result
 
 
+def _a2_v3(stones: [], times: int) -> int:
+    n = len(stones)
+    if times <= 0:
+        return n
+
+    if n == 1 and times >= MAX_DEPTH:
+        # single element we cache
+        s = stones[0]
+        try:
+            next_five = CACHE[s]
+        except KeyError:
+            next_five = _blink(stones, MAX_DEPTH)
+            CACHE[s] = next_five
+        return _a2(next_five, times - MAX_DEPTH)
+
+    # we need to split
+    counter = Counter(stones)
+    result = 0
+    for s_i in counter.keys():
+        s_i_n = counter[s_i]
+
+        try:
+            next_25 = CACHE25[s_i]
+        except KeyError:
+            next_25 = _blink([s_i], 25)
+            CACHE[s_i] = next_25
+
+        result += s_i_n * _a2(next_25, times - 25)
+    return result
+
+
 def _answer2(stones: []) -> int:
-    return _a2(stones, 75)
+    return _a2_v4(stones, 75)
+
+
+CACHE25 = {}
+
+
+def _a2_v4(stones: [], times: int) -> int:
+    if times <= 0:
+        return len(stones)
+
+    DELTA = 25
+    if len(stones) == 1:
+        s = stones[0]
+        try:
+            next_25 = CACHE25[s]
+        except KeyError:
+            next_25 = _blink([s], DELTA)
+            CACHE[s] = next_25
+        if times == 25:
+            return len(next_25)
+        result = next_25
+    else:
+        result = _blink(stones, DELTA)
+
+    counter = Counter(result)
+    result = 0
+    for s_i in counter.keys():
+        s_i_n = counter[s_i]
+        result += s_i_n * _a2_v4([s_i], times - DELTA)
+    return result
 
 
 class Day11(unittest.TestCase):
@@ -94,7 +154,7 @@ class Day11(unittest.TestCase):
         ts2 = time.time()
         dt1 = ts1 - ts0
         dt2 = ts2 - ts1
-        self.assertEqual( a1, a2, "answer 1 vs answer 2")
+        self.assertEqual(a1, a2, "answer 1 vs answer 2")
 
     def test_day(self):
         self.__solution("11", 207683, 0)
