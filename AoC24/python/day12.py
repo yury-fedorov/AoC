@@ -18,10 +18,52 @@ class Region(NamedTuple):
     points: Points  # len(points) - area
     perimeter: int
 
+def _area(region: Region) -> int:
+    return len(region.points.points) # object Points then its internal field points
 
 def _price(region: Region) -> int:
-    return len(region.points.points) * region.perimeter  # area * perimeter
+    return _area(region) * region.perimeter  # area * perimeter
 
+
+def _tx_point(p: Point) -> Point:
+    # points are zero based integers for both x and y
+    # with this transformation shifts will refer to boarders between points
+    return Point( 2 * p.x + 1, 2 * p.y + 1)
+
+def _sides(points: [Point]) -> int:
+    counter = Counter([b
+                       for p in points
+                       for b in _borders(_tx_point(p))])
+    surface = [p for p in counter if counter[p] != 2]
+
+    STEP = 2 # because of the _tx_point scaling we did earlier
+
+    def count_sides_in_slice(slice: []) -> int:
+        result = 0
+        slice.sort()
+        prev = -100
+        while len(slice) :
+            cur = slice[0]
+            slice = slice[1:]
+            if prev != cur - STEP:
+                result += 1
+            prev = cur
+        return result
+
+    result = 0
+    min_x = min(x for x, _ in surface)
+    max_x = max(x for x, _ in surface)
+    for cur_x in range(min_x, max_x + 1, STEP):
+        slice = [y for x, y in surface if x == cur_x]
+        result += count_sides_in_slice(slice)
+
+    min_y = min(y for _, y in surface)
+    max_y = max(y for _, y in surface)
+    for cur_y in range(min_y, max_y + 1, STEP):
+        slice = [x for x, y in surface if y == cur_y]
+        result += count_sides_in_slice(slice)
+
+    return result
 
 _SHIFTS = [Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0)]
 
@@ -31,17 +73,9 @@ def _borders(p: Point) -> [Point]:
 
 
 def _perimeter(points: [Point]) -> int:
-    # points are zero based integers for both x and y
-    def tx(z: int) -> int:
-        return (2 * z) + 1
-
-    def tx_point(p: Point) -> Point:
-        return Point(tx(p.x), tx(p.y))
-
     counter = Counter([b
                        for p in points
-                       for b in _borders(tx_point(p))])
-
+                       for b in _borders(_tx_point(p))])
     return sum(1 for v in counter.values() if v == 1)
 
 
@@ -78,24 +112,25 @@ def _get_regions(the_map: []) -> []:
     return result
 
 
-def _answer1(the_map: []) -> int:
-    regions = _get_regions(the_map)
+def _answer1(regions: [Region]) -> int:
     return sum(_price(r) for r in regions)
 
 
-def _answer2(the_map: []) -> int:
-    return 0
+def _answer2(regions: [Region]) -> int:
+    return sum(_area(r) * _sides(r.points.points) for r in regions)
 
 
 class Day12(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
         the_map = c.read_lines(data)
-        self.assertEqual(a1, _answer1(the_map), "answer 1")
-        self.assertEqual(a2, _answer2(the_map), "answer 2")
+        regions = _get_regions(the_map)
+        self.assertEqual(a1, _answer1(regions), "answer 1")
+        self.assertEqual(a2, _answer2(regions), "answer 2")
 
     def test_sample(self):
-        self.__solution("12-1", 140, 0)
+        self.__solution("12-1", 140, 80)
 
+    # 845490 -- too low
     def test_day(self):
         self.__solution("12", 1433460, 0)
