@@ -2,6 +2,7 @@ import common as c
 import unittest
 from typing import NamedTuple
 import collections
+from collections import Counter
 
 
 class Point(NamedTuple):
@@ -22,8 +23,25 @@ def _price(region: Region) -> int:
     return len(region.points) * region.perimeter  # area * perimeter
 
 
+SHIFTS = [Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0)]
+
+
 def _perimeter(points: [Point]) -> int:
-    return 4  # TODO implement!
+    # points are zero based integers for both x and y
+    def tx(z: int) -> int:
+        return (2 * z) + 1
+
+    def tx_point(p: Point) -> Point:
+        return Point(tx(p.x), tx(p.y))
+
+    def borders(p: Point) -> [Point]:
+        return [Point(p.x + s.x, p.y + s.y) for s in SHIFTS]
+
+    counter = Counter([b
+                       for p in points
+                       for b in borders(tx_point(p))])
+
+    return sum(1 for v in counter.values() if v == 1)
 
 
 def _get_regions(the_map: []) -> []:
