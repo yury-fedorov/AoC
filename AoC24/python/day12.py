@@ -18,8 +18,10 @@ class Region(NamedTuple):
     points: Points  # len(points) - area
     perimeter: int
 
+
 def _area(region: Region) -> int:
-    return len(region.points.points) # object Points then its internal field points
+    return len(region.points.points)  # object Points then its internal field points
+
 
 def _price(region: Region) -> int:
     return _area(region) * region.perimeter  # area * perimeter
@@ -28,7 +30,8 @@ def _price(region: Region) -> int:
 def _tx_point(p: Point) -> Point:
     # points are zero based integers for both x and y
     # with this transformation shifts will refer to boarders between points
-    return Point( 2 * p.x + 1, 2 * p.y + 1)
+    return Point(2 * p.x + 1, 2 * p.y + 1)
+
 
 def _sides(points: [Point]) -> int:
     counter = Counter([b
@@ -36,16 +39,32 @@ def _sides(points: [Point]) -> int:
                        for b in _borders(_tx_point(p))])
     surface = [p for p in counter if counter[p] != 2]
 
-    STEP = 2 # because of the _tx_point scaling we did earlier
+    STEP = 2  # because of the _tx_point scaling we did earlier
 
-    def count_sides_in_slice(slice: []) -> int:
+    # sample 4 contains case when a line is not interrupted but de facto there are 2 angles:
+    #  aBb
+    #  BBB
+    #  cBd
+    def is_cross_of_two(surface: [], a: int, b: int, is_x_constant: bool, z: int) -> bool:
+        middle = int((a + b) / 2)
+        if is_x_constant:
+            # x constant slice
+            ap = Point(z + 1, middle)
+            bp = Point(z - 1, middle)
+        else:
+            # y constant slice
+            ap = Point(middle, z + 1)
+            bp = Point(middle, z - 1)
+        return any(i == ap for i in surface) and any(i == bp for i in surface)
+
+    def count_sides_in_slice(surface: [], slice: [], is_x_constant: bool, z: int) -> int:
         result = 0
         slice.sort()
         prev = -100
-        while len(slice) :
+        while len(slice):
             cur = slice[0]
             slice = slice[1:]
-            if prev != cur - STEP:
+            if prev != cur - STEP or is_cross_of_two(surface, prev, cur, is_x_constant, z):
                 result += 1
             prev = cur
         return result
@@ -55,15 +74,16 @@ def _sides(points: [Point]) -> int:
     max_x = max(x for x, _ in surface)
     for cur_x in range(min_x, max_x + 1, STEP):
         slice = [y for x, y in surface if x == cur_x]
-        result += count_sides_in_slice(slice)
+        result += count_sides_in_slice(surface, slice, True, cur_x)
 
     min_y = min(y for _, y in surface)
     max_y = max(y for _, y in surface)
     for cur_y in range(min_y, max_y + 1, STEP):
         slice = [x for x, y in surface if y == cur_y]
-        result += count_sides_in_slice(slice)
+        result += count_sides_in_slice(surface, slice, False, cur_y)
 
     return result
+
 
 _SHIFTS = [Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0)]
 
@@ -117,6 +137,7 @@ def _answer1(regions: [Region]) -> int:
 
 
 def _answer2(regions: [Region]) -> int:
+    l = [(r.plant, _area(r), _sides(r.points.points)) for r in regions]
     return sum(_area(r) * _sides(r.points.points) for r in regions)
 
 
@@ -133,7 +154,6 @@ class Day12(unittest.TestCase):
         regions = _get_regions(the_map)
         self.assertEqual(a2, _answer2(regions), "answer 2")
 
-
     def test_sample(self):
         self.__solution("12-1", 140, 80)
 
@@ -143,13 +163,11 @@ class Day12(unittest.TestCase):
     def test_sample3(self):
         self.__test_answer2("12-3", 236)
 
-    # TODO - the only broken case!
     def test_sample4(self):
         self.__test_answer2("12-4", 368)
 
     def test_sample5(self):
         self.__test_answer2("12-5", 1206)
 
-    # 845490 -- too low
     def test_day(self):
-        self.__solution("12", 1433460, 0)
+        self.__solution("12", 1433460, 855082)
