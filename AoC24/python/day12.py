@@ -49,15 +49,18 @@ def _get_region(p2p: {}, point: Point) -> {}:
     plant = p2p[point]
     points = {point}
     while True:
+        neighbours = {neighbour
+                      for cur_point in points
+                      for neighbour in _borders(cur_point)
+                      if p2p.get(neighbour) is not None
+                      }
         neighbour_points = set([neighbour
-                                for cur_point in points
-                                for neighbour_points in _borders(cur_point)
-                                for neighbour in neighbour_points
-                                if p2p.get(neighbour) is not None and not any(x == neighbour for x in points) and p2p[
+                                for neighbour in neighbours
+                                if not any(x == neighbour for x in points) and p2p[
                                     neighbour] == plant])
         if len(neighbour_points) == 0:
             break
-        points.union(neighbour_points)
+        points.update(neighbour_points)
     return points
 
 
