@@ -167,5 +167,5 @@ class Day12(unittest.TestCase):
     def test_sample5(self):
         self.__test_answer2("12-5", 1206)
 
-    def test_day(self):
+    def test_day(self):  # takes 4.5 seconds to solve
         self.__solution("12", 1433460, 855082)
