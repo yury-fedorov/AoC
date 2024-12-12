@@ -128,8 +128,27 @@ class Day12(unittest.TestCase):
         self.assertEqual(a1, _answer1(regions), "answer 1")
         self.assertEqual(a2, _answer2(regions), "answer 2")
 
+    def __test_answer2(self, data: str, a2: int):
+        the_map = c.read_lines(data)
+        regions = _get_regions(the_map)
+        self.assertEqual(a2, _answer2(regions), "answer 2")
+
+
     def test_sample(self):
         self.__solution("12-1", 140, 80)
+
+    def test_sample2(self):
+        self.__test_answer2("12-2", 436)
+
+    def test_sample3(self):
+        self.__test_answer2("12-3", 236)
+
+    # TODO - the only broken case!
+    def test_sample4(self):
+        self.__test_answer2("12-4", 368)
+
+    def test_sample5(self):
+        self.__test_answer2("12-5", 1206)
 
     # 845490 -- too low
     def test_day(self):
