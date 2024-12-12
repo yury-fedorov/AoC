@@ -1,7 +1,7 @@
 import common as c
 import unittest
 from typing import NamedTuple
-import collections
+from collections import namedtuple
 from collections import Counter
 
 
@@ -10,7 +10,7 @@ class Point(NamedTuple):
     y: int
 
 
-Points = collections.namedtuple('Points', ['points'])
+Points = namedtuple('Points', ['points'])
 
 
 class Region(NamedTuple):
@@ -23,7 +23,11 @@ def _price(region: Region) -> int:
     return len(region.points) * region.perimeter  # area * perimeter
 
 
-SHIFTS = [Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0)]
+_SHIFTS = [Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0)]
+
+
+def _borders(p: Point) -> [Point]:
+    return [Point(p.x + s.x, p.y + s.y) for s in _SHIFTS]
 
 
 def _perimeter(points: [Point]) -> int:
@@ -34,24 +38,43 @@ def _perimeter(points: [Point]) -> int:
     def tx_point(p: Point) -> Point:
         return Point(tx(p.x), tx(p.y))
 
-    def borders(p: Point) -> [Point]:
-        return [Point(p.x + s.x, p.y + s.y) for s in SHIFTS]
-
     counter = Counter([b
                        for p in points
-                       for b in borders(tx_point(p))])
+                       for b in _borders(tx_point(p))])
 
     return sum(1 for v in counter.values() if v == 1)
 
 
+def _get_region(p2p: {}, point: Point) -> {}:
+    plant = p2p[point]
+    points = {point}
+    while True:
+        neighbour_points = set([neighbour
+                                for cur_point in points
+                                for neighbour_points in _borders(cur_point)
+                                for neighbour in neighbour_points
+                                if p2p.get(neighbour) is not None and not any(x == neighbour for x in points) and p2p[
+                                    neighbour] == plant])
+        if len(neighbour_points) == 0:
+            break
+        points.union(neighbour_points)
+    return points
+
+
 def _get_regions(the_map: []) -> []:
+    # point to plant type
+    pairs = [(Point(x, y), plant)
+             for y, line in enumerate(the_map)
+             for x, plant in enumerate(line)]
+    p2p = dict({p for p in pairs})
+    pending_processing = {x for x in p2p}
     result = []
-    x = 0
-    y = 0
-    plant = the_map[y][x]
-    points = [Point(x, y)]
-    result.append(Region(plant, Points(points), _perimeter(points)))
-    # TODO implement!
+    while len(pending_processing) > 0:
+        point = pending_processing.pop()
+        plant = p2p[point]
+        points = _get_region(p2p, point)
+        pending_processing.difference_update(points)  # remove from pending all points of the region
+        result.append(Region(plant, Points(points), _perimeter(points)))
     return result
 
 
