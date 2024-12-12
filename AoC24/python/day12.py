@@ -16,15 +16,14 @@ Points = namedtuple('Points', ['points'])
 class Region(NamedTuple):
     plant: str
     points: Points  # len(points) - area
-    perimeter: int
+
+
+def _points(region: Region) -> [Point]:
+    return region.points.points  # object Points then its internal field points
 
 
 def _area(region: Region) -> int:
-    return len(region.points.points)  # object Points then its internal field points
-
-
-def _price(region: Region) -> int:
-    return _area(region) * region.perimeter  # area * perimeter
+    return len(_points(region))
 
 
 def _tx_point(p: Point) -> Point:
@@ -128,17 +127,16 @@ def _get_regions(the_map: []) -> []:
         plant = p2p[point]
         points = _get_region(p2p, point)
         pending_processing.difference_update(points)  # remove from pending all points of the region
-        result.append(Region(plant, Points(points), _perimeter(points)))
+        result.append(Region(plant, Points(points)))
     return result
 
 
 def _answer1(regions: [Region]) -> int:
-    return sum(_price(r) for r in regions)
+    return sum(_area(r) * _perimeter(_points(r)) for r in regions)
 
 
 def _answer2(regions: [Region]) -> int:
-    l = [(r.plant, _area(r), _sides(r.points.points)) for r in regions]
-    return sum(_area(r) * _sides(r.points.points) for r in regions)
+    return sum(_area(r) * _sides(_points(r)) for r in regions)
 
 
 class Day12(unittest.TestCase):
