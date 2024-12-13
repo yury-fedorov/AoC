@@ -1,13 +1,72 @@
 import common as c
 import unittest
+import numpy as np
+import re
+from typing import NamedTuple
 
 
-# TODO - template to use for daily solutions, don't forget to add the solution to aoc24.py
-def _answer1(lines: []) -> int:
-    return 0
+class Equation(NamedTuple):
+    ak: int
+    bk: int
+    r: int
 
 
-def _answer2(lines: []) -> int:
+class Solution(NamedTuple):
+    a: int
+    b: int
+
+
+class System(NamedTuple):
+    e1: Equation
+    e2: Equation
+
+
+def _solve1(e1: Equation, e2: Equation) -> Solution:
+    k = np.array([[e1.ak, e1.bk], [e2.ak, e2.bk]])
+    r = np.array([e1.r, e2.r])
+    ab = np.linalg.solve(k, r)
+    return Solution(round(ab[0]), round(ab[1]))
+
+
+def _is_valid_solution(e1: Equation, e2: Equation, s: Solution) -> bool:
+    def is_valid(e: Equation) -> bool:
+        return (e.ak * s.a) + (e.bk * s.b) == e.r and s.a <= 100 and s.b <= 100
+
+    return is_valid(e1) and is_valid(e2)
+
+
+def _parse_system(lines: [str]) -> System:
+    # Button A: X+94, Y+34
+    # Button B: X+22, Y+67
+    # Prize: X=8400, Y=5400
+    p1 = 'Button .: X(.\d+), Y(.\d+)'
+    a = re.search(p1, lines[0])
+    b = re.search(p1, lines[1])
+    p2 = 'Prize: X=(\d+), Y=(\d+)'
+    prize = re.search(p2, lines[2])
+    e1 = Equation(int(a[1]), int(b[1]), int(prize[1]))
+    e2 = Equation(int(a[2]), int(b[2]), int(prize[2]))
+    return System(e1, e2)
+
+
+def _parse(lines: [str]) -> [System]:
+    n = int((len(lines) + 1) / 4)
+    return [_parse_system(lines[(i * 4):]) for i in range(n)]
+
+
+def _answer1(systems: [System]) -> int:
+    result = 0
+    print(f"Systems: {len(systems)}")
+    for i, s in enumerate(systems):
+        sol = _solve1(s.e1, s.e2)
+        if _is_valid_solution(s.e1, s.e2, sol):
+            result += (3 * sol[0]) + (sol[1])
+        else:
+            print( f"Bad system: {i} {s} ")
+    return result
+
+
+def _answer2(systems: [System]) -> int:
     return 0
 
 
@@ -15,11 +74,21 @@ class Day13(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
         lines = c.read_lines(data)
-        self.assertEqual(a1, _answer1(lines), "answer 1")
-        self.assertEqual(a2, _answer2(lines), "answer 2")
+        systems = _parse(lines)
+        self.assertEqual(a1, _answer1(systems), "answer 1")
+        self.assertEqual(a2, _answer2(systems), "answer 2")
+
+    def test_valid_system(self):
+        self.assertEqual((80, 40), _solve1(Equation(94, 22, 8400), Equation(34, 67, 5400)), "equation system")
+
+    def test_invalid_system(self):
+        e1 = Equation(26, 67, 12748)
+        e2 = Equation(66, 21, 12176)
+        s = _solve1(e1, e2)
+        self.assertFalse(_is_valid_solution(e1, e2, s), "check solution")
 
     def test_sample(self):
-        self.__solution("01-1", 0, 0)
+        self.__solution("13-1", 480, 0)
 
     def test_day(self):
-        self.__solution("01", 0, 0)
+        self.__solution("13", 33427, 0)
