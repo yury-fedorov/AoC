@@ -30,7 +30,7 @@ def _solve1(e1: Equation, e2: Equation) -> Solution:
 
 def _is_valid_solution(e1: Equation, e2: Equation, s: Solution) -> bool:
     def is_valid(e: Equation) -> bool:
-        return (e.ak * s.a) + (e.bk * s.b) == e.r and s.a <= 100 and s.b <= 100
+        return (e.ak * s.a) + (e.bk * s.b) == e.r
 
     return is_valid(e1) and is_valid(e2)
 
@@ -56,18 +56,24 @@ def _parse(lines: [str]) -> [System]:
 
 def _answer1(systems: [System]) -> int:
     result = 0
-    print(f"Systems: {len(systems)}")
-    for i, s in enumerate(systems):
+    for s in systems:
         sol = _solve1(s.e1, s.e2)
         if _is_valid_solution(s.e1, s.e2, sol):
             result += (3 * sol[0]) + (sol[1])
-        else:
-            print( f"Bad system: {i} {s} ")
     return result
 
 
 def _answer2(systems: [System]) -> int:
-    return 0
+    DELTA = 10000000000000
+    result = 0
+    for s in systems:
+        e1 = Equation(s.e1.ak, s.e1.bk, DELTA + s.e1.r)
+        e2 = Equation(s.e2.ak, s.e2.bk, DELTA + s.e2.r)
+        sol = _solve1(e1, e2)
+        is_ok = _is_valid_solution(e1, e2, sol)
+        if is_ok:
+            result += (3 * sol[0]) + (sol[1])
+    return result
 
 
 class Day13(unittest.TestCase):
@@ -88,7 +94,7 @@ class Day13(unittest.TestCase):
         self.assertFalse(_is_valid_solution(e1, e2, s), "check solution")
 
     def test_sample(self):
-        self.__solution("13-1", 480, 0)
+        self.__solution("13-1", 480, 875318608908)
 
     def test_day(self):
-        self.__solution("13", 33427, 0)
+        self.__solution("13", 33427, 91649162972270)
