@@ -39,10 +39,10 @@ def _parse_system(lines: [str]) -> System:
     # Button A: X+94, Y+34
     # Button B: X+22, Y+67
     # Prize: X=8400, Y=5400
-    p1 = 'Button .: X(.\d+), Y(.\d+)'
+    p1 = re.compile(r"Button .: X(.\d+), Y(.\d+)")
     a = re.search(p1, lines[0])
     b = re.search(p1, lines[1])
-    p2 = 'Prize: X=(\d+), Y=(\d+)'
+    p2 = re.compile(r"Prize: X=(\d+), Y=(\d+)")
     prize = re.search(p2, lines[2])
     e1 = Equation(int(a[1]), int(b[1]), int(prize[1]))
     e2 = Equation(int(a[2]), int(b[2]), int(prize[2]))

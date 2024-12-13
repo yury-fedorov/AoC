@@ -23,5 +23,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Python version
         run: python -c "import sys; print(sys.version)"
+      - name: Dependencies
+        run: pip install numpy
       - name: AoC24
         run: python AoC24/python/aoc24.py
