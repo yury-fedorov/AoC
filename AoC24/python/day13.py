@@ -54,26 +54,23 @@ def _parse(lines: [str]) -> [System]:
     return [_parse_system(lines[(i * 4):]) for i in range(n)]
 
 
-def _answer1(systems: [System]) -> int:
+def _answer(systems: [System], delta_r: int) -> int:
     result = 0
     for s in systems:
-        sol = _solve1(s.e1, s.e2)
-        if _is_valid_solution(s.e1, s.e2, sol):
+        e1 = Equation(s.e1.ak, s.e1.bk, delta_r + s.e1.r)
+        e2 = Equation(s.e2.ak, s.e2.bk, delta_r + s.e2.r)
+        sol = _solve1(e1, e2)
+        if _is_valid_solution(e1, e2, sol):
             result += (3 * sol[0]) + (sol[1])
     return result
+
+
+def _answer1(systems: [System]) -> int:
+    return _answer(systems, 0)
 
 
 def _answer2(systems: [System]) -> int:
-    DELTA = 10000000000000
-    result = 0
-    for s in systems:
-        e1 = Equation(s.e1.ak, s.e1.bk, DELTA + s.e1.r)
-        e2 = Equation(s.e2.ak, s.e2.bk, DELTA + s.e2.r)
-        sol = _solve1(e1, e2)
-        is_ok = _is_valid_solution(e1, e2, sol)
-        if is_ok:
-            result += (3 * sol[0]) + (sol[1])
-    return result
+    return _answer(systems, 10000000000000)
 
 
 class Day13(unittest.TestCase):
