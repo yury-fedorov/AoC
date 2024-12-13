@@ -92,14 +92,15 @@ func countPossibleArrangements(pattern []State, groups []int64) int {
 	return result
 }
 
-func countPossibleArrangements2(pattern []State, groups []int64) int {
+// for the second part
+func countPossibleArrangements2(pattern []State, groups []int64, mode int) int {
 	var pattern2 []State
 	var groups2 []int64
 	for i := 0; i < copiedForPart2; i++ {
 		pattern2 = append(pattern2, pattern...)
 		groups2 = append(groups2, groups...)
 	}
-	return countPossibleArrangementsI(pattern2, groups2)
+	return countPossibleArrangementsI(pattern2, groups2, mode)
 }
 
 // -- alternative solution 2 (regex) - (Jan 8 2024)
@@ -188,7 +189,7 @@ func couldBeValid2(pattern []State, groups []int64) bool {
 }
 
 // like 1st but with couldBeValid
-func countPossibleArrangements4(pattern []State, groups []int64, dc, uc, gs int) int {
+func countPossibleArrangements4Ext(pattern []State, groups []int64, dc, uc, gs int) int {
 	could, precise := couldBeValid(dc, uc, gs)
 	if !could {
 		return 0
@@ -210,7 +211,7 @@ func countPossibleArrangements4(pattern []State, groups []int64, dc, uc, gs int)
 		copy(newPattern, pattern)
 		newPattern[i] = o
 		ddc := aoc.Ifelse(o == Damaged, 1, 0)
-		result += countPossibleArrangements4(newPattern, groups, dc+ddc, uc-ddc, gs)
+		result += countPossibleArrangements4Ext(newPattern, groups, dc+ddc, uc-ddc, gs)
 	}
 	return result
 }
@@ -251,23 +252,23 @@ func optimizePattern(pattern []State, groups []int64) []State {
 	return []State(result + ps)
 }
 
-func countPossibleArrangementsI(pattern []State, groups []int64) int {
-	const mode = 4
+func countPossibleArrangements4(pattern []State, groups []int64) int {
+	var dc, uc int
+	for _, e := range pattern {
+		dc += aoc.Ifelse(e == Damaged, 1, 0)
+		uc += aoc.Ifelse(e == Unknown, 1, 0)
+	}
+	return countPossibleArrangements4Ext(pattern, groups, dc, uc, sum(groups)) // 6.3 sec (5 instead of 5!)
+}
+
+func countPossibleArrangementsI(pattern []State, groups []int64, mode int) int {
 	// 1 - 1st impl (no regex), fastest so far
 	// 2 - 2nd impl (lost)
 	// 3 - 3rd impl (with regex), slowest so far
 	// 4 - 4th impl (1st + couldBeValid), fastest so far
 	switch mode {
 	case 4:
-		var dc, uc int
-		for _, e := range pattern {
-			dc += aoc.Ifelse(e == Damaged, 1, 0)
-			uc += aoc.Ifelse(e == Unknown, 1, 0)
-		}
-		pattern1 := optimizePattern(pattern, groups)
-		fmt.Printf("%q -> %q", string(pattern), string(pattern1))
-		fmt.Println()
-		return countPossibleArrangements4(pattern, groups, dc, uc, sum(groups)) // 6.3 sec (5 instead of 5!)
+		return countPossibleArrangements4(pattern, groups) // 6.3 sec (5 instead of 5!)
 	case 1:
 		return countPossibleArrangements(pattern, groups) // 56.32 sec (3 instead of 5)
 	case 3:
@@ -280,16 +281,13 @@ func (day Day12) Solve() aoc.Solution {
 	var part1, part2 int
 	// 12-1 - 6
 	// 12-2 - 21
-	records := parse("12-2") // lines: 1000 max chr in line: 20
+	records := parse("12") // lines: 1000 max chr in line: 20
 	for _, r := range records {
-		c1 := countPossibleArrangementsI(r.record, r.damagedGroups)
+		c1 := countPossibleArrangementsI(r.record, r.damagedGroups, 1)
 		part1 += c1
-		fmt.Printf("%q - %v - %d ", toPatternString(r.record), r.damagedGroups, c1)
-		c2 := countPossibleArrangements2(r.record, r.damagedGroups)
-		part2 += c2
-		fmt.Printf("p2: %d \n", c2)
+		// c2 := countPossibleArrangements2(r.record, r.damagedGroups)
+		// part2 += c2
 	}
-	part1, part2 = 7221, 0 // TODO - not yet implemented
 	// TODO: fast enough for 5 repetitions of part2 but doesn't calculate properly the part 2
 	// TODO: direction - optimize the input pattern (replacing ? with deduced values)
 	// ie. "?###????????" - [3 2 1] x 5 -> may be formalized with .###. instead of ?###?

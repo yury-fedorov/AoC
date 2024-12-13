@@ -28,7 +28,10 @@ type Day interface {
 func ReadFile(tag string) []string {
 	file, err := os.Open(fmt.Sprintf("../data/%v.txt", tag))
 	if err != nil {
-		panic(err)
+		file, err = os.Open(fmt.Sprintf("../../data/%v.txt", tag))
+		if err != nil {
+			panic(err)
+		}
 	}
 	defer file.Close()
 	fileScanner := bufio.NewScanner(file)
