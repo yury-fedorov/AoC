@@ -75,10 +75,17 @@ def _answer_space(robots: [Robot], space: Point) -> int:
 def _answer1(robots: [Robot]) -> int:
     return _answer_space(robots, _SPACE)
 
-
 def _answer2(robots: []) -> int:
-    return 0
-
+    for seconds in range(1, 10000):
+        robots1 = []
+        robo_set = set()
+        for r in robots:
+            p = _move(r, _SPACE, 1)
+            robots1.append(Robot(p, r.velocity))
+            robo_set.add(p)
+        if len(robo_set) == len(robots):
+            return seconds
+        robots = robots1
 
 class Day14(unittest.TestCase):
 
@@ -110,4 +117,4 @@ class Day14(unittest.TestCase):
         self.assertEqual(12, _answer_space(robots, _SPACE_SAMPLE), "answer 1")
 
     def test_day(self):
-        self.__solution("14", 221655456, 0)
+        self.__solution("14", 221655456, 7858) # takes 6.783s
