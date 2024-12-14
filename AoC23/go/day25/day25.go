@@ -67,34 +67,15 @@ func allLinks(input Input) []Link {
 
 // given the starting point, returns all points you may arrive to
 func travel(input Input, start string, skip []Link) []string {
-	toProcess := []string{start}
-	visited := make(map[string]bool)
-	var result []string
-	for len(toProcess) > 0 {
-		cur := toProcess[0]
-		visited[cur] = true
-		result = append(result, cur)
-		toProcess = toProcess[1:]
-		next := allDirectLinks(input, cur)
-		for _, n := range next {
-			if slices.Contains(skip, createLink(n, cur)) {
-				continue
-			}
-			_, seenAlready := visited[n]
-			if seenAlready {
-				continue
-			}
-			if slices.Contains(toProcess, n) {
-				continue
-			}
-			toProcess = append(toProcess, n)
-		}
+	ok, path := travelWithBomb(input, start, skip, "")
+	if !ok {
+		panic("Not expected")
 	}
-	return result
+	return path
 }
 
 // given the starting point, check that travel doesn't pass a bomb
-func travel_with_bomb(input Input, start string, skip []Link, bomb string) (bool, []string) {
+func travelWithBomb(input Input, start string, skip []Link, bomb string) (bool, []string) {
 	toProcess := []string{start}
 	visited := make(map[string]bool)
 	var result []string
@@ -110,6 +91,9 @@ func travel_with_bomb(input Input, start string, skip []Link, bomb string) (bool
 		for _, n := range next {
 			if slices.Contains(skip, createLink(n, cur)) {
 				continue
+			}
+			if n == bomb {
+				return false, nil
 			}
 			_, seenAlready := visited[n]
 			if seenAlready {
@@ -143,7 +127,7 @@ func answer1(input Input) int {
 		for j := i + 1; j < shortSize; j++ {
 			for k := j + 1; k < allSize; k++ {
 				skip := []Link{link, allLinks[j], allLinks[k]}
-				ok, g1 := travel_with_bomb(input, link.from, skip, link.to)
+				ok, g1 := travelWithBomb(input, link.from, skip, link.to)
 				if !ok {
 					// bomb was crossed
 					continue
