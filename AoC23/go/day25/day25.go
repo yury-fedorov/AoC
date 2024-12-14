@@ -1,6 +1,7 @@
 package day25
 
 import (
+	"cmp"
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"golang.org/x/exp/slices"
 	"strconv"
@@ -65,7 +66,6 @@ func allLinks(input Input) []Link {
 }
 
 // given the starting point, returns all points you may arrive to
-// TODO - bug not all nodes are return on full input
 func travel(input Input, start string, skip []Link) []string {
 	toProcess := []string{start}
 	visited := make(map[string]bool)
@@ -93,18 +93,61 @@ func travel(input Input, start string, skip []Link) []string {
 	return result
 }
 
+// given the starting point, check that travel doesn't pass a bomb
+func travel_with_bomb(input Input, start string, skip []Link, bomb string) (bool, []string) {
+	toProcess := []string{start}
+	visited := make(map[string]bool)
+	var result []string
+	for len(toProcess) > 0 {
+		cur := toProcess[0]
+		if cur == bomb {
+			return false, nil
+		}
+		visited[cur] = true
+		result = append(result, cur)
+		toProcess = toProcess[1:]
+		next := allDirectLinks(input, cur)
+		for _, n := range next {
+			if slices.Contains(skip, createLink(n, cur)) {
+				continue
+			}
+			_, seenAlready := visited[n]
+			if seenAlready {
+				continue
+			}
+			if slices.Contains(toProcess, n) {
+				continue
+			}
+			toProcess = append(toProcess, n)
+		}
+	}
+	return true, result
+}
+
 func answer1(input Input) int {
 	allLinks := allLinks(input)
+	slices.SortFunc(allLinks, func(a, b Link) int {
+		a1 := len(allDirectLinks(input, a.from))
+		a2 := len(allDirectLinks(input, a.to))
+		b1 := len(allDirectLinks(input, b.from))
+		b2 := len(allDirectLinks(input, b.to))
+		return cmp.Compare(min(a1, a2), min(b1, b2))
+	})
 	allSize := len(allLinks)
 	firstComponent := allLinks[0].from
 	all := travel(input, firstComponent, nil)
 	totalNodes := len(all)
-	for i := 0; i < allSize; i++ {
+	shortSize := allSize
+	for i := 0; i < shortSize; i++ {
 		link := allLinks[i]
-		for j := i + 1; j < allSize; j++ {
+		for j := i + 1; j < shortSize; j++ {
 			for k := j + 1; k < allSize; k++ {
 				skip := []Link{link, allLinks[j], allLinks[k]}
-				g1 := travel(input, link.from, skip)
+				ok, g1 := travel_with_bomb(input, link.from, skip, link.to)
+				if !ok {
+					// bomb was crossed
+					continue
+				}
 				firstGroupCount := len(g1)
 				if firstGroupCount > 1 && firstGroupCount < totalNodes {
 					g2 := travel(input, link.to, skip)
