@@ -2,7 +2,6 @@ package day25
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"strconv"
 	"strings"
@@ -22,6 +21,7 @@ func createLink(a, b string) Link {
 	return Link{b, a}
 }
 
+// original map given as input
 func parse(file string) Input {
 	result := make(Input)
 	for _, line := range aoc.ReadFile(file) {
@@ -31,6 +31,41 @@ func parse(file string) Input {
 	return result
 }
 
+var cacheLinks = make(map[string][]string)
+
+func allDirectLinks(input Input, from string) []string {
+	cache, ok := cacheLinks[from]
+	if ok {
+		return cache
+	}
+	next, _ := input[from]
+	// Ad connections are not in single direction, need to consider also cases when the component is on the right side.
+	for k, l := range input {
+		if !slices.Contains(l, from) {
+			continue
+		}
+		// avoid duplications
+		if !slices.Contains(next, k) {
+			next = append(next, k)
+		}
+	}
+	cacheLinks[from] = next
+	return next
+}
+
+// returns all defined links
+func allLinks(input Input) []Link {
+	var result []Link
+	for from, list := range input {
+		for _, to := range list {
+			result = append(result, createLink(from, to))
+		}
+	}
+	return result
+}
+
+// given the starting point, returns all points you may arrive to
+// TODO - bug not all nodes are return on full input
 func travel(input Input, start string, skip []Link) []string {
 	toProcess := []string{start}
 	visited := make(map[string]bool)
@@ -58,26 +93,32 @@ func travel(input Input, start string, skip []Link) []string {
 	return result
 }
 
-var cacheLinks = make(map[string][]string)
-
-func allDirectLinks(input Input, from string) []string {
-	cache, ok := cacheLinks[from]
-	if ok {
-		return cache
-	}
-	next := input[from]
-	// Ad connections are not in single direction, need to consider also cases when the component is on the right side.
-	for k, l := range input {
-		if !slices.Contains(l, from) {
-			continue
+func answer1(input Input) int {
+	allLinks := allLinks(input)
+	allSize := len(allLinks)
+	firstComponent := allLinks[0].from
+	all := travel(input, firstComponent, nil)
+	totalNodes := len(all)
+	for i := 0; i < allSize; i++ {
+		link := allLinks[i]
+		for j := i + 1; j < allSize; j++ {
+			for k := j + 1; k < allSize; k++ {
+				skip := []Link{link, allLinks[j], allLinks[k]}
+				g1 := travel(input, link.from, skip)
+				firstGroupCount := len(g1)
+				if firstGroupCount > 1 && firstGroupCount < totalNodes {
+					g2 := travel(input, link.to, skip)
+					secondGroupCount := len(g2)
+					if firstGroupCount+secondGroupCount != totalNodes {
+						// something went wrong
+						continue
+					}
+					return firstGroupCount * secondGroupCount
+				}
+			}
 		}
-		// avoid duplications
-		if !slices.Contains(next, k) {
-			next = append(next, k)
-		}
 	}
-	cacheLinks[from] = next
-	return next
+	return -1
 }
 
 func findAllWays(input Input, from string, to string, path []string) [][]string {
@@ -116,83 +157,6 @@ func countFrequency(input Input, all []string) map[string]int {
 func (day Day25) Solve() aoc.Solution {
 	var part1, part2 int
 	input := parse("25-1") // 13, 1261 // TODO - example works but slow
-	firstComponent := maps.Keys(input)[0]
-	all := travel(input, firstComponent, nil)
-	targetMax := len(all) - 1 /* min size of second group is 1 element */
-
-	// a := findAllWays(input, all[0], all[1], nil)
-	// part2 = len(a)
-	/*
-		freq := countFrequency(input, all)
-		minCount := freq[firstComponent]
-		maxCount := freq[firstComponent]
-		for _, count := range freq {
-			minCount = aoc.Min(minCount, count)
-			maxCount = aoc.Max(maxCount, count)
-		}
-	*/
-	var allLinks []Link
-	for from, list := range input {
-		/*
-			if freq[from] > minCount {
-				continue
-			}
-		*/
-		for _, to := range list {
-			/*
-				if freq[to] > minCount {
-					continue
-				}
-			*/
-			allLinks = append(allLinks, createLink(from, to))
-		}
-	}
-	allSize := len(allLinks)
-	/*
-		sort.Slice(allLinks, func(i, j int) bool {
-			sf := func(l Link) int { return freq[l.from] * freq[l.to] }
-			return sf(allLinks[i]) < sf(allLinks[j])
-		})
-	*/
-	for i := 0; i < allSize; i++ {
-		for j := i + 1; j < allSize; j++ {
-			// XXX - fmt.Printf("i %d, j %d\n", i, j)
-			for k := j + 1; k < allSize; k++ {
-				skip := []Link{allLinks[i], allLinks[j], allLinks[k]}
-				toSearch := firstComponent
-				/*
-					if slices.Contains(skip, firstComponent) {
-						for _, c := range all {
-							if !slices.Contains(skip, c) {
-								toSearch = c
-								break
-							}
-						}
-					}
-				*/
-				firstGroup := travel(input, toSearch, skip)
-				if len(firstGroup) < targetMax {
-					// The first group is found!
-					var componentInSecondGroup string
-					for _, c := range all {
-						/*
-							if slices.Contains(skip, c) {
-								continue
-							}
-						*/
-						if slices.Contains(firstGroup, c) {
-							continue
-						}
-						componentInSecondGroup = c
-						break
-					}
-					secondGroup := travel(input, componentInSecondGroup, skip)
-					part1 = len(firstGroup) * len(secondGroup)
-					break
-				}
-			}
-		}
-	}
-	part1 -= 54 // TODO to avoid broken tests
+	part1 = answer1(input)
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
