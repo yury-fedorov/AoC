@@ -54,7 +54,10 @@ def _answer_space(robots: [Robot], space: Point) -> int:
         return _move(r, space, 100)
 
     final_positions = [move(r) for r in robots]
-    sign = lambda x: int(math.copysign(1, x))
+    def sign(x: float) -> int:
+        if x == 0.0:
+            return 0
+        return 1 if x > 0 else -1
 
     def quadrant(p: Point) -> Point:
         x, y = p
@@ -85,10 +88,26 @@ class Day14(unittest.TestCase):
         self.assertEqual(a1, _answer1(robots), "answer 1")
         self.assertEqual(a2, _answer2(robots), "answer 2")
 
+    def test_moves(self):
+        velocity = Point(2,-3)
+        r = Robot(Point(2,4),velocity)
+        p1 = _move(r, _SPACE_SAMPLE, 1)
+        self.assertEqual(Point(4,1), p1, "move 1")
+        p2 = _move(Robot(p1, velocity), _SPACE_SAMPLE, 1)
+        self.assertEqual(Point(6, 5), p2, "move 2")
+        p3 = _move(Robot(p2, velocity), _SPACE_SAMPLE, 1)
+        self.assertEqual(Point(8, 2), p3, "move 3")
+        p4 = _move(Robot(p3, velocity), _SPACE_SAMPLE, 1)
+        self.assertEqual(Point(10, 6), p4, "move 4")
+        p5 = _move(Robot(p4, velocity), _SPACE_SAMPLE, 1)
+        self.assertEqual(Point(1, 3), p5, "move 5")
+        p5a = _move(r, _SPACE_SAMPLE, 5)
+        self.assertEqual(p5, p5a, "move 5 alternatives")
+
     def test_sample(self):
         lines = c.read_lines("14-1")
         robots = [_parse(l) for l in lines]
         self.assertEqual(12, _answer_space(robots, _SPACE_SAMPLE), "answer 1")
 
     def test_day(self):
-        self.__solution("14", 0, 0)
+        self.__solution("14", 221655456, 0)
