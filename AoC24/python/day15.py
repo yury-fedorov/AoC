@@ -1,8 +1,7 @@
-from typing import NamedTuple
-
 import common as c
 import unittest
 from types import MappingProxyType
+from typing import NamedTuple
 
 BOX = "O"
 ROBOT = "@"
@@ -18,6 +17,7 @@ GO_UP = "^"
 class Point(NamedTuple):
     x: int
     y: int
+
 
 # Immutable map
 TO_SHIFT = MappingProxyType({GO_LEFT: Point(-1, 0), GO_UP: Point(0, -1), GO_DOWN: Point(0, 1), GO_RIGHT: Point(1, 0)})
@@ -43,13 +43,32 @@ def _parse(data: [str]) -> ([str], str):
             navigation += line
     return the_map, navigation
 
+
+def _is_in(the_map: [str], p: Point) -> bool:
+    x, y = p
+    return x >= 0 and y >= 0 and y < len(the_map) and x < len(the_map[0])
+
+
 def _may_move(the_map: [str], robot: Point, shift: Point) -> bool:
     """Checking if the move is possible."""
-    return False # TODO - implement
+    rx, ry = robot
+    sx, sy = shift
+    spx = rx + sx
+    spy = ry + sy
+    sp = Point(spx, spy)
+    if not _is_in(the_map, sp):
+        return False  # we can not go out of the map
+    what = the_map[spy][spx]
+    if what == SPACE:
+        return True
+    if what == BOX:
+        return _may_move(the_map, sp, shift)
+    return False  # the remaining case is WALL and we cannot move walls
+
 
 def _move(the_map: [str], robot: Point, shift: Point) -> bool:
-    """Shift the robot and the impacted boxes"""
-    return False # TODO - implement
+    """Move the robot and the impacted boxes"""
+    return False  # TODO - implement
 
 
 def _navigate(the_map: [str], navigation: str):
@@ -59,6 +78,7 @@ def _navigate(the_map: [str], navigation: str):
         shift = TO_SHIFT[step]
         if _may_move(the_map, robot, shift):
             _move(the_map, robot, shift)
+
 
 def _answer1(the_map: [str], navigation: str) -> int:
     _navigate(the_map, navigation)
