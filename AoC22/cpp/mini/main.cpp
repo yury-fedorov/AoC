@@ -3,6 +3,7 @@
 #include "day22.h"
 #include <cassert>
 #include <chrono> // timer
+#include <future> // std::async
 #include <iostream>
 
 long day19_part1() {
@@ -16,15 +17,30 @@ long day19_part1() {
   const day19::IdGeodesList test_list = {{1, 9}, {2, 12}};
   assert(day19::QualityLevel(test_list) == 33);
 
-  // 733 seconds on local PC
+  long result = 0;
   const auto t1 = high_resolution_clock::now();
-  // answer 1
-  day19::IdGeodesList list;
-  for (const auto &b : blueprints) {
-    list[b.id] = day19::LargestGeodes1(b);
+  if (false) {
+    // answer 1
+    day19::IdGeodesList list;
+    for (const auto &b : blueprints) {
+      list[b.id] = day19::LargestGeodes1(b);
+    }
+    result = day19::QualityLevel(list);
+    assert(result == 600);
+  } else {
+    // answer 2
+    auto a = std::async(std::launch::async, [&blueprints] {
+      return day19::LargestGeodes2(blueprints[0]);
+    });
+    auto b = std::async(std::launch::async, [&blueprints] {
+      return day19::LargestGeodes2(blueprints[1]);
+    });
+    auto c = std::async(std::launch::async, [&blueprints] {
+      return day19::LargestGeodes2(blueprints[2]);
+    });
+    result = (a.get() * b.get() * c.get());
+    std::cout << result << std::endl;
   }
-  const auto result = day19::QualityLevel(list);
-  assert(result == 600);
   const auto t2 = high_resolution_clock::now();
   /* Getting number of milliseconds as an integer. */
   const auto sec_int = duration_cast<seconds>(t2 - t1);
@@ -38,8 +54,8 @@ long day22_part2() {
 }
 
 int main(int argc, char **argv) {
-  std::cout << "Day 19 Part 1 (600 approx 733 sec): " << day19_part1()
-            << std::endl;
+  std::cout << "Day 19 Part 2 (correct answer - 6000 takes 848 seconds): "
+            << day19_part1() << std::endl;
   if (IsFastOnly()) {
     std::cout << "Also Day 22 is not solved yet!" << std::endl;
   } else {
