@@ -87,7 +87,7 @@ void Order(const Map &map, Doors &doors, const Door &from) noexcept {
             });
   // now the list is full
   const long v0 = vf(doors[0]);
-  // gets right result with 50; with 10 it is wrong, impacts on how long it
+  // gets right result with 20; with 10 it is wrong, impacts on how long it
   // takes.
   constexpr long dv = 20;
   while (doors.size() >= 3) {
