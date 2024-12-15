@@ -161,14 +161,17 @@ def _move2(the_map: [str], robot: Point, shift: Point, what: str) -> Point:
         _set(the_map, sp, what)
 
     elif what_at_dist == BOX2L or what_at_dist == BOX2R:
+        # TODO - this block is working not correctly
         _move(the_map, sp, shift, what_at_dist)
+        if what_at_dist == BOX2L:
+            sp_pair = Point(sp.x + 1, sp.y)
+            what_pair = BOX2R
+        else:
+            sp_pair = Point(sp.x - 1, sp.y)
+            what_pair = BOX2L
+        _move(the_map, sp_pair, shift, what_pair)
         _set(the_map, robot, SPACE)
         _set(the_map, sp, what)
-        if what_at_dist == BOX2L:
-            pair_point = Point(sp.x + 1, sp.y)
-        else:
-            pair_point = Point(sp.x - 1, sp.y)
-        _move(the_map, pair_point, shift, what_at_dist)
     return sp
 
 
