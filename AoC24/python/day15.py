@@ -46,11 +46,6 @@ def _parse(data: [str]) -> ([str], str):
     return the_map, navigation
 
 
-def _is_in(the_map: [str], p: Point) -> bool:
-    x, y = p
-    return x >= 0 and y >= 0 and y < len(the_map) and x < len(the_map[0])
-
-
 def _get(the_map: [str], point: Point) -> str:
     x, y = point
     return the_map[y][x]
@@ -68,8 +63,6 @@ def _may_move(the_map: [str], robot: Point, shift: Point) -> bool:
     rx, ry = robot
     sx, sy = shift
     sp = Point(rx + sx, ry + sy)
-    if not _is_in(the_map, sp):
-        return False  # we can not go out of the map
     what = _get(the_map, sp)
     if what == SPACE:
         return True
@@ -135,8 +128,6 @@ def _may_move2(the_map: [str], robot: Point, shift: Point) -> bool:
 
     rx, ry = robot
     sp = Point(rx + sx, ry + sy)
-    if not _is_in(the_map, sp):
-        return False  # we can not go out of the map
     what = _get(the_map, sp)
     if what == SPACE:
         return True
