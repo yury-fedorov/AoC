@@ -73,7 +73,7 @@ def _may_move(the_map: [str], robot: Point, shift: Point) -> bool:
     what = _get(the_map, sp)
     if what == SPACE:
         return True
-    if what == BOX:
+    if what == BOX or what == BOX2L or what == BOX2R:
         return _may_move(the_map, sp, shift)
     return False  # the remaining case is WALL and we cannot move walls
 
@@ -87,8 +87,8 @@ def _move(the_map: [str], robot: Point, shift: Point, what: str) -> Point:
     if what_at_dist == SPACE:
         _set(the_map, robot, SPACE)
         _set(the_map, sp, what)
-    elif what_at_dist == BOX:
-        _move(the_map, sp, shift, BOX)
+    elif what_at_dist == BOX or what_at_dist == BOX2L or what_at_dist == BOX2R:
+        _move(the_map, sp, shift, what_at_dist)
         _set(the_map, robot, SPACE)
         _set(the_map, sp, what)
     return sp
@@ -128,11 +128,48 @@ def _navigate2(the_map: [str], navigation: str):
 
 def _may_move2(the_map: [str], robot: Point, shift: Point) -> bool:
     """Checking if the move is possible."""
-    return False  # TODO - much more complicated as boxes are impacted in cascading way
+    sx, sy = shift
+    if sy == 0:
+        # shift moving on horizon axis remains the same
+        return _may_move(the_map, robot, shift)
+
+    rx, ry = robot
+    sp = Point(rx + sx, ry + sy)
+    if not _is_in(the_map, sp):
+        return False  # we can not go out of the map
+    what = _get(the_map, sp)
+    if what == SPACE:
+        return True
+    if what == BOX2L:
+        return _may_move(the_map, sp, shift) and _may_move(the_map, Point(sp.x + 1, sp.y), shift)
+    if what == BOX2R:
+        return _may_move(the_map, sp, shift) and _may_move(the_map, Point(sp.x - 1, sp.y), shift)
+    return False  # the remaining case is WALL and we cannot move walls
 
 
 def _move2(the_map: [str], robot: Point, shift: Point, what: str) -> Point:
-    pass  # TODO - much complicate as boxes are moved in cascading way
+    sx, sy = shift
+    if sy == 0:
+        # shift moving on horizon axis remains the same
+        return _move(the_map, robot, shift, what)
+
+    rx, ry = robot
+    sp = Point(rx + sx, ry + sy)
+    what_at_dist = _get(the_map, sp)
+    if what_at_dist == SPACE:
+        _set(the_map, robot, SPACE)
+        _set(the_map, sp, what)
+
+    elif what_at_dist == BOX2L or what_at_dist == BOX2R:
+        _move(the_map, sp, shift, what_at_dist)
+        _set(the_map, robot, SPACE)
+        _set(the_map, sp, what)
+        if what_at_dist == BOX2L:
+            pair_point = Point(sp.x + 1, sp.y)
+        else:
+            pair_point = Point(sp.x - 1, sp.y)
+        _move(the_map, pair_point, shift, what_at_dist)
+    return sp
 
 
 def _answer2(the_map: [str], navigation: str) -> int:
@@ -149,13 +186,15 @@ class Day15(unittest.TestCase):
         the_map, navigation = _parse(c.read_lines(data))
         wider_map = _wider_map(the_map)
         self.assertEqual(a1, _answer1(the_map, navigation), "answer 1")
-        # TODO - self.assertEqual(a2, _answer2(wider_map, navigation), "answer 2")
+        self.assertEqual(a2, _answer2(wider_map, navigation), "answer 2")
 
     def test_sample(self):
-        self.__solution("15-2", 2028, 0)
+        the_map, navigation = _parse(c.read_lines("15-2"))
+        wider_map = _wider_map(the_map)
+        self.assertEqual(2028, _answer1(the_map, navigation), "answer 1 sample")
 
     def test_larger_sample(self):
-        self.__solution("15-1", 10092, 0)
+        self.__solution("15-1", 10092, 9021)
 
     def test_day(self):
         self.__solution("15", 1294459, 0)
