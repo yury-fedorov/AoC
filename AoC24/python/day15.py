@@ -30,6 +30,13 @@ def _gps(p: Point) -> int:
     return p.x + (100 * p.y)
 
 
+def _sum_gps(the_map: [str], box: str) -> int:
+    return sum(_gps(Point(x, y))
+               for y, line in enumerate(the_map)
+               for x, what in enumerate(line)
+               if what == box)
+
+
 def _parse(data: [str]) -> ([str], str):
     """Returns the map and the list of instructions to move robot."""
     the_map = []
@@ -98,10 +105,7 @@ def _navigate(the_map: [str], navigation: str):
 
 def _answer1(the_map: [str], navigation: str) -> int:
     _navigate(the_map, navigation)
-    return sum(_gps(Point(x, y))
-               for y, line in enumerate(the_map)
-               for x, what in enumerate(line)
-               if what == BOX)
+    return _sum_gps(the_map, BOX)
 
 
 def _wider_map(the_map: [str]) -> [str]:
@@ -167,10 +171,7 @@ def _move2(the_map: [str], robot: Point, shift: Point, what: str) -> Point:
 
 def _answer2(the_map: [str], navigation: str) -> int:
     _navigate2(the_map, navigation)
-    return sum(_gps(Point(x, y))
-               for y, line in enumerate(the_map)
-               for x, what in enumerate(line)
-               if what == BOX2L)
+    return _sum_gps(the_map, BOX2L)
 
 
 class Day15(unittest.TestCase):
