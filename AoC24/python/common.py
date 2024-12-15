@@ -10,7 +10,7 @@ def open_file(data_file: str):
     return open(path, "r")
 
 
-def read_lines(data_file: str) -> []:
+def read_lines(data_file: str) -> [str]:
     with open_file(data_file) as f:
         return f.read().splitlines()
 
