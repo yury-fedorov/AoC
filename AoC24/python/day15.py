@@ -36,7 +36,7 @@ def _parse(data: [str]) -> ([str], str):
     navigation = ""
     is_map = True
     for line in data:
-        if len(line) <= 1:
+        if len(line) == 0:
             is_map = False
             continue
         if is_map:
@@ -162,14 +162,14 @@ def _move2(the_map: [str], robot: Point, shift: Point, what: str) -> Point:
 
     elif what_at_dist == BOX2L or what_at_dist == BOX2R:
         # TODO - this block is working not correctly
-        _move(the_map, sp, shift, what_at_dist)
+        _move2(the_map, sp, shift, what_at_dist)
         if what_at_dist == BOX2L:
             sp_pair = Point(sp.x + 1, sp.y)
             what_pair = BOX2R
         else:
             sp_pair = Point(sp.x - 1, sp.y)
             what_pair = BOX2L
-        _move(the_map, sp_pair, shift, what_pair)
+        _move2(the_map, sp_pair, shift, what_pair)
         _set(the_map, robot, SPACE)
         _set(the_map, sp, what)
     return sp
@@ -193,11 +193,17 @@ class Day15(unittest.TestCase):
 
     def test_sample(self):
         the_map, navigation = _parse(c.read_lines("15-2"))
-        wider_map = _wider_map(the_map)
         self.assertEqual(2028, _answer1(the_map, navigation), "answer 1 sample")
 
     def test_larger_sample(self):
         self.__solution("15-1", 10092, 9021)
 
+    def test_bug_cascading_move(self):
+        the_map, navigation = _parse(c.read_lines("15-3"))
+        the_map_ok = c.read_lines("15-3a")
+        _navigate2(the_map, navigation)
+        self.assertEqual(the_map_ok, the_map, "bug cascading move")
+
+
     def test_day(self):
-        self.__solution("15", 1294459, 0)
+        self.__solution("15", 1294459, 0)  # 1284815
