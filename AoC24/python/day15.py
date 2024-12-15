@@ -76,20 +76,20 @@ def _may_move(the_map: [str], robot: Point, shift: Point) -> bool:
     return False  # the remaining case is WALL and we cannot move walls
 
 
-def _move(the_map: [str], robot: Point, shift: Point):
-    """Move the robot and the impacted boxes"""
+def _move(the_map: [str], robot: Point, shift: Point, what: str) -> Point:
+    """Move the robot and the impacted boxes and returns new position"""
     rx, ry = robot
     sx, sy = shift
-    spx = rx + sx
-    spy = ry + sy
-    sp = Point(spx, spy)
-    what = the_map[spy][spx]
-    if what == SPACE:
+    sp = Point(rx + sx, ry + sy)
+    what_at_dist = _get(the_map, sp)
+    if what_at_dist == SPACE:
         _set(the_map, robot, SPACE)
-        _set(the_map, sp, ROBOT)
-    elif what == BOX:
+        _set(the_map, sp, what)
+    elif what_at_dist == BOX:
+        _move(the_map, sp, shift, BOX)
         _set(the_map, robot, SPACE)
-        _move(the_map, sp, shift)
+        _set(the_map, sp, what)
+    return sp
 
 
 def _navigate(the_map: [str], navigation: str):
@@ -98,7 +98,7 @@ def _navigate(the_map: [str], navigation: str):
     for step in navigation:
         shift = TO_SHIFT[step]
         if _may_move(the_map, robot, shift):
-            _move(the_map, robot, shift)
+            robot = _move(the_map, robot, shift, ROBOT)
 
 
 def _answer1(the_map: [str], navigation: str) -> int:
@@ -128,4 +128,4 @@ class Day15(unittest.TestCase):
         self.__solution("15-1", 10092, 0)
 
     def test_day(self):
-        self.__solution("15", 0, 0)
+        self.__solution("15", 1294459, 0)
