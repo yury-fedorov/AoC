@@ -15,7 +15,10 @@ TEST(AoC22, Day19) {
   EXPECT_EQ(day19::LargestGeodes1(tb[0]), 9);
   EXPECT_EQ(day19::LargestGeodes1(tb[1]), 12);
 
-  // answer 1 in 4 seconds
+  if (IsFastOnly())
+    return; // answer 1 takes 92 seconds
+
+  // answer 1 in 4 seconds in release on local PC
   day19::IdGeodesList list;
   for (const auto &b : blueprints) {
     list[b.id] = day19::LargestGeodes1(b);
