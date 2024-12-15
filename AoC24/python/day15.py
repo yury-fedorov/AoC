@@ -7,6 +7,9 @@ BOX = "O"
 ROBOT = "@"
 SPACE = "."
 WALL = "#"
+BOX2 = "[]"
+BOX2L = "["
+BOX2R = "]"
 
 GO_LEFT = "<"
 GO_DOWN = "v"
@@ -27,7 +30,6 @@ def _gps(p: Point) -> int:
     return p.x + (100 * p.y)
 
 
-#
 def _parse(data: [str]) -> ([str], str):
     """Returns the map and the list of instructions to move robot."""
     the_map = []
@@ -109,17 +111,45 @@ def _answer1(the_map: [str], navigation: str) -> int:
                if what == BOX)
 
 
+def _wider_map(the_map: [str]) -> [str]:
+    m = {WALL: WALL + WALL, BOX: BOX2, SPACE: SPACE + SPACE, ROBOT: ROBOT + SPACE}
+    new_line = lambda line: "".join([m[what] for what in line])
+    return [new_line(line) for line in the_map]
+
+
+def _navigate2(the_map: [str], navigation: str):
+    robot_x, robot_y = [(line.find(ROBOT), y) for y, line in enumerate(the_map) if line.find(ROBOT) != -1][0]
+    robot = Point(robot_x, robot_y)
+    for step in navigation:
+        shift = TO_SHIFT[step]
+        if _may_move2(the_map, robot, shift):
+            robot = _move2(the_map, robot, shift, ROBOT)
+
+
+def _may_move2(the_map: [str], robot: Point, shift: Point) -> bool:
+    """Checking if the move is possible."""
+    return False  # TODO - much more complicated as boxes are impacted in cascading way
+
+
+def _move2(the_map: [str], robot: Point, shift: Point, what: str) -> Point:
+    pass  # TODO - much complicate as boxes are moved in cascading way
+
+
 def _answer2(the_map: [str], navigation: str) -> int:
-    return 0
+    _navigate2(the_map, navigation)
+    return sum(_gps(Point(x, y))
+               for y, line in enumerate(the_map)
+               for x, what in enumerate(line)
+               if what == BOX2L)
 
 
 class Day15(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
         the_map, navigation = _parse(c.read_lines(data))
+        wider_map = _wider_map(the_map)
         self.assertEqual(a1, _answer1(the_map, navigation), "answer 1")
-        # ATTENTION the_map can be changed at this point!
-        # self.assertEqual(a2, _answer2(the_map, navigation), "answer 2")
+        # TODO - self.assertEqual(a2, _answer2(wider_map, navigation), "answer 2")
 
     def test_sample(self):
         self.__solution("15-2", 2028, 0)
