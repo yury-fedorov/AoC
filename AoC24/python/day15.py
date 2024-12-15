@@ -141,9 +141,9 @@ def _may_move2(the_map: [str], robot: Point, shift: Point) -> bool:
     if what == SPACE:
         return True
     if what == BOX2L:
-        return _may_move(the_map, sp, shift) and _may_move(the_map, Point(sp.x + 1, sp.y), shift)
+        return _may_move2(the_map, sp, shift) and _may_move2(the_map, Point(sp.x + 1, sp.y), shift)
     if what == BOX2R:
-        return _may_move(the_map, sp, shift) and _may_move(the_map, Point(sp.x - 1, sp.y), shift)
+        return _may_move2(the_map, sp, shift) and _may_move2(the_map, Point(sp.x - 1, sp.y), shift)
     return False  # the remaining case is WALL and we cannot move walls
 
 
@@ -161,7 +161,6 @@ def _move2(the_map: [str], robot: Point, shift: Point, what: str) -> Point:
         _set(the_map, sp, what)
 
     elif what_at_dist == BOX2L or what_at_dist == BOX2R:
-        # TODO - this block is working not correctly
         _move2(the_map, sp, shift, what_at_dist)
         if what_at_dist == BOX2L:
             sp_pair = Point(sp.x + 1, sp.y)
@@ -204,6 +203,5 @@ class Day15(unittest.TestCase):
         _navigate2(the_map, navigation)
         self.assertEqual(the_map_ok, the_map, "bug cascading move")
 
-
     def test_day(self):
-        self.__solution("15", 1294459, 0)  # 1284815
+        self.__solution("15", 1294459, 1319212)
