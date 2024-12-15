@@ -253,6 +253,10 @@ int LargestGeodes(const Blueprint &b, int time, const MaterialQtyMap &robots,
       Produce(b, materials_t1i, robots_t1, robot_type);
       result_i =
           LargestGeodes(b, time_1, robots_t1, materials_t1i, std::nullopt);
+      if (robot_type == Material::Geode) {
+        // This is our first priority, as we maximize Geode production!
+        return result_i;
+      }
     } else {
       // we have to wait
       result_i = LargestGeodes(b, time_1, robots, materials_t1, robot_type);
