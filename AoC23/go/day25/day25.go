@@ -185,5 +185,6 @@ func (day Day25) Solve() aoc.Solution {
 	var part1, part2 int
 	input := parse("25-1") // 13, 1261 // TODO - example works but slow
 	part1 = answer1(input)
+	part1 = 0 // TODO - the real solution is prohibiting slow
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
