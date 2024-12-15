@@ -9,7 +9,7 @@ long day16_part2() {
   auto map = day16::ReadMap("16-sample");
   assert(1707 == day16::Answer2(map));
 
-  // 2318 is too low
+  // 2351
   map = day16::ReadMap("16");
   return day16::Answer2(map);
 }
