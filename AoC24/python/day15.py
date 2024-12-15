@@ -49,16 +49,26 @@ def _is_in(the_map: [str], p: Point) -> bool:
     return x >= 0 and y >= 0 and y < len(the_map) and x < len(the_map[0])
 
 
+def _get(the_map: [str], point: Point) -> str:
+    x, y = point
+    return the_map[y][x]
+
+
+def _set(the_map: [str], point: Point, what: str):
+    x, y = point
+    line = the_map[y]
+    new_line = line[:x] + what + line[x + 1:]
+    the_map[y] = new_line
+
+
 def _may_move(the_map: [str], robot: Point, shift: Point) -> bool:
     """Checking if the move is possible."""
     rx, ry = robot
     sx, sy = shift
-    spx = rx + sx
-    spy = ry + sy
-    sp = Point(spx, spy)
+    sp = Point(rx + sx, ry + sy)
     if not _is_in(the_map, sp):
         return False  # we can not go out of the map
-    what = the_map[spy][spx]
+    what = _get(the_map, sp)
     if what == SPACE:
         return True
     if what == BOX:
@@ -66,9 +76,20 @@ def _may_move(the_map: [str], robot: Point, shift: Point) -> bool:
     return False  # the remaining case is WALL and we cannot move walls
 
 
-def _move(the_map: [str], robot: Point, shift: Point) -> bool:
+def _move(the_map: [str], robot: Point, shift: Point):
     """Move the robot and the impacted boxes"""
-    return False  # TODO - implement
+    rx, ry = robot
+    sx, sy = shift
+    spx = rx + sx
+    spy = ry + sy
+    sp = Point(spx, spy)
+    what = the_map[spy][spx]
+    if what == SPACE:
+        _set(the_map, robot, SPACE)
+        _set(the_map, sp, ROBOT)
+    elif what == BOX:
+        _set(the_map, robot, SPACE)
+        _move(the_map, sp, shift)
 
 
 def _navigate(the_map: [str], navigation: str):
