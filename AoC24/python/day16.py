@@ -142,4 +142,4 @@ class Day16(unittest.TestCase):
         self.__solution("16-2", 11048, 64)
 
     def test_day(self):
-        self.__solution("16", 105508, 0)
+        self.__solution("16", 105508, 0) # 547 -- too low
