@@ -1,6 +1,5 @@
-import sys
-
 import common as c
+import sys
 import unittest
 from enum import Enum
 from typing import NamedTuple
@@ -69,7 +68,10 @@ def _min_score(the_map: [str]) -> int:
         prev_score = score_map[cur_pos]
         for new_dir in dirs:
             delta_score = _score_step(cur_pos, new_dir)
-            new_loc = Point(cur_pos.location.x + new_dir.value.x, cur_pos.location.y + new_dir.value.y)
+            if delta_score == 1:
+                new_loc = Point(cur_pos.location.x + new_dir.value.x, cur_pos.location.y + new_dir.value.y)
+            else:
+                new_loc = cur_pos.location
             new_pos = Position(new_loc, new_dir)
             new_score_in_cache = score_map.get(new_pos, sys.maxsize)
             new_score = prev_score + delta_score
@@ -104,4 +106,4 @@ class Day16(unittest.TestCase):
         self.__solution("16-2", 11048, 0)
 
     def test_day(self):
-        self.__solution("16", 0, 0)
+        self.__solution("16", 105508, 0)
