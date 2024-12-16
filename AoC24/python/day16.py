@@ -1,25 +1,107 @@
+import sys
+
 import common as c
 import unittest
+from enum import Enum
+from typing import NamedTuple
+
+
+class Point(NamedTuple):
+    x: int
+    y: int
+
+
+class Direction(Enum):
+    EAST = Point(1, 0)
+    NORTH = Point(0, -1)
+    WEST = Point(-1, 0)
+    SOUTH = Point(0, 1)
+
+
+DIRECTIONS = (Direction.EAST, Direction.NORTH, Direction.WEST, Direction.SOUTH)  # read only
+
+TURN90_SCORE = 1000
+
+
+class What(Enum):
+    START = "S"
+    END = "E"
+    WALL = "#"
+    SPACE = "."
+
+
+class Position(NamedTuple):
+    location: Point
+    direction: Direction
+
+
+def _find_point(the_map: [str], what: What) -> Point:
+    return [Point(line.find(what.value), y) for y, line in enumerate(the_map) if line.find(what.value) != -1][0]
+
+
+def _at(the_map: [str], p: Point) -> str:
+    return the_map[p.y][p.x]
+
+
+def _opposite(d: Direction) -> Direction:
+    index = DIRECTIONS.index(d)
+    return DIRECTIONS[(index + 2) % 4]
+
+
+def _directions(the_map: [str], p: Position) -> [Direction]:
+    opposite_direction: Direction = _opposite(p.direction)
+    return [d for d in DIRECTIONS
+            if _at(the_map, Point(p.location.x + d.value.x,
+                                  p.location.y + d.value.y)) != What.WALL.value and d != opposite_direction]
+
+
+def _score_step(previous_position: Position, new_direction: Direction) -> int:
+    return 1 if previous_position.direction == new_direction else TURN90_SCORE
+
+
+def _min_score(the_map: [str]) -> int:
+    starting_position = Position(_find_point(the_map, What.START), Direction.EAST)
+    positions = {starting_position}
+    score_map = {starting_position: 0}
+    while len(positions) > 0:
+        cur_pos = positions.pop()
+        dirs = _directions(the_map, cur_pos)
+        prev_score = score_map[cur_pos]
+        for new_dir in dirs:
+            delta_score = _score_step(cur_pos, new_dir)
+            new_loc = Point(cur_pos.location.x + new_dir.value.x, cur_pos.location.y + new_dir.value.y)
+            new_pos = Position(new_loc, new_dir)
+            new_score_in_cache = score_map.get(new_pos, sys.maxsize)
+            new_score = prev_score + delta_score
+            if new_score < new_score_in_cache:
+                score_map[new_pos] = new_score
+                positions.add(new_pos)
+
+    end_position = _find_point(the_map, What.END)
+    return min([score_map.get(Position(end_position, d), sys.maxsize) for d in DIRECTIONS])
 
 
 # TODO - template to use for daily solutions, don't forget to add the solution to aoc24.py
-def _answer1(lines: []) -> int:
-    return 0
+def _answer1(the_map: [str]) -> int:
+    return _min_score(the_map)
 
 
-def _answer2(lines: []) -> int:
+def _answer2(the_map: [str]) -> int:
     return 0
 
 
 class Day16(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
-        lines = c.read_lines(data)
-        self.assertEqual(a1, _answer1(lines), "answer 1")
-        self.assertEqual(a2, _answer2(lines), "answer 2")
+        the_map = c.read_lines(data)
+        self.assertEqual(a1, _answer1(the_map), "answer 1")
+        self.assertEqual(a2, _answer2(the_map), "answer 2")
 
     def test_sample(self):
-        self.__solution("01-1", 0, 0)
+        self.__solution("16-1", 7036, 0)
+
+    def test_sample2(self):
+        self.__solution("16-2", 11048, 0)
 
     def test_day(self):
-        self.__solution("01", 0, 0)
+        self.__solution("16", 0, 0)
