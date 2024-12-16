@@ -58,10 +58,9 @@ def _score_step(previous_position: Position, new_direction: Direction) -> int:
     return 1 if previous_position.direction == new_direction else TURN90_SCORE
 
 
-def _min_score(the_map: [str]) -> int:
+def _min_score(the_map: [str], score_map: {Position: int}) -> int:
     starting_position = Position(_find_point(the_map, What.START), Direction.EAST)
     positions = {starting_position}
-    score_map = {starting_position: 0}
     while len(positions) > 0:
         cur_pos = positions.pop()
         dirs = _directions(the_map, cur_pos)
@@ -83,13 +82,50 @@ def _min_score(the_map: [str]) -> int:
     return min([score_map.get(Position(end_position, d), sys.maxsize) for d in DIRECTIONS])
 
 
-# TODO - template to use for daily solutions, don't forget to add the solution to aoc24.py
 def _answer1(the_map: [str]) -> int:
-    return _min_score(the_map)
+    starting_position = Position(_find_point(the_map, What.START), Direction.EAST)
+    score_map = {starting_position: 0}
+    return _min_score(the_map, score_map)
+
+
+def _min_path(the_map: [str], score_map: {Position: int}, cur_pos: Position, prev_score: int, score_limit: int) -> {
+    Point}:
+    end_point = _find_point(the_map, What.END)
+    if cur_pos.location == end_point:
+        # happy end, we are already at the destination
+        return {end_point}
+
+    result = set({})
+    dirs = _directions(the_map, cur_pos)
+    for new_dir in dirs:
+        delta_score = _score_step(cur_pos, new_dir)
+        new_score = prev_score + delta_score
+        if new_score > score_limit:
+            continue
+
+        if delta_score == 1:
+            new_loc = Point(cur_pos.location.x + new_dir.value.x, cur_pos.location.y + new_dir.value.y)
+        else:
+            new_loc = cur_pos.location
+        new_pos = Position(new_loc, new_dir)
+
+        best_score_at_position = score_map[new_pos]
+        if best_score_at_position != new_score:
+            continue
+
+        tail = _min_path(the_map, score_map, new_pos, new_score, score_limit)
+        if len(tail):
+            result.add(new_loc)
+            result.update(tail)
+
+    return result
 
 
 def _answer2(the_map: [str]) -> int:
-    return 0
+    starting_position = Position(_find_point(the_map, What.START), Direction.EAST)
+    score_map = {starting_position: 0}
+    score_limit = _min_score(the_map, score_map)
+    return len(_min_path(the_map, score_map, starting_position, 0, score_limit))
 
 
 class Day16(unittest.TestCase):
@@ -100,10 +136,10 @@ class Day16(unittest.TestCase):
         self.assertEqual(a2, _answer2(the_map), "answer 2")
 
     def test_sample(self):
-        self.__solution("16-1", 7036, 0)
+        self.__solution("16-1", 7036, 45)
 
     def test_sample2(self):
-        self.__solution("16-2", 11048, 0)
+        self.__solution("16-2", 11048, 64)
 
     def test_day(self):
         self.__solution("16", 105508, 0)
