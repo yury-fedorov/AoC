@@ -102,7 +102,7 @@ def _bst(computer: Computer, operand: int) -> int:
 
 
 def _jnz(computer: Computer, operand: int) -> int | None:
-    return None if computer.a() != 0 else operand
+    return None if computer.a() == 0 else operand
 
 
 def _bxc(computer: Computer, _: int) -> int | None:
