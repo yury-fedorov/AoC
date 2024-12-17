@@ -54,7 +54,7 @@ def _run(computer: Computer) -> [int]:
             case 1:
                 computer.set_b(_bxl(computer, operand))
             case 2:
-                computer.set_b(_bst(computer, operand)) 
+                computer.set_b(_bst(computer, operand))
             case 3:
                 jump = _jnz(computer, operand)
                 if jump is not None:
@@ -63,7 +63,7 @@ def _run(computer: Computer) -> [int]:
             case 4:
                 computer.set_b(_bxc(computer, operand))
             case 5:
-                _out(computer, operand) 
+                _out(computer, operand)
             case 6:
                 computer.set_b(_adv(computer, operand))
             case 7:
@@ -119,25 +119,38 @@ def _output_to_str(output: [int]) -> str:
     return ",".join([str(i) for i in output])
 
 
-# TODO - template to use for daily solutions, don't forget to add the solution to aoc24.py
 def _answer1(computer: Computer) -> str:
     return _output_to_str(_run(computer))
 
 
-def _answer2(computer: Computer) -> str:
-    return ""
+def _run2(a: int, code: [int]) -> [int]:
+    c = Computer({0: a, 1: 0, 2: 0}, code)
+    return _run(c)
+
+
+def _answer2(computer: Computer) -> int:
+    if True:
+        return 0
+
+    # TODO - part 2 is still to implement
+    a = 35100000000000  # 15 digits
+    # 561600000000000 - 17
+    while True:
+        r = _run2(a, computer.program)
+        if r == computer.program:
+            return a
 
 
 class Day17(unittest.TestCase):
 
-    def __solution(self, data: str, a1: str, a2: str):
+    def __solution(self, data: str, a1: str, a2: int):
         lines = c.read_lines(data)
         computer = _init(lines)
         self.assertEqual(a1, _answer1(computer), "answer 1")
         self.assertEqual(a2, _answer2(computer), "answer 2")
 
     def test_sample(self):
-        self.__solution("17-1", "4,6,3,5,6,3,5,2,1,0", "")
+        self.__solution("17-1", "4,6,3,5,6,3,5,2,1,0", 0)
 
     def test_day(self):
-        self.__solution("17", "7,3,0,5,7,1,4,0,5", "")
+        self.__solution("17", "7,3,0,5,7,1,4,0,5", 0)
