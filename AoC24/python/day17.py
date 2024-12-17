@@ -51,6 +51,23 @@ def _run(computer: Computer) -> [int]:
         match code[computer.instruction_pointer]:
             case 0:
                 computer.set_a(_adv(computer, operand))
+            case 1:
+                computer.set_b(_bxl(computer, operand))
+            case 2:
+                computer.set_b(_bst(computer, operand)) 
+            case 3:
+                jump = _jnz(computer, operand)
+                if jump is not None:
+                    is_not_jump = False
+                    computer.instruction_pointer = jump
+            case 4:
+                computer.set_b(_bxc(computer, operand))
+            case 5:
+                _out(computer, operand) 
+            case 6:
+                computer.set_b(_adv(computer, operand))
+            case 7:
+                computer.set_c(_adv(computer, operand))
         if is_not_jump:
             computer.instruction_pointer += 2
     return computer.output
