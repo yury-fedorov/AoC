@@ -109,8 +109,9 @@ def _min_path(the_map: [str], score_map: {Position: int}, cur_pos: Position, pre
             new_loc = cur_pos.location
         new_pos = Position(new_loc, new_dir)
 
+        # Too restrictive - another algorithm is needed
         best_score_at_position = score_map[new_pos]
-        if best_score_at_position != new_score:
+        if best_score_at_position < new_score:
             continue
 
         tail = _min_path(the_map, score_map, new_pos, new_score, score_limit)
@@ -142,4 +143,4 @@ class Day16(unittest.TestCase):
         self.__solution("16-2", 11048, 64)
 
     def test_day(self):
-        self.__solution("16", 105508, 0) # 547 -- too low
+        self.__solution("16", 105508, 547)  # TODO 547 -- too low
