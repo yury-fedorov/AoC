@@ -23,6 +23,15 @@ class Computer:
     def c(self) -> int:
         return self.registers[2]
 
+    def set_a(self, value: int):
+        self.registers[0] = value
+
+    def set_b(self, value: int):
+        self.registers[1] = value
+
+    def set_c(self, value: int):
+        self.registers[2] = value
+
 
 def _init(data: [str]) -> Computer:
     registers = dict({})
@@ -35,7 +44,15 @@ def _init(data: [str]) -> Computer:
 
 
 def _run(computer: Computer) -> [int]:
-    # TODO - implement
+    code = computer.program
+    while computer.instruction_pointer < len(code):
+        is_not_jump = True
+        operand = code[computer.instruction_pointer + 1]
+        match code[computer.instruction_pointer]:
+            case 0:
+                computer.set_a(_adv(computer, operand))
+        if is_not_jump:
+            computer.instruction_pointer += 2
     return computer.output
 
 
@@ -61,6 +78,24 @@ def _bxl(computer: Computer, operand: int) -> int:
     # https://en.wikipedia.org/wiki/Bitwise_operation#XOR
     # https://www.geeksforgeeks.org/python-bitwise-operators/
     return computer.b() ^ operand
+
+
+def _bst(computer: Computer, operand: int) -> int:
+    return _combo_operand(computer, operand) % 8
+
+
+def _jnz(computer: Computer, operand: int) -> int | None:
+    return None if computer.a() != 0 else operand
+
+
+def _bxc(computer: Computer, _: int) -> int | None:
+    return computer.b() ^ computer.c()
+
+
+def _out(computer: Computer, operand: int) -> int:
+    result = _combo_operand(computer, operand) % 8
+    computer.output.append(result)
+    return result
 
 
 def _output_to_str(output: [int]) -> str:
