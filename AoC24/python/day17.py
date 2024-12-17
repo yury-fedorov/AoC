@@ -58,11 +58,9 @@ def _adv(computer: Computer, operand: int) -> int:
 
 
 def _bxl(computer: Computer, operand: int) -> int:
-    b = computer.b()
-    o = operand
-    result = 0
-    # TODO - https://en.wikipedia.org/wiki/Bitwise_operation#XOR
-    return result
+    # https://en.wikipedia.org/wiki/Bitwise_operation#XOR
+    # https://www.geeksforgeeks.org/python-bitwise-operators/
+    return computer.b() ^ operand
 
 
 def _output_to_str(output: [int]) -> str:
