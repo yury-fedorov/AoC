@@ -140,4 +140,4 @@ class Day17(unittest.TestCase):
         self.__solution("17-1", "4,6,3,5,6,3,5,2,1,0", "")
 
     def test_day(self):
-        self.__solution("17", "", "")
+        self.__solution("17", "7,3,0,5,7,1,4,0,5", "")
