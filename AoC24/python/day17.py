@@ -38,6 +38,20 @@ def _run(computer: Computer) -> [int]:
     return computer.output
 
 
+def _combo_operand(computer: Computer, operand: int) -> int:
+    if operand <= 3:
+        return operand
+
+    match operand:
+        case 4:
+            return computer.registers[Register.A]
+        case 5:
+            return computer.registers[Register.B]
+        case 6:
+            return computer.registers[Register.C]
+    raise ValueError(f"Bad operand: {operand}")
+
+
 def _output_to_str(output: [int]) -> str:
     return ",".join([str(i) for i in output])
 
