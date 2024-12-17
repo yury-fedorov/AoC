@@ -1,16 +1,9 @@
 import common as c
 import unittest
-from enum import Enum
-
-
-class Register(Enum):
-    A = 0,
-    B = 1,
-    C = 2
 
 
 class Computer:
-    registers: {Register: int}  # Register - integer
+    registers: {int: int}  # Register - integer
     instruction_pointer: int
     program: [int]
     output: [int]
@@ -21,13 +14,21 @@ class Computer:
         self.instruction_pointer = 0
         self.output = []
 
+    def a(self) -> int:
+        return self.registers[0]
+
+    def b(self) -> int:
+        return self.registers[1]
+
+    def c(self) -> int:
+        return self.registers[2]
+
 
 def _init(data: [str]) -> Computer:
     registers = dict({})
-    REGS = [Register.A, Register.B, Register.C]
     ri = 0
     for l in data[:3]:
-        registers[REGS[ri]] = int(l.split(": ")[1])
+        registers[ri] = int(l.split(": ")[1])
         ri += 1
     program = [int(i) for i in data[4].split(": ")[1].split(",")]
     return Computer(registers, program)
@@ -44,12 +45,24 @@ def _combo_operand(computer: Computer, operand: int) -> int:
 
     match operand:
         case 4:
-            return computer.registers[Register.A]
+            return computer.a()
         case 5:
-            return computer.registers[Register.B]
+            return computer.b()
         case 6:
-            return computer.registers[Register.C]
+            return computer.c()
     raise ValueError(f"Bad operand: {operand}")
+
+
+def _adv(computer: Computer, operand: int) -> int:
+    return int(computer.a() / (2 ** _combo_operand(computer, operand)))
+
+
+def _bxl(computer: Computer, operand: int) -> int:
+    b = computer.b()
+    o = operand
+    result = 0
+    # TODO - https://en.wikipedia.org/wiki/Bitwise_operation#XOR
+    return result
 
 
 def _output_to_str(output: [int]) -> str:
