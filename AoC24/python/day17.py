@@ -124,21 +124,50 @@ def _answer1(computer: Computer) -> str:
 
 
 def _run2(a: int, code: [int]) -> [int]:
-    c = Computer({0: a, 1: 0, 2: 0}, code)
-    return _run(c)
+    return _run(Computer({0: a, 1: 0, 2: 0}, code))
 
 
 def _answer2(computer: Computer) -> int:
-    if True:
-        return 0
-
-    # TODO - part 2 is still to implement
-    a = 35100000000000  # 15 digits
-    # 561600000000000 - 17
-    while True:
+    def check(a: int) -> bool:
         r = _run2(a, computer.program)
-        if r == computer.program:
-            return a
+        return r == computer.program
+
+    def count_matching(result: [int]) -> int:
+        if len(result) != len(computer.program):
+            return 0
+        matching = 0
+        for i in range(len(result) - 1, -1, -1):
+            if result[i] == computer.program[i]:
+                matching += 1
+            else:
+                break
+        return matching
+
+    def a2(a_min: int, a_max: int, digits_matching: int) -> int:
+        slices = 10000
+        da = int((a_max - a_min) / slices)
+        grid = {}
+        if da > 1:
+            for ai in range(a_min, (a_min + da * slices + 1), da):
+                grid[ai] = _run2(ai, computer.program)
+
+            next_matching = digits_matching + 1
+            super_grid = dict([(ai, grid[ai]) for ai in grid if count_matching(grid[ai]) > digits_matching])
+            if len(super_grid) == 0:
+                next_matching = digits_matching
+                super_grid = dict([(ai, grid[ai]) for ai in grid if count_matching(grid[ai]) >= digits_matching])
+
+            new_a_min = min(super_grid.keys()) - da
+            new_a_max = max(super_grid.keys()) + da
+            return a2(new_a_min, new_a_max, next_matching)
+        for ai in range(a_min, a_max + 1):
+            if check(ai):
+                return ai
+        return -1
+
+    a_min = 35100000000000  # 15 digits
+    a_max = 561600000000000  # 17 digits
+    return a2(a_min, a_max, 0)
 
 
 class Day17(unittest.TestCase):
@@ -150,7 +179,9 @@ class Day17(unittest.TestCase):
         self.assertEqual(a2, _answer2(computer), "answer 2")
 
     def test_sample(self):
-        self.__solution("17-1", "4,6,3,5,6,3,5,2,1,0", 0)
+        lines = c.read_lines("17-1")
+        computer = _init(lines)
+        self.assertEqual("4,6,3,5,6,3,5,2,1,0", _answer1(computer), "answer 1")
 
     def test_day(self):
-        self.__solution("17", "7,3,0,5,7,1,4,0,5", 0)
+        self.__solution("17", "7,3,0,5,7,1,4,0,5", 202972175280682)  # part 2 in 16.45 seconds
