@@ -3,12 +3,7 @@ import unittest
 from typing import NamedTuple
 from collections import namedtuple
 from collections import Counter
-
-
-class Point(NamedTuple):
-    x: int
-    y: int
-
+from common import Point
 
 Points = namedtuple('Points', ['points'])
 

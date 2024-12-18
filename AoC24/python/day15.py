@@ -1,7 +1,7 @@
 import common as c
 import unittest
 from types import MappingProxyType
-from typing import NamedTuple
+from common import Point
 
 BOX = "O"
 ROBOT = "@"
@@ -15,12 +15,6 @@ GO_LEFT = "<"
 GO_DOWN = "v"
 GO_RIGHT = ">"
 GO_UP = "^"
-
-
-class Point(NamedTuple):
-    x: int
-    y: int
-
 
 # Immutable map
 TO_SHIFT = MappingProxyType({GO_LEFT: Point(-1, 0), GO_UP: Point(0, -1), GO_DOWN: Point(0, 1), GO_RIGHT: Point(1, 0)})

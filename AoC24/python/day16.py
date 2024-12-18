@@ -3,11 +3,7 @@ import sys
 import unittest
 from enum import Enum
 from typing import NamedTuple
-
-
-class Point(NamedTuple):
-    x: int
-    y: int
+from common import Point
 
 
 class Direction(Enum):

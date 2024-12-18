@@ -14,9 +14,9 @@ def _answer2(lines: []) -> int:
 class Day18(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
-        lines = c.read_lines(data)
-        self.assertEqual(a1, _answer1(lines), "answer 1")
-        self.assertEqual(a2, _answer2(lines), "answer 2")
+        list = c.read_lines(data)
+        self.assertEqual(a1, _answer1(list), "answer 1")
+        self.assertEqual(a2, _answer2(list), "answer 2")
 
     def test_sample(self):
         self.__solution("18-1", 0, 0)

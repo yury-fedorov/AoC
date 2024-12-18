@@ -1,5 +1,11 @@
 # common functions
 import os.path
+from typing import NamedTuple
+
+
+class Point(NamedTuple):
+    x: int
+    y: int
 
 
 def open_file(data_file: str):

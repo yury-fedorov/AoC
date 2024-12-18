@@ -3,13 +3,9 @@ from collections import Counter
 import common as c
 import unittest
 from typing import NamedTuple
+from common import Point
 import re
 import math
-
-
-class Point(NamedTuple):
-    x: int
-    y: int
 
 
 class Robot(NamedTuple):
@@ -54,6 +50,7 @@ def _answer_space(robots: [Robot], space: Point) -> int:
         return _move(r, space, 100)
 
     final_positions = [move(r) for r in robots]
+
     def sign(x: float) -> int:
         if x == 0.0:
             return 0
@@ -75,6 +72,7 @@ def _answer_space(robots: [Robot], space: Point) -> int:
 def _answer1(robots: [Robot]) -> int:
     return _answer_space(robots, _SPACE)
 
+
 def _answer2(robots: []) -> int:
     for seconds in range(1, 10000):
         robots1 = []
@@ -87,6 +85,7 @@ def _answer2(robots: []) -> int:
             return seconds
         robots = robots1
 
+
 class Day14(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
@@ -96,10 +95,10 @@ class Day14(unittest.TestCase):
         self.assertEqual(a2, _answer2(robots), "answer 2")
 
     def test_moves(self):
-        velocity = Point(2,-3)
-        r = Robot(Point(2,4),velocity)
+        velocity = Point(2, -3)
+        r = Robot(Point(2, 4), velocity)
         p1 = _move(r, _SPACE_SAMPLE, 1)
-        self.assertEqual(Point(4,1), p1, "move 1")
+        self.assertEqual(Point(4, 1), p1, "move 1")
         p2 = _move(Robot(p1, velocity), _SPACE_SAMPLE, 1)
         self.assertEqual(Point(6, 5), p2, "move 2")
         p3 = _move(Robot(p2, velocity), _SPACE_SAMPLE, 1)
@@ -117,4 +116,4 @@ class Day14(unittest.TestCase):
         self.assertEqual(12, _answer_space(robots, _SPACE_SAMPLE), "answer 1")
 
     def test_day(self):
-        self.__solution("14", 221655456, 7858) # takes 6.783s
+        self.__solution("14", 221655456, 7858)  # takes 6.783s
