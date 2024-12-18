@@ -19,7 +19,7 @@ class Day18(unittest.TestCase):
         self.assertEqual(a2, _answer2(lines), "answer 2")
 
     def test_sample(self):
-        self.__solution("01-1", 0, 0)
+        self.__solution("18-1", 0, 0)
 
     def test_day(self):
-        self.__solution("01", 0, 0)
+        self.__solution("18", 0, 0)
