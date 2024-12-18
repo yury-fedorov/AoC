@@ -1,4 +1,5 @@
 import common as c
+import datetime
 import sys
 import unittest
 from enum import Enum
@@ -54,8 +55,7 @@ def _score_step(previous_position: Position, new_direction: Direction) -> int:
     return 1 if previous_position.direction == new_direction else TURN90_SCORE
 
 
-def _min_score(the_map: [str], score_map: {Position: int}) -> int:
-    starting_position = Position(_find_point(the_map, What.START), Direction.EAST)
+def _min_score(the_map: [str], score_map: {Position: int}, starting_position: Position) -> int:
     positions = {starting_position}
     while len(positions) > 0:
         cur_pos = positions.pop()
@@ -81,7 +81,7 @@ def _min_score(the_map: [str], score_map: {Position: int}) -> int:
 def _answer1(the_map: [str]) -> int:
     starting_position = Position(_find_point(the_map, What.START), Direction.EAST)
     score_map = {starting_position: 0}
-    return _min_score(the_map, score_map)
+    return _min_score(the_map, score_map, starting_position)
 
 
 def _min_path(the_map: [str], score_map: {Position: int}, cur_pos: Position, prev_score: int, score_limit: int) -> {
@@ -105,7 +105,7 @@ def _min_path(the_map: [str], score_map: {Position: int}, cur_pos: Position, pre
             new_loc = cur_pos.location
         new_pos = Position(new_loc, new_dir)
 
-        # Too restrictive - another algorithm is needed
+        # Give quick result good for samples but not precise for real case.
         best_score_at_position = score_map[new_pos]
         if best_score_at_position < new_score:
             continue
@@ -121,8 +121,24 @@ def _min_path(the_map: [str], score_map: {Position: int}, cur_pos: Position, pre
 def _answer2(the_map: [str]) -> int:
     starting_position = Position(_find_point(the_map, What.START), Direction.EAST)
     score_map = {starting_position: 0}
-    score_limit = _min_score(the_map, score_map)
-    return len(_min_path(the_map, score_map, starting_position, 0, score_limit))
+    score_limit = _min_score(the_map, score_map, starting_position)
+    result = _min_path(the_map, score_map, starting_position, 0, score_limit)
+    # Now it is necessary to go throw all excluded points and double check, which ones have to be in the solution.
+    to_be_checked = list(set([k.location for k in score_map.keys()]).difference(result))
+    for i, loc in enumerate(to_be_checked):
+        all_positions = [pos for pos in score_map.keys() if pos.location == loc]
+        for pos in all_positions:
+            original_till_pos = score_map[pos]
+            if original_till_pos > score_limit:
+                continue
+            scope_map1 = {pos: 0}
+            result1 = _min_score(the_map, scope_map1, pos)
+            if original_till_pos + result1 <= score_limit:
+                result.add(loc)  # the only missing point was (1,139)
+                print(f"FOUND {len(result)} - {loc}")
+                break
+        print(f"{i} - {len(result)} - {i / len(to_be_checked):.2f} - {datetime.datetime.now()}")
+    return len(result)
 
 
 class Day16(unittest.TestCase):
@@ -130,6 +146,8 @@ class Day16(unittest.TestCase):
     def __solution(self, data: str, a1: int, a2: int):
         the_map = c.read_lines(data)
         self.assertEqual(a1, _answer1(the_map), "answer 1")
+        if c.is_fast_only():
+            return  # Take around 3.5 hours to run
         self.assertEqual(a2, _answer2(the_map), "answer 2")
 
     def test_sample(self):
@@ -139,4 +157,4 @@ class Day16(unittest.TestCase):
         self.__solution("16-2", 11048, 64)
 
     def test_day(self):
-        self.__solution("16", 105508, 547)  # TODO 547 -- too low -- Part 2 to still fix
+        self.__solution("16", 105508, 548)
