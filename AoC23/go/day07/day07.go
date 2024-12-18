@@ -3,7 +3,7 @@ package day07
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"golang.org/x/exp/maps"
-	slices "golang.org/x/exp/slices" // Due to 1.20
+	"golang.org/x/exp/slices" // Due to 1.20
 	"sort"
 	"strconv"
 	"strings"
@@ -165,7 +165,7 @@ type Day07 struct{}
 
 func (d Day07) Solve() aoc.Solution {
 	var part1, part2 int
-  data := aoc.ReadFile("07")
+	data := aoc.ReadFile("07")
 	var list []HandBet
 	for _, line := range data {
 		hb := parse(line)

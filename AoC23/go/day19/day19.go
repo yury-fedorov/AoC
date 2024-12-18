@@ -67,7 +67,7 @@ func parseWorkflow(line string, wstats *WorkflowStats) (WorkflowName, Workflow) 
 		} else {
 			v := match1[1]
 			op := match1[2]
-			var co int = aoc.Atoi(match1[3])
+			var co = aoc.Atoi(match1[3])
 			dist := WorkflowName(match1[4])
 			ws = func(p Part) WorkflowName {
 				vv := getPart(p, v)
@@ -124,7 +124,7 @@ func uniqueOrdered(s []int) []int {
 	for _, v := range s {
 		r[v] = true
 	}
-	var result []int = maps.Keys(r)
+	var result = maps.Keys(r)
 	sort.Ints(result)
 	return result
 }

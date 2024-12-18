@@ -2,8 +2,8 @@ package day04
 
 import (
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"regexp"
 	slices "golang.org/x/exp/slices" // Due to 1.20
+	"regexp"
 	"strconv"
 	"strings"
 )

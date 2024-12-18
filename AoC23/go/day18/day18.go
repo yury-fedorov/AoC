@@ -227,8 +227,8 @@ func part2(m2 []Line) int {
 		}
 	}
 	// remove all adjacent in zone overlapping
-	for ix, _ := range midX {
-		for iy, _ := range midY {
+	for ix := range midX {
+		for iy := range midY {
 			in := isInCache[Point{ix, iy}]
 			if !in {
 				continue
