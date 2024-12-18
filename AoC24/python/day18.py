@@ -56,13 +56,24 @@ def _answer1(lines: [Point], till: int, end: Point) -> int:
     return _shortest_distance(the_map, START, end)
 
 
-# takes 219.808 seconds
+def _answer21(lines: [Point], t_min: int, t_max: int, end: Point) -> str:
+    def shortest(t: int) -> int | None:
+        the_map = _create_static_map(lines, t)
+        return _shortest_distance(the_map, START, end)
+
+    t_mid = int((t_max + t_min) / 2)
+    if t_min < t_mid < t_max:
+        d_mid = shortest(t_mid)
+        if d_mid is None:
+            return _answer21(lines, t_min, t_mid, end)
+        else:
+            return _answer21(lines, t_mid, t_max, end)
+    p = lines[t_min]
+    return f"{p.x},{p.y}"
+
+
 def _answer2(lines: [Point], end: Point) -> str:
-    the_map = set({})
-    for p in lines:
-        the_map.add(p)
-        if _shortest_distance(the_map, START, end) is None:
-            return f"{p.x},{p.y}"
+    return _answer21(lines, 0, len(lines) - 1, end)
 
 
 def _parse(lines: [str]) -> [Point]:
