@@ -20,11 +20,11 @@ def _create_static_map(lines: [Point], till: int) -> {Point}:
     return the_map
 
 
-def _shortest_distance(the_map: {Point}, start: Point, end: Point) -> int:
+def _shortest_distance(the_map: {Point}, start: Point, end: Point) -> int | None:
     visited = set({})
     frontline = [start]
     distance = 0
-    while True:
+    while len(frontline):
         next_frontline = set({})
         for cur_point in frontline:
             if cur_point == end:
@@ -38,6 +38,7 @@ def _shortest_distance(the_map: {Point}, start: Point, end: Point) -> int:
             visited.add(cur_point)
         distance += 1
         frontline = next_frontline
+    return None
 
 
 def _print_map(the_map: {Point}):
@@ -55,8 +56,13 @@ def _answer1(lines: [Point], till: int, end: Point) -> int:
     return _shortest_distance(the_map, START, end)
 
 
-def _answer2(lines: [Point]) -> int:
-    return 0
+# takes 219.808 seconds
+def _answer2(lines: [Point], end: Point) -> str:
+    the_map = set({})
+    for p in lines:
+        the_map.add(p)
+        if _shortest_distance(the_map, START, end) is None:
+            return f"{p.x},{p.y}"
 
 
 def _parse(lines: [str]) -> [Point]:
@@ -72,10 +78,10 @@ class Day18(unittest.TestCase):
     def __solution(self, data: str, a1: int, a2: int, till: int, end: Point):
         the_list = _parse(c.read_lines(data))
         self.assertEqual(a1, _answer1(the_list, till, end), "answer 1")
-        self.assertEqual(a2, _answer2(the_list), "answer 2")
+        self.assertEqual(a2, _answer2(the_list, end), "answer 2")
 
     def test_sample(self):
-        self.__solution("18-1", 22, 0, 12, SAMPLE_END)
+        self.__solution("18-1", 22, "6,1", 12, SAMPLE_END)
 
     def test_day(self):
-        self.__solution("18", 246, 0, KB, END)
+        self.__solution("18", 246, "22,50", KB, END)
