@@ -1,5 +1,4 @@
 import common as c
-import datetime
 import sys
 import unittest
 from enum import Enum
@@ -135,9 +134,7 @@ def _answer2(the_map: [str]) -> int:
             result1 = _min_score(the_map, scope_map1, pos)
             if original_till_pos + result1 <= score_limit:
                 result.add(loc)  # the only missing point was (1,139)
-                print(f"FOUND {len(result)} - {loc}")
                 break
-        print(f"{i} - {len(result)} - {i / len(to_be_checked):.2f} - {datetime.datetime.now()}")
     return len(result)
 
 
@@ -147,7 +144,7 @@ class Day16(unittest.TestCase):
         the_map = c.read_lines(data)
         self.assertEqual(a1, _answer1(the_map), "answer 1")
         if c.is_fast_only():
-            return  # Take around 3.5 hours to run
+            return  # Takes 3h 25m to run
         self.assertEqual(a2, _answer2(the_map), "answer 2")
 
     def test_sample(self):

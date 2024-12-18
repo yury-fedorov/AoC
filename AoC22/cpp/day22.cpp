@@ -51,11 +51,7 @@ protected:
     if (y < 0 || x < 0 || y >= map_.size())
       return EMPTY;
     const auto &line = map_[y];
-    if (x >= line.size())
-      return EMPTY;
-    // EXPECT_TRUE( line.size() == x_n ) << line.size() << " " << x_n << " " <<
-    // line;
-    return line[x];
+    return x >= line.size() ? EMPTY : line[x];
   }
 
   virtual Position Overlap(Position from_direction) const noexcept = 0;
@@ -63,23 +59,24 @@ protected:
 public:
   // basic navigation
   [[nodiscard]] Position To(Position from_direction) const noexcept {
-    auto [from, direction] = from_direction;
-    const auto [dx, dy] = kShifts[static_cast<int>(direction)];
+    auto [from, original_direction] = from_direction;
+    const auto [dx, dy] = kShifts[static_cast<int>(original_direction)];
     const auto [x0, y0] = from;
-    auto x1 = x0 + dx;
-    auto y1 = y0 + dy;
+    int x1 = x0 + dx;
+    int y1 = y0 + dy;
     char c1 = At(x1, y1);
+    Direction new_direction = original_direction;
     if (c1 == EMPTY) {
       // Special situation
       const auto [p, d] = Overlap(from_direction);
       x1 = p.first;
       y1 = p.second;
-      direction = d;
+      new_direction = d;
       c1 = At(x1, y1);
     }
     if (c1 == WALL)
-      return {from, direction};
-    return {{x1, y1}, direction};
+      return from_direction;
+    return {{x1, y1}, new_direction};
   }
 };
 
@@ -247,11 +244,6 @@ protected:
     } else if (td0 == "6L") {
       return tx("1L", L2L); //  6L-1L
     }
-
-    // TODO: implement part 2
-    std::cout << td0 << std::endl;
-    assert(false);
-
     return {from, direction};
   }
 
@@ -267,7 +259,7 @@ public:
   const Navigator *navigator =
       is_first ? (Navigator *)&navigator1 : &navigator2;
   Direction facing = Direction::kRight;
-  auto position = FindStart(map);
+  Point position = FindStart(map);
   static std::regex re_digit("(\\d+)(.*)");
   static std::regex re_turn("([RL])(.*)");
   std::string path_head = path;
@@ -275,7 +267,6 @@ public:
     int moves{0};
     std::string turn, tail;
     std::smatch what;
-    // if (re2::RE2::FullMatch(input, re_digit, &moves, &tail)) {
     if (std::regex_match(path_head, what, re_digit)) {
       moves = stoi(what[1]);
       tail = what[2];
@@ -286,7 +277,6 @@ public:
         position = new_position;
         facing = new_direction;
       }
-      // } else if (re2::RE2::FullMatch(input, re_turn, &turn, &tail)) {
     } else if (std::regex_match(path_head, what, re_turn)) {
       turn = what[1];
       tail = what[2];
