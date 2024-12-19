@@ -1,5 +1,3 @@
-import datetime
-
 import common as c
 import unittest
 
@@ -25,14 +23,8 @@ def _answer1(patterns: [str], designs: [str]) -> int:
 
 
 def _answer2(patterns: [str], designs: [str]) -> int:
-    count = 0
     cache = {}
-    for i, d in enumerate(designs):
-        print(f"{datetime.datetime.now()} Design {i} : {d}")
-        ci = _count_possible2(patterns, d, cache)
-        count += ci
-        print(f"... counted {ci}")
-    return count
+    return sum(_count_possible2(patterns, d, cache) for d in designs)
 
 
 class Day19(unittest.TestCase):
@@ -47,6 +39,5 @@ class Day19(unittest.TestCase):
     def test_sample(self):
         self.__solution("19-1", 6, 16)
 
-    # 20 seconds for answer1
     def test_day(self):
         self.__solution("19", 298, 572248688842069)
