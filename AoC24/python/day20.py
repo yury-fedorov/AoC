@@ -57,7 +57,6 @@ def _shortest_distance(the_map: [str], start, end: c.Point, max_distance: int | 
     return None
 
 
-# TODO - template to use for daily solutions, don't forget to add the solution to aoc24.py
 def _answer1(the_map: [str], max_desired_shortest: int) -> int:
     start = _find_location(the_map, START)
     end = _find_location(the_map, END)
@@ -72,16 +71,74 @@ def _answer1(the_map: [str], max_desired_shortest: int) -> int:
     return count
 
 
-def _answer2(the_map: [str]) -> int:
-    return 0
+def _distance_through_walls(jump_start, jump_end: c.Point) -> int:
+    return abs(jump_start.x - jump_end.x) + abs(jump_start.y - jump_end.y)
+
+
+def _jump_distance(the_map: [str], start, jump_start, jump_end, end: c.Point, max_desired_shortest: int) -> int | None:
+    start_to_wall = _shortest_distance(the_map, start, jump_start, max_desired_shortest)
+    if start_to_wall is None or start_to_wall >= max_desired_shortest: return None
+    distance_through_walls = _distance_through_walls(jump_start, jump_end)
+    remaining_max_distance = max_desired_shortest - start_to_wall - distance_through_walls
+    wall_to_end = _shortest_distance(the_map, jump_end, end, remaining_max_distance)
+    if wall_to_end is None: return None
+    total_distance = start_to_wall + distance_through_walls + wall_to_end
+    return total_distance if total_distance <= max_desired_shortest else None
+
+
+def _all_paths(the_map: [str], start, end: c.Point, max_steps: int, visited: {c.Point}) -> {c.Point}:
+    if start == end: return {end}
+    if max_steps == 0: return {}
+    result = {start}
+    for s in SHIFTS:
+        x1 = start.x + s.x
+        y1 = start.y + s.y
+        what = _at(the_map, x1, y1)
+        p1 = c.Point(x1, y1)
+        if what == WALL or (p1 in visited): continue
+        visited1 = {start, p1}
+        visited1.update(visited)
+        paths1 = _all_paths(the_map, p1, end, max_steps - 1, visited1)
+        result.update(paths1)
+    return result
+
+
+CACHE = {}
+
+
+def _fast_shortest(the_map: [str], start, end: c.Point) -> int:
+    key = (start, end)
+    result = CACHE.get(key, -1)
+    if result > -1: return result
+    result = _shortest_distance(the_map, start, end)
+    CACHE[key] = result
+    return result
+
+
+def _answer2(the_map: [str], max_desired_shortest: int) -> int:
+    start = _find_location(the_map, START)
+    end = _find_location(the_map, END)
+    shortest = _shortest_distance(the_map, start, end)
+    paths = _all_paths(the_map, start, end, shortest, {})
+    count = 0
+    for i, p1 in enumerate(paths):
+        dist_to_end1 = _fast_shortest(the_map, p1, end)
+        for j, p2 in enumerate(paths):
+            if not (j > i): continue
+            jump_distance = _distance_through_walls(p1, p2)
+            if jump_distance > 20: continue
+            dist_to_end2 = _fast_shortest(the_map, p2, end)
+            if dist_to_end1 < dist_to_end2:
+                # p1 is closer to end, we swap them
+                p1, p2 = p2, p1
+            ds1 = _fast_shortest(the_map, start, p1)
+            d2e = _fast_shortest(the_map, p2, end)
+            if (ds1 + d2e + jump_distance) <= max_desired_shortest:
+                count += 1
+    return count
 
 
 class Day20(unittest.TestCase):
-
-    def __solution(self, data: str, a1: int, a2: int):
-        the_map = c.read_lines(data)
-        self.assertEqual(a1, _answer1(the_map), "answer 1")
-        self.assertEqual(a2, _answer2(the_map), "answer 2")
 
     def test_shortest(self):
         the_map = c.read_lines("20-1")
@@ -96,6 +153,7 @@ class Day20(unittest.TestCase):
         shortest = _shortest_distance(the_map, start, end)
         max_desired_shortest = shortest - 20
         self.assertEqual(5, _answer1(the_map, max_desired_shortest), "answer 1")
+        # self.assertEqual(12 + 22 + 4 + 3, _answer2(the_map, max_desired_shortest - 70), "answer 2")
 
     def test_day(self):
         the_map = c.read_lines("20")
@@ -103,4 +161,7 @@ class Day20(unittest.TestCase):
         end = _find_location(the_map, END)
         shortest = _shortest_distance(the_map, start, end)
         max_desired_shortest = shortest - MIN_SAFE
-        self.assertEqual(1415, _answer1(the_map, max_desired_shortest), "answer 1")  # takes 39 minutes
+        if not c.is_fast_only():
+            # takes 39 minutes
+            self.assertEqual(1415, _answer1(the_map, max_desired_shortest), "answer 1")
+        self.assertEqual(0, _answer2(the_map, max_desired_shortest), "answer 2")
