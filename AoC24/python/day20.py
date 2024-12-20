@@ -86,20 +86,25 @@ def _jump_distance(the_map: [str], start, jump_start, jump_end, end: c.Point, ma
     return total_distance if total_distance <= max_desired_shortest else None
 
 
-def _all_paths(the_map: [str], start, end: c.Point, max_steps: int, visited: {c.Point}) -> {c.Point}:
-    if start == end: return {end}
-    if max_steps == 0: return {}
+def _all_paths(the_map: [str], start, end: c.Point, max_steps: int) -> {c.Point}:
     result = {start}
-    for s in SHIFTS:
-        x1 = start.x + s.x
-        y1 = start.y + s.y
-        what = _at(the_map, x1, y1)
-        p1 = c.Point(x1, y1)
-        if what == WALL or (p1 in visited): continue
-        visited1 = {start, p1}
-        visited1.update(visited)
-        paths1 = _all_paths(the_map, p1, end, max_steps - 1, visited1)
-        result.update(paths1)
+    frontline = {start}
+    distance = 0
+    while len(frontline):
+        new_frontline = set({})
+        for p in frontline:
+            for s in SHIFTS:
+                x1 = p.x + s.x
+                y1 = p.y + s.y
+                what = _at(the_map, x1, y1)
+                p1 = c.Point(x1, y1)
+                if what == WALL or (p1 in result): continue
+                d1 = _fast_shortest(the_map, p1, end)
+                if d1 + distance > max_steps: continue
+                result.add(p1)
+                new_frontline.add(p1)
+        distance += 1
+        frontline = new_frontline
     return result
 
 
@@ -119,7 +124,7 @@ def _answer2(the_map: [str], max_desired_shortest: int) -> int:
     start = _find_location(the_map, START)
     end = _find_location(the_map, END)
     shortest = _shortest_distance(the_map, start, end)
-    paths = _all_paths(the_map, start, end, shortest, {})
+    paths = _all_paths(the_map, start, end, shortest)
     count = 0
     for i, p1 in enumerate(paths):
         dist_to_end1 = _fast_shortest(the_map, p1, end)
@@ -164,4 +169,5 @@ class Day20(unittest.TestCase):
         if not c.is_fast_only():
             # takes 39 minutes
             self.assertEqual(1415, _answer1(the_map, max_desired_shortest), "answer 1")
-        self.assertEqual(0, _answer2(the_map, max_desired_shortest), "answer 2")
+        # TODO answer 2 - 684977 - too low, took 38 minutes 17 seconds
+        # self.assertEqual(0, _answer2(the_map, max_desired_shortest), "answer 2")
