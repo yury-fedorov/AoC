@@ -188,6 +188,7 @@ def _rec(code: str, depth: int) -> int:
 
 
 def _shortest_sequence_answer2(code: str) -> int:
+    return 0 # TODO - too slow
     options = _navigate2(code, NUMERIC_KEYPAD)
     return min(_rec(o, 26) for o in options)
 
