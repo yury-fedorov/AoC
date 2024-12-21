@@ -58,6 +58,8 @@ def _shortest_distance(the_map: [str], start, end: c.Point, max_distance: int | 
 
 
 def _answer1(the_map: [str], max_desired_shortest: int) -> int:
+    if False:
+        return _answer2(the_map, 2, max_desired_shortest)
     start = _find_location(the_map, START)
     end = _find_location(the_map, END)
     walls = _walls(the_map)
@@ -120,25 +122,26 @@ def _fast_shortest(the_map: [str], start, end: c.Point) -> int:
     return result
 
 
-def _answer2(the_map: [str], max_desired_shortest: int) -> int:
+def _answer2(the_map: [str], max_cheat_length: int, max_desired_shortest: int) -> int:
     start = _find_location(the_map, START)
     end = _find_location(the_map, END)
     shortest = _shortest_distance(the_map, start, end)
-    paths = _all_paths(the_map, start, end, shortest)
+    paths = list(_all_paths(the_map, start, end, shortest))
     count = 0
     for i, p1 in enumerate(paths):
         dist_to_end1 = _fast_shortest(the_map, p1, end)
         for j, p2 in enumerate(paths):
             if not (j > i): continue
             jump_distance = _distance_through_walls(p1, p2)
-            if jump_distance > 20: continue
+            if jump_distance > max_cheat_length: continue
+            if _fast_shortest(the_map, p1, p2) == jump_distance: continue  # no obstacles already
             dist_to_end2 = _fast_shortest(the_map, p2, end)
             if dist_to_end1 < dist_to_end2:
                 # p1 is closer to end, we swap them
                 p1, p2 = p2, p1
+                dist_to_end2 = dist_to_end1
             ds1 = _fast_shortest(the_map, start, p1)
-            d2e = _fast_shortest(the_map, p2, end)
-            if (ds1 + d2e + jump_distance) <= max_desired_shortest:
+            if (ds1 + dist_to_end2 + jump_distance) <= max_desired_shortest:
                 count += 1
     return count
 
@@ -158,7 +161,9 @@ class Day20(unittest.TestCase):
         shortest = _shortest_distance(the_map, start, end)
         max_desired_shortest = shortest - 20
         self.assertEqual(5, _answer1(the_map, max_desired_shortest), "answer 1")
-        # self.assertEqual(12 + 22 + 4 + 3, _answer2(the_map, max_desired_shortest - 70), "answer 2")
+        # 12 + 22 + 4
+        # self.assertEqual(3, _answer2(the_map, 6, shortest - 76), "answer 2")
+        # self.assertEqual(4 + 3, _answer2(the_map, 6, shortest - 74), "answer 2")
 
     def test_day(self):
         the_map = c.read_lines("20")
@@ -170,4 +175,4 @@ class Day20(unittest.TestCase):
             # takes 39 minutes
             self.assertEqual(1415, _answer1(the_map, max_desired_shortest), "answer 1")
         # TODO answer 2 - 684977 - too low, took 38 minutes 17 seconds
-        # self.assertEqual(0, _answer2(the_map, max_desired_shortest), "answer 2")
+        # self.assertEqual(0, _answer2(the_map, MIN_SAFE, max_desired_shortest), "answer 2")
