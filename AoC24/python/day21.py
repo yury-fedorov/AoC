@@ -1,3 +1,5 @@
+import sys
+
 import common as c
 import unittest
 
@@ -156,16 +158,8 @@ def _navigate2(code: str, keypad: {str: c.Point}) -> [str]:
 
 
 def _shortest_sequence2(code: str) -> int:
-    result = len(_shortest_sequence(code))
     options = _navigate2(code, NUMERIC_KEYPAD)
-    for o in options:
-        options1 = _navigate2(o, DIRECTIONAL_KEYPAD)
-        for o1 in options1:
-            options2 = _navigate2(o1, DIRECTIONAL_KEYPAD)
-            new_min = min(map(len, options2))
-            if new_min < result:
-                result = new_min
-    return result
+    return min(_rec(o, 2) for o in options)
 
 
 def _shortest_sequence(code: str) -> str:
@@ -183,8 +177,23 @@ def _answer1(codes: [str]) -> int:
     return sum(_complexity(code, _shortest_sequence2(code)) for code in codes)
 
 
-def _answer2(lines: [str]) -> int:
-    return 0
+def _rec(code: str, depth: int) -> int:
+    if depth == 0: return len(code)
+    options1 = _navigate2(code, DIRECTIONAL_KEYPAD)
+    local_min = min(map(len, options1))
+    filtered = [oi for oi in options1 if len(oi) == local_min]
+    if depth == 25:
+        print(f"{code} {local_min} {len(filtered)}")
+    return min([_rec(fi, depth - 1) for fi in filtered])
+
+
+def _shortest_sequence_answer2(code: str) -> int:
+    options = _navigate2(code, NUMERIC_KEYPAD)
+    return min(_rec(o, 26) for o in options)
+
+
+def _answer2(codes: [str]) -> int:
+    return sum(_complexity(code, _shortest_sequence_answer2(code)) for code in codes)
 
 
 class Day21(unittest.TestCase):
@@ -212,7 +221,8 @@ class Day21(unittest.TestCase):
         self.assertEqual("<A^A>^^AvvvA", _navigate("029A", NUMERIC_KEYPAD), "navigate 029A")
 
     def test_sample(self):
-        self.__solution("21-1", 126384, 0)
+        codes = c.read_lines("21-1")
+        self.assertEqual(126384, _answer1(codes), "answer 1")
 
     # 157692 - too high
     def test_day(self):
