@@ -101,6 +101,30 @@ def _navigate_to_rec(start, end: c.Point, point_keypad: {c.Point: str}) -> str:
     return seq[0]
 
 
+def _navigate_to_rec2(start, end: c.Point, point_keypad: {c.Point: str}) -> {str}:
+    if start == end:
+        return {"A"}
+    dx, dy = sign(end.x - start.x), sign(end.y - start.y)
+
+    def try_move(dx, dy: int) -> c.Point | None:
+        if dx == 0 and dy == 0: return None
+        p1 = c.Point(start.x + dx, start.y + dy)
+        digit = point_keypad.get(p1, ND)
+        if digit == ND: return None
+        return p1
+
+    def try_shift(dx, dy: int) -> {str}:
+        s = c.Point(sign(dx), sign(dy))
+        p1 = try_move(s.x, s.y)
+        if p1 is None: return set({})
+        return set([DIRECTIONS[s] + o for o in _navigate_to_rec2(p1, end, point_keypad)])
+
+    set_x = try_shift(dx, 0)
+    set_y = try_shift(0, dy)
+
+    return set_x.union(set_y)
+
+
 def _navigate(code: str, keypad: {str: c.Point}) -> str:
     position = keypad[A]
     result = ""
@@ -109,6 +133,38 @@ def _navigate(code: str, keypad: {str: c.Point}) -> str:
         target = keypad[digit]
         result += _navigate_to_rec(position, target, point_keypad)
         position = target
+    return result
+
+
+def _navigate2(code: str, keypad: {str: c.Point}) -> [str]:
+    position = keypad[A]
+    result = []
+    point_keypad = {v: k for k, v in keypad.items()}
+    for digit in code:
+        target = keypad[digit]
+        options = _navigate_to_rec2(position, target, point_keypad)
+        if len(result):
+            result1 = []
+            for ri in result:
+                for o in options:
+                    result1.append(ri + o)
+            result = result1
+        else:
+            result = list(options)
+        position = target
+    return result
+
+
+def _shortest_sequence2(code: str) -> int:
+    result = len(_shortest_sequence(code))
+    options = _navigate2(code, NUMERIC_KEYPAD)
+    for o in options:
+        options1 = _navigate2(o, DIRECTIONAL_KEYPAD)
+        for o1 in options1:
+            options2 = _navigate2(o1, DIRECTIONAL_KEYPAD)
+            new_min = min(map(len, options2))
+            if new_min < result:
+                result = new_min
     return result
 
 
@@ -124,7 +180,7 @@ def _complexity(code: str, length: int) -> int:
 
 
 def _answer1(codes: [str]) -> int:
-    return sum(_complexity(code, len(_shortest_sequence(code))) for code in codes)
+    return sum(_complexity(code, _shortest_sequence2(code)) for code in codes)
 
 
 def _answer2(lines: [str]) -> int:
@@ -142,6 +198,11 @@ class Day21(unittest.TestCase):
         seq = "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A"
         self.assertEqual(68 * 29, _complexity("029A", len(seq)), "complexity")
         self.assertEqual(len(seq), len(_shortest_sequence("029A")), "shortest sequence len")
+        self.assertEqual(68, _shortest_sequence2("029A"), "shortest sequence 2 - 029A")
+        self.assertEqual(60, _shortest_sequence2("980A"), "shortest sequence 2 - 980A")
+        self.assertEqual(68, _shortest_sequence2("179A"), "shortest sequence 2 - 179A")
+        self.assertEqual(64, _shortest_sequence2("456A"), "shortest sequence 2 - 456A")  # found issue
+        self.assertEqual(64, _shortest_sequence2("379A"), "shortest sequence 2 - 379A")
 
     def test_navigate_a0(self):
         pad = NUMERIC_KEYPAD
@@ -151,8 +212,8 @@ class Day21(unittest.TestCase):
         self.assertEqual("<A^A>^^AvvvA", _navigate("029A", NUMERIC_KEYPAD), "navigate 029A")
 
     def test_sample(self):
-        self.__solution("21-1", 0, 0)
+        self.__solution("21-1", 126384, 0)
 
     # 157692 - too high
     def test_day(self):
-        self.__solution("21", 0, 0)
+        self.__solution("21", 156714, 0)
