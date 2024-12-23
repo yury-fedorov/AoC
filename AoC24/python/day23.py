@@ -1,5 +1,3 @@
-from collections import Counter
-
 import common as c
 import unittest
 from itertools import combinations
@@ -8,29 +6,11 @@ from itertools import combinations
 def _target(name: str) -> bool: return name.startswith("t")
 
 
-def _answer1(lines: []) -> int:
-    counter = Counter()
-    links = {}
-
-    def add_link(from_c, to_c: str):
-        if from_c in links:
-            links[from_c].add(to_c)
-        else:
-            links[from_c] = {to_c}
-
-    computers = set({})
-    for l in lines:
-        cl = l.split("-")
-        computers.update(cl)
-        counter.update(cl)
-        a, b = cl
-        add_link(a, b)
-        add_link(b, a)
-
-    first_computer = [name for name in computers if _target(name) and counter[name] >= 2]
+def _answer1(links: {}) -> int:
+    first_computer = [name for name in links.keys() if _target(name) and len(links[name]) >= 2]
     result = set({})
     for a in first_computer:
-        candidates = list(set([l for l in links[a] if counter[l] >= 2]))
+        candidates = list(set([l for l in links[a] if len(links[l]) >= 2]))
         for i, b in enumerate(candidates):
             for j, c in enumerate(candidates):
                 if i < j:
@@ -64,28 +44,9 @@ def _largest(head: str, links: {}) -> {str}:
     return {head}
 
 
-def _answer2(lines: []) -> str:
-    # TODO copy n paste
-    counter = Counter()
-    links = {}
-
-    def add_link(from_c, to_c: str):
-        if from_c in links:
-            links[from_c].add(to_c)
-        else:
-            links[from_c] = {to_c}
-
-    computers = set({})
-    for l in lines:
-        cl = l.split("-")
-        computers.update(cl)
-        counter.update(cl)
-        a, b = cl
-        add_link(a, b)
-        add_link(b, a)
-    # end of copy and paste
+def _answer2(links: {}) -> str:
     result = []
-    for h in computers:
+    for h in links.keys():
         ri = list(_largest(h, links))
         if len(ri) > len(result):
             result = ri
@@ -97,8 +58,22 @@ class Day23(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
         lines = c.read_lines(data)
-        self.assertEqual(a1, _answer1(lines), "answer 1")
-        self.assertEqual(a2, _answer2(lines), "answer 2")
+
+        links = {}
+
+        def add_link(from_c, to_c: str):
+            if from_c in links:
+                links[from_c].add(to_c)
+            else:
+                links[from_c] = {to_c}
+
+        for l in lines:
+            a, b = l.split("-")
+            add_link(a, b)
+            add_link(b, a)
+
+        self.assertEqual(a1, _answer1(links), "answer 1")
+        self.assertEqual(a2, _answer2(links), "answer 2")
 
     def test_sample(self):
         self.__solution("23-1", 7, "co,de,ka,ta")
