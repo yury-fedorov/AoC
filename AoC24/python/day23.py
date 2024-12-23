@@ -36,7 +36,8 @@ def _answer1(lines: []) -> int:
             for j, c in enumerate(candidates):
                 if i < j:
                     if c in links[b]:
-                        cs = {a, b, c}
+                        cs = [a, b, c]
+                        cs.sort()
                         cst = tuple(cs)
                         result.add(cst)
     return len(result)
@@ -58,4 +59,4 @@ class Day23(unittest.TestCase):
 
     # 1312 - not right answer
     def test_day(self):
-        self.__solution("23", 0, 0)
+        self.__solution("23", 1304, 0)
