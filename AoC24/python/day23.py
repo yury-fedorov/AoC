@@ -1,7 +1,5 @@
 from collections import Counter
 
-from apt.auth import add_key
-
 import common as c
 import unittest
 
@@ -43,8 +41,40 @@ def _answer1(lines: []) -> int:
     return len(result)
 
 
-def _answer2(lines: []) -> int:
-    return 0
+def _largest(head: str, links: {}) -> {str}:
+    # TODO to implement
+    pairs = list(links[head])
+    return {head, pairs[0], pairs[1]}
+
+
+def _answer2(lines: []) -> str:
+    # TODO copy n paste
+    counter = Counter()
+    links = {}
+
+    def add_link(from_c, to_c: str):
+        if from_c in links:
+            links[from_c].add(to_c)
+        else:
+            links[from_c] = {to_c}
+
+    computers = set({})
+    for l in lines:
+        cl = l.split("-")
+        computers.update(cl)
+        counter.update(cl)
+        a, b = cl
+        add_link(a, b)
+        add_link(b, a)
+    # end of copy and paste
+    heads = counter.most_common(max(10, round(len(links) * 0.10)))
+    result = []
+    for h, n in heads:
+        ri = list(_largest(h, links))
+        if len(ri) > len(result):
+            result = ri
+    result.sort()
+    return ",".join(result)
 
 
 class Day23(unittest.TestCase):
@@ -55,8 +85,8 @@ class Day23(unittest.TestCase):
         self.assertEqual(a2, _answer2(lines), "answer 2")
 
     def test_sample(self):
-        self.__solution("23-1", 7, 0)
+        self.__solution("23-1", 7, "")
 
     # 1312 - not right answer
     def test_day(self):
-        self.__solution("23", 1304, 0)
+        self.__solution("23", 1304, "")
