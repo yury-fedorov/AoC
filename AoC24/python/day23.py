@@ -29,14 +29,17 @@ def _answer1(lines: []) -> int:
         add_link(b, a)
 
     first_computer = [name for name in computers if _target(name) and counter[name] >= 2]
-    result = 0
+    result = set({})
     for a in first_computer:
         candidates = list(set([l for l in links[a] if counter[l] >= 2]))
         for i, b in enumerate(candidates):
             for j, c in enumerate(candidates):
                 if i < j:
-                    result += 1
-    return result
+                    if c in links[b]:
+                        cs = {a, b, c}
+                        cst = tuple(cs)
+                        result.add(cst)
+    return len(result)
 
 
 def _answer2(lines: []) -> int:
@@ -51,7 +54,8 @@ class Day23(unittest.TestCase):
         self.assertEqual(a2, _answer2(lines), "answer 2")
 
     def test_sample(self):
-        self.__solution("23-1", 0, 0)
+        self.__solution("23-1", 7, 0)
 
+    # 1312 - not right answer
     def test_day(self):
         self.__solution("23", 0, 0)
