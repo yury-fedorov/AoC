@@ -2,6 +2,7 @@ from collections import Counter
 
 import common as c
 import unittest
+from itertools import combinations
 
 
 def _target(name: str) -> bool: return name.startswith("t")
@@ -41,10 +42,26 @@ def _answer1(lines: []) -> int:
     return len(result)
 
 
+def _is_set(nodes: [str], links: {}) -> bool:
+    for i, a in enumerate(nodes):
+        for j, b in enumerate(nodes):
+            if i < j:
+                if not b in links[a]:
+                    return False
+    return True
+
+
 def _largest(head: str, links: {}) -> {str}:
-    # TODO to implement
-    pairs = list(links[head])
-    return {head, pairs[0], pairs[1]}
+    full = list(links[head])
+    full.append(head)
+    n = len(full)
+    if _is_set(full, links): return set(full)
+    while n > 2:
+        n -= 1
+        for ci in combinations(full, n):
+            if _is_set(ci, links):
+                return set(ci)
+    return {head}
 
 
 def _answer2(lines: []) -> str:
@@ -67,9 +84,8 @@ def _answer2(lines: []) -> str:
         add_link(a, b)
         add_link(b, a)
     # end of copy and paste
-    heads = counter.most_common(max(10, round(len(links) * 0.10)))
     result = []
-    for h, n in heads:
+    for h in computers:
         ri = list(_largest(h, links))
         if len(ri) > len(result):
             result = ri
@@ -85,8 +101,8 @@ class Day23(unittest.TestCase):
         self.assertEqual(a2, _answer2(lines), "answer 2")
 
     def test_sample(self):
-        self.__solution("23-1", 7, "")
+        self.__solution("23-1", 7, "co,de,ka,ta")
 
-    # 1312 - not right answer
+    # dn,dp,ff,gq,kw,ou,qc,qz,tf,us,xy,ya - not right answer
     def test_day(self):
-        self.__solution("23", 1304, "")
+        self.__solution("23", 1304, "ao,es,fe,if,in,io,ky,qq,rd,rn,rv,vc,vl")
