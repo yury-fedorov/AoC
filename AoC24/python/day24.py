@@ -1,7 +1,10 @@
 from typing import NamedTuple
 
+from jedi.plugins.django import mapping
+
 import common as c
 import unittest
+from itertools import combinations
 
 
 class Formula(NamedTuple):
@@ -20,11 +23,12 @@ def _is_z(reg_name: str) -> bool: return reg_name.startswith("z")
 def _reg_name(group: str, index: int) -> str: return f"{group}{index:02d}"
 
 
-def _z(registers: {str: bool}) -> int:
-    n = sum(1 for ri in registers.keys() if _is_z(ri))
+def _z(registers: {str: bool}, mapping: {str: str}) -> int:
+    mz = {mapping.get(ri, ri): ri for ri in registers.keys() if _is_z(mapping.get(ri, ri))}
+    n = sum(1 for ri in registers.keys() if _is_z(mapping.get(ri, ri)))
     result = ""
     for i in range(n):
-        result = ("1" if registers[_reg_name("z", i)] else "0") + result
+        result = ("1" if registers[mz[_reg_name("z", i)]] else "0") + result
     return _bin2int(result)
 
 
@@ -76,7 +80,7 @@ def _calc(registers: {str: bool}, formulas: [Formula], mapping: {str: str}) -> i
             # no new register was set in a whole iteration, we are stuck
             return None
 
-    return _z(registers)
+    return _z(registers, mapping)
 
 
 def _answer1(registers: {str: bool}, formulas: [Formula]) -> int:
@@ -91,11 +95,113 @@ def _set_registers(x, y, len_reg: int) -> {str: bool}:
     return result
 
 
+def _check_wrong_mode(formulas: [Formula], n: int, mapping: {str: str}, mode: str) -> [int]:
+    wrong = []
+    for i in range(n - 1):
+        a, b = 0, 0
+        match mode:
+            case "a":
+                a = 1 << i
+            case "b":
+                b = 1 << i
+            case "ab":
+                a = 1 << i
+                b = 1 << i
+        regs = _set_registers(a, b, n)
+        res = _calc(regs, formulas, mapping)
+        if res != a + b:
+            wrong.append(i)
+            # print( f"{i} {a} + {b} -> {res}")
+    return wrong
+
+
+def _check_wrong(formulas: [Formula], n: int, mapping: {str: str}) -> [int]:
+    wa = _check_wrong_mode(formulas, n, mapping, "a")
+    if len(wa): return wa
+    wb = _check_wrong_mode(formulas, n, mapping, "b")
+    if len(wb): return wb
+    return _check_wrong_mode(formulas, n, mapping, "ab")
+
+
+def _check_pairs(formulas: [Formula], n: int, pairs: [(str, str)]) -> (bool, [int]):
+    m = {}
+    for a, b in pairs:
+        m[a] = b
+        m[b] = a
+    # if len(m) != 8: return False, []
+    return True, _check_wrong(formulas, n, m)
+
+
 def _answer2(registers: {str: bool}, formulas: [Formula]) -> int:
     n = _size_z(registers, formulas)
-    r = _set_registers(1, 3, n)
-    return 0
-    return _calc(r, formulas, {})
+    wrong = _check_wrong(formulas, n, {})
+    all_regs = {ri for ri in registers.keys()}
+    all_regs.update([fi.r for fi in formulas])
+    if False:
+        # seaching for pairs
+        for i, a in enumerate(all_regs):
+            for j, b in enumerate(all_regs):
+                if j > i:
+                    wrong1 = _check_wrong(formulas, n, {a: b, b: a})
+                    if len(wrong1) < len(wrong):
+                        print(f"{a} - {b}")
+        # 8,
+        # 16 65536 + 0 -> 131072
+        # 32 4294967296 + 0 -> 8589934592
+        # 38 274877906944 + 0 -> 549755813888
+    pairs = [("qmd", "dhm"), ("qmd", "bqf"), ("gnn", "dhm"), ("gnn", "bqf"), ("jbc", "pqv"), ("jbc", "gfm"),
+             ("dhm", "kvn"), ("dhm", "qjd"), ("kvn", "bqf"), ("mnv", "pqv"), ("mnv", "gfm"), ("bqf", "qjd")]
+    if False:
+        options = list(combinations(pairs, 4))
+        for oi in options:
+            mi = {}
+            for pi in oi:
+                a, b = pi
+                mi[a] = b
+                mi[b] = a
+            if len(mi) != 8: continue
+            wi = _check_wrong(formulas, n, mi)
+            if len(wrong) > len(wi):
+                # print(wi)
+                # print(oi)
+                wrong = wi
+
+        ok3 = [('jbc', 'pqv'), ('gnn', 'bqf'), ('qmd', 'dhm')]
+        for i in range(len(ok3)):
+            mi = {}
+            for j, fai in enumerate(ok3):
+                if j == i: continue
+                a, b = fai
+                mi[a] = b
+                mi[b] = a
+            print(f"{i} {ok3[i]} {_check_wrong(formulas, n, mi)}")
+
+        cr = {a for a, _ in pairs}
+        cr.update({b for _, b in pairs})
+        for a, b in ok3:
+            cr.remove(a)
+            cr.remove(b)
+        if True:
+            options = list(combinations(all_regs, 2))
+            for oi in options:
+                mi = {}
+                for pi in ok3:
+                    a, b = pi
+                    mi[a] = b
+                    mi[b] = a
+                a, b = oi
+                mi[a] = b
+                mi[b] = a
+                if len(mi) != 8: continue
+                w = _check_wrong(formulas, n, mi)
+                if len(wrong) > len(w):
+                    print(oi)
+                    print(w)
+
+    p = [("pqv", "z32")]
+    wr, wp = _check_pairs(formulas, n, p)
+
+    return wrong
 
 
 def _parse(data: str) -> ({str: bool}, [Formula]):
@@ -124,7 +230,7 @@ class Day24(unittest.TestCase):
         self.assertEqual(a2, _answer2(registers, formulas), "answer 2")
 
     def test_z(self):
-        self.assertEqual(4, _z({"z00": 0, "z01": 0, "z02": 1}), "z case 1")
+        self.assertEqual(4, _z({"z00": 0, "z01": 0, "z02": 1}, {}), "z case 1")
         self.assertEqual(2024, _bin2int("0011111101000"), "_bin2int")
 
     def test_sample1(self):
