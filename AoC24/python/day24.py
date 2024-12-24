@@ -17,27 +17,31 @@ def _bin2int(value: str) -> int: return int(value, 2)
 def _is_z(reg_name: str) -> bool: return reg_name.startswith("z")
 
 
+def _reg_name(group: str, index: int) -> str: return f"{group}{index:02d}"
+
+
 def _z(registers: {str: bool}) -> int:
     n = sum(1 for ri in registers.keys() if _is_z(ri))
     result = ""
     for i in range(n):
-        result = ("1" if registers[f"z{i:02d}"] else "0") + result
+        result = ("1" if registers[_reg_name("z", i)] else "0") + result
     return _bin2int(result)
 
 
-def _is_result_defined(registers: {str: bool}, n: int) -> bool:
-    return sum([1 for ri in registers.keys() if _is_z(ri)]) >= n
+def _is_result_defined(registers: {str: bool}, n: int, mapping: {str: str}) -> bool:
+    return sum([1 for ri in registers.keys() if _is_z(mapping.get(ri, ri))]) >= n
 
 
-# TODO - template to use for daily solutions, don't forget to add the solution to aoc24.py
-def _answer1(registers: {str: bool}, formulas: [Formula]) -> int:
+def _calc(registers: {str: bool}, formulas: [Formula], mapping: {str: str}) -> int | None:
     # detect all z
     z_set = {ri for ri in registers.keys() if _is_z(ri)}
     z_set.update([fi.r for fi in formulas if _is_z(fi.r)])
     n = len(z_set)
-    while not _is_result_defined(registers, n):
+    while not _is_result_defined(registers, n, mapping):
+        is_any_progress = False
         for fi in formulas:
-            if fi.r in registers.keys(): continue
+            fir = mapping.get(fi.r, fi.r)
+            if fir in registers.keys(): continue
             result = None
             a = registers.get(fi.a, None)
             b = registers.get(fi.b, None)
@@ -62,9 +66,22 @@ def _answer1(registers: {str: bool}, formulas: [Formula]) -> int:
                 case _:
                     raise ValueError("bad operator")
             if result is not None:
-                registers[fi.r] = result
+                is_any_progress = True
+                registers[fir] = result
+        if not is_any_progress:
+            # no new register was set in a whole iteration, we are stuck
+            return None
 
     return _z(registers)
+
+
+def _answer1(registers: {str: bool}, formulas: [Formula]) -> int:
+    return _calc(registers, formulas, {})
+
+
+def _set_registers(x, y, len_reg: int) -> {str: bool}:
+    # TODO - to implement
+    return {}
 
 
 def _answer2(lines: []) -> int:
