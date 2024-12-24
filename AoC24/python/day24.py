@@ -95,21 +95,24 @@ def _set_registers(x, y, len_reg: int) -> {str: bool}:
     return result
 
 
+def _set_registers_with_xy(x, y, index, len_reg: int) -> {str: bool}:
+    return _set_registers(x << index, y << index, len_reg)
+
+
 def _check_wrong_mode(formulas: [Formula], n: int, mapping: {str: str}, mode: str) -> [int]:
     wrong = []
     for i in range(n - 1):
         a, b = 0, 0
         match mode:
             case "a":
-                a = 1 << i
+                a = 1
             case "b":
-                b = 1 << i
+                b = 1
             case "ab":
-                a = 1 << i
-                b = 1 << i
-        regs = _set_registers(a, b, n)
+                a, b = 1, 1
+        regs = _set_registers_with_xy(a, b, i, n)
         res = _calc(regs, formulas, mapping)
-        if res != a + b:
+        if res != (a << i) + (b << i):
             wrong.append(i)
             # print( f"{i} {a} + {b} -> {res}")
     return wrong
@@ -123,11 +126,16 @@ def _check_wrong(formulas: [Formula], n: int, mapping: {str: str}) -> [int]:
     return _check_wrong_mode(formulas, n, mapping, "ab")
 
 
-def _check_pairs(formulas: [Formula], n: int, pairs: [(str, str)]) -> (bool, [int]):
+def _pairs_to_mapping(pairs: [(str, str)]) -> {str: str}:
     m = {}
     for a, b in pairs:
         m[a] = b
         m[b] = a
+    return m
+
+
+def _check_pairs(formulas: [Formula], n: int, pairs: [(str, str)]) -> (bool, [int]):
+    m = _pairs_to_mapping(pairs)
     # if len(m) != 8: return False, []
     return True, _check_wrong(formulas, n, m)
 
@@ -135,6 +143,7 @@ def _check_pairs(formulas: [Formula], n: int, pairs: [(str, str)]) -> (bool, [in
 def _answer2(registers: {str: bool}, formulas: [Formula]) -> int:
     n = _size_z(registers, formulas)
     wrong = _check_wrong(formulas, n, {})
+    print(wrong)
     all_regs = {ri for ri in registers.keys()}
     all_regs.update([fi.r for fi in formulas])
     if False:
@@ -200,7 +209,7 @@ def _answer2(registers: {str: bool}, formulas: [Formula]) -> int:
 
     p = [("pqv", "z32")]
     wr, wp = _check_pairs(formulas, n, p)
-
+    return 0  # TODO to be solved
     return wrong
 
 
@@ -240,6 +249,14 @@ class Day24(unittest.TestCase):
     def test_sample2(self):
         registers, formulas = _parse("24-2")
         self.assertEqual(2024, _answer1(registers, formulas), "answer 1 - sample 2")
+
+    def test_broken(self):
+        registers, formulas = _parse("24")
+        n = _size_z(registers, formulas)
+        rs = _set_registers_with_xy(1, 0, 8, n)
+        res = _calc(rs, formulas, {})
+        res1 = _calc(rs, formulas, _pairs_to_mapping([("dnc", "z08")]))
+        self.assertEqual(1 << 8, res1 & (1 << 8), "check 8 res")
 
     def test_day(self):
         self.__solution("24", 55114892239566, 0)
