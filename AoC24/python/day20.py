@@ -122,6 +122,30 @@ def _fast_shortest(the_map: [str], start, end: c.Point) -> int:
     return result
 
 
+def _sign(value: int) -> int: return 0 if value == 0 else 1 if value > 0 else -1
+
+
+def _is_cheat(the_map: [str], p1, p2: c.Point) -> bool:
+    x1, y1 = p1
+    x2, y2 = p2
+    dx, dy = x2 - x1, y2 - y1
+    if abs(dx) + abs(dy) <= 1: return False  # no wall possible between two adjacent points
+    if dx == 0:
+        # pure y move
+        # points on the y axis after p1 and before p2 have to be walls to be a cheat
+        return (_at(the_map, x1, y1 + _sign(dy)) == WALL
+                and _at(the_map, x2, y2 - _sign(dy)) == WALL)
+    if dy == 0:
+        # pure x move
+        # points on the x axis after p1 and before p2 have to be walls to be a cheat
+        return (_at(the_map, x1 + _sign(dx), y1) == WALL
+                and _at(the_map, x2 - _sign(dy), y2) == WALL)
+
+    # it is ok to be a cheat if only on one direction versus destination there is a wall
+    # TODO - need to be implemented
+    return True
+
+
 def _answer2(the_map: [str], max_cheat_length: int, max_desired_shortest: int) -> int:
     start = _find_location(the_map, START)
     end = _find_location(the_map, END)
@@ -135,6 +159,7 @@ def _answer2(the_map: [str], max_cheat_length: int, max_desired_shortest: int) -
             jump_distance = _distance_through_walls(p1, p2)
             if jump_distance > max_cheat_length: continue
             if _fast_shortest(the_map, p1, p2) == jump_distance: continue  # no obstacles already
+            if not _is_cheat(the_map, p1, p2): continue  # there are normal step around p1 or p2
             dist_to_end2 = _fast_shortest(the_map, p2, end)
             if dist_to_end1 < dist_to_end2:
                 # p1 is closer to end, we swap them
