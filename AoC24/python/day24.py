@@ -32,11 +32,15 @@ def _is_result_defined(registers: {str: bool}, n: int, mapping: {str: str}) -> b
     return sum([1 for ri in registers.keys() if _is_z(mapping.get(ri, ri))]) >= n
 
 
-def _calc(registers: {str: bool}, formulas: [Formula], mapping: {str: str}) -> int | None:
+def _size_z(registers: {str: bool}, formulas: [Formula]) -> int:
     # detect all z
     z_set = {ri for ri in registers.keys() if _is_z(ri)}
     z_set.update([fi.r for fi in formulas if _is_z(fi.r)])
-    n = len(z_set)
+    return len(z_set)
+
+
+def _calc(registers: {str: bool}, formulas: [Formula], mapping: {str: str}) -> int | None:
+    n = _size_z(registers, formulas)
     while not _is_result_defined(registers, n, mapping):
         is_any_progress = False
         for fi in formulas:
@@ -80,43 +84,56 @@ def _answer1(registers: {str: bool}, formulas: [Formula]) -> int:
 
 
 def _set_registers(x, y, len_reg: int) -> {str: bool}:
-    # TODO - to implement
-    return {}
+    result = {}
+    for i in range(len_reg):
+        result[_reg_name("x", i)] = (x & (1 << i)) != 0
+        result[_reg_name("y", i)] = (y & (1 << i)) != 0
+    return result
 
 
-def _answer2(lines: []) -> int:
+def _answer2(registers: {str: bool}, formulas: [Formula]) -> int:
+    n = _size_z(registers, formulas)
+    r = _set_registers(1, 3, n)
     return 0
+    return _calc(r, formulas, {})
+
+
+def _parse(data: str) -> ({str: bool}, [Formula]):
+    lines = c.read_lines(data)
+    registers = {}
+    formulas = []
+    is_registers = True
+    for l in lines:
+        if len(l) < 2:
+            is_registers = False
+        elif is_registers:
+            name, value = l.split(": ")
+            registers[name] = int(value) == 1
+        else:
+            exp, r = l.split(" -> ")
+            a, op, b = exp.split(" ")
+            formulas.append(Formula(a, b, op, r))
+    return registers, formulas
 
 
 class Day24(unittest.TestCase):
 
     def __solution(self, data: str, a1: int, a2: int):
-        lines = c.read_lines(data)
-        registers = {}
-        formulas = []
-        is_registers = True
-        for l in lines:
-            if len(l) < 2:
-                is_registers = False
-            elif is_registers:
-                name, value = l.split(": ")
-                registers[name] = int(value) == 1
-            else:
-                exp, r = l.split(" -> ")
-                a, op, b = exp.split(" ")
-                formulas.append(Formula(a, b, op, r))
+        registers, formulas = _parse(data)
         self.assertEqual(a1, _answer1(registers, formulas), "answer 1")
-        self.assertEqual(a2, _answer2(lines), "answer 2")
+        self.assertEqual(a2, _answer2(registers, formulas), "answer 2")
 
     def test_z(self):
         self.assertEqual(4, _z({"z00": 0, "z01": 0, "z02": 1}), "z case 1")
         self.assertEqual(2024, _bin2int("0011111101000"), "_bin2int")
 
     def test_sample1(self):
-        self.__solution("24-1", 4, 0)
+        registers, formulas = _parse("24-1")
+        self.assertEqual(4, _answer1(registers, formulas), "answer 1 - sample 1")
 
     def test_sample2(self):
-        self.__solution("24-2", 2024, 0)
+        registers, formulas = _parse("24-2")
+        self.assertEqual(2024, _answer1(registers, formulas), "answer 1 - sample 2")
 
     def test_day(self):
         self.__solution("24", 55114892239566, 0)
