@@ -1,10 +1,7 @@
-from typing import NamedTuple
-
-from jedi.plugins.django import mapping
-
 import common as c
 import unittest
 from itertools import combinations
+from typing import NamedTuple
 
 
 class Formula(NamedTuple):
