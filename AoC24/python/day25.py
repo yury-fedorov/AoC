@@ -18,10 +18,7 @@ def _match(a, b: Item, height: int) -> bool:
 def _answer1(height: int, items: [Item]) -> int:
     doors = [i for i in items if i.is_door]
     locks = [i for i in items if not i.is_door]
-    result = 0
-    for d in doors:
-        for l in locks:
-            result += 1 if _match(d, l, height) else 0
+    result = sum(1 for d in doors for l in locks if _match(d, l, height))
     return result
 
 
@@ -30,9 +27,7 @@ def _parse_item(height: int, lines: [str]) -> Item:
     is_door = False if first_line.startswith("###") else True
     pins = []
     for pin_index, _ in enumerate(first_line):
-        pin_length = 0
-        for h in range(height):
-            pin_length += 1 if lines[h][pin_index] == "#" else 0
+        pin_length = sum(1 for h in range(height) if lines[h][pin_index] == "#")
         pins.append(pin_length)
     return Item(is_door, pins)
 
@@ -40,13 +35,10 @@ def _parse_item(height: int, lines: [str]) -> Item:
 def _parse(lines: [str]) -> (int, [Item]):
     height = None
     for li, l in enumerate(lines):
-        if len(l) < 2:
+        if len(l) == 0:
             height = li
             break
-
-    items = []
-    for i in range(0, len(lines), height + 1):
-        items.append(_parse_item(height, lines[i:]))
+    items = [_parse_item(height, lines[i:]) for i in range(0, len(lines), height + 1)]
     return height, items
 
 
