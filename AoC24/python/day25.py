@@ -1,12 +1,11 @@
-from typing import NamedTuple
-
 import common as c
 import unittest
+from typing import List, NamedTuple
 
 
 class Item(NamedTuple):
     is_door: bool  # door / lock
-    pins: [int]
+    pins: List
 
 
 def _match(a, b: Item, height: int) -> bool:
