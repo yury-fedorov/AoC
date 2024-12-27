@@ -25,12 +25,10 @@ def _blink(stones: [], times: int) -> []:
     return _blink(new_stones, times - 1)
 
 
-def _answer1(stones: []) -> int:
-    return _a2(stones, 25)
+def _answer1(stones: []) -> int: return _a2(stones, 25)
 
 
-def _answer2(stones: []) -> int:
-    return _a2(stones, 75)
+def _answer2(stones: []) -> int: return _a2(stones, 75)
 
 
 # (value,times) - amount of stones

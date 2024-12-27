@@ -78,6 +78,5 @@ class Day23(unittest.TestCase):
     def test_sample(self):
         self.__solution("23-1", 7, "co,de,ka,ta")
 
-    # dn,dp,ff,gq,kw,ou,qc,qz,tf,us,xy,ya - not right answer
     def test_day(self):
         self.__solution("23", 1304, "ao,es,fe,if,in,io,ky,qq,rd,rn,rv,vc,vl")

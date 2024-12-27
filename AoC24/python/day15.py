@@ -20,8 +20,7 @@ GO_UP = "^"
 TO_SHIFT = MappingProxyType({GO_LEFT: Point(-1, 0), GO_UP: Point(0, -1), GO_DOWN: Point(0, 1), GO_RIGHT: Point(1, 0)})
 
 
-def _gps(p: Point) -> int:
-    return p.x + (100 * p.y)
+def _gps(p: Point) -> int: return p.x + (100 * p.y)
 
 
 def _sum_gps(the_map: [str], box: str) -> int:

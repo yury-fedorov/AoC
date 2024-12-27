@@ -107,12 +107,10 @@ def _defrag2(disk_map: {}):
     return disk_map
 
 
-def _answer1(disk: str) -> {}:
-    return _checksum(_defrag(_unpack_disk(disk)))
+def _answer1(disk: str) -> {}: return _checksum(_defrag(_unpack_disk(disk)))
 
 
-def _answer2(disk: str) -> {}:
-    return _checksum(_defrag2(_unpack_disk(disk)))
+def _answer2(disk: str) -> {}: return _checksum(_defrag2(_unpack_disk(disk)))
 
 
 class Day09(unittest.TestCase):

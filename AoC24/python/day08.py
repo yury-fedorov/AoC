@@ -5,9 +5,7 @@ EMPTY = '.'
 
 
 def _all_frequencies(the_map: [str]) -> {}:
-    return {c for l in the_map
-            for c in l
-            if c != EMPTY}
+    return {c for l in the_map for c in l if c != EMPTY}
 
 
 def _antinodes(a: (int, int), b: (int, int), map_size: (int, int), is_repeated: bool) -> [(int, int)]:
@@ -56,12 +54,10 @@ def _answer(the_map: [str], is_repeated: bool) -> int:
     return len(all_antinodes)
 
 
-def _answer1(the_map: [str]) -> int:
-    return _answer(the_map, False)
+def _answer1(the_map: [str]) -> int: return _answer(the_map, False)
 
 
-def _answer2(the_map: [str]) -> int:
-    return _answer(the_map, True)
+def _answer2(the_map: [str]) -> int: return _answer(the_map, True)
 
 
 class Day08(unittest.TestCase):

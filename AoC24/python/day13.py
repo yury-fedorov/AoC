@@ -65,12 +65,10 @@ def _answer(systems: [System], delta_r: int) -> int:
     return result
 
 
-def _answer1(systems: [System]) -> int:
-    return _answer(systems, 0)
+def _answer1(systems: [System]) -> int: return _answer(systems, 0)
 
 
-def _answer2(systems: [System]) -> int:
-    return _answer(systems, 10000000000000)
+def _answer2(systems: [System]) -> int: return _answer(systems, 10000000000000)
 
 
 class Day13(unittest.TestCase):

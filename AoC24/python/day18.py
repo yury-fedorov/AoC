@@ -41,18 +41,8 @@ def _shortest_distance(the_map: {Point}, start: Point, end: Point) -> int | None
     return None
 
 
-def _print_map(the_map: {Point}):
-    for y in range(1 + max([p.y for p in the_map])):
-        line = ""
-        for x in range(1 + max([p.x for p in the_map])):
-            line += "#" if Point(x, y) in the_map else "."
-        print(line)
-
-
-# TODO - template to use for daily solutions, don't forget to add the solution to aoc24.py
 def _answer1(lines: [Point], till: int, end: Point) -> int:
     the_map = _create_static_map(lines, till)
-    # _print_map(the_map)
     return _shortest_distance(the_map, START, end)
 
 
@@ -72,8 +62,7 @@ def _answer21(lines: [Point], t_min: int, t_max: int, end: Point) -> str:
     return f"{p.x},{p.y}"
 
 
-def _answer2(lines: [Point], end: Point) -> str:
-    return _answer21(lines, 0, len(lines) - 1, end)
+def _answer2(lines: [Point], end: Point) -> str: return _answer21(lines, 0, len(lines) - 1, end)
 
 
 def _parse(lines: [str]) -> [Point]:

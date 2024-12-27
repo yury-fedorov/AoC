@@ -53,8 +53,7 @@ def _sequences(price_change: [PriceChange]) -> {(int, int, int, int): int}:
     return result
 
 
-def _answer1(secrets: [int]) -> int:
-    return sum(_next_n(secret, 2000) for secret in secrets)
+def _answer1(secrets: [int]) -> int: return sum(_next_n(secret, 2000) for secret in secrets)
 
 
 def _answer2(secrets: [int]) -> int:

@@ -19,8 +19,7 @@ def _rotate(direction: (int, int)) -> (int, int):
     return _DIRECTIONS[(index + 1) % len(_DIRECTIONS)]
 
 
-def _is_wall(material: str) -> bool:
-    return material == _WALL
+def _is_wall(material: str) -> bool: return material == _WALL
 
 
 def _navigate(the_map: [], start_point: (int, int)) -> (int, bool):

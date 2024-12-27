@@ -69,8 +69,7 @@ def _answer_space(robots: [Robot], space: Point) -> int:
     return math.prod(qc)
 
 
-def _answer1(robots: [Robot]) -> int:
-    return _answer_space(robots, _SPACE)
+def _answer1(robots: [Robot]) -> int: return _answer_space(robots, _SPACE)
 
 
 def _answer2(robots: []) -> int:

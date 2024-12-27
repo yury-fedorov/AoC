@@ -13,12 +13,10 @@ class Region(NamedTuple):
     points: Points  # len(points) - area
 
 
-def _points(region: Region) -> [Point]:
-    return region.points.points  # object Points then its internal field points
+def _points(region: Region) -> [Point]: return region.points.points  # object Points then its internal field points
 
 
-def _area(region: Region) -> int:
-    return len(_points(region))
+def _area(region: Region) -> int: return len(_points(region))
 
 
 def _tx_point(p: Point) -> Point:
@@ -82,8 +80,7 @@ def _sides(points: [Point]) -> int:
 _SHIFTS = [Point(0, 1), Point(0, -1), Point(1, 0), Point(-1, 0)]
 
 
-def _borders(p: Point) -> [Point]:
-    return [Point(p.x + s.x, p.y + s.y) for s in _SHIFTS]
+def _borders(p: Point) -> [Point]: return [Point(p.x + s.x, p.y + s.y) for s in _SHIFTS]
 
 
 def _perimeter(points: [Point]) -> int:
@@ -126,12 +123,10 @@ def _get_regions(the_map: []) -> []:
     return result
 
 
-def _answer1(regions: [Region]) -> int:
-    return sum(_area(r) * _perimeter(_points(r)) for r in regions)
+def _answer1(regions: [Region]) -> int: return sum(_area(r) * _perimeter(_points(r)) for r in regions)
 
 
-def _answer2(regions: [Region]) -> int:
-    return sum(_area(r) * _sides(_points(r)) for r in regions)
+def _answer2(regions: [Region]) -> int: return sum(_area(r) * _sides(_points(r)) for r in regions)
 
 
 class Day12(unittest.TestCase):

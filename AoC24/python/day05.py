@@ -16,8 +16,7 @@ def _read_input(data: str) -> ([], []):
     return rules, updates
 
 
-def _middle_page(order: str) -> int:
-    return int(order[int(len(order) / 2)])
+def _middle_page(order: str) -> int: return int(order[int(len(order) / 2)])
 
 
 def _is_correct(rules: [], update: []) -> bool:

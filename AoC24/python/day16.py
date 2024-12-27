@@ -34,8 +34,7 @@ def _find_point(the_map: [str], what: What) -> Point:
     return [Point(line.find(what.value), y) for y, line in enumerate(the_map) if line.find(what.value) != -1][0]
 
 
-def _at(the_map: [str], p: Point) -> str:
-    return the_map[p.y][p.x]
+def _at(the_map: [str], p: Point) -> str: return the_map[p.y][p.x]
 
 
 def _opposite(d: Direction) -> Direction:
@@ -95,8 +94,7 @@ def _min_path(the_map: [str], score_map: {Position: int}, cur_pos: Position, pre
     for new_dir in dirs:
         delta_score = _score_step(cur_pos, new_dir)
         new_score = prev_score + delta_score
-        if new_score > score_limit:
-            continue
+        if new_score > score_limit: continue
 
         if delta_score == 1:
             new_loc = Point(cur_pos.location.x + new_dir.value.x, cur_pos.location.y + new_dir.value.y)
@@ -106,8 +104,7 @@ def _min_path(the_map: [str], score_map: {Position: int}, cur_pos: Position, pre
 
         # Give quick result good for samples but not precise for real case.
         best_score_at_position = score_map[new_pos]
-        if best_score_at_position < new_score:
-            continue
+        if best_score_at_position < new_score: continue
 
         tail = _min_path(the_map, score_map, new_pos, new_score, score_limit)
         if len(tail):
@@ -128,8 +125,7 @@ def _answer2(the_map: [str]) -> int:
         all_positions = [pos for pos in score_map.keys() if pos.location == loc]
         for pos in all_positions:
             original_till_pos = score_map[pos]
-            if original_till_pos > score_limit:
-                continue
+            if original_till_pos > score_limit: continue
             scope_map1 = {pos: 0}
             result1 = _min_score(the_map, scope_map1, pos)
             if original_till_pos + result1 <= score_limit:
@@ -143,8 +139,7 @@ class Day16(unittest.TestCase):
     def __solution(self, data: str, a1: int, a2: int):
         the_map = c.read_lines(data)
         self.assertEqual(a1, _answer1(the_map), "answer 1")
-        if c.is_fast_only():
-            return  # Takes 3h 25m to run
+        if c.is_fast_only(): return  # Takes 3h 25m to run
         self.assertEqual(a2, _answer2(the_map), "answer 2")
 
     def test_sample(self):
