@@ -7,26 +7,20 @@ def _read_input(data: str):
     right = []
     with c.open_file(data) as f:
         for line in f:
-            x = line.split()
-            left.append(int(x[0]))
-            right.append(int(x[1]))
+            l, r = line.split()
+            left.append(int(l))
+            right.append(int(r))
     left.sort()
     right.sort()
     return left, right
 
 
 def _answer1(left, right) -> int:
-    diff = 0
-    for i in range(0, len(left)):
-        diff += abs(right[i] - left[i])
-    return diff
+    return sum(abs(right[i] - left[i]) for i in range(0, len(left)))
 
 
-def _answer2(left, right) -> int:
-    score = 0  # similarity score
-    for i in range(0, len(left)):
-        score += left[i] * right.count(left[i])
-    return score
+def _answer2(left, right) -> int:  # similarity score
+    return sum(left[i] * right.count(left[i]) for i in range(0, len(left)))
 
 
 class Day01(unittest.TestCase):
