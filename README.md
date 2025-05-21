@@ -2,6 +2,7 @@
 
  Year                                  | Tech                                    | Rank  
 ---------------------------------------|-----------------------------------------|-------
+ [2025](https://adventofcode.com/2025) | **Kotlin 2.1**                          |       |
  [2024](https://adventofcode.com/2024) | **Python 3.10**                         |       |
  [2023](https://adventofcode.com/2023) | Go 1.20 -> **Go 1.23**                  |       |
  [2022](https://adventofcode.com/2022) | C++ 20 -> **C++ 23**                    | 13533 
