@@ -18,17 +18,17 @@ public class Day22Test {
 
     @Test
     public void solution() {
+        final boolean toPrint = false; // diagnostic and visualisation map
         final var input = IOUtil.input("d22");
         // /dev/grid/node-x0-y0     85T   67T    18T   78%
         final var pattern = Pattern.compile("^/dev/grid/node-x(\\d+)-y(\\d+)\\s+(\\d+)T\\s+(\\d+)T\\s+(\\d+)T\\s+(\\d+)%$");
-        // TODO
         final var grid = new HashMap<Point, Node>();
         for (final var l : input) {
             final var m = pattern.matcher(l);
             if (m.find()) {
                 grid.put(Point.with(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))), // x, y
                         new Node(Integer.parseInt(m.group(3)), Integer.parseInt(m.group(4)))); // Size  Used
-            } else System.out.println("Bad format: " + l);
+            } else if (toPrint) System.out.println("Bad format: " + l);
         }
         Assert.assertEquals(input.size() - 2, grid.size());
         final var maxX = grid.keySet().stream().mapToInt(Point::x).max().getAsInt();
@@ -46,7 +46,6 @@ public class Day22Test {
 
         final var empty = new ArrayList<Point>(); // empty node(s)
         final var full = new LinkedList<Point>(); // "full" nodes
-        final boolean toPrint = false; // visualisation map
         for (int y = 0; y <= maxY; y++) {
             for (int x = 0; x <= maxX; x++) {
                 final var a = Point.with(x, y);
@@ -56,8 +55,10 @@ public class Day22Test {
                 if (isEmpty) empty.add(a);
                 else if (isFull) full.add(a);
                 // if (toPrint) System.out.print( used(n) + "/" + size(n) + "=" + ( used(n) * 100 / size(n) ) + " \t" );
-                if (toPrint) System.out.print(isEmpty ? '_' : isFull ? '#' : '.');
-                System.out.print(' ');
+                if (toPrint) {
+                    System.out.print(isEmpty ? '_' : isFull ? '#' : '.');
+                    System.out.print(' ');
+                }
             }
             if (toPrint) System.out.println();
         }
