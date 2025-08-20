@@ -4,7 +4,7 @@
 ---------------------------------------|-----------------------------------------|-------
  [2025](https://adventofcode.com/2025) | **Kotlin 2.1**                          |       |
  [2024](https://adventofcode.com/2024) | Python 3.10 -> **Python 3.13**          |       |
- [2023](https://adventofcode.com/2023) | Go 1.20 -> **Go 1.23**                  |       |
+ [2023](https://adventofcode.com/2023) | Go 1.20 -> **Go 1.25**                  |       |
  [2022](https://adventofcode.com/2022) | C++ 20 -> **C++ 23**                    | 13533 
  [2021](https://adventofcode.com/2021) | C# 10 (.NET 6) -> **.NET 9**            | 7127  
  [2020](https://adventofcode.com/2020) | C++17 -> **C++ 23**                     | 3550  
