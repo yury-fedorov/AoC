@@ -16,7 +16,6 @@ public class Day01Test {
     @Test
     public void solution() {
         final var input = IOUtil.input("d01").get(0);
-        // final var input = "R8, R4, R4, R8";
         final var c = input.split(", ");
         Direction d = Direction.North;
         int x = 0;
@@ -46,7 +45,7 @@ public class Day01Test {
             d = nd;
         }
         assertEquals("answer 1", 291, Math.abs(x) + Math.abs(y));
-        assertEquals("answer 2", 159, answer2); // 274 -- to high
+        assertEquals("answer 2", 159, answer2);
     }
 
     enum Direction {North, West, South, East}
