@@ -44,9 +44,8 @@ public class Day18Test {
         nk.append('/');
         var list2 = new ArrayList<String>(4);
         for (var rp : step2.robots) {
-            final var p = new StringBuilder(10);
-            p.append(rp.x).append(',').append(rp.y).append(';');
-            list2.add(p.toString());
+            final var pointAsString = String.format("%s,%s;", rp.x, rp.y);
+            list2.add(pointAsString);
         }
         Collections.sort(list2);
         for (var rp1 : list2) {
@@ -233,7 +232,7 @@ public class Day18Test {
 
         final var map = readMap("day18");
         final var answer1 = solution1(map);
-        // How many steps is the shortest path that collects all of the keys?
+        // How many steps is the shortest path that collects all the keys?
         assertEquals("answer 1", 5262, answer1);
         /*
         assertEquals("sample 6 (2/1)", 8, solution2("day18-sample6") );
@@ -241,7 +240,7 @@ public class Day18Test {
         assertEquals("sample 6 (2/3)", 32, solution2("day18-sample8") );
         assertEquals("sample 6 (2/4)", 72, solution2("day18-sample9") );
         */
-        final var ANSWER2MAX = 2180; // 2180 - is too high
+        final var ANSWER2MAX = 2180;
         assertEquals("answer 2", 2136, solution2(map, ANSWER2MAX));
     }
 

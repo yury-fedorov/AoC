@@ -64,8 +64,6 @@ public class Day15Test {
             if (isAdded) lastUpdated = i;
             if (answer == WALL) {
                 // change direction only on a wall
-                // var path = map.entrySet().stream().filter(e -> e.getValue() == PATH).map(e -> e.getKey()).toList();
-                // var o = options(position, path );
             } else if (answer == PATH) {
                 position = position1;
             } else if (answer == OXYGEN_SYSTEM) {

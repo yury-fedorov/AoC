@@ -85,7 +85,6 @@ public class Day12Test {
     }
 
     static long commonDenominator(long x, long y) {
-        final var mi0 = Math.min(x, y);
         long result = 1;
         for (int prime : PRIMES) {
             while (true) {

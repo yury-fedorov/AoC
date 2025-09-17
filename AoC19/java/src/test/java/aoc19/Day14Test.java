@@ -46,16 +46,11 @@ public class Day14Test {
         return result;
     }
 
-    static boolean isPart(List<Receipt> react, String output, String part) {
-        return to(react, output).contains(part);
-    }
-
     static List<String> latest(List<Receipt> react, Collection<String> set) {
         // any which does not contain any other
         var mapCount = new HashMap<String, Integer>();
         for (var c : set) {
             var s = to(react, c);
-            // map.put( c, s );
             var count = mapCount.getOrDefault(c, 0) + 1;
             mapCount.put(c, count);
         }

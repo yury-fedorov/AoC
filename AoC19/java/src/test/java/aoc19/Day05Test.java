@@ -15,7 +15,7 @@ public class Day05Test {
         var out = new LinkedBlockingQueue<Long>();
         IntcodeComputer.run(memory, in, out);
         Long result = null;
-        while (out.size() > 0) {
+        while (!out.isEmpty()) {
             result = out.remove();
         }
         return result.intValue();

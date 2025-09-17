@@ -14,7 +14,7 @@ public enum Command {
 
     public final int code;
 
-    private Command(int code) {
+    Command(int code) {
         this.code = code;
     }
 }

@@ -130,6 +130,6 @@ public class Day10Test {
         assertEquals("answer 2", 612, answer2);
     }
 
-    public static record Point(int x, int y) {
+    public record Point(int x, int y) {
     }
 }
