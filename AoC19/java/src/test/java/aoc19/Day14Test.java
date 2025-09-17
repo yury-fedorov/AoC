@@ -33,7 +33,7 @@ public class Day14Test {
         return new Receipt(input, new Portion(oq, oc));
     }
 
-    static List<String> latest(List<Receipt> react, Collection<String> set) {
+    static List<String> latest(Collection<String> set) {
         // any which does not contain any other
         var mapCount = new HashMap<String, Integer>();
         for (var c : set) {
@@ -79,7 +79,7 @@ public class Day14Test {
         long oreQuantity = 0L;
         required.put(FUEL, requiredFuelAmount);
         while (!required.isEmpty()) {
-            var latest = latest(react, required.keySet());
+            var latest = latest(required.keySet());
             var chemical = latest.getFirst();
             var requiredQty = required.remove(chemical); // how much we need
             var options = react.stream().filter(r -> r.output.chemical.equals(chemical)).toList();

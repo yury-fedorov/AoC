@@ -20,7 +20,7 @@ public class Day10Test {
         if (mi == 0) return ma;
         if (mi == 1) return 1;
         final var mi0 = mi;
-        for (int prime : PRIMES) {
+        for (final int prime : PRIMES) {
             while (prime <= mi0) {
                 if ((mi % prime) != 0) break;
                 if ((ma % prime) != 0) break;
