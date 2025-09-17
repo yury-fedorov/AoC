@@ -18,7 +18,7 @@ public class Day25Test {
 
     // public static void main(String [] a) throws IOException {
     static long readCode() throws IOException {
-        final var code = IntcodeComputer.loadMemory(IOUtil.input("day25").get(0));
+        final var code = IntcodeComputer.loadMemory(IOUtil.input("day25").getFirst());
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
         final var comp = new IntcodeComputer(code, in, out);

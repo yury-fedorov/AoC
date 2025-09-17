@@ -44,7 +44,7 @@ public class Day15Test {
     @Test
     public void solution() {
         if (Config.isFast()) return; // takes 30 seconds and could fail on answer 2 as based on random
-        final var memory = IntcodeComputer.loadMemory(IOUtil.input("day15").get(0));
+        final var memory = IntcodeComputer.loadMemory(IOUtil.input("day15").getFirst());
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
         final var comp = new IntcodeComputer(memory, in, out);

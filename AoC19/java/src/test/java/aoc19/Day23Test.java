@@ -13,7 +13,7 @@ public class Day23Test {
 
     @Test
     public void solution() {
-        final var code = IntcodeComputer.loadMemory(IOUtil.input("day23").get(0));
+        final var code = IntcodeComputer.loadMemory(IOUtil.input("day23").getFirst());
         final var COMPUTER_COUNT = 50;
         final var compList = new ArrayList<IntcodeComputer>(COMPUTER_COUNT);
         for (var address = 0L; address < COMPUTER_COUNT; address++) {
@@ -64,7 +64,7 @@ public class Day23Test {
                 if (previousNatY.isPresent() && previousNatY.get().equals(natY.get())) {
                     answer2 = natY;
                 } else {
-                    final var c0 = compList.get(0);
+                    final var c0 = compList.getFirst();
                     c0.in(natX.get());
                     c0.in(natY.get());
                     previousNatY = natY;

@@ -91,11 +91,10 @@ public class Day20Test {
     }
 
     static int solution(boolean isPart1, Maze maze) {
-        // TODO implement the algorithm
-        final var aa = maze.doors.get("AA").get(0);
+        final var aa = maze.doors.get("AA").getFirst();
         var next = Map.of(new Point3D(aa, 0), 0); // generalized next
         var minDistance = new HashMap<Point3D, Integer>(); // generalized min distance
-        final var zz = maze.doors.get("ZZ").get(0);
+        final var zz = maze.doors.get("ZZ").getFirst();
         final var portals = getPortals(maze);
         final var allPairDoors = maze.doors.values().stream().filter(c -> c.size() == 2).toList();
         final var allInnerDoors = portals.stream().map(p -> p.inner).toList();
@@ -140,7 +139,7 @@ public class Day20Test {
                         final var portalDoors = di.next();
                         final var otherPoint = new ArrayList<>(portalDoors);
                         otherPoint.remove(p.point);
-                        p13d.add(new Point3D(otherPoint.get(0), level));
+                        p13d.add(new Point3D(otherPoint.getFirst(), level));
                     }
                 }
 

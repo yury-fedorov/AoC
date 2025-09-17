@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 
 public class Day09Test {
     static long solution(long input) {
-        final var memory = IntcodeComputer.loadMemory(IOUtil.input("day09").get(0));
+        final var memory = IntcodeComputer.loadMemory(IOUtil.input("day09").getFirst());
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
         in.add(input);

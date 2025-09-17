@@ -22,7 +22,7 @@ public class Day22Test {
     static void cutCards(List<Integer> deck, int n) {
         if (n > 0) {
             for (var i = 0; i < n; i++) {
-                final var head = deck.remove(0);
+                final var head = deck.removeFirst();
                 deck.add(head);
             }
         } else {
@@ -30,7 +30,7 @@ public class Day22Test {
             final var lastIndex = deck.size() - 1;
             for (var i = 0; i < n; i++) {
                 final var tail = deck.remove(lastIndex);
-                deck.add(0, tail);
+                deck.addFirst(tail);
             }
         }
     }
@@ -41,7 +41,7 @@ public class Day22Test {
         final var result = new ArrayList<Integer>(size);
 
         while (!deck.isEmpty()) {
-            final var head = deck.remove(0);
+            final var head = deck.removeFirst();
             while (result.size() <= index) result.add(Integer.MIN_VALUE);
             result.set(index, head);
             index = (index + n) % size;

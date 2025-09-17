@@ -142,7 +142,7 @@ public class Day12Test {
 
     enum Dimension {X, Y, Z}
 
-    // records cannot be inhereted but a lot of functionality further are similar, common abstraction is wanted
+    // records cannot be inherited but a lot of functionality further are similar, common abstraction is wanted
     record Position(int x, int y, int z) {
     }
 

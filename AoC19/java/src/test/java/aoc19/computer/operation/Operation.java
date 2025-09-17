@@ -28,7 +28,6 @@ public abstract class Operation {
                 index = relativeBase + index;
                 yield index >= memory.size() ? 0 : memory.get((int) index);
             }
-            default -> throw new IllegalStateException("unmanaged mode");
         };
     }
 

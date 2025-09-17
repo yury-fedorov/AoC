@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 public class Day19Test {
 
-    static final ArrayList<Long> PROGRAM = IntcodeComputer.loadMemory(IOUtil.input("day19").get(0));
+    static final ArrayList<Long> PROGRAM = IntcodeComputer.loadMemory(IOUtil.input("day19").getFirst());
     static final Map<Point, Boolean> MAP = new HashMap<>();
 
     static boolean isTractorBeam(Point p) {

@@ -80,14 +80,14 @@ public class Day14Test {
         required.put(FUEL, requiredFuelAmount);
         while (!required.isEmpty()) {
             var latest = latest(react, required.keySet());
-            var chemical = latest.get(0);
+            var chemical = latest.getFirst();
             var requiredQty = required.remove(chemical); // how much we need
             var options = react.stream().filter(r -> r.output.chemical.equals(chemical)).toList();
             assertFalse(options.isEmpty());
             if (options.size() == 1) {
-                var r = options.get(0);
+                var r = options.getFirst();
                 long k = (long) Math.ceil(requiredQty / (double) r.output.quantity);  // what we need / what we have
-                long producedQty = k * r.output.quantity; // could be more then needed
+                long producedQty = k * r.output.quantity; // could be more than needed
                 var diffQty = producedQty - requiredQty;
                 if (diffQty > 0) {
                     // what we do not really need from output

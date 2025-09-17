@@ -58,7 +58,7 @@ public class Day10Test {
         final var map = IOUtil.input(data);
         final var allPositions = new HashSet<Point>();
         for (int y = 0; y < map.size(); y++) {
-            for (int x = 0; x < map.get(0).length(); x++) {
+            for (int x = 0; x < map.getFirst().length(); x++) {
                 final char at = map.get(y).charAt(x);
                 if (at == ASTEROID) allPositions.add(new Point(x, y));
             }
@@ -76,7 +76,7 @@ public class Day10Test {
         return degrees >= 0 ? degrees : 360 + degrees;
     }
 
-    // clockwize
+    // clockwise
     static Point nextDirection(Collection<Point> allDirections, Point curDirection) {
         List<Point> list = new ArrayList<>(allDirections);
         list.sort(Comparator.comparingDouble(Day10Test::directionToDegree));
@@ -114,7 +114,7 @@ public class Day10Test {
             // move forward lazer
             direction = nextDirection(targets.keySet(), direction);
         }
-        return removed.get(removed.size() - 1);
+        return removed.getLast();
     }
 
     @Test

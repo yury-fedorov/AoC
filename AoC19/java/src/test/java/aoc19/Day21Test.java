@@ -11,20 +11,17 @@ import static org.junit.Assert.assertEquals;
 public class Day21Test {
 
     static long run(String code) {
-        final var memory = IntcodeComputer.loadMemory(IOUtil.input("day21").get(0));
+        final var memory = IntcodeComputer.loadMemory(IOUtil.input("day21").getFirst());
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
         toIn(in, code);
 
         final var comp = new IntcodeComputer(memory, in, out);
         comp.run();
-        final var text = new StringBuilder();
         long last = 0;
         while (!out.isEmpty()) {
             last = out.poll();
-            text.append((char) last);
         }
-        // System.out.println(text);
         return last;
     }
 

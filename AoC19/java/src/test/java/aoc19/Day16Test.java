@@ -26,7 +26,7 @@ public class Day16Test {
         }
         final var de = size - length;
         if (de > 0) {
-            final var last = result.remove(result.size() - 1);
+            final var last = result.removeLast();
             final var times1 = last.times - de;
             if (times1 > 0) result.add(new ValueTimes(last.value, times1));
         }
@@ -137,7 +137,7 @@ public class Day16Test {
         assertEquals(List.of(0, 1, 1, 0, 0, -1, -1, 0, 0, 1, 1, 0, 0, -1, -1), pattern(1, 15));
         assertEquals(List.of(0, 0, 1, 1, 1, 0, 0, 0, -1, -1, -1), pattern(2, 11));
         assertEquals(List.of(4, 8, 2, 2, 6, 1, 5, 8), fft(List.of(1, 2, 3, 4, 5, 6, 7, 8)));
-        final String signal = IOUtil.input("day16").get(0);
+        final String signal = IOUtil.input("day16").getFirst();
         List<Integer> s = signal.chars().map(c -> c - '0')
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 

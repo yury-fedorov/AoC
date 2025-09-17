@@ -59,7 +59,7 @@ public class Day07Test {
 
     static long solution(ArrayList<Long> code, List<Long> settings, boolean isTask1) {
         long result = Long.MIN_VALUE;
-        var i = new PermutationIterator(settings);
+        var i = new PermutationIterator<>(settings);
         while (i.hasNext()) {
             var curSettings = i.next();
             final long r = isTask1 ? allRuns1(code, curSettings) : allRuns2(code, curSettings);
@@ -80,7 +80,7 @@ public class Day07Test {
 
     @Test
     public void solution() {
-        final var code = IntcodeComputer.loadMemory(IOUtil.input("day07").get(0));
+        final var code = IntcodeComputer.loadMemory(IOUtil.input("day07").getFirst());
         assertEquals("answer 1", 70597L, answer1(code));
         assertEquals("answer 2", 30872528L, answer2(code));
     }

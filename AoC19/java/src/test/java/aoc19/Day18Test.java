@@ -124,7 +124,7 @@ public class Day18Test {
             }
         }
 
-        // How many steps is the shortest path that collects all of the keys?
+        // How many steps is the shortest path that collects all the keys?
         return answer1;
     }
 

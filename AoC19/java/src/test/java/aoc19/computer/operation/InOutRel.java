@@ -15,20 +15,15 @@ public class InOutRel extends Operation {
 
     @Override
     public ExecResult execute(ArrayList<Long> memory, Queue<Long> in, Queue<Long> out, long relativeBase) {
-        final var a0 = args.get(0);
+        final var a0 = args.getFirst();
         if (command == Command.In) {
-            set(memory, a0, in.poll(), modes.get(0), relativeBase);
+            set(memory, a0, in.poll(), modes.getFirst(), relativeBase);
         } else {
-            final var a = get(memory, a0, modes.get(0), relativeBase);
+            final var a = get(memory, a0, modes.getFirst(), relativeBase);
             switch (command) {
-                case Out:
-                    out.add(a);
-                    break;
-                case AdjustRelativeBase:
-                    relativeBase += a;
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected command: " + command);
+                case Out -> out.add(a);
+                case AdjustRelativeBase -> relativeBase += a;
+                default -> throw new IllegalStateException("Unexpected command: " + command);
             }
         }
         return new ExecResult(Jump.Next, 0, relativeBase);

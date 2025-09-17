@@ -29,7 +29,7 @@ public class Day05Test {
 
     @Test
     public void solution() {
-        var code = IOUtil.input("Day05").get(0);
+        var code = IOUtil.input("Day05").getFirst();
         assertEquals("answer 1", 6761139, answer(code, 1));
         assertEquals("answer 2", 9217546, answer(code, 5));
     }

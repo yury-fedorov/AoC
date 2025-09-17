@@ -23,7 +23,7 @@ public class Day11Test {
     }
 
     static Map<Point, Long> solution(long startColor) {
-        final var code = IntcodeComputer.loadMemory(IOUtil.input("day11").get(0));
+        final var code = IntcodeComputer.loadMemory(IOUtil.input("day11").getFirst());
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
         var comp = new IntcodeComputer(code, in, out);

@@ -48,7 +48,7 @@ public class Day17Test {
 
     @Test
     public void solution() {
-        final var memory = IntcodeComputer.loadMemory(IOUtil.input("day17").get(0));
+        final var memory = IntcodeComputer.loadMemory(IOUtil.input("day17").getFirst());
         final ArrayList<Long> memory2 = (ArrayList<Long>) memory.clone();
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
@@ -56,7 +56,7 @@ public class Day17Test {
         comp.run();
         final var mapAsString = readOut(out).toString();
         final var map = Arrays.stream(mapAsString.split("\n")).map(String::trim).toList();
-        final var maxX = map.get(0).length();
+        final var maxX = map.getFirst().length();
         final var maxY = map.size();
         long answer1 = 0;
         for (var y = 0; y < maxY; y++) {
@@ -83,7 +83,7 @@ public class Day17Test {
         instructions.chars().forEach(c -> in.add((long) c));
         final var comp2 = new IntcodeComputer(memory2, in, out);
         comp2.run();
-        final var outDeque = new ArrayDeque<Long>(out);
+        final var outDeque = new ArrayDeque<>(out);
         final var answer2 = outDeque.pollLast();
         assertEquals("answer 2", 1113411L, answer2.longValue());
     }
