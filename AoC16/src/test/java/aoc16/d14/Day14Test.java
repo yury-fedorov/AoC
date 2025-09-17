@@ -17,6 +17,7 @@ import java.util.function.Function;
 public class Day14Test {
 
     final static Map<String, String> cache = new ConcurrentHashMap<>();
+    final static Md5Util md5Util = new Md5Util();
 
     static String key(String salt, int index) {
         return salt + index;
@@ -25,7 +26,7 @@ public class Day14Test {
     private static String hash(String key) {
         var result = cache.getOrDefault(key, null);
         if (result == null) {
-            result = new Md5Util().md5(key).toLowerCase(); // it is slow
+            result = md5Util.md5(key).toLowerCase(); // it is slow
             cache.put(key, result);
         }
         return result;
@@ -36,7 +37,7 @@ public class Day14Test {
         if (result == null) {
             var h = key;
             for (int i = 0; i < 2017; i++) {
-                h = new Md5Util().md5(h).toLowerCase();
+                h = md5Util.md5(h).toLowerCase();
             }
             result = h;
             cache.put(key, result);
@@ -89,14 +90,16 @@ public class Day14Test {
 
     int solution(String salt, Function<String, String> fh) throws InterruptedException {
         cache.clear();
-        final var executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        for (int i = 0; i < 30000; i++) {
-            final var key = key(salt, i);
-            executor.execute(() -> fh.apply(key));
+        final int result;
+        try (var executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())) {
+            for (int i = 0; i < 30_000; i++) {
+                final var key = key(salt, i);
+                executor.execute(() -> fh.apply(key));
+            }
+            result = generate(salt, fh).keySet().stream().max(Integer::compare).get();
+            executor.shutdownNow();
+            executor.awaitTermination(10, TimeUnit.SECONDS);
         }
-        final var result = generate(salt, fh).keySet().stream().max(Integer::compare).get();
-        executor.shutdownNow();
-        executor.awaitTermination(10, TimeUnit.SECONDS);
         return result;
     }
 
@@ -107,7 +110,7 @@ public class Day14Test {
             var ch = matchInRow(h, 3);
             if (ch.isPresent()) {
                 final String pattern = String.join("", Collections.nCopies(5, ch.get().toString()));
-                for (int j = 1; j <= 1000; j++) {
+                for (int j = 1; j <= 1_000; j++) {
                     if (fh.apply(key(salt, i + j)).contains(pattern)) {
                         map.put(i, h);
                         break;
