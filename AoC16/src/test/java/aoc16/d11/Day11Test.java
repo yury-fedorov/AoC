@@ -5,7 +5,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Day11Test {
     final static int MAX_FLOOR = 3;
