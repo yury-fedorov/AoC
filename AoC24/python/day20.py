@@ -1,5 +1,3 @@
-from typing import Sequence
-
 import common as c
 import unittest
 
@@ -132,12 +130,12 @@ def _is_cheat(the_map: [str], p1, p2: c.Point) -> bool:
     if abs(dx) + abs(dy) <= 1: return False  # no wall possible between two adjacent points
     if dx == 0:
         # pure y move
-        # points on the y axis after p1 and before p2 have to be walls to be a cheat
+        # points on the y-axis after p1 and before p2 have to be walls to be a cheat
         return (_at(the_map, x1, y1 + _sign(dy)) == WALL
                 and _at(the_map, x2, y2 - _sign(dy)) == WALL)
     if dy == 0:
         # pure x move
-        # points on the x axis after p1 and before p2 have to be walls to be a cheat
+        # points on the x-axis after p1 and before p2 have to be walls to be a cheat
         return (_at(the_map, x1 + _sign(dx), y1) == WALL
                 and _at(the_map, x2 - _sign(dy), y2) == WALL)
 

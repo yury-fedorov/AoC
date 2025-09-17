@@ -1,5 +1,3 @@
-import sys
-
 import common as c
 import unittest
 
@@ -49,12 +47,12 @@ def _navigate_to(start, end: c.Point, point_keypad: {c.Point: str}) -> str:
             is_x_priority = dy == 0
         dx, dy = sign(dx), sign(dy)
         if is_x_priority:
-            # let's try to move on x axis
+            # let's try to move on x-axis
             ok, p1, dr = try_move(dx, 0)
             if not ok:
                 ok, p1, dr = try_move(0, dy)
         else:
-            # let's try to move on y axis
+            # let's try to move on y-axis
             ok, p1, dr = try_move(0, dy)
             if not ok:
                 ok, p1, dr = try_move(dx, 0)

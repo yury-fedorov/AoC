@@ -144,7 +144,7 @@ def _answer2(registers: {str: bool}, formulas: [Formula]) -> int:
     all_regs = {ri for ri in registers.keys()}
     all_regs.update([fi.r for fi in formulas])
     if False:
-        # seaching for pairs
+        # searching for pairs
         for i, a in enumerate(all_regs):
             for j, b in enumerate(all_regs):
                 if j > i:
