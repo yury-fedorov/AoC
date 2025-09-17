@@ -52,7 +52,7 @@ public class Day20Test {
         final var doors = new HashMap<String, List<Point>>();
         final var points = new ArrayList<>(letters.keySet());
         while (!points.isEmpty()) {
-            final var a = points.remove(0);
+            final var a = points.removeFirst();
             Point b = null;
             for (var i : points) {
                 if (isClose(a, i)) {
@@ -124,7 +124,7 @@ public class Day20Test {
                 final var p1 = new HashSet<>(step(p.point));
                 p1.retainAll(maze.walkable);
                 if (!isPart1 && p.level == 0) {
-                    p1.removeAll(allOuterDoors);
+                    allOuterDoors.forEach(p1::remove);
                 }
                 final var p13d = new ArrayList<>(p1.stream().map(i -> new Point3D(i, p.level)).toList());
                 final var di = allPairDoors.stream().filter(c -> c.contains(p.point)).iterator();

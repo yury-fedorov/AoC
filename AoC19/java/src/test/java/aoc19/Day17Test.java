@@ -49,7 +49,7 @@ public class Day17Test {
     @Test
     public void solution() {
         final var memory = IntcodeComputer.loadMemory(IOUtil.input("day17").getFirst());
-        final ArrayList<Long> memory2 = (ArrayList<Long>) memory.clone();
+        final var memory2 = new ArrayList<>(memory);
         final var in = new LinkedBlockingQueue<Long>();
         final var out = new LinkedBlockingQueue<Long>();
         final var comp = new IntcodeComputer(memory, in, out);

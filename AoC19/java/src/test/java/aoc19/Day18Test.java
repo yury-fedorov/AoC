@@ -157,7 +157,7 @@ public class Day18Test {
         final var toRemove = List.of(e,
                 new Point(e.x - 1, e.y), new Point(e.x + 1, e.y),
                 new Point(e.x, e.y - 1), new Point(e.x, e.y + 1));
-        map.walkable.removeAll(toRemove);
+        toRemove.forEach(map.walkable::remove);
         final var entrances = Set.of(
                 new Point(e.x - 1, e.y - 1), new Point(e.x + 1, e.y + 1),
                 new Point(e.x + 1, e.y - 1), new Point(e.x - 1, e.y + 1));

@@ -22,7 +22,7 @@ public class IntcodeComputer {
     }
 
     public static ArrayList<Long> loadMemory(String code) {
-        return new ArrayList<>(Arrays.stream(code.split(",")).map(Long::valueOf).collect(Collectors.toList()));
+        return Arrays.stream(code.split(",")).map(Long::valueOf).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public static RunPhase run(ArrayList<Long> memory, long in, Queue<Long> out) {

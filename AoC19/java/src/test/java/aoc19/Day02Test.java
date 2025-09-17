@@ -19,7 +19,6 @@ public class Day02Test {
         Assert.assertArrayEquals("post run memory",
                 IntcodeComputer.loadMemory(memoryAfter).toArray(),
                 c.getMemory().toArray());
-
     }
 
     long run(String code, int noun, int verb) {
@@ -43,12 +42,12 @@ public class Day02Test {
         run("1,1,1,4,99,5,6,0,99", "30,1,1,4,2,5,6,0,99");
 
         final var code = IOUtil.input("Day02").getFirst();
-        assertEquals("answer 1", run(code, 12, 2), 3716250L);
+        assertEquals("answer 1", 3716250L, run(code, 12, 2) );
 
         for (int noun = 0; noun <= 99; noun++) {
             for (int verb = 0; verb <= 99; verb++) {
                 if (19690720 == run(code, noun, verb)) {
-                    assertEquals("answer 2", 100 * noun + verb, 6472L);
+                    assertEquals("answer 2", 6472L, 100 * noun + verb);
                     return;
                 }
             }

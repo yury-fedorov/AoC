@@ -48,10 +48,9 @@ public class Day24Test {
     }
 
     static List<Point> getAdjacent(Map<Point, Character> map, Point point) {
-        final var result = new ArrayList<Point>();
         final var sameLevel = map.keySet().stream()
                 .filter(p -> isAdjacent(point, p)).toList();
-        result.addAll(sameLevel.stream()
+        final var result = new ArrayList<>(sameLevel.stream()
                 .filter(p -> !isCenter(p))
                 .map(p -> new Point(p.x, p.y, point.level))
                 .toList());

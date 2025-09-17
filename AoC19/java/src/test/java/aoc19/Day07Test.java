@@ -40,7 +40,7 @@ public class Day07Test {
             var amp = new IntcodeComputer(code, in, out);
             ampList.add(amp);
         }
-        ampList.get(0).in(0); // the very first input is zero
+        ampList.getFirst().in(0); // the very first input is zero
         final var n = settings.size();
         final var lastIndex = n - 1;
         final var lastAmp = ampList.get(lastIndex);

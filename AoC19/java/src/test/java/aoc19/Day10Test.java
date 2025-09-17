@@ -105,7 +105,7 @@ public class Day10Test {
         var direction = new Point(0, -1); // we point up
         while (removed.size() < nth) {
             var targets = group(all, from);
-            var options = targets.getOrDefault(direction, Collections.EMPTY_LIST);
+            var options = targets.getOrDefault(direction, Collections.emptyList());
             Optional<Point> nearest = getNearest(from, options);
             if (nearest.isPresent()) {
                 all.remove(nearest.get());
