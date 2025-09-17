@@ -75,10 +75,11 @@ public class Day15Test {
             i++;
             if ((i - lastUpdated) > 1_000_000 && isOxygenSystemFound) break;
         }
-        position = map.entrySet().stream().filter(e -> e.getValue() == OXYGEN_SYSTEM).map(e -> e.getKey())
+        position = map.entrySet().stream().filter(e -> e.getValue() == OXYGEN_SYSTEM)
+                .map(Map.Entry::getKey)
                 .findFirst().get();
         var path = map.entrySet().stream()
-                .filter(e -> e.getValue() == PATH).map(e -> e.getKey()).toList();
+                .filter(e -> e.getValue() == PATH).map(Map.Entry::getKey).toList();
         var maxPossible = path.size();
         var minPath = new HashMap<Point, Long>();
         var head = Set.of(start);

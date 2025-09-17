@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static aoc19.computer.AsciiUtil.out;
 import static org.junit.Assert.assertEquals;
 
 public class Day19Test {
@@ -77,7 +76,7 @@ public class Day19Test {
             final var r1 = getBeamLine(y + SIZE - 1);
             if (r1.isEmpty()) continue;
             // min r0 max r0
-            //     min r1 max r1
+            // min r1 max r1
             if (r0.get().max - r1.get().min >= (SIZE - 1)) {
                 // found
                 final var x0 = r1.get().min;

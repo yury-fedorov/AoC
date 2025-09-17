@@ -15,7 +15,7 @@ public class Day09Test {
         var out = new LinkedBlockingQueue<Long>();
         in.add(input);
         IntcodeComputer.run(memory, in, out);
-        return out.remove().longValue();
+        return out.remove();
     }
 
     @Test
@@ -25,7 +25,7 @@ public class Day09Test {
         var in = new LinkedBlockingQueue<Long>();
         var out = new LinkedBlockingQueue<Long>();
         IntcodeComputer.run(memory, in, out);
-        var asArray = new ArrayList<Long>(out);
+        var asArray = new ArrayList<>(out);
         assertEquals("copy of itself", IntcodeComputer.loadMemory(code), asArray);
     }
 
@@ -48,7 +48,7 @@ public class Day09Test {
         var out = new LinkedBlockingQueue<Long>();
         IntcodeComputer.run(memory, in, out);
         assertEquals(1, out.size());
-        long number = out.remove().longValue();
+        long number = out.remove();
         int digits = 0;
         while (number != 0) {
             digits++;

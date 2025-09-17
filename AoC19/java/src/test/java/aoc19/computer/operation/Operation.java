@@ -21,18 +21,15 @@ public abstract class Operation {
     }
 
     public static long get(List<Long> memory, long index, Mode mode, long relativeBase) {
-        switch (mode) {
-            case Position:
-                return index >= memory.size() ? 0 : memory.get((int) index);
-            case Immediate:
-                return index;
-            case Relative: {
+        return switch (mode) {
+            case Position -> index >= memory.size() ? 0 : memory.get((int) index);
+            case Immediate -> index;
+            case Relative -> {
                 index = relativeBase + index;
-                return index >= memory.size() ? 0 : memory.get((int) index);
+                yield index >= memory.size() ? 0 : memory.get((int) index);
             }
-            default:
-                throw new IllegalStateException("unmanaged mode");
-        }
+            default -> throw new IllegalStateException("unmanaged mode");
+        };
     }
 
     public static void set(ArrayList<Long> memory, long index, long value, Mode mode, long relativeBase) {

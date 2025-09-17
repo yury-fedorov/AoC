@@ -70,7 +70,7 @@ public class Day20Test {
     }
 
     static List<Portal> getPortals(Maze maze) {
-        final var allDoors = maze.doors.values().stream().flatMap(pp -> pp.stream()).toList();
+        final var allDoors = maze.doors.values().stream().flatMap(Collection::stream).toList();
         final var minX = allDoors.stream().mapToInt(p -> p.x).min().getAsInt();
         final var maxX = allDoors.stream().mapToInt(p -> p.x).max().getAsInt();
         final var minY = allDoors.stream().mapToInt(p -> p.y).min().getAsInt();
@@ -115,8 +115,8 @@ public class Day20Test {
             final var next1 = new HashMap<Point3D, Integer>();
             for (var n : next.entrySet()) {
                 final var p = n.getKey();
-                final var minD = minDistance.getOrDefault(p, Integer.MAX_VALUE).intValue();
-                final var d = n.getValue().intValue();
+                final var minD = minDistance.getOrDefault(p, Integer.MAX_VALUE);
+                final var d = n.getValue();
                 if (d < minD) {
                     minDistance.put(p, d);
                 } else {
@@ -154,7 +154,7 @@ public class Day20Test {
             }
             next = next1;
         }
-        return minDistance.getOrDefault(new Point3D(zz, 0), 0).intValue();
+        return minDistance.getOrDefault(new Point3D(zz, 0), 0);
     }
 
     @Test

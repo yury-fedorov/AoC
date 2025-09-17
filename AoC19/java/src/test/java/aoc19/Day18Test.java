@@ -264,14 +264,7 @@ public class Day18Test {
         }
     }
 
-    static class Step2 {
-        final Step step;
-        final Collection<Point> robots;
-
-        Step2(Step step, Collection<Point> robots) {
-            this.step = step;
-            this.robots = robots;
-        }
+    record Step2(Step step, Collection<Point> robots) {
     }
 
     record PathCalculator(Set<Point> walkable, Map<Character, Point> keys, Map<Character, Point> doors) {

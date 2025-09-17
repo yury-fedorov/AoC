@@ -28,10 +28,10 @@ public class Common extends Operation {
                 r = Optional.of(a * b);
                 break;
             case Equals:
-                r = Optional.of(a == b ? 1l : 0);
+                r = Optional.of(a == b ? 1L : 0);
                 break;
             case LessThan:
-                r = Optional.of(a < b ? 1l : 0);
+                r = Optional.of(a < b ? 1L : 0);
                 break;
             case JumpIfFalse:
                 isJump = Optional.of(a == 0);
@@ -42,12 +42,12 @@ public class Common extends Operation {
             default:
                 assert (false); // not expected
         }
-        if (r.isPresent()) {
+        if (isJump.isPresent()) {
+            return new ExecResult(isJump.get() ? Jump.Absolute : Jump.Next, b, relativeBase);
+        } else if (r.isPresent()) {
             final var ra = args.get(2);
             set(memory, ra, r.get(), modes.get(2), relativeBase);
             return new ExecResult(Jump.Next, 0, relativeBase);
-        } else if (isJump.isPresent()) {
-            return new ExecResult(isJump.get() ? Jump.Absolute : Jump.Next, b, relativeBase);
         }
         assert (false);
         return null;

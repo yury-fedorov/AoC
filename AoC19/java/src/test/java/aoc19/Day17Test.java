@@ -3,6 +3,7 @@ package aoc19;
 import aoc19.computer.IntcodeComputer;
 import org.junit.Test;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,7 +55,7 @@ public class Day17Test {
         final var comp = new IntcodeComputer(memory, in, out);
         comp.run();
         final var mapAsString = readOut(out).toString();
-        final var map = Arrays.stream(mapAsString.split("\n")).map(s -> s.trim()).toList();
+        final var map = Arrays.stream(mapAsString.split("\n")).map(String::trim).toList();
         final var maxX = map.get(0).length();
         final var maxY = map.size();
         long answer1 = 0;
@@ -65,24 +66,25 @@ public class Day17Test {
         }
         assertEquals("answer 1", 4600, answer1);
 
-        memory2.set(0, 2l);
+        memory2.set(0, 2L);
         in.clear();
         out.clear();
 
         //       [ A C             ][ A C             ][ B    ][ B    ][ C    ][ A C             ][ B    ]
         // Path: L12L10R8L12R8R10R12L12L10R8L12R8R10R12L10R12R8L10R12R8R8R10R12L12L10R8L12R8R10R12L10R12R8
-        final var instructions = "A,C,A,C,B,B,C,A,C,B\n" +
-                "L,12,L,10,R,8,L,12\n" +
-                "L,10,R,12,R,8\n" +
-                "R,8,R,10,R,12\n" +
-                "n\n";
+        final var instructions = """
+                A,C,A,C,B,B,C,A,C,B
+                L,12,L,10,R,8,L,12
+                L,10,R,12,R,8
+                R,8,R,10,R,12
+                n
+                """;
 
         instructions.chars().forEach(c -> in.add((long) c));
         final var comp2 = new IntcodeComputer(memory2, in, out);
-        final var phase = comp2.run();
-        final var outDeque = new java.util.ArrayDeque(out);
+        comp2.run();
+        final var outDeque = new ArrayDeque<Long>(out);
         final var answer2 = outDeque.pollLast();
-        // debug: System.out.println( readOut( outDeque ) );
-        assertEquals("answer 2", 1113411L, answer2);
+        assertEquals("answer 2", 1113411L, answer2.longValue());
     }
 }

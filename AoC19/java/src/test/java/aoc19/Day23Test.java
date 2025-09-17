@@ -65,8 +65,8 @@ public class Day23Test {
                     answer2 = natY;
                 } else {
                     final var c0 = compList.get(0);
-                    c0.in(natX.get().longValue());
-                    c0.in(natY.get().longValue());
+                    c0.in(natX.get());
+                    c0.in(natY.get());
                     previousNatY = natY;
                 }
             }

@@ -33,24 +33,10 @@ public class Day14Test {
         return new Receipt(input, new Portion(oq, oc));
     }
 
-    // list of chemicals used for output
-    static Set<String> to(List<Receipt> react, String output) {
-        var options = react.stream().filter(r -> r.output.chemical.equals(output)).toList();
-        if (options.isEmpty()) return new HashSet<>();
-        var set = options.get(0).input.stream().map(p -> p.chemical).toList();
-        var result = new HashSet<String>();
-        result.addAll(set);
-        for (var c : set) {
-            result.addAll(to(react, c));
-        }
-        return result;
-    }
-
     static List<String> latest(List<Receipt> react, Collection<String> set) {
         // any which does not contain any other
         var mapCount = new HashMap<String, Integer>();
         for (var c : set) {
-            var s = to(react, c);
             var count = mapCount.getOrDefault(c, 0) + 1;
             mapCount.put(c, count);
         }

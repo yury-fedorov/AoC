@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class Day12Test {
     public static final List<Integer> PRIMES = List.of(2, 3, 5, 7, 11, 13, 17, 19, 23);

@@ -29,11 +29,11 @@ public class Day24Test {
         return a.level == b.level && (dx + dy) == 1;
     }
 
-    public static boolean isCenter(Point p) {
+    static boolean isCenter(Point p) {
         return p.x == 2 && p.y == 2;
     }
 
-    public static boolean isCenterBorder(Point p) {
+    static boolean isCenterBorder(Point p) {
         final var dx = Math.abs(2 - p.x);
         final var dy = Math.abs(2 - p.y);
         return (dx == 0 && dy == 1) || (dx == 1 & dy == 0);
@@ -98,7 +98,7 @@ public class Day24Test {
 
     static long countBugs(Map<Point, Character> map, Point point, boolean isPart1) {
         var list = isPart1 ? List.of() : getAdjacent(map, point);
-        Predicate<Point> isAdj = isPart1 ? p -> isAdjacent(point, p) : p -> list.contains(p);
+        Predicate<Point> isAdj = isPart1 ? p -> isAdjacent(point, p) : list::contains;
         return map.entrySet().stream()
                 .filter(e -> e.getValue() == BUG && isAdj.test(e.getKey()))
                 .count();
@@ -118,23 +118,12 @@ public class Day24Test {
         return new MinMax(minLevel, maxLevel);
     }
 
-    static String formatMap(Map<Point, Character> map, int level) {
-        var result = new StringBuilder(SIZE * SIZE);
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
-                result.append(map.get(new Point(x, y, level)));
-            }
-            result.append(System.lineSeparator());
-        }
-        return result.toString();
-    }
-
     static HashMap<Point, Character> lifeCircle(Map<Point, Character> map, boolean isPart1) {
         var map1 = new HashMap<Point, Character>();
         var minMaxLevel = getMinMaxLevel(map);
         var minLevel = minMaxLevel.min - 1;
         var maxLevel = minMaxLevel.max + 1;
-        // note they grow slower then one level per iteration
+        // note they grow slower than one level per iteration
         for (var level = minLevel; level <= maxLevel; level++) {
             if (isPart1 && level != 0) continue;
             for (int x = 0; x < SIZE; x++) {
@@ -164,15 +153,11 @@ public class Day24Test {
 
     @Test
     public void demoPart2() {
-        /*
-    Tile G has four adjacent tiles: B, F, H, and L.
-    Tile N has eight adjacent tiles: I, O, S, and five tiles within the sub-grid marked ?.
-        */
+        // Tile G has four adjacent tiles: B, F, H, and L.
+        // Tile N has eight adjacent tiles: I, O, S, and five tiles within the sub-grid marked ?.
         // 1-25 level -1
         // A-Y level 0
-
         var map = loadMap("day24-sample");
-        var loi = formatMap(map, 0);
         for (int t = 0; t < 10; t++) {
             map = lifeCircle(map, false);
         }
@@ -210,7 +195,6 @@ public class Day24Test {
         assertEquals('O', toIndexA(T_O));
         assertTrue("contains O", a14.contains(T_O));
 
-        var l0 = formatMap(map, 0);
         var minMax = getMinMaxLevel(map);
         assertEquals("number of levels after 10 minutes ", 11, minMax.max - minMax.min + 1);
         assertEquals("number of bugs after 10 minutes", 99, countBugs(map));

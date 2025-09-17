@@ -3,7 +3,6 @@ package aoc19;
 import aoc19.computer.IntcodeComputer;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.assertEquals;

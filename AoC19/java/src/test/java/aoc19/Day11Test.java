@@ -56,7 +56,7 @@ public class Day11Test {
         // answer 2
         final var a2 = solution(WHITE);
         final var white = a2.entrySet().stream().filter(e -> e.getValue() == WHITE)
-                .map(e -> e.getKey()).toList();
+                .map(Map.Entry::getKey).toList();
         final var minX = white.stream().mapToLong(p -> p.x).min().getAsLong();
         final var maxX = white.stream().mapToLong(p -> p.x).max().getAsLong();
         final var minY = white.stream().mapToLong(p -> p.y).min().getAsLong();
