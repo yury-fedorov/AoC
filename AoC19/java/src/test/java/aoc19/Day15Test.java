@@ -62,9 +62,7 @@ public class Day15Test {
             var position1 = move(position, direction);
             final var isAdded = map.put(position1, answer) == null;
             if (isAdded) lastUpdated = i;
-            if (answer == WALL) {
-                // change direction only on a wall
-            } else if (answer == PATH) {
+            if (answer == PATH) {
                 position = position1;
             } else if (answer == OXYGEN_SYSTEM) {
                 position = position1;

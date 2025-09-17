@@ -67,7 +67,7 @@ public class Day19Test {
 
         if (Config.isFast()) return; // takes 168 sec
         final var SIZE = 100L;
-        long answer2 = 0;
+        long answer2;
         for (var y = 0L; true; y++) {
             final var r0 = getBeamLine(y);
             if (r0.isEmpty()) continue;

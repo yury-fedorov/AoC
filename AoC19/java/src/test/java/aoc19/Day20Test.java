@@ -77,7 +77,8 @@ public class Day20Test {
         final var maxY = allDoors.stream().mapToInt(p -> p.y).max().getAsInt();
         final var outerX = Set.of(minX, maxX);
         final var outerY = Set.of(minY, maxY);
-        final var pairPortals = maze.doors.entrySet().stream().filter(e -> e.getValue().size() == 2)
+        final var pairPortals = maze.doors.entrySet().stream()
+                .filter(e -> e.getValue().size() == 2)
                 .map(e -> {
                     var ab = e.getValue();
                     var a = ab.get(0);
@@ -101,10 +102,6 @@ public class Day20Test {
         final var allOuterDoors = portals.stream().map(p -> p.outer).toList();
         // outer doors are absent on level 0 for part 2
         // aa and zz are absent on level 1+ for part 2
-        final var doorsLevel0 = new HashSet<>(allInnerDoors);
-        doorsLevel0.add(zz);
-        final var doorsLevel1 = new HashSet<>(allInnerDoors);
-        doorsLevel1.addAll(allOuterDoors);
 
         // 1 is it possible to walk from AA to ZZ directly without portals?
         // this is the maximum path required to arrive
