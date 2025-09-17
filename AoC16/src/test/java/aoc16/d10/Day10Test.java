@@ -22,11 +22,11 @@ public class Day10Test {
     static Collection<PairSI> sources(ValueMap vmap, BotMap bmap, final int bot) {
         final var result = new ArrayList<PairSI>();
         result.addAll(vmap.entrySet().stream().filter(e -> e.getValue() == bot)
-                .map(e -> new PairSI(Source.VALUE, e.getKey())).collect(Collectors.toList()));
+                .map(e -> new PairSI(Source.VALUE, e.getKey())).toList());
         result.addAll(bmap.entrySet().stream()
                 .filter(e -> (e.getValue().a().destination() == Destination.BOT && e.getValue().a().id() == bot)
                         || (e.getValue().b().destination() == Destination.BOT && e.getValue().b().id() == bot))
-                .map(e -> new PairSI(Source.BOT, e.getKey())).collect(Collectors.toList()));
+                .map(e -> new PairSI(Source.BOT, e.getKey())).toList());
         return result;
     }
 

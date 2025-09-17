@@ -38,7 +38,7 @@ public class Day18Test {
 
     @Test
     public void solution() {
-        final var firstRow = IOUtil.input("d18").get(0);
+        final var firstRow = IOUtil.input("d18").getFirst();
         Assert.assertEquals("answer 1", 1982, countSafe(40, firstRow));
         Assert.assertEquals("answer 2", 20005203, countSafe(400000, firstRow));
     }

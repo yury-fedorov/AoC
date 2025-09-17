@@ -30,6 +30,7 @@ public class Day16Test {
 
     static String checksum(CharSequence input, final int diskLength) {
         for (; input.length() < diskLength; input = next(input)) {
+            // nothing to do
         }
         final var disk = input.subSequence(0, diskLength);
         Assert.assertEquals(diskLength, disk.length());

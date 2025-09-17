@@ -15,7 +15,7 @@ public class Day01Test {
 
     @Test
     public void solution() {
-        final var input = IOUtil.input("d01").get(0);
+        final var input = IOUtil.input("d01").getFirst();
         final var c = input.split(", ");
         Direction d = Direction.North;
         int x = 0;

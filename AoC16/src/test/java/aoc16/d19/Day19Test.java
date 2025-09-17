@@ -40,7 +40,7 @@ public class Day19Test {
             position += (outIndex >= position) ? 1 : 0; // we increment position only, if removed is ahead in numbering
             position = (position >= n) ? 0 : position;
         }
-        return list.get(0);
+        return list.getFirst();
     }
 
     private static LinkedList<Integer> init(int n) {

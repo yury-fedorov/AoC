@@ -24,7 +24,8 @@ public class Day11Test {
         final var chips = new LinkedList<Integer>();
         final var generators = new LinkedList<Integer>();
         for (final var e : area) {
-            if (area.contains(-e)) { /* we remove all paired chips and generators */ } else if (isChip(e)) chips.add(e);
+            if (area.contains(-e)) { /* we remove all paired chips and generators */ }
+            else if (isChip(e)) chips.add(e);
             else if (isGenerator(e)) generators.add(e);
         }
         // now we check what is remained: we cannot have a chip and another generator
@@ -35,7 +36,7 @@ public class Day11Test {
         for (int curFloor = 0; curFloor <= MAX_FLOOR; curFloor++) {
             if (!floors.get(curFloor).isEmpty()) return curFloor;
         }
-        throw new IllegalStateException("we will always at least one nont empty floor");
+        throw new IllegalStateException("we will always at least one non empty floor");
     }
 
     static Collection<LiftDirection> directions(List<Collection<Integer>> floors, final int elevatorFloor) {
@@ -131,7 +132,7 @@ public class Day11Test {
         var floors = initFloors(List.of(-1, 1, -2, -3), List.of(2, 3), List.of(-4, 4, -5, 5));
         Assert.assertEquals("answer 1", 31, solve(floors));
         if (Config.isFast()) return; // 521 seconds
-        final var floor0 = new ArrayList<>(floors.get(0));
+        final var floor0 = new ArrayList<>(floors.getFirst());
         // elerium - 6, dilithium - 7
         floor0.addAll(List.of(6, -6, 7, -7));
         final var floors2 = new ArrayList<>(floors);
@@ -150,7 +151,7 @@ public class Day11Test {
                 final var state = path.state(); // all flows
 
                 paths1.addAll(options(state, elevator).stream().map((o) -> next(path, o, history))
-                        .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
+                        .filter(Optional::isPresent).map(Optional::get).toList());
 
                 history.add(print(state, elevator));
             }

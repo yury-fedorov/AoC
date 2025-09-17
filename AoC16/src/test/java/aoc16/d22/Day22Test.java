@@ -18,7 +18,6 @@ public class Day22Test {
 
     @Test
     public void solution() {
-        final boolean toPrint = false; // diagnostic and visualisation map
         final var input = IOUtil.input("d22");
         // /dev/grid/node-x0-y0     85T   67T    18T   78%
         final var pattern = Pattern.compile("^/dev/grid/node-x(\\d+)-y(\\d+)\\s+(\\d+)T\\s+(\\d+)T\\s+(\\d+)T\\s+(\\d+)%$");
@@ -28,7 +27,7 @@ public class Day22Test {
             if (m.find()) {
                 grid.put(Point.with(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2))), // x, y
                         new Node(Integer.parseInt(m.group(3)), Integer.parseInt(m.group(4)))); // Size  Used
-            } else if (toPrint) System.out.println("Bad format: " + l);
+            }
         }
         Assert.assertEquals(input.size() - 2, grid.size());
         final var maxX = grid.keySet().stream().mapToInt(Point::x).max().getAsInt();
@@ -45,25 +44,16 @@ public class Day22Test {
         Assert.assertEquals("answer 1", 924, answer1.size());
 
         final var empty = new ArrayList<Point>(); // empty node(s)
-        final var full = new LinkedList<Point>(); // "full" nodes
         for (int y = 0; y <= maxY; y++) {
             for (int x = 0; x <= maxX; x++) {
                 final var a = Point.with(x, y);
                 final var n = grid.get(a);
                 final boolean isEmpty = (n.used() / (double) n.size()) < 0.1;
-                final boolean isFull = n.used() > 100;
                 if (isEmpty) empty.add(a);
-                else if (isFull) full.add(a);
-                // if (toPrint) System.out.print( used(n) + "/" + size(n) + "=" + ( used(n) * 100 / size(n) ) + " \t" );
-                if (toPrint) {
-                    System.out.print(isEmpty ? '_' : isFull ? '#' : '.');
-                    System.out.print(' ');
-                }
             }
-            if (toPrint) System.out.println();
         }
         // XXX solved analytically looking at the map
-        final var iep = empty.get(0);
+        final var iep = empty.getFirst();
         int distance = iep.x() + iep.y() + maxX; // to arrive to initial point
         distance += 5 * (maxX - 1);
         Assert.assertEquals("answer 2", 213, distance);

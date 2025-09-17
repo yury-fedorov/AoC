@@ -112,7 +112,7 @@ public class Day21Test {
     }
 
     static Optional<String> answer2(String head, String tail, String answer, Collection<String> operations) {
-        if (tail.length() > 0) {
+        if (!tail.isEmpty()) {
             for (final Character c : tail.toCharArray()) {
                 final var b = new StringBuilder(tail);
                 final var index = b.indexOf(c.toString());

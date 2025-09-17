@@ -17,7 +17,7 @@ public class Day24Test {
             = List.of(Point.with(1, 0), Point.with(-1, 0), Point.with(0, 1), Point.with(0, -1));
 
     static Point size(List<String> map) {
-        return Point.with(map.get(0).length(), map.size());
+        return Point.with(map.getFirst().length(), map.size());
     }
 
     static char at(List<String> map, Point p) {
@@ -37,14 +37,14 @@ public class Day24Test {
             for (final var point : frontLine) {
                 if (point.equals(p1)) return new DistancePassed(d, passed);
                 final char ch = at(map, point);
-                Assert.assertNotEquals("walls are not expected", ch, WALL);
+                Assert.assertNotEquals("walls are not expected", WALL, ch);
                 if (ch != SPACE && !point.equals(p0)) passed.add(ch);
                 next.addAll(SHIFTS.stream()
                         .map((sh) -> Point.add(point, sh))
                         .filter(isIn::apply)
                         .filter((p) -> !beenPoints.contains(p))
                         .filter((p) -> at(map, p) != WALL)
-                        .collect(Collectors.toList()));
+                        .toList());
             }
             beenPoints.addAll(frontLine);
             frontLine = next;

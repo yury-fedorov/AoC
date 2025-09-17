@@ -14,7 +14,7 @@ public class Day06Test {
     public void solution() {
         final var input = IOUtil.input("d06");
         final var stats = new ArrayList<Map<Character, Integer>>();
-        final var n = input.get(0).length();
+        final var n = input.getFirst().length();
         for (int i = 0; i < n; i++) stats.add(new HashMap<>());
         for (final var l : input) {
             for (int i = 0; i < l.length(); i++) {

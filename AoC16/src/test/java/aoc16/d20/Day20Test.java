@@ -48,7 +48,7 @@ public class Day20Test {
             if (!isCompressed) break;
         }
 
-        final long answer1 = list.get(0).min() == 0 ? list.get(0).max() + 1 : 0L;
+        final long answer1 = list.getFirst().min() == 0 ? list.getFirst().max() + 1 : 0L;
         Assert.assertEquals("answer 1", 32259706L, answer1);
 
         final var blackListed = list.stream().mapToLong(Day20Test::count).sum();

@@ -54,7 +54,7 @@ public class Day17Test {
                         .map((d) -> new DirPoint(d, move(p0, d)))
                         .filter((p) -> p.point().isPresent())
                         .map((p) -> new PathPoint(((Character) (p.direction()._symbol)).toString(), p.point().get()))
-                        .collect(Collectors.toList());
+                        .toList();
 
                 for (final var p : options) {
                     final var path1 = path + p.path();
@@ -69,7 +69,7 @@ public class Day17Test {
 
     static PathLength answers(String passcode) {
         final var all = allPaths(passcode);
-        return new PathLength(all.get(0), all.get(all.size() - 1).length());
+        return new PathLength(all.getFirst(), all.getLast().length());
     }
 
     static String shortestPath(String passcode) {

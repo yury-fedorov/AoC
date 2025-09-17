@@ -51,19 +51,19 @@ public class Day08Test {
                 if (matcher.find()) {
                     final var y = Integer.parseInt(matcher.group(1));
                     final var n = Integer.parseInt(matcher.group(2));
-                    ns.addAll(screen.stream().filter(a -> a.y() != y).collect(Collectors.toList()));
+                    ns.addAll(screen.stream().filter(a -> a.y() != y).toList());
                     ns.addAll(screen.stream().filter(a -> a.y() == y)
                             .map(a -> Point.with((a.x() + n) % width, a.y()))
-                            .collect(Collectors.toList()));
+                            .toList());
                 } else {
                     matcher = patternCol.matcher(l);
                     if (matcher.find()) {
                         final var x = Integer.parseInt(matcher.group(1));
                         final var n = Integer.parseInt(matcher.group(2));
-                        ns.addAll(screen.stream().filter(a -> a.x() != x).collect(Collectors.toList()));
+                        ns.addAll(screen.stream().filter(a -> a.x() != x).toList());
                         ns.addAll(screen.stream().filter(a -> a.x() == x)
                                 .map(a -> Point.with(a.x(), (a.y() + n) % height))
-                                .collect(Collectors.toList()));
+                                .toList());
                     } else {
                         System.err.println(l);
                         fail();
