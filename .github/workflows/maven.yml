@@ -22,6 +22,8 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+    - name: AoC25
+      run: mvn -B package --file AoC25/kotlin/pom.xml
     - name: AoC19
       run: mvn -B package --file AoC19/java/pom.xml
     - name: AoC16
