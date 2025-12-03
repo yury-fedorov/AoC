@@ -37,6 +37,13 @@ class Day03Test {
             freqMap = freqMap.filter { p -> p.key != smallest }
             reducedBank = reducedBank.filter { c -> c != smallest }
         }
+        // we may try to trunk head starting always with highest
+        val highest = reducedBank.max()
+        val firstHighest = reducedBank.indexOf(highest)
+        val highestStart = reducedBank.drop(firstHighest)
+        if (highestStart.length >= minLength) {
+            reducedBank = highestStart // accepted
+        }
         // now we may reduce lowest from beginning
         val smallest = reducedBank.min()
         while (reducedBank.length > minLength ){
