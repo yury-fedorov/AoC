@@ -15,7 +15,7 @@ class Day04Test {
 
     val roll = '@'
 
-    fun shift(p: Position, shift: Position) : Position = Position(p.x + shift.x, p.y + shift.y)
+    fun shift(p: Position, shift: Position): Position = Position(p.x + shift.x, p.y + shift.y)
 
     fun at(map: List<String>, p: Position): Char {
         if (p.y < 0 || p.y >= map.size) return '.'
@@ -24,36 +24,36 @@ class Day04Test {
         return line[p.x]
     }
 
-    fun countRolls(map: List<String>, p: Position) : Int =
+    fun countRolls(map: List<String>, p: Position): Int =
         adjacentShifts.map { s -> at(map, shift(p, s)) }.count { c -> c == roll }
 
-    fun countAccessibleRolls(map: List<String>): Int {
-        var count = 0
+    fun accessibleRolls(map: List<String>): List<Position> {
+        val result = mutableListOf<Position>()
         for (y in 0..<map.size) {
             val line = map[y]
             for (x in 0..<line.length) {
-                val p = Position(x,y)
+                val p = Position(x, y)
                 val me = at(map, p)
-                if ( me != roll ) continue
+                if (me != roll) continue
                 val adjCount = countRolls(map, p)
-                if (adjCount<=3) {
-                    count++
+                if (adjCount <= 3) {
+                    result += p
                 }
             }
         }
-        return count
+        return result
     }
 
     @Test
     fun test() {
         val map = IOUtil.input("04-1")
-        assertEquals(13, countAccessibleRolls(map))
+        assertEquals(13, accessibleRolls(map).size)
     }
 
 
     @Test
     fun solution() {
         val map = IOUtil.input("04")
-        assertEquals(1346, countAccessibleRolls(map))
+        assertEquals(1346, accessibleRolls(map).size)
     }
 }
