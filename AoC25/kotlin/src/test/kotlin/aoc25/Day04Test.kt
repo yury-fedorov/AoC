@@ -3,7 +3,6 @@ package aoc25
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 class Day04Test {
     data class Position(val x: Int, val y: Int)
 
@@ -24,15 +23,15 @@ class Day04Test {
         return line[p.x]
     }
 
-    fun at2(map: List<String>, p: Position, removed: List<Position>): Char {
+    fun at2(map: List<String>, p: Position, removed: Set<Position>): Char {
         if (removed.contains(p)) return '.'
         return at(map, p)
     }
 
-    fun countRolls(map: List<String>, p: Position, removed: List<Position>): Int =
+    fun countRolls(map: List<String>, p: Position, removed: Set<Position>): Int =
         adjacentShifts.map { s -> at2(map, shift(p, s), removed) }.count { c -> c == roll }
 
-    fun accessibleRolls(map: List<String>, removed: List<Position>): List<Position> {
+    fun accessibleRolls(map: List<String>, removed: Set<Position>): List<Position> {
         val result = mutableListOf<Position>()
         for (y in 0..<map.size) {
             val line = map[y]
@@ -49,9 +48,9 @@ class Day04Test {
         return result
     }
 
-    fun answer1(map: List<String>): Int = accessibleRolls(map, emptyList()).size
+    fun answer1(map: List<String>): Int = accessibleRolls(map, emptySet()).size
     fun answer2(map: List<String>): Int {
-        val removed = mutableListOf<Position>()
+        val removed = mutableSetOf<Position>()
         while (true) {
             val removable = accessibleRolls(map, removed)
             if (removable.isEmpty()) break
@@ -71,6 +70,6 @@ class Day04Test {
     fun solution() {
         val map = IOUtil.input("04")
         assertEquals(1346, answer1(map))
-        assertEquals(8493, answer2(map)) // 1min 28 sec
+        assertEquals(8493, answer2(map))
     }
 }
