@@ -24,18 +24,23 @@ class Day04Test {
         return line[p.x]
     }
 
-    fun countRolls(map: List<String>, p: Position): Int =
-        adjacentShifts.map { s -> at(map, shift(p, s)) }.count { c -> c == roll }
+    fun at2(map: List<String>, p: Position, removed:List<Position>) : Char {
+        if (removed.contains(p)) return '.'
+        return at(map, p)
+    }
 
-    fun accessibleRolls(map: List<String>): List<Position> {
+    fun countRolls(map: List<String>, p: Position, removed: List<Position>): Int =
+        adjacentShifts.map { s -> at2(map, shift(p, s), removed) }.count { c -> c == roll }
+
+    fun accessibleRolls(map: List<String>, removed:List<Position>): List<Position> {
         val result = mutableListOf<Position>()
         for (y in 0..<map.size) {
             val line = map[y]
             for (x in 0..<line.length) {
                 val p = Position(x, y)
-                val me = at(map, p)
+                val me = at2(map, p, removed)
                 if (me != roll) continue
-                val adjCount = countRolls(map, p)
+                val adjCount = countRolls(map, p, removed)
                 if (adjCount <= 3) {
                     result += p
                 }
@@ -47,13 +52,27 @@ class Day04Test {
     @Test
     fun test() {
         val map = IOUtil.input("04-1")
-        assertEquals(13, accessibleRolls(map).size)
+        assertEquals(13, accessibleRolls(map, emptyList()).size)
+        val removed = mutableListOf<Position>()
+        while (true) {
+            val removable = accessibleRolls(map, removed)
+            if (removable.isEmpty()) break
+            removed.addAll(removable)
+        }
+        assertEquals(43, removed.size)
     }
 
 
     @Test
     fun solution() {
         val map = IOUtil.input("04")
-        assertEquals(1346, accessibleRolls(map).size)
+        assertEquals(1346, accessibleRolls(map, emptyList()).size)
+        val removed = mutableListOf<Position>()
+        while (true) {
+            val removable = accessibleRolls(map, removed)
+            if (removable.isEmpty()) break
+            removed.addAll(removable)
+        }
+        assertEquals(8493, removed.size) // 1min 28 sec
     }
 }
