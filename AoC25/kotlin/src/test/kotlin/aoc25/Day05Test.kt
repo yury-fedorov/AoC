@@ -21,12 +21,8 @@ class Day05Test {
                 wasAnyMerge = true
             } else newCounted += c
         }
-        if (wasAnyMerge) {
-            return merge(newRange, newCounted).toMutableList()
-        }
-        val result = (ranges + r).toMutableList()
-        result.sortBy { r -> r.from } // for better debugging
-        return result
+        if (wasAnyMerge) return merge(newRange, newCounted)
+        return ranges + r
     }
 
     fun findIntersect(ranges: Collection<Range>): Pair<Range, Range>? {
@@ -42,9 +38,7 @@ class Day05Test {
     // answer 2
     fun countRanges(ranges: Collection<Range>): Long {
         var counted: Collection<Range> = listOf()
-        for (r in ranges) {
-            counted = merge(r, counted)
-        }
+        ranges.forEach { r -> counted = merge(r, counted) }
         while (true) {
             val crossed = findIntersect(counted) ?: break
             val newRange = crossed.first.merge(crossed.second)
