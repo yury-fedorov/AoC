@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 RUN apt-get update \
-    && apt-get --no-install-recommends -y install openjdk-21-jdk maven
+    && apt-get --no-install-recommends -y install openjdk-25-jdk maven
 RUN mvn --version
 
 ARG src=/usr/src/aoc
