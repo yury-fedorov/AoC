@@ -11,23 +11,31 @@ class Day05Test {
         fun count() : Long = to - from + 1
     }
 
+    fun merge(r:Range, ranges: Collection<Range>):Pair<Collection<Range>,Range?> {
+        if (ranges.any{ c -> c.isIntersect(r)}) {
+            // we need to merge with at least one other range
+            val newCounted = mutableListOf<Range>()
+            var newRange = r
+            for (c in ranges) {
+                if ( newRange.isIntersect(c) ) newRange = newRange.merge(c)
+                else newCounted += c
+            }
+            newCounted.sortBy { r -> r.from } // for better debugging
+            return newCounted to newRange
+        }
+        return ranges + r to null
+    }
+
     // answer 2
     fun countRanges(ranges:Collection<Range>) : Long {
-        var counted = mutableListOf<Range>() // modified from original
+        var counted: Collection<Range> = listOf() // modified from original
         for (r in ranges) {
-            if (counted.any{ c -> c.isIntersect(r)}) {
-                // we need to merge with at least one other range
-                // TODO
-                val newCounted = mutableListOf<Range>()
-                var newRange = r
-                for (c in counted) {
-                    if ( newRange.isIntersect(c) ) newRange = newRange.merge(c)
-                    else newCounted += c
-                }
-                newCounted += newRange
-                counted = newCounted
-            } else {
-                counted += r
+            var range = r
+            while (true) {
+                val p = merge(range, counted)
+                counted = p.first
+                if (p.second == null) break
+                range = p.second!!
             }
         }
         return counted.sumOf { c -> c.count()}
@@ -49,7 +57,6 @@ class Day05Test {
             }
         }
         return freshCount to countRanges(freshRanges)
-        assertEquals(3, freshCount) // 513 - my answer
     }
 
     @Test
