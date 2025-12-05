@@ -29,10 +29,10 @@ class Day05Test {
         return result
     }
 
-    fun findIntersect(ranges: Collection<Range>): Pair<Range,Range>? {
+    fun findIntersect(ranges: Collection<Range>): Pair<Range, Range>? {
         for (r1 in ranges) {
             for (r2 in ranges) {
-                if (r1 == r2 ) continue
+                if (r1 == r2) continue
                 if (r1.isIntersect(r2)) return r1 to r2
             }
         }
@@ -41,13 +41,12 @@ class Day05Test {
 
     // answer 2
     fun countRanges(ranges: Collection<Range>): Long {
-        var counted: Collection<Range> = listOf() // modified from original
+        var counted: Collection<Range> = listOf()
         for (r in ranges) {
             counted = merge(r, counted)
         }
         while (true) {
-            val crossed = findIntersect(counted)
-            if (crossed == null) break
+            val crossed = findIntersect(counted) ?: break
             val newRange = crossed.first.merge(crossed.second)
             counted = merge(newRange, counted)
         }
