@@ -76,6 +76,6 @@ class Day05Test {
     fun solution() {
         val result = solution("05")
         assertEquals(513, result.first)
-        assertEquals(339668510830757, result.second) // too high - 351272315451986, 349958946031224
+        assertEquals(339668510830757, result.second)
     }
 }
