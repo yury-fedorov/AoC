@@ -23,15 +23,15 @@ class Day04Test {
         return line[p.x]
     }
 
-    fun at2(map: List<String>, p: Position, removed: Set<Position>): Char {
+    fun at2(map: List<String>, p: Position, removed: Collection<Position>): Char {
         if (removed.contains(p)) return '.'
         return at(map, p)
     }
 
-    fun countRolls(map: List<String>, p: Position, removed: Set<Position>): Int =
+    fun countRolls(map: List<String>, p: Position, removed: Collection<Position>): Int =
         adjacentShifts.map { s -> at2(map, shift(p, s), removed) }.count { c -> c == roll }
 
-    fun accessibleRolls(map: List<String>, removed: Set<Position>): List<Position> {
+    fun accessibleRolls(map: List<String>, removed: Collection<Position>): List<Position> {
         val result = mutableListOf<Position>()
         for (y in 0..<map.size) {
             val line = map[y]
