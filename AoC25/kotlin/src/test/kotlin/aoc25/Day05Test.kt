@@ -4,44 +4,57 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Day05Test {
-    data class Range(val from:Long, val to:Long) {
+    data class Range(val from: Long, val to: Long) {
         fun isIn(value: Long): Boolean = value in from..to
         fun isIntersect(r: Range) = isIn(r.from) || isIn(r.to) // at least one side within other
-        fun merge(other:Range): Range = Range(Math.min(from, other.from), Math.max(to, other.to))
-        fun count() : Long = to - from + 1
+        fun merge(other: Range): Range = Range(Math.min(from, other.from), Math.max(to, other.to))
+        fun count(): Long = to - from + 1
     }
 
-    fun merge(r:Range, ranges: Collection<Range>):Pair<Collection<Range>,Range?> {
-        if (ranges.any{ c -> c.isIntersect(r)}) {
-            // we need to merge with at least one other range
-            val newCounted = mutableListOf<Range>()
-            var newRange = r
-            for (c in ranges) {
-                if ( newRange.isIntersect(c) ) newRange = newRange.merge(c)
-                else newCounted += c
-            }
-            newCounted.sortBy { r -> r.from } // for better debugging
-            return newCounted to newRange
+    fun merge(r: Range, ranges: Collection<Range>): Collection<Range> {
+        val newCounted = mutableListOf<Range>()
+        var wasAnyMerge = false
+        var newRange = r
+        for (c in ranges) {
+            if (newRange.isIntersect(c)) {
+                newRange = newRange.merge(c)
+                wasAnyMerge = true
+            } else newCounted += c
         }
-        return ranges + r to null
+        if (wasAnyMerge) {
+            return merge(newRange, newCounted).toMutableList()
+        }
+        val result = (ranges + r).toMutableList()
+        result.sortBy { r -> r.from } // for better debugging
+        return result
+    }
+
+    fun findIntersect(ranges: Collection<Range>): Pair<Range,Range>? {
+        for (r1 in ranges) {
+            for (r2 in ranges) {
+                if (r1 == r2 ) continue
+                if (r1.isIntersect(r2)) return r1 to r2
+            }
+        }
+        return null
     }
 
     // answer 2
-    fun countRanges(ranges:Collection<Range>) : Long {
+    fun countRanges(ranges: Collection<Range>): Long {
         var counted: Collection<Range> = listOf() // modified from original
         for (r in ranges) {
-            var range = r
-            while (true) {
-                val p = merge(range, counted)
-                counted = p.first
-                if (p.second == null) break
-                range = p.second!!
-            }
+            counted = merge(r, counted)
         }
-        return counted.sumOf { c -> c.count()}
+        while (true) {
+            val crossed = findIntersect(counted)
+            if (crossed == null) break
+            val newRange = crossed.first.merge(crossed.second)
+            counted = merge(newRange, counted)
+        }
+        return counted.sumOf { c -> c.count() }
     }
 
-    fun solution(data:String) : Pair<Int,Long> {
+    fun solution(data: String): Pair<Int, Long> {
         val list = IOUtil.input(data)
         val freshRanges = mutableListOf<Range>()
         var freshCount = 0
@@ -53,7 +66,7 @@ class Day05Test {
                 freshRanges += Range(ab.first().toLong(), ab.last().toLong())
             } else {
                 val value = line.toLong()
-                if ( freshRanges.any{r -> r.isIn(value)} ) freshCount++
+                if (freshRanges.any { r -> r.isIn(value) }) freshCount++
             }
         }
         return freshCount to countRanges(freshRanges)
@@ -70,6 +83,6 @@ class Day05Test {
     fun solution() {
         val result = solution("05")
         assertEquals(513, result.first)
-        assertEquals(0, result.second) // too high - 351272315451986
+        assertEquals(339668510830757, result.second) // too high - 351272315451986, 349958946031224
     }
 }
