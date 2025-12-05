@@ -2,7 +2,7 @@
 name = "aoc17"
 version = "1.0.0"
 authors = ["Yury FEDOROV <yury.fedorov@gmail.com>"]
-edition = "2021" # TODO - migrate to 2024 when it is stabilized
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -11,7 +11,7 @@ fn parse_line(line: &str) -> (i32, i32) {
 }
 
 fn severity(map: &HashMap<i32, i32>, caught: &HashSet<i32>) -> i32 {
-    let r: Vec<i32> = caught.into_iter().map(|c| (map[c] * c)).collect();
+    let r: Vec<i32> = caught.into_iter().map(|c| map[c] * c).collect();
     r.into_iter().sum()
 }
 
