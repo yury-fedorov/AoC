@@ -9,15 +9,15 @@ class Day06Test {
 
     fun solution(data: String): Pair<Long, Long> {
         val list = IOUtil.input(data)
-        val splitted :List<List<String>> = list.map { parseLine(it) }.toList()
-        val sizes = splitted.map{ it.size }.groupBy { it }
+        val split: List<List<String>> = list.map { parseLine(it) }.toList()
+        val sizes = split.map { it.size }.groupBy { it }
         assertEquals(1, sizes.size)
         var answer1 = 0L
-        val n : Int = sizes.keys.first()
-        for (i in 0 ..< n ) {
-            val operation = splitted.last()[i]
-            var total = splitted.first()[i].toLong()
-            for ( j in splitted.drop(1).dropLast(1) ) {
+        val n: Int = sizes.keys.first()
+        for (i in 0..<n) {
+            val operation = split.last()[i]
+            var total = split.first()[i].toLong()
+            for (j in split.drop(1).dropLast(1)) {
                 val value = j[i].toLong()
                 when (operation) {
                     "*" -> total *= value
@@ -26,20 +26,52 @@ class Day06Test {
             }
             answer1 += total
         }
-        return answer1 to 0L
+
+        var answer2 = 0L
+        val columns =
+            list.last().withIndex().filter { (_, char) -> !char.isWhitespace() }.map { (index, char) -> index to char }
+                .toList()
+        val numbers = list.dropLast(1)
+        val b: List<Int> = columns.drop(1).map { p -> p.first - 1 }.toList() + (numbers.maxOf { l -> l.length })
+        val ab = columns.map { p -> p.first }.zip(b)
+        for (i in ab) {
+            val startIndex = i.first
+            val endIndex = i.second // not included
+            val operation = list.last().substring(startIndex, startIndex + 1).trim()
+            var total = when (operation) {
+                "*" -> 1L
+                "+" -> 0L
+                else -> throw IllegalStateException("Unknown operation: $operation")
+            }
+            for (j in startIndex..<endIndex) {
+                val str = String(numbers.filter { l -> j < l.length }.map { l -> l[j] }.toCharArray())
+                val n = str.trim()
+                if (n.isEmpty()) {
+                    continue
+                }
+                val value = n.toLong()
+                // println(value)
+                when (operation) {
+                    "*" -> total *= value
+                    "+" -> total += value
+                }
+            }
+            answer2 += total
+        }
+        return answer1 to answer2
     }
 
     @Test
     fun test() {
         val result = solution("06-1")
         assertEquals(4277556L, result.first)
-        assertEquals(0L, result.second)
+        assertEquals(3263827L, result.second)
     }
 
     @Test
     fun solution() {
         val result = solution("06")
         assertEquals(5381996914800L, result.first)
-        assertEquals(0L, result.second)
+        assertEquals(9627174150897L, result.second)
     }
 }
