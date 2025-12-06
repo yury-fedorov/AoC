@@ -41,8 +41,7 @@ class Day06Test {
             var total: Long? = null
             for (j in startIndex..<endIndex) {
                 val str = String(numbers.filter { l -> j < l.length }.map { l -> l[j] }.toCharArray())
-                val n = str.trim()
-                val value = n.toLong()
+                val value = str.trim().toLong()
                 if (total == null) total = value
                 else
                     when (operation) {
