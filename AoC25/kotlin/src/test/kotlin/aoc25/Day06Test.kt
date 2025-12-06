@@ -38,25 +38,19 @@ class Day06Test {
             val startIndex = i.first
             val endIndex = i.second // not included
             val operation = list.last().substring(startIndex, startIndex + 1).trim()
-            var total = when (operation) {
-                "*" -> 1L
-                "+" -> 0L
-                else -> throw IllegalStateException("Unknown operation: $operation")
-            }
+            var total: Long? = null
             for (j in startIndex..<endIndex) {
                 val str = String(numbers.filter { l -> j < l.length }.map { l -> l[j] }.toCharArray())
                 val n = str.trim()
-                if (n.isEmpty()) {
-                    continue
-                }
                 val value = n.toLong()
-                // println(value)
-                when (operation) {
-                    "*" -> total *= value
-                    "+" -> total += value
-                }
+                if (total == null) total = value
+                else
+                    when (operation) {
+                        "*" -> total *= value
+                        "+" -> total += value
+                    }
             }
-            answer2 += total
+            answer2 += total!!
         }
         return answer1 to answer2
     }
