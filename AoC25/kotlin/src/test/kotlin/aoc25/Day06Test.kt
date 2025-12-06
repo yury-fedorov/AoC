@@ -7,6 +7,12 @@ class Day06Test {
 
     fun parseLine(line: String): List<String> = line.split("\\s+".toRegex()).filter { it.isNotBlank() }.toList()
 
+    fun total(numbers: Collection<Long>, operation: String): Long = when (operation) {
+        "+" -> numbers.sum()
+        "*" -> numbers.reduce { acc, n -> acc * n }
+        else -> throw IllegalStateException()
+    }
+
     fun solution(data: String): Pair<Long, Long> {
         val list = IOUtil.input(data)
         val split: List<List<String>> = list.map { parseLine(it) }.toList()
@@ -16,15 +22,8 @@ class Day06Test {
         val n: Int = sizes.keys.first()
         for (i in 0..<n) {
             val operation = split.last()[i]
-            var total = split.first()[i].toLong()
-            for (j in split.drop(1).dropLast(1)) {
-                val value = j[i].toLong()
-                when (operation) {
-                    "*" -> total *= value
-                    "+" -> total += value
-                }
-            }
-            answer1 += total
+            val elements = split.dropLast(1).map { it[i].toLong() }
+            answer1 += total(elements, operation)
         }
 
         var answer2 = 0L
@@ -38,18 +37,12 @@ class Day06Test {
             val startIndex = i.first
             val endIndex = i.second // not included
             val operation = list.last().substring(startIndex, startIndex + 1).trim()
-            var total: Long? = null
+            val elements = mutableListOf<Long>()
             for (j in startIndex..<endIndex) {
                 val str = String(numbers.filter { l -> j < l.length }.map { l -> l[j] }.toCharArray())
-                val value = str.trim().toLong()
-                if (total == null) total = value
-                else
-                    when (operation) {
-                        "*" -> total *= value
-                        "+" -> total += value
-                    }
+                elements += str.trim().toLong()
             }
-            answer2 += total!!
+            answer2 += total(elements, operation)
         }
         return answer1 to answer2
     }
