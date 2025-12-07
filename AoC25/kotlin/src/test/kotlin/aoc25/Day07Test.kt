@@ -7,42 +7,37 @@ class Day07Test {
 
     fun solution(data: String): Pair<Long, Long> {
         val list = IOUtil.input(data)
-        // val splitterCount = list.sumOf { line -> line.filter { c -> c == '^' }.length }.toLong() // fast approx
         var answer1 = 0L
         var sources = mutableSetOf( list.first().indexOf('S') )
-        // var paths = sources.map{ p -> listOf(p)}.toMutableSet() // part 2
         var paths = sources.associateWith { p -> 1L }
         for (line in list.drop(1)) {
             var newSources = mutableSetOf<Int>()
             var hitSplitterCount = mutableSetOf<Int>()
             var newPaths = mutableMapOf<Int,Long>()
+            val addToPaths = { src:Int, split:Int ->
+                val count:Long = newPaths.getOrDefault(split,0L)
+                val prevCount:Long = paths[src]!!
+                newPaths[split] = (count + prevCount)
+            }
             for (src in sources) {
                 val ch = line[src]
-                // val selected = paths.filter{ l -> l.last() == src }
                 if (ch == '^') {
                     val splits = listOf(src - 1, src + 1)
                     newSources.addAll(splits)
                     hitSplitterCount += src
                     // part 2
                     for (split:Int in splits) {
-                        val count:Long = newPaths.getOrDefault(split,0L)
-                        val prevCount:Long = paths[src]!!
-                        newPaths[split] = (count + prevCount)
+                        addToPaths(src,split)
                     }
-                    // newPaths.addAll( selected.map{ s -> s + (src + 1) } )
                 } else {
                     newSources += src
-                    val count:Long = newPaths.getOrDefault(src,0L)
-                    val prevCount:Long = paths[src]!!
-                    newPaths[src] = (count + prevCount)
+                    addToPaths(src,src)
                 }
             }
             answer1 += hitSplitterCount.size
             sources = newSources
             paths = newPaths
         }
-        // val lastLineCount = sources.size.toLong()
-        // return answer1 to paths.size.toLong()
         return answer1 to paths.values.sum()
     }
 
@@ -57,6 +52,6 @@ class Day07Test {
     fun solution() {
         val result = solution("07")
         assertEquals(1516L, result.first) // max - 1640
-        assertEquals(0L, result.second) // position 5377
+        assertEquals(1393669447690L, result.second) // position 5377
     }
 }
