@@ -37,7 +37,7 @@ public class Day05Test
             if ((dx != 0 && x == line.B.X) || (dy != 0 && y == line.B.Y)) break;
             x += dx;
             y += dy;
-        };
+        }
         return result;
     }
 

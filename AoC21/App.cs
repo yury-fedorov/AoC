@@ -1,4 +1,5 @@
 ﻿namespace AoC21;
+
 public class App
 {
     public static string Directory

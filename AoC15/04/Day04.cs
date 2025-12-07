@@ -23,7 +23,7 @@ namespace AoC15
         public void Solution()
         {
             const string start = "yzbqklnj";
-            Assert.Equal(282749, Answer(start,"00000"));
+            Assert.Equal(282749, Answer(start, "00000"));
             Assert.Equal(9962624, Answer(start, "000000"));
         }
     }

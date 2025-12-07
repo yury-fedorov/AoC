@@ -104,7 +104,7 @@ namespace AdventOfCode2018.Day12
                         {
                             r.Apply(g1m, i);
                             break; // rule found
-                        };
+                        }
                     }
                 }
                 m = g1m;
