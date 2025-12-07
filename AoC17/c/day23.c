@@ -89,9 +89,9 @@ l7:
 
 // TEST_CASE( "Day23", "[23]" )
 int main(void) {
-  const auto a1 = solution(true);
-  assert(a1 == 4225);
+  const auto answer1 = solution(true);
+  assert(answer1 == 4225);
 
-  const auto a2 = solution(false);
-  assert(a2 == 905);
+  const auto answer2 = solution(false);
+  assert(answer2 == 905);
 }
