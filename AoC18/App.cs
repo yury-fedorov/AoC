@@ -12,7 +12,7 @@
                     while (!cd.EndsWith("AoC18"))
                     {
                         var pd = System.IO.Directory.GetParent(cd);
-                        cd = pd.FullName;
+                        cd = pd!.FullName;
                     }
                 }
                 else
