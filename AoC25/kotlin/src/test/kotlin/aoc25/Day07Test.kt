@@ -8,15 +8,15 @@ class Day07Test {
     fun solution(data: String): Pair<Long, Long> {
         val list = IOUtil.input(data)
         var answer1 = 0L
-        var sources = mutableSetOf( list.first().indexOf('S') )
+        var sources = mutableSetOf(list.first().indexOf('S'))
         var paths = sources.associateWith { p -> 1L }
         for (line in list.drop(1)) {
             var newSources = mutableSetOf<Int>()
             var hitSplitterCount = mutableSetOf<Int>()
-            var newPaths = mutableMapOf<Int,Long>()
-            val addToPaths = { src:Int, split:Int ->
-                val count:Long = newPaths.getOrDefault(split,0L)
-                val prevCount:Long = paths[src]!!
+            var newPaths = mutableMapOf<Int, Long>()
+            val addToPaths = { src: Int, split: Int ->
+                val count: Long = newPaths.getOrDefault(split, 0L)
+                val prevCount: Long = paths[src]!!
                 newPaths[split] = (count + prevCount)
             }
             for (src in sources) {
@@ -25,13 +25,10 @@ class Day07Test {
                     val splits = listOf(src - 1, src + 1)
                     newSources.addAll(splits)
                     hitSplitterCount += src
-                    // part 2
-                    for (split:Int in splits) {
-                        addToPaths(src,split)
-                    }
+                    splits.forEach { split -> addToPaths(src, split) } // part 2
                 } else {
                     newSources += src
-                    addToPaths(src,src)
+                    addToPaths(src, src)
                 }
             }
             answer1 += hitSplitterCount.size
