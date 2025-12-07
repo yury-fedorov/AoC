@@ -1,13 +1,15 @@
 package aoc19;
 
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.Map;
-import java.util.List;
-import java.util.Comparator;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Day08Test {
 
@@ -16,7 +18,9 @@ public class Day08Test {
     private static final int COUNT_ON_ONE_LEVEL = WIDTH * HEIGHT;
 
     // Type aliases for clarity
-    private static class LevelData extends java.util.HashMap<Character, Integer> {}
+    private static class LevelData extends java.util.HashMap<Character, Integer> {
+    }
+
     private static String Image; // A String holds the image data
 
     // C++ LevelData count_on_level( const Image & image, int from, int count )
@@ -90,7 +94,7 @@ public class Day08Test {
                 .toList(); // Java 16+ .toList()
     }
 
-    @Tests
+    @Test
     // Equivalent of the C++ TEST_CASE block
     public void solution() {
         // Assuming '../data/day08.txt' exists relative to where the program runs
