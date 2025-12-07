@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
+
 
 public class Day06Test {
 
@@ -116,35 +118,9 @@ public class Day06Test {
 
     @Test
     public void solution() {
-        // --- Setup (Equivalent to the C++ TEST_CASE loading data) ---
         List<String> data = IOUtil.input("Day06");
-        // Assuming the file content is a list of "AAA)BBB" lines.
-
-        if (data.isEmpty()) {
-            System.out.println("Could not load data. Exiting.");
-            return;
-        }
-
         Day06 solver = new Day06(data);
-
-        // --- SECTION "06-1" ---
-        int result1 = solver.answer1();
-        int expected1 = 312697; // C++ Requirement
-
-        System.out.println("--- Answer 1 ---");
-        System.out.println("Calculated: " + result1);
-        System.out.println("Expected: " + expected1);
-        System.out.println("Result: " + (result1 == expected1 ? "PASS" : "FAIL"));
-
-        System.out.println("\n----------------\n");
-
-        // --- SECTION "06-2" ---
-        int result2 = solver.answer2();
-        int expected2 = 466; // C++ Requirement
-
-        System.out.println("--- Answer 2 ---");
-        System.out.println("Calculated: " + result2);
-        System.out.println("Expected: " + expected2);
-        System.out.println("Result: " + (result2 == expected2 ? "PASS" : "FAIL"));
+        assertEquals("answer 1", 312697, solver.answer1());
+        assertEquals("answer 2", 466, solver.answer2());
     }
 }

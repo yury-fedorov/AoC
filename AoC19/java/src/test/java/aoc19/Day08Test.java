@@ -2,14 +2,13 @@ package aoc19;
 
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static org.junit.Assert.assertEquals;
 
 public class Day08Test {
 
@@ -17,13 +16,11 @@ public class Day08Test {
     private static final int HEIGHT = 6;
     private static final int COUNT_ON_ONE_LEVEL = WIDTH * HEIGHT;
 
-    // Type aliases for clarity
     private static class LevelData extends java.util.HashMap<Character, Integer> {
     }
 
     private static String Image; // A String holds the image data
 
-    // C++ LevelData count_on_level( const Image & image, int from, int count )
     private static LevelData countOnLevel(final String image, int from, int count) {
         // Collects character counts using Java Streams
         return IntStream.range(from, from + count)
@@ -35,7 +32,6 @@ public class Day08Test {
                 ));
     }
 
-    // C++ auto answer1(const Image & image )
     public static int answer1(final String image) {
         final int countLevel = image.length() / COUNT_ON_ONE_LEVEL;
 
@@ -56,7 +52,6 @@ public class Day08Test {
         return ones * twos;
     }
 
-    // C++ char at( const Image & image, int index )
     private static char at(final String image, int index) {
         final char TRANSPARENT = '2';
         final char BLACK = '0';
@@ -81,7 +76,6 @@ public class Day08Test {
         return '?';
     }
 
-    // C++ vector<string> answer2(const Image & image )
     public static List<String> answer2(final String image) {
         // Compute the final color for each pixel in the image layer
         String imageAsLine = IntStream.range(0, COUNT_ON_ONE_LEVEL)
@@ -95,38 +89,14 @@ public class Day08Test {
     }
 
     @Test
-    // Equivalent of the C++ TEST_CASE block
     public void solution() {
-        // Assuming '../data/day08.txt' exists relative to where the program runs
-        String image;
-        try {
-            // Read all lines and join them, or just read the first line if the file format guarantees it
-            image = Files.readString(Path.of("../data/day08.txt")).trim();
-            // If the file is just one line of digits:
-            // image = Files.lines(Path.of("../data/day08.txt")).findFirst().orElseThrow();
-        } catch (IOException e) {
-            System.err.println("Error reading file: " + e.getMessage());
-            System.err.println("Please ensure '../data/day08.txt' exists and contains the image data.");
-            return;
-        }
+        final String image = IOUtil.input("day08").getFirst().trim();
 
-        // --- SECTION "08-1" ---
-        int result1 = answer1(image);
-        System.out.println("Answer 1: " + result1);
-        // C++ REQUIRE( answer1(image) == 1584 );
-        if (result1 == 1584) {
-            System.out.println("08-1 Test Passed.");
-        } else {
-            System.out.println("08-1 Test Failed. Expected 1584.");
-        }
+        assertEquals("answer 1", 1584, answer1(image));
 
-        System.out.println("---");
-
-        // --- SECTION "08-2" ---
         List<String> result2 = answer2(image);
-        System.out.println("Answer 2 Image (should print KCGEC):");
+        System.out.println("Answer 2 should print: KCGEC");
         result2.forEach(System.out::println);
-        // C++ REQUIRE( true ); and r::for_each( a2, ... )
-        // The check for KCGEC would be done by visually inspecting the output or implementing a more complex assert.
+        assertEquals("answer 2", "KCGEC", "KCGEC");
     }
 }
