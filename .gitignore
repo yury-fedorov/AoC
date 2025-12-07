@@ -17,7 +17,7 @@ AoC15/Makefile
 AoC16/target/
 AoC17/rust/target/
 AoC17/rust/Cargo.lock
-AoC17/cpp/aoc17
+AoC17/c/aoc17
 AoC19/cpp/aoc19.dir/
 AoC19/cpp/x64/
 AoC19/java/target/
