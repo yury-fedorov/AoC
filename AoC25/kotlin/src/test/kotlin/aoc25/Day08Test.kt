@@ -1,5 +1,6 @@
 package aoc25
 
+import kotlin.collections.associateWith
 import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.test.Test
@@ -28,13 +29,19 @@ class Day08Test {
 
     fun sort(a: Point, b: Point): Pair<Point, Point> = if (compare(a, b) < 0) Pair(a, b) else Pair(b, a)
 
+    fun withDistance(a: Point, list: Collection<Point>): Map<Point, Double> = list.associateWith { p -> distance(a, p) }
+
     fun solution(data: String): Pair<Long, Long> {
         val list = IOUtil.input(data).map { l -> parse(l) }.toList()
+        val dm = mutableMapOf<Point,Map<Point,Double>>()
         for (a in list) {
-            for (b in list) {
-                if (a == b) continue
-            }
+            val c = list.filter{p -> p != a}.toSet()
+            val pd = withDistance(a, c)
+            dm[a] = pd
         }
+        val minDistanceFromPoint = dm.map{ p -> Pair( p.key, p.value.values.min()) }.toMap()
+        val minDistance = minDistanceFromPoint.values.min()
+        val points = minDistanceFromPoint.filter{ p -> p.value == minDistance }.map{ p -> p.key }
         return 0L to 0L
     }
 
