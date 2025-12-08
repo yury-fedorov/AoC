@@ -9,6 +9,7 @@ import kotlin.test.assertEquals
 class Day08Test {
 
     data class Point(val x: Int, val y: Int, val z: Int) {}
+    // typealias Graph = Pair<Point,Point>
 
     fun p2(n: Number): Double = n.toDouble().pow(2.0)
 
@@ -29,32 +30,46 @@ class Day08Test {
 
     fun sort(a: Point, b: Point): Pair<Point, Point> = if (compare(a, b) < 0) Pair(a, b) else Pair(b, a)
 
-    fun withDistance(a: Point, list: Collection<Point>): Map<Point, Double> = list.associateWith { p -> distance(a, p) }
+    // fun withDistance(a: Point, list: Collection<Point>): Map<Point, Double> = list.associateWith { p -> distance(a, p) }
 
-    fun solution(data: String): Pair<Long, Long> {
+    fun nClosest(data:String, n: Int): Collection<Pair<Point, Point>> {
         val list = IOUtil.input(data).map { l -> parse(l) }.toList()
-        val dm = mutableMapOf<Point,Map<Point,Double>>()
-        for (a in list) {
-            val c = list.filter{p -> p != a}.toSet()
-            val pd = withDistance(a, c)
-            dm[a] = pd
+        val pairs = list.flatMap{ a -> list.filter{ b -> a != b }.map{ b -> sort(a,b) } }.toSet()
+        val pairsDistance = pairs.associateWith { p -> distance(p.first, p.second) }
+        val distances = pairsDistance.values.toSet().sorted().toList()
+        val result = mutableListOf<Pair<Point,Point>>()
+        for ( d in distances ) {
+            if ( result.size >= n) break;
+            result.addAll( pairsDistance.filter{ p -> p.value == d }.map{ p -> p.key } )
         }
-        val minDistanceFromPoint = dm.map{ p -> Pair( p.key, p.value.values.min()) }.toMap()
-        val minDistance = minDistanceFromPoint.values.min()
-        val points = minDistanceFromPoint.filter{ p -> p.value == minDistance }.map{ p -> p.key }
-        return 0L to 0L
+        return result
     }
 
-    @Test
+    fun group(graphs:Collection<Pair<Point,Point>>): Collection<Collection<Pair<Point,Point>>> {
+        val result = mutableListOf<Set<Pair<Point,Point>>>()
+        for (g in graphs) {
+            // TODO result.flatMap{ s -> s.flatMap }
+        }
+        return result
+    }
+
+    fun solution(data: String, n:Int): Pair<Long, Long> {
+        val graphs = nClosest(data, n)
+        val biggest = group(graphs).map{ c: Collection<Pair<Point,Point>> -> c.size }.sortedDescending().take(3)
+        val answer1 = biggest.reduce { acc, n -> acc * n }
+        return answer1.toLong() to 0L
+    }
+
+    // @Test
     fun test() {
-        val result = solution("08-1")
+        val result = solution("08-1", 10)
         assertEquals(0L, result.first)
         assertEquals(0L, result.second)
     }
 
-    @Test
+    // @Test
     fun solution() {
-        val result = solution("08")
+        val result = solution("08", 1_000)
         assertEquals(0L, result.first)
         assertEquals(0L, result.second)
     }
