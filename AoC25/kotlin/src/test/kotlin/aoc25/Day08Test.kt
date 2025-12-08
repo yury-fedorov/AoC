@@ -9,7 +9,8 @@ import kotlin.test.assertEquals
 class Day08Test {
 
     data class Point(val x: Int, val y: Int, val z: Int) {}
-    // typealias Graph = Pair<Point,Point>
+    typealias Graph = Pair<Point, Point>
+    typealias Graphs = Collection<Graph>
 
     fun p2(n: Number): Double = n.toDouble().pow(2.0)
 
@@ -28,34 +29,49 @@ class Day08Test {
         return a.z.compareTo(b.z)
     }
 
-    fun sort(a: Point, b: Point): Pair<Point, Point> = if (compare(a, b) < 0) Pair(a, b) else Pair(b, a)
+    fun sort(a: Point, b: Point): Graph = if (compare(a, b) < 0) Graph(a, b) else Graph(b, a)
 
     // fun withDistance(a: Point, list: Collection<Point>): Map<Point, Double> = list.associateWith { p -> distance(a, p) }
 
-    fun nClosest(data:String, n: Int): Collection<Pair<Point, Point>> {
+    fun nClosest(data: String, n: Int): Graphs {
         val list = IOUtil.input(data).map { l -> parse(l) }.toList()
-        val pairs = list.flatMap{ a -> list.filter{ b -> a != b }.map{ b -> sort(a,b) } }.toSet()
+        val pairs = list.flatMap { a -> list.filter { b -> a != b }.map { b -> sort(a, b) } }.toSet()
         val pairsDistance = pairs.associateWith { p -> distance(p.first, p.second) }
         val distances = pairsDistance.values.toSet().sorted().toList()
-        val result = mutableListOf<Pair<Point,Point>>()
-        for ( d in distances ) {
-            if ( result.size >= n) break;
-            result.addAll( pairsDistance.filter{ p -> p.value == d }.map{ p -> p.key } )
+        val result = mutableListOf<Pair<Point, Point>>()
+        for (d in distances) {
+            if (result.size >= n) break;
+            result.addAll(pairsDistance.filter { p -> p.value == d }.map { p -> p.key })
         }
         return result
     }
 
-    fun group(graphs:Collection<Pair<Point,Point>>): Collection<Collection<Pair<Point,Point>>> {
-        val result = mutableListOf<Set<Pair<Point,Point>>>()
-        for (g in graphs) {
-            // TODO result.flatMap{ s -> s.flatMap }
+    fun contains(point: Point, graphs: Graphs): Boolean = graphs.any { g -> point === g.first || point === g.second }
+
+    fun group(graphs: Collection<Graph>): Collection<Graphs> {
+        val result = mutableListOf<Set<Graph>>()
+        for (graph in graphs) {
+            val s = result.find { g -> contains(graph.first, g) || contains(graph.second, g) }
+            if (s != null) {
+                result.remove(s)
+                val s1 = result.findLast { g -> contains(graph.first, g) || contains(graph.second, g) }
+                if (s1 != null) {
+                    // merging s and s1
+                    result.remove(s1)
+                    result += (s + s1 + graph)
+                } else
+                    result += (s + graph)
+            } else {
+                result += setOf(graph)
+            }
         }
         return result
     }
 
-    fun solution(data: String, n:Int): Pair<Long, Long> {
+    fun solution(data: String, n: Int): Pair<Long, Long> {
         val graphs = nClosest(data, n)
-        val biggest = group(graphs).map{ c: Collection<Pair<Point,Point>> -> c.size }.sortedDescending().take(3)
+        val g = group(graphs)
+        val biggest = g.map { c: Collection<Graph> -> c.size }.sortedDescending().take(3)
         val answer1 = biggest.reduce { acc, n -> acc * n }
         return answer1.toLong() to 0L
     }
