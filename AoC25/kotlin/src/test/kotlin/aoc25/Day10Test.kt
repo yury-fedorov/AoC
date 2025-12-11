@@ -63,7 +63,7 @@ class Day10Test {
         val next = mutableSetOf<String>()
         for (b in machine.buttons) {
             val newState = push(state, b)
-            if (newState === machine.goal) return pushesDone + 1
+            if (newState == machine.goal) return pushesDone + 1
             next += newState
         }
         return next.map { state: String -> shortest(machine, state, pushesDone + 1, pushesToDo - 1) }
@@ -73,7 +73,7 @@ class Day10Test {
     fun solution(data: String): Pair<Long, Long> {
         val list = IOUtil.input(data).map { l -> parse(l) }
         var answer1 = 0L
-        val maxPushes = 5L
+        val maxPushes = 10L
         for (machine in list) {
             val r = shortest(machine, init(machine.goal), 0L, maxPushes)
             if (r == null) {
@@ -91,11 +91,11 @@ class Day10Test {
         assertEquals(machine.goal, state)
     }
 
-    // @Test
+    @Test
     fun test() {
         val result = solution("10-1")
-        assertEquals(7L, result.first) // TODO
-        assertEquals(0L, result.second)
+        assertEquals(7L, result.first)
+        assertEquals(0L, result.second) // TODO
     }
 
     // @Test
