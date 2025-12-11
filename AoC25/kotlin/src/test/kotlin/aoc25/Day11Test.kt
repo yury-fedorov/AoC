@@ -19,38 +19,52 @@ class Day11Test {
         return Links(fromOther.first(), to)
     }
 
-    fun explore(graph: Graph, from: Node, path: Path, found: MutableList<Path>) {
+    fun explore(graph: Graph, from: Node, path: Path, found: MutableList<Path>, toFilter: Boolean) {
         val nextList = graph[from] ?: return
         for (next in nextList) {
             val path1 = path + next
             if (next == OUT) {
+                if (toFilter)
+                    if (path1.contains("dac") && path1.contains("fft"))
+                        // to be added to the result
+                    else
+                        continue // we skip this path
                 found += path1
             } else if (path.contains(next)) {
                 // we have already been in this node
             } else {
-                explore(graph, next, path1, found)
+                explore(graph, next, path1, found, toFilter)
             }
         }
     }
 
-    fun solution(data: String): Pair<Long, Long> {
-        val graph = IOUtil.input(data).associate { parse(it) }
-        val result = mutableListOf<Path>()
-        explore(graph, YOU, listOf(), result)
-        return result.size.toLong() to 0L
+    fun createGraph(data:String): Graph = IOUtil.input(data).associate { parse(it) }
+
+    fun answer1(graph: Graph): Int {
+        val answer1 = mutableListOf<Path>()
+        explore(graph, YOU, listOf(), answer1, false)
+        return answer1.size
     }
+
+    fun answer2(graph: Graph): Int {
+        val answer2 = mutableListOf<Path>()
+        explore(graph, "svr", listOf(), answer2, true)
+        return answer2.size
+    }
+
 
     @Test
     fun test() {
-        val result = solution("11-1") // TODO
-        assertEquals(5L, result.first)
-        assertEquals(0L, result.second)
+        val g1 = createGraph("11-1")
+        assertEquals(5, answer1(g1))
+        val g2 = createGraph("11-2")
+        assertEquals(2, answer2(g2))
     }
 
-    @Test
+    // @Test
     fun solution() {
-        val result = solution("11") // TODO
-        assertEquals(643L, result.first)
-        assertEquals(0L, result.second)
+        val graph = createGraph("11")
+        assertEquals(643, answer1(graph))
+        assertEquals(0, answer2(graph))
     }
 }
