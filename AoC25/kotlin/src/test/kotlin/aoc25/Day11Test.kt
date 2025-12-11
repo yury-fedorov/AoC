@@ -14,14 +14,14 @@ class Day11Test {
 
     @Test
     fun test() {
-        val result = solution("01-1") // TODO
+        val result = solution("11-1") // TODO
         assertEquals(0L, result.first)
         assertEquals(0L, result.second)
     }
 
     @Test
     fun solution() {
-        val result = solution("01") // TODO
+        val result = solution("11") // TODO
         assertEquals(0L, result.first)
         assertEquals(0L, result.second)
     }
