@@ -79,7 +79,7 @@ class Day08Test {
     // @Test
     fun test() {
         val result = solution("08-1", 10)
-        assertEquals(0L, result.first)
+        assertEquals(40L, result.first)
         assertEquals(0L, result.second)
     }
 
