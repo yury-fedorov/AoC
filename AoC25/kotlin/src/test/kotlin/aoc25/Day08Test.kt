@@ -71,7 +71,7 @@ class Day08Test {
     fun solution(data: String, n: Int): Pair<Long, Long> {
         val graphs = nClosest(data, n)
         val g = group(graphs)
-        val biggest = g.map { c: Collection<Graph> -> c.size }.sortedDescending().take(3)
+        val biggest = g.map { c: Graphs -> c.size }.sortedDescending().take(3)
         val answer1 = biggest.reduce { acc, n -> acc * n }
         return answer1.toLong() to 0L
     }
