@@ -73,7 +73,7 @@ class Day10Test {
     fun solution(data: String): Pair<Long, Long> {
         val list = IOUtil.input(data).map { l -> parse(l) }
         var answer1 = 0L
-        val maxPushes = 10L
+        val maxPushes = 8L
         for (machine in list) {
             val r = shortest(machine, init(machine.goal), 0L, maxPushes)
             if (r == null) {
@@ -98,10 +98,11 @@ class Day10Test {
         assertEquals(0L, result.second) // TODO
     }
 
-    // @Test
+    @Test
     fun solution() {
+        if (!IOUtil.isRunSlow) return
         val result = solution("10")
-        assertEquals(0L, result.first) // TODO
+        assertEquals(432L, result.first) // slow - takes 12m 56s
         assertEquals(0L, result.second)
     }
 }

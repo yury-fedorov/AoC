@@ -28,4 +28,6 @@ object IOUtil {
             throw RuntimeException("Error reading file: $file", e)
         }
     }
+
+    const val isRunSlow = false
 }
