@@ -71,22 +71,23 @@ class Day08Test {
     fun solution(data: String, n: Int): Pair<Long, Long> {
         val graphs = nClosest(data, n)
         val g = group(graphs)
-        val biggest = g.map { c: Graphs -> c.size }.sortedDescending().take(3)
+        val biggest =
+            g.map { c: Graphs -> c.flatMap { listOf(it.first, it.second) }.toSet().size }.sortedDescending().take(3)
         val answer1 = biggest.reduce { acc, n -> acc * n }
         return answer1.toLong() to 0L
     }
 
-    // @Test
+    @Test
     fun test() {
         val result = solution("08-1", 10)
         assertEquals(40L, result.first)
         assertEquals(0L, result.second)
     }
 
-    // @Test
+    @Test
     fun solution() {
         val result = solution("08", 1_000)
-        assertEquals(0L, result.first)
+        assertEquals(54_600L, result.first)
         assertEquals(0L, result.second)
     }
 }
