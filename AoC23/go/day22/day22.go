@@ -1,11 +1,12 @@
 package day22
 
 import (
+	"cmp"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices"
 )
 
 type Day22 struct{}
@@ -78,7 +79,7 @@ func areOverlapping(a, b []Point) bool {
 }
 
 func orderBricks(bricks []*Brick) {
-	slices.SortFunc(bricks, func(a, b *Brick) int { return aoc.Compare(a.bottom(), b.bottom()) })
+	slices.SortFunc(bricks, func(a, b *Brick) int { return cmp.Compare(a.bottom(), b.bottom()) })
 }
 
 func isInAir(b Brick, bricks []*Brick, idToSkip int) bool {
@@ -164,5 +165,5 @@ func (day Day22) Solve() aoc.Solution {
 	bricks := parseBricks(aoc.ReadFile("22"))
 	orderBricks(bricks)
 	fallDown(bricks)
-	return aoc.Solution{strconv.Itoa(solution1(bricks)), strconv.Itoa(solution2(bricks))}
+	return aoc.Solution{Part1: strconv.Itoa(solution1(bricks)), Part2: strconv.Itoa(solution2(bricks))}
 }

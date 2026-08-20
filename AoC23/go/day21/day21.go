@@ -1,11 +1,11 @@
 package day21
 
 import (
+	"maps"
 	"strconv"
 	"strings"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 )
 
 type Day21 struct{}
@@ -41,7 +41,7 @@ func (day Day21) Solve() aoc.Solution {
 	pp := map[Point]bool{start: true}
 	for i := 0; i < 64; i++ {
 		pp1 := make(map[Point]bool)
-		for _, p0 := range maps.Keys(pp) {
+		for p0 := range maps.Keys(pp) {
 			for _, dp := range Moves {
 				p1 := Point{x: p0.x + dp.x, y: p0.y + dp.y}
 				if isGardenPlot(m, p1) {

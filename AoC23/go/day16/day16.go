@@ -1,10 +1,10 @@
 package day16
 
 import (
+	"slices"
 	"strconv"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices" // Due to 1.20
 )
 
 type Day16 struct{}
@@ -17,7 +17,6 @@ var Right = Point{x: 1, y: 0}
 var Left = Point{x: -1, y: 0}
 var Up = Point{x: 0, y: -1}
 var Down = Point{x: 0, y: 1}
-var Directions = []Point{Right, Left, Up, Down}
 
 func next(p0 Point, direction Point) Point {
 	return Point{x: p0.x + direction.x, y: p0.y + direction.y}

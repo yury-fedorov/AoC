@@ -1,10 +1,10 @@
 package day11
 
 import (
+	"slices"
 	"strconv"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices" // Due to 1.20
 )
 
 type Day11 struct{}

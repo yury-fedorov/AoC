@@ -1,13 +1,14 @@
 package day19
 
 import (
+	"maps"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 )
 
 type Day19 struct{}
@@ -125,7 +126,7 @@ func uniqueOrdered(s []int) []int {
 	for _, v := range s {
 		r[v] = true
 	}
-	var result = maps.Keys(r)
+	var result = slices.Collect(maps.Keys(r))
 	sort.Ints(result)
 	return result
 }

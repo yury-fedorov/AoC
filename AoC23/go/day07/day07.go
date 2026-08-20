@@ -1,13 +1,13 @@
 package day07
 
 import (
+	"maps"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices" // Due to 1.20
 )
 
 // Order of the cards (lower index, more value)
@@ -30,7 +30,7 @@ func getType(hand []rune) HandType {
 	for _, c := range hand {
 		m[c]++
 	}
-	counts := maps.Values(m)
+	counts := slices.Collect(maps.Values(m))
 	slices.Sort(counts)
 	maxCount := counts[len(counts)-1]
 	differentLabels := len(m)
@@ -70,7 +70,7 @@ func getType2(hand []rune) HandType {
 		return FiveOfKind
 	}
 
-	counts := maps.Values(m)
+	counts := slices.Collect(maps.Values(m))
 	slices.Sort(counts)
 	maxCount := counts[len(counts)-1]
 
@@ -114,7 +114,7 @@ func compareHands(a, b []rune) int {
 	if hta != htb {
 		return aoc.Ifelse(hta < htb, 1, -1)
 	}
-	for i := 0; i < len(a); i++ {
+	for i := range a {
 		cc := compareCards(a[i], b[i])
 		if cc != 0 {
 			return cc
@@ -142,7 +142,7 @@ func compareHands2(a, b []rune) int {
 	if hta != htb {
 		return aoc.Ifelse(hta < htb, 1, -1)
 	}
-	for i := 0; i < len(a); i++ {
+	for i := range a {
 		cc := compareCards2(a[i], b[i])
 		if cc != 0 {
 			return cc
@@ -185,5 +185,5 @@ func (d Day07) Solve() aoc.Solution {
 		part2 += rank * hb.bet
 	}
 
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }

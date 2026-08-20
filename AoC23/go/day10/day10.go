@@ -3,10 +3,10 @@ package day10
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strconv"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices" // Due to 1.20
 )
 
 type Day10 struct{}

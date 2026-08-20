@@ -2,11 +2,11 @@ package day04
 
 import (
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices" // Due to 1.20
 )
 
 type Day04 struct{}
@@ -22,8 +22,8 @@ var r1 = regexp.MustCompile(`Card +(\d+): (.+) \| (.+)`)
 
 func parseNumbers(line string) []int {
 	var result []int
-	numbers := strings.Split(strings.TrimSpace(line), " ")
-	for _, n := range numbers {
+	numbers := strings.SplitSeq(strings.TrimSpace(line), " ")
+	for n := range numbers {
 		cleanN := strings.TrimSpace(n)
 		if len(cleanN) == 0 {
 			continue
@@ -104,5 +104,5 @@ func (d Day04) Solve() aoc.Solution {
 		part2 += won
 	}
 
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }

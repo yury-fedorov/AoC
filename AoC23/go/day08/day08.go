@@ -1,12 +1,12 @@
 package day08
 
 import (
+	"maps"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 )
 
 type NodeName string
@@ -71,7 +71,7 @@ func (d Day08) Solve() aoc.Solution {
 	}
 
 	var curNodes []Node
-	for _, name := range maps.Keys(n.nodes) {
+	for name := range maps.Keys(n.nodes) {
 		if strings.HasSuffix(string(name), "A") {
 			curNodes = append(curNodes, n.nodes[name])
 		}

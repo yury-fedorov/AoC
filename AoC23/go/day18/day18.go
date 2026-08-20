@@ -1,12 +1,14 @@
 package day18
 
 import (
+	"iter"
+	"maps"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 )
 
 type Day18 struct{}
@@ -38,8 +40,9 @@ func isIn(min Point, max Point, p Point) bool {
 	return min.x <= p.x && max.x >= p.x && min.y <= p.y && max.y >= p.y
 }
 
-func minMax(points []Point) (minPoint Point, maxPoint Point) {
+func minMax(pointSeq iter.Seq[Point]) (minPoint Point, maxPoint Point) {
 	var minP, maxP Point
+	points := slices.Collect(pointSeq)
 	minP = points[0]
 	maxP = points[0]
 	for _, p := range points {
@@ -127,7 +130,7 @@ func orderedGrid(m2 []Line, getZ func(Point) int) []int {
 		set[getZ(l.a)] = true
 		set[getZ(l.b)] = true
 	}
-	result := maps.Keys(set)
+	result := slices.Collect(maps.Keys(set))
 	sort.Ints(result)
 	return result
 }
@@ -137,7 +140,7 @@ func diff(s []int) []int {
 	s1 := s[1:]
 	n := len(s1)
 	result := make([]int, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		result[i] = s1[i] - s[i]
 	}
 	return result
@@ -271,7 +274,7 @@ func (day Day18) Solve() aoc.Solution {
 		// part 1 map initialization
 		d := Directions[dq[0]]
 		q := aoc.Atoi(dq[1])
-		for i := 0; i < q; i++ {
+		for range q {
 			p = move(p, d)
 			m[p] = Dug
 		}
@@ -289,5 +292,5 @@ func (day Day18) Solve() aoc.Solution {
 		m2 = append(m2, Line{p2, p2b})
 		p2 = p2b
 	}
-	return aoc.Solution{strconv.Itoa(part1(m)), strconv.Itoa(part2(m2))}
+	return aoc.Solution{Part1: strconv.Itoa(part1(m)), Part2: strconv.Itoa(part2(m2))}
 }
