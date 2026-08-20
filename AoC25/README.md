@@ -7,8 +7,6 @@
 
 ## TODO
 
-1. [Day 12: Christmas Tree Farm](https://adventofcode.com/2025/day/12) - 2 star - a lot to write
-
 ## Interesting Parts
 
 ## Tech Debt
