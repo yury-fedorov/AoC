@@ -147,17 +147,20 @@ def _answer2(registers: {str: bool}, formulas: [Formula]) -> str:
                 wrong.add(f.r)
 
         # Rule 2: Output is not zXX and inputs are not x/y -> cannot be XOR
-        if not f.r.startswith("z") and not (f.a.startswith("x") or f.a.startswith("y")) and not (f.b.startswith("x") or f.b.startswith("y")):
+        if not f.r.startswith("z") and not (f.a.startswith("x") or f.a.startswith("y")) and not (
+                f.b.startswith("x") or f.b.startswith("y")):
             if f.op == "XOR":
                 wrong.add(f.r)
 
         # Rule 3: XOR gate with x/y inputs (not 00) -> output must be input to another XOR gate
-        if f.op == "XOR" and (f.a.startswith("x") or f.a.startswith("y")) and not (f.a.endswith("00") or f.b.endswith("00")):
+        if f.op == "XOR" and (f.a.startswith("x") or f.a.startswith("y")) and not (
+                f.a.endswith("00") or f.b.endswith("00")):
             if not any(g.op == "XOR" and (g.a == f.r or g.b == f.r) for g in formulas):
                 wrong.add(f.r)
 
         # Rule 4: AND gate with x/y inputs (not 00) -> output must be input to an OR gate
-        if f.op == "AND" and (f.a.startswith("x") or f.a.startswith("y")) and not (f.a.endswith("00") or f.b.endswith("00")):
+        if f.op == "AND" and (f.a.startswith("x") or f.a.startswith("y")) and not (
+                f.a.endswith("00") or f.b.endswith("00")):
             if not any(g.op == "OR" and (g.a == f.r or g.b == f.r) for g in formulas):
                 wrong.add(f.r)
 
