@@ -1,10 +1,11 @@
 package day22
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/slices"
 )
 
 type Day22 struct{}
@@ -22,8 +23,8 @@ type Brick struct {
 	a, b Point3
 }
 
-func (brick *Brick) bottom() int { return aoc.Min(brick.a.z, brick.b.z) }
-func (brick *Brick) top() int    { return aoc.Max(brick.a.z, brick.b.z) }
+func (brick *Brick) bottom() int { return min(brick.a.z, brick.b.z) }
+func (brick *Brick) top() int    { return max(brick.a.z, brick.b.z) }
 
 func (brick *Brick) fallDown(dz int) {
 	brick.a.z -= dz

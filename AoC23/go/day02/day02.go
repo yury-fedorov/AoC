@@ -1,10 +1,11 @@
 package day02
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
 )
 
 type color string
@@ -76,9 +77,9 @@ func power(set extraction) int {
 func set(game game) extraction {
 	var r, g, b int
 	for _, e := range game.extractions {
-		r = aoc.Max(r, e[red])
-		g = aoc.Max(g, e[green])
-		b = aoc.Max(b, e[blue])
+		r = max(r, e[red])
+		g = max(g, e[green])
+		b = max(b, e[blue])
 	}
 	return rgb(r, g, b)
 }

@@ -2,9 +2,10 @@ package day20
 
 import (
 	"fmt"
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
 )
 
 type Day20 struct{}
@@ -126,7 +127,7 @@ func parseModule(line string) *ModuleProcessor {
 		n := name[1:]
 		mp = &Conjunction{AbstractModule{name: n, to: to}, initConjuctionMap(n)}
 	} else if strings.HasPrefix(name, "%") {
-		// flip flop
+		// flip-flop
 		mp = &FlipFlop{AbstractModule{name: name[1:], to: to}, false} // they are initially off
 	} else if name == BroadcasterModuleName {
 		// broadcaster

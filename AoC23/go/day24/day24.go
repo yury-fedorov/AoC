@@ -1,9 +1,10 @@
 package day24
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
 )
 
 type Day24 struct{}

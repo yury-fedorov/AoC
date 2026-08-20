@@ -1,10 +1,11 @@
 package day23
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/slices"
 )
 
 type Day23 struct{}
@@ -93,7 +94,7 @@ func paths(path0 []Point, part aoc.Part) int {
 		if n == pEnd {
 			return len(path0)
 		}
-		result = aoc.Max(result, paths(append(path0, n), part))
+		result = max(result, paths(append(path0, n), part))
 	}
 	return result
 }

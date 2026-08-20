@@ -1,9 +1,10 @@
 package day05
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
 )
 
 type Day05 struct{}
@@ -77,7 +78,7 @@ func calcMin(almanac Almanac, startSeed int64, length int64, c chan int64) {
 	initialLowest := almanac.seeds[0]
 	result := initialLowest
 	for seed := startSeed; seed < (startSeed + length); seed++ {
-		result = aoc.Min(result, seedToLocation(seed, almanac))
+		result = min(result, seedToLocation(seed, almanac))
 	}
 	c <- result
 }
@@ -88,7 +89,7 @@ func (d Day05) Solve() aoc.Solution {
 	initialLowest := almanac.seeds[0]
 	lowest := initialLowest
 	for _, seed := range almanac.seeds {
-		lowest = aoc.Min(lowest, seedToLocation(seed, almanac))
+		lowest = min(lowest, seedToLocation(seed, almanac))
 	}
 	part1 = int(lowest)
 
@@ -100,7 +101,7 @@ func (d Day05) Solve() aoc.Solution {
 		startSeed := s2[i]
 		length := s2[i+1]
 		for length > 0 {
-			curLength := aoc.Min(length, Chunk)
+			curLength := min(length, Chunk)
 			go calcMin(almanac, startSeed, curLength, c)
 			count++
 			length -= curLength
@@ -109,7 +110,7 @@ func (d Day05) Solve() aoc.Solution {
 	}
 	for i := 0; i < count; i++ {
 		curLowest := <-c
-		lowest = aoc.Min(lowest, curLowest)
+		lowest = min(lowest, curLowest)
 	}
 	part2 = int(lowest)
 

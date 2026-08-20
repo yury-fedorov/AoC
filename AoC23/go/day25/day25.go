@@ -2,10 +2,11 @@ package day25
 
 import (
 	"cmp"
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/slices"
 )
 
 type Day25 struct{}

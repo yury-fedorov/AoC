@@ -1,10 +1,11 @@
 package day06
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
 )
 
 type Day06 struct{}
@@ -49,8 +50,8 @@ func winningRange(record RaceResult) (int, int) {
 	for ct := 1; ct < record.time; ct++ {
 		d := distance(ct, record.time)
 		if d > record.distance {
-			ctMin = aoc.Min(ctMin, ct)
-			ctMax = aoc.Max(ctMax, ct)
+			ctMin = min(ctMin, ct)
+			ctMax = max(ctMax, ct)
 		}
 	}
 	return ctMin, ctMax

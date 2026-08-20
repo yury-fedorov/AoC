@@ -1,10 +1,11 @@
 package day01
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
 )
 
 type Day01 struct{}

@@ -1,11 +1,12 @@
 package day08
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/maps"
 )
 
 type NodeName string

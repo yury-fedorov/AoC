@@ -1,10 +1,11 @@
 package day21
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/maps"
 )
 
 type Day21 struct{}

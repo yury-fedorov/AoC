@@ -1,12 +1,13 @@
 package day19
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/maps"
 )
 
 type Day19 struct{}
@@ -116,7 +117,7 @@ func runWorkflow(workflows map[WorkflowName]Workflow, p Part) bool {
 
 // -- part 2 --
 
-// WorkflowStats contains border lines mentioned in workflows conditions.
+// WorkflowStats contains borderlines mentioned in workflows conditions.
 type WorkflowStats map[string][]int
 
 func uniqueOrdered(s []int) []int {
@@ -220,7 +221,7 @@ func (day Day19) Solve() aoc.Solution {
 	}
 
 	// part 2
-	// Global variables initialization.
+	// Global variables' initialization.
 	xr = pointsToRanges(uniqueOrdered(wstats["x"]))
 	mr = pointsToRanges(uniqueOrdered(wstats["m"]))
 	ar = pointsToRanges(uniqueOrdered(wstats["a"]))

@@ -2,10 +2,11 @@ package day10
 
 import (
 	"fmt"
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/slices" // Due to 1.20
 	"math"
 	"strconv"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/slices" // Due to 1.20
 )
 
 type Day10 struct{}
@@ -156,7 +157,7 @@ func countAdjCrossedBoarders(s []int, tiles []Tile, d Point) int {
 	for i := 0; i < n; i++ {
 		s1 := s[i]
 		if math.Abs(float64(s1-s0)) > 1.0 {
-			isStartEnd := aoc.Min(s1, s0) == minPathStep && aoc.Max(s1, s0) == maxPathStep
+			isStartEnd := min(s1, s0) == minPathStep && max(s1, s0) == maxPathStep
 			if !isStartEnd {
 				// end of sequence
 				tt = append(tt, tiles[head:i])
@@ -248,7 +249,7 @@ func solve(file string) (int, int) {
 
 	maxPathStep = minPathStep
 	for _, si := range path {
-		maxPathStep = aoc.Max(maxPathStep, si)
+		maxPathStep = max(maxPathStep, si)
 	}
 
 	part1 = len(path) / 2

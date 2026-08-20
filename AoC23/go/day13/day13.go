@@ -2,8 +2,9 @@ package day13
 
 import (
 	"fmt"
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
 	"strconv"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
 )
 
 type Day13 struct{}

@@ -1,11 +1,12 @@
 package day18
 
 import (
-	"github.com/yury-fedorov/AoC/AoC23/aoc"
-	"golang.org/x/exp/maps"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/yury-fedorov/AoC/AoC23/aoc"
+	"golang.org/x/exp/maps"
 )
 
 type Day18 struct{}
@@ -37,15 +38,15 @@ func isIn(min Point, max Point, p Point) bool {
 	return min.x <= p.x && max.x >= p.x && min.y <= p.y && max.y >= p.y
 }
 
-func minMax(points []Point) (min Point, max Point) {
+func minMax(points []Point) (minPoint Point, maxPoint Point) {
 	var minP, maxP Point
 	minP = points[0]
 	maxP = points[0]
 	for _, p := range points {
-		minP.x = aoc.Min(minP.x, p.x)
-		minP.y = aoc.Min(minP.y, p.y)
-		maxP.x = aoc.Max(maxP.x, p.x)
-		maxP.y = aoc.Max(maxP.y, p.y)
+		minP.x = min(minP.x, p.x)
+		minP.y = min(minP.y, p.y)
+		maxP.x = max(maxP.x, p.x)
+		maxP.y = max(maxP.y, p.y)
 	}
 	return minP, maxP
 }
@@ -155,7 +156,7 @@ func isInRange(l Line, p Point, onX bool) bool {
 	a := aoc.Ifelse(onX, l.a.x, l.a.y)
 	b := aoc.Ifelse(onX, l.b.x, l.b.y)
 	z := aoc.Ifelse(onX, p.x, p.y)
-	return aoc.Min(a, b) <= z && z <= aoc.Max(a, b)
+	return min(a, b) <= z && z <= max(a, b)
 }
 
 func isCrossed(l Line, p Point, d Point) bool {
@@ -207,7 +208,7 @@ func isIn2(m2 []Line, p Point) bool {
 }
 
 func length(a, b int) int {
-	return aoc.Max(a, b) - aoc.Min(a, b) + 1
+	return max(a, b) - min(a, b) + 1
 }
 
 func part2(m2 []Line) int {
@@ -247,7 +248,7 @@ func part2(m2 []Line) int {
 			inRightBottom := isInCache[Point{ix + 1, iy + 1}]
 			if inRight && inBottom && inRightBottom {
 				// Controintuitive but indeed in the case of square of 5 x 5 dots,
-				// splitted in 4 blocks (2 horizontally and 2 vertically).
+				// split in 4 blocks (2 horizontally and 2 vertically).
 				// We need to get square of 25 (5*5) but summing up 4*3*3 we get 36
 				// We remove 4 borders between blocks (each of length 3) = 36 - 4*3 = 24
 				// So we are missing the single dot right in the cross of 4 blocks.
