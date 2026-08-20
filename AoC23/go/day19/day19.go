@@ -51,7 +51,7 @@ type WorkflowStep func(p Part) WorkflowName
 
 type Workflow []WorkflowStep
 
-var rewf = regexp.MustCompile("(.+)\\{(.+)\\}")
+var rewf = regexp.MustCompile("(.+)\\{(.+)}")
 var rewfs = regexp.MustCompile("([xmas])([^0-9]+)([0-9]+):(.+)")
 
 func parseWorkflow(line string, wstats *WorkflowStats) (WorkflowName, Workflow) {
@@ -82,7 +82,7 @@ func parseWorkflow(line string, wstats *WorkflowStats) (WorkflowName, Workflow) 
 	return WorkflowName(match[1]), w
 }
 
-var rep = regexp.MustCompile("\\{(.+)\\}")
+var rep = regexp.MustCompile("\\{(.+)}")
 
 func parseValue(expr string) int {
 	return aoc.Atoi(strings.Split(expr, "=")[1])
@@ -229,5 +229,5 @@ func (day Day19) Solve() aoc.Solution {
 	isAccepted = func(p Part) bool { return runWorkflow(workflows, p) }
 	part2 = countAccepted(-1, -1, -1)
 
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }
