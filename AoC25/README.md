@@ -7,8 +7,7 @@
 
 ## TODO
 
-1. [Day 11: Reactor](https://adventofcode.com/2025/day/11) - 1 star - slow
-2. [Day 12: Christmas Tree Farm](https://adventofcode.com/2025/day/12) - 2 star - a lot to write
+1. [Day 12: Christmas Tree Farm](https://adventofcode.com/2025/day/12) - 2 star - a lot to write
 
 ## Interesting Parts
 
