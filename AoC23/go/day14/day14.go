@@ -2,6 +2,7 @@ package day14
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/yury-fedorov/AoC/AoC23/aoc"
 )
@@ -11,9 +12,8 @@ type Day14 struct{}
 type Material rune
 
 const (
-	Rock           Material = 'O'
-	Space          Material = '.'
-	CubeShapedRock Material = '#'
+	Rock  Material = 'O'
+	Space Material = '.'
 )
 
 type Dish [][]Material
@@ -109,14 +109,14 @@ func totalLoad(dish Dish) int {
 
 func show(dish Dish) string {
 	xMax, yMax := size(dish)
-	var result string
-	for y := 0; y < yMax; y++ {
-		for x := 0; x < xMax; x++ {
-			result += string(dish[y][x])
+	var result strings.Builder
+	for y := range yMax {
+		for x := range xMax {
+			result.WriteString(string(dish[y][x]))
 		}
-		result += "\n"
+		result.WriteString("\n")
 	}
-	return result
+	return result.String()
 }
 
 func (day Day14) Solve() aoc.Solution {
@@ -146,5 +146,5 @@ func (day Day14) Solve() aoc.Solution {
 		}
 	}
 	part2 = totalLoad(dish)
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }
