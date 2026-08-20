@@ -178,15 +178,13 @@ class Day12Test {
 
     @Test
     fun test() {
-        val result = solution("12-1")
-        assertEquals(2L, result.first)
-        assertEquals(0L, result.second)
+        val (answer, _) = solution("12-1")
+        assertEquals(2L, answer)
     }
 
     @Test
     fun solution() {
-        val result = solution("12")
-        assertEquals(490L, result.first)
-        assertEquals(0L, result.second)
+        val (answer, _) = solution("12")
+        assertEquals(490L, answer)
     }
 }
