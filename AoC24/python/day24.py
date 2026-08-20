@@ -137,77 +137,31 @@ def _check_pairs(formulas: [Formula], n: int, pairs: [(str, str)]) -> (bool, [in
     return True, _check_wrong(formulas, n, m)
 
 
-def _answer2(registers: {str: bool}, formulas: [Formula]) -> int:
-    n = _size_z(registers, formulas)
-    wrong = _check_wrong(formulas, n, {})
-    print(wrong)
-    all_regs = {ri for ri in registers.keys()}
-    all_regs.update([fi.r for fi in formulas])
-    if False:
-        # searching for pairs
-        for i, a in enumerate(all_regs):
-            for j, b in enumerate(all_regs):
-                if j > i:
-                    wrong1 = _check_wrong(formulas, n, {a: b, b: a})
-                    if len(wrong1) < len(wrong):
-                        print(f"{a} - {b}")
-        # 8,
-        # 16 65536 + 0 -> 131072
-        # 32 4294967296 + 0 -> 8589934592
-        # 38 274877906944 + 0 -> 549755813888
-    pairs = [("qmd", "dhm"), ("qmd", "bqf"), ("gnn", "dhm"), ("gnn", "bqf"), ("jbc", "pqv"), ("jbc", "gfm"),
-             ("dhm", "kvn"), ("dhm", "qjd"), ("kvn", "bqf"), ("mnv", "pqv"), ("mnv", "gfm"), ("bqf", "qjd")]
-    if False:
-        options = list(combinations(pairs, 4))
-        for oi in options:
-            mi = {}
-            for pi in oi:
-                a, b = pi
-                mi[a] = b
-                mi[b] = a
-            if len(mi) != 8: continue
-            wi = _check_wrong(formulas, n, mi)
-            if len(wrong) > len(wi):
-                # print(wi)
-                # print(oi)
-                wrong = wi
+def _answer2(registers: {str: bool}, formulas: [Formula]) -> str:
+    highest_z = "z" + str(max(int(f.r[1:]) for f in formulas if f.r.startswith("z"))).zfill(2)
+    wrong = set()
+    for f in formulas:
+        # Rule 1: Output is zXX (not last z) -> must be XOR
+        if f.r.startswith("z") and f.r != highest_z:
+            if f.op != "XOR":
+                wrong.add(f.r)
 
-        ok3 = [('jbc', 'pqv'), ('gnn', 'bqf'), ('qmd', 'dhm')]
-        for i in range(len(ok3)):
-            mi = {}
-            for j, fai in enumerate(ok3):
-                if j == i: continue
-                a, b = fai
-                mi[a] = b
-                mi[b] = a
-            print(f"{i} {ok3[i]} {_check_wrong(formulas, n, mi)}")
+        # Rule 2: Output is not zXX and inputs are not x/y -> cannot be XOR
+        if not f.r.startswith("z") and not (f.a.startswith("x") or f.a.startswith("y")) and not (f.b.startswith("x") or f.b.startswith("y")):
+            if f.op == "XOR":
+                wrong.add(f.r)
 
-        cr = {a for a, _ in pairs}
-        cr.update({b for _, b in pairs})
-        for a, b in ok3:
-            cr.remove(a)
-            cr.remove(b)
-        if True:
-            options = list(combinations(all_regs, 2))
-            for oi in options:
-                mi = {}
-                for pi in ok3:
-                    a, b = pi
-                    mi[a] = b
-                    mi[b] = a
-                a, b = oi
-                mi[a] = b
-                mi[b] = a
-                if len(mi) != 8: continue
-                w = _check_wrong(formulas, n, mi)
-                if len(wrong) > len(w):
-                    print(oi)
-                    print(w)
+        # Rule 3: XOR gate with x/y inputs (not 00) -> output must be input to another XOR gate
+        if f.op == "XOR" and (f.a.startswith("x") or f.a.startswith("y")) and not (f.a.endswith("00") or f.b.endswith("00")):
+            if not any(g.op == "XOR" and (g.a == f.r or g.b == f.r) for g in formulas):
+                wrong.add(f.r)
 
-    p = [("pqv", "z32")]
-    wr, wp = _check_pairs(formulas, n, p)
-    return 0  # TODO to be solved
-    return wrong
+        # Rule 4: AND gate with x/y inputs (not 00) -> output must be input to an OR gate
+        if f.op == "AND" and (f.a.startswith("x") or f.a.startswith("y")) and not (f.a.endswith("00") or f.b.endswith("00")):
+            if not any(g.op == "OR" and (g.a == f.r or g.b == f.r) for g in formulas):
+                wrong.add(f.r)
+
+    return ",".join(sorted(wrong))
 
 
 def _parse(data: str) -> ({str: bool}, [Formula]):
@@ -230,7 +184,7 @@ def _parse(data: str) -> ({str: bool}, [Formula]):
 
 class Day24(unittest.TestCase):
 
-    def __solution(self, data: str, a1: int, a2: int):
+    def __solution(self, data: str, a1: int, a2: str):
         registers, formulas = _parse(data)
         self.assertEqual(a1, _answer1(registers, formulas), "answer 1")
         self.assertEqual(a2, _answer2(registers, formulas), "answer 2")
@@ -256,4 +210,8 @@ class Day24(unittest.TestCase):
         self.assertEqual(1 << 8, res1 & (1 << 8), "check 8 res")
 
     def test_day(self):
-        self.__solution("24", 55114892239566, 0)
+        self.__solution("24", 55114892239566, "cdj,dhm,gfm,mrb,qjd,z08,z16,z32")
+
+
+if __name__ == '__main__':
+    unittest.main()
