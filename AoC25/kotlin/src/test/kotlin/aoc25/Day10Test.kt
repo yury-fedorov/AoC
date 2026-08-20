@@ -1,5 +1,7 @@
 package aoc25
 
+import kotlin.math.abs
+import kotlin.math.round
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -7,7 +9,7 @@ class Day10Test {
 
     typealias Button = List<Int>
 
-    data class Machine(val goal: String, val buttons: List<Button>, val numbers: List<Int>) {}
+    data class Machine(val goal: String, val buttons: List<Button>, val numbers: List<Int>)
 
     fun parse(line: String): Machine {
         val goalRegex = Regex("^\\[(.*?)\\]")
@@ -15,94 +17,153 @@ class Day10Test {
         val numbersRegex = Regex("\\{([^}]+)\\}$")
         val goalString = goalRegex.find(line)?.groupValues?.get(1)
         val buttons = buttonsRegex.findAll(line)
-            .map { r -> r.groupValues[1].split(',').map { it.toInt() } }.toList()
+            .map { r -> r.groupValues[1].split(',').map { it.trim().toInt() } }.toList()
         val numbersMatch = numbersRegex.find(line)
         val numbersContent = numbersMatch?.groupValues?.get(1)
-        val numbers = numbersContent?.split(',')?.map { it.toInt() }
+        val numbers = numbersContent?.split(',')?.map { it.trim().toInt() }
         return Machine(goal = goalString!!, buttons = buttons, numbers = numbers!!)
     }
 
-    fun init(target: String): String = ".".repeat(target.length)
-
-    fun push(start: String, button: Button): String {
-        val state = start.toCharArray()
-        button.forEach { i ->
-            state[i] = if (state[i] == '.') {
-                '#'
-            } else {
-                '.'
-            }
+    // Part 1: Fast Bitmask BFS
+    fun shortest(machine: Machine): Long {
+        val n = machine.goal.length
+        var targetMask = 0
+        for (i in 0 until n) {
+            if (machine.goal[i] == '#') targetMask = targetMask or (1 shl i)
         }
-        return String(state)
-    }
+        val buttonMasks = machine.buttons.map { b ->
+            var m = 0
+            for (i in b) if (i < n) m = m or (1 shl i)
+            m
+        }
 
-    fun pushSequence(init: String, machine: Machine, sequence: Collection<Int>): String {
-        var state = init
-        for (b in sequence.map { i -> machine.buttons[i] }) state = push(state, b)
-        return state
-    }
-    /*
-        fun shortest1(machine: Machine, state: String, pushesDone: Long, pushesToDo: Long): Long? {
-            val states = mutableSetOf(state)
-            for ( i in 0 .. pushesToDo ) {
-                val next = mutableSetOf<String>()
-                for (b in machine.buttons) {
-                    val newState = push(state, b)
-                    if (newState === machine.goal) return pushesDone + 1
-                    if (!states.contains(newState) )
-                        next += newState
+        val queue = ArrayDeque<Pair<Int, Int>>()
+        val visited = BooleanArray(1 shl n)
+        queue.add(0 to 0)
+        visited[0] = true
+
+        while (queue.isNotEmpty()) {
+            val (mask, dist) = queue.removeFirst()
+            if (mask == targetMask) return dist.toLong()
+            for (bm in buttonMasks) {
+                val next = mask xor bm
+                if (!visited[next]) {
+                    visited[next] = true
+                    queue.add(next to dist + 1)
                 }
             }
-            return next.map { state: String -> shortest(machine, state, pushesDone + 1, pushesToDo - 1) }
-                .filter { it != null }.minOfOrNull { it!! }
         }
-    */
+        return 0L
+    }
 
-    fun shortest(machine: Machine, state: String, pushesDone: Long, pushesToDo: Long): Long? {
-        if (pushesToDo <= 0L) return null
-        val next = mutableSetOf<String>()
-        for (b in machine.buttons) {
-            val newState = push(state, b)
-            if (newState == machine.goal) return pushesDone + 1
-            next += newState
+    // Part 2: Gaussian Elimination + Free Variable Search
+    fun solvePart2(machine: Machine): Long {
+        val m = machine.numbers.size
+        val k = machine.buttons.size
+        val mat = Array(m) { DoubleArray(k + 1) }
+
+        for (j in 0 until k) {
+            for (counter in machine.buttons[j]) {
+                if (counter < m) mat[counter][j] = 1.0
+            }
         }
-        return next.map { state: String -> shortest(machine, state, pushesDone + 1, pushesToDo - 1) }
-            .filter { it != null }.minOfOrNull { it!! }
+        for (i in 0 until m) mat[i][k] = machine.numbers[i].toDouble()
+
+        var row = 0
+        val pivotCol = IntArray(m) { -1 }
+        val isPivotCol = BooleanArray(k)
+
+        for (col in 0 until k) {
+            if (row >= m) break
+            var maxRow = row
+            for (r in row + 1 until m) {
+                if (abs(mat[r][col]) > abs(mat[maxRow][col])) maxRow = r
+            }
+            if (abs(mat[maxRow][col]) < 1e-9) continue
+
+            val tmp = mat[row]
+            mat[row] = mat[maxRow]
+            mat[maxRow] = tmp
+
+            val pivotVal = mat[row][col]
+            for (c in col..k) mat[row][c] /= pivotVal
+
+            for (r in 0 until m) {
+                if (r != row && abs(mat[r][col]) > 1e-9) {
+                    val factor = mat[r][col]
+                    for (c in col..k) mat[r][c] -= factor * mat[row][c]
+                }
+            }
+            pivotCol[row] = col
+            isPivotCol[col] = true
+            row++
+        }
+
+        val rank = row
+        for (r in rank until m) {
+            if (abs(mat[r][k]) > 1e-6) return 0L
+        }
+
+        val freeCols = (0 until k).filter { !isPivotCol[it] }
+        val maxVal = IntArray(k) { j ->
+            machine.buttons[j].filter { it < m }.minOfOrNull { machine.numbers[it] } ?: 0
+        }
+
+        var bestSum = Long.MAX_VALUE
+
+        fun searchFree(idx: Int, freeVals: IntArray) {
+            if (idx == freeCols.size) {
+                var currentSum = freeVals.sum().toLong()
+                if (currentSum >= bestSum) return
+
+                for (r in 0 until rank) {
+                    var v = mat[r][k]
+                    for (i in freeCols.indices) {
+                        v -= mat[r][freeCols[i]] * freeVals[i]
+                    }
+                    val rounded = round(v).toLong()
+                    if (abs(v - rounded) > 1e-6 || rounded < 0) return
+                    currentSum += rounded
+                    if (currentSum >= bestSum) return
+                }
+                bestSum = minOf(bestSum, currentSum)
+                return
+            }
+
+            val col = freeCols[idx]
+            val limit = maxVal[col]
+            for (v in 0..limit) {
+                freeVals[idx] = v
+                searchFree(idx + 1, freeVals)
+            }
+        }
+
+        searchFree(0, IntArray(freeCols.size))
+        return if (bestSum == Long.MAX_VALUE) 0L else bestSum
     }
 
     fun solution(data: String): Pair<Long, Long> {
-        val list = IOUtil.input(data).map { l -> parse(l) }
+        val list = IOUtil.input(data).filter { it.isNotBlank() }.map { parse(it) }
         var answer1 = 0L
-        val maxPushes = 8L
+        var answer2 = 0L
         for (machine in list) {
-            val r = shortest(machine, init(machine.goal), 0L, maxPushes)
-            if (r == null) {
-                println("For ${machine.goal} $maxPushes pushes are not enough")
-            }
-            answer1 += r!!
+            answer1 += shortest(machine)
+            answer2 += solvePart2(machine)
         }
-        return answer1 to 0L
-    }
-
-    @Test
-    fun testSequence() {
-        val machine = parse(IOUtil.input("10-1").first())
-        val state = pushSequence(init(machine.goal), machine, listOf(0, 1, 2))
-        assertEquals(machine.goal, state)
+        return answer1 to answer2
     }
 
     @Test
     fun test() {
         val result = solution("10-1")
         assertEquals(7L, result.first)
-        assertEquals(0L, result.second) // TODO
+        assertEquals(33L, result.second)
     }
 
     @Test
     fun solution() {
-        if (!IOUtil.isRunSlow) return
         val result = solution("10")
-        assertEquals(432L, result.first) // slow - takes 12m 56s
-        assertEquals(0L, result.second)
+        assertEquals(432L, result.first)
+        assertEquals(18011L, result.second)
     }
 }
