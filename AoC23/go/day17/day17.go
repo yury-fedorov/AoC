@@ -1,6 +1,7 @@
 package day17
 
 import (
+	"container/heap"
 	"slices"
 	"strconv"
 
@@ -71,6 +72,34 @@ type QueueStep struct {
 	direction              Point
 	remainingStraightSteps int
 	sumHeatLoss            int
+	index                  int // for heap.Interface
+}
+
+// MinHeap implements heap.Interface for QueueStep
+type MinHeap []*QueueStep
+
+func (h MinHeap) Len() int           { return len(h) }
+func (h MinHeap) Less(i, j int) bool { return h[i].sumHeatLoss < h[j].sumHeatLoss }
+func (h MinHeap) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
+	h[i].index = i
+	h[j].index = j
+}
+
+func (h *MinHeap) Push(x interface{}) {
+	item := x.(*QueueStep)
+	item.index = len(*h)
+	*h = append(*h, item)
+}
+
+func (h *MinHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	item := old[n-1]
+	old[n-1] = nil
+	item.index = -1
+	*h = old[0 : n-1]
+	return item
 }
 
 func heatLossAt(p Point) int {
@@ -80,50 +109,57 @@ func heatLossAt(p Point) int {
 func (d Day17) Solve() aoc.Solution {
 	var part1, part2 int
 	p0 := Point{x: 0, y: 0}
-	queue := []QueueStep{
-		{position: p0, direction: Right, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
-		{position: p0, direction: Down, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
+	pq := &MinHeap{
+		&QueueStep{position: p0, direction: Right, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
+		&QueueStep{position: p0, direction: Down, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
 	}
+	heap.Init(pq)
 	end := Point{x: xMax - 1, y: yMax - 1}
-	// total accumulated heat loss by the point
-	minHeatLoss := map[Point]int{
-		p0: 0,
-	}
-	for len(queue) > 0 {
-		nqs := queue[0]
-		queue = queue[1:]
+
+	// Key: position + direction + remainingStraightSteps
+	// To properly track visited states, we need to consider all three factors
+	visited := make(map[string]bool)
+
+	for pq.Len() > 0 {
+		nqs := heap.Pop(pq).(*QueueStep)
 		pi := nqs.position
+
+		// Create a state key to track if we've already processed this exact state
+		stateKey := stateKeyFunc(pi, nqs.direction, nqs.remainingStraightSteps)
+		if visited[stateKey] {
+			continue
+		}
+		visited[stateKey] = true
+
+		// If we reached the end, we have the answer (first time is optimal due to priority queue)
+		if pi == end {
+			part1 = nqs.sumHeatLoss
+			break
+		}
+
 		p1List := nextMoves(pi, nqs.direction, nqs.remainingStraightSteps > 0)
 		for _, p1i := range p1List {
 			shl := nqs.sumHeatLoss + heatLossAt(p1i)
-			prev, found := minHeatLoss[p1i]
-			isBestPath := false
-			if !found || prev > shl {
-				minHeatLoss[p1i] = shl
-				isBestPath = true
-			}
-			if !isBestPath || p1i == end {
-				continue
-			}
 			newDir := direction(pi, p1i)
 			remainingStraightSteps := aoc.Ifelse(nqs.direction == newDir, nqs.remainingStraightSteps, maxStepsStraight) - 1
-			queue = append(queue, QueueStep{position: p1i, direction: newDir, sumHeatLoss: shl,
-				remainingStraightSteps: remainingStraightSteps})
+
+			stateKey := stateKeyFunc(p1i, newDir, remainingStraightSteps)
+			if !visited[stateKey] {
+				heap.Push(pq, &QueueStep{
+					position:               p1i,
+					direction:              newDir,
+					sumHeatLoss:            shl,
+					remainingStraightSteps: remainingStraightSteps,
+				})
+			}
 		}
 	}
-	/*
-		for y := 0; y < yMax; y++ {
-			for x := 0; x < xMax; x++ {
-				p := Point{x: x, y: y}
-				shl := minHeatLoss[p]
-				fmt.Print(aoc.Ifelse(shl <= 0, " ???", fmt.Sprintf(" %3d", shl)))
-				fmt.Printf(" [%d] ", heatLossAt(p))
-			}
-			fmt.Println()
-		}
-	*/
-	part1 = minHeatLoss[end]
-	// 1254 - too low
-	// 1281 ... 1285 - too high
+
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+}
+
+func stateKeyFunc(p Point, d Point, remaining int) string {
+	return strconv.Itoa(p.x) + "," + strconv.Itoa(p.y) + "," +
+		strconv.Itoa(d.x) + "," + strconv.Itoa(d.y) + "," +
+		strconv.Itoa(remaining)
 }
