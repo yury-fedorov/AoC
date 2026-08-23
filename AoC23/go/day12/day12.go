@@ -1,8 +1,6 @@
 package day12
 
 import (
-	"fmt"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -35,22 +33,6 @@ func parse(file string) []Record {
 		}
 		dg := aoc.ToSlice(strings.ReplaceAll(recordGroups[1], ",", " "))
 		result = append(result, Record{record: record, damagedGroups: dg})
-	}
-	return result
-}
-
-func count(record []State, state State) int {
-	var result int
-	for _, ri := range record {
-		result += aoc.Ifelse(ri == state, 1, 0)
-	}
-	return result
-}
-
-func sum(groups []int64) int {
-	var result int
-	for _, g := range groups {
-		result += int(g)
 	}
 	return result
 }
@@ -93,190 +75,128 @@ func countPossibleArrangements(pattern []State, groups []int64) int {
 	return result
 }
 
-// for the second part
-func countPossibleArrangements2(pattern []State, groups []int64, mode int) int {
-	var pattern2 []State
-	var groups2 []int64
-	for i := 0; i < copiedForPart2; i++ {
-		pattern2 = append(pattern2, pattern...)
-		groups2 = append(groups2, groups...)
-	}
-	return countPossibleArrangementsI(pattern2, groups2, mode)
-}
-
-// -- alternative solution 2 (regex) - (Jan 8 2024)
-
 func toPatternString(pattern []State) string {
 	return string(pattern)
 }
 
-func newPattern(pattern string, index int, ch rune) string {
-	a := []rune(pattern)
-	a[index] = ch
-	return string(a)
+//---------------------
+
+// DynamicProgramming solution with memoization for Part 2
+// Avoids exponential branching by caching results
+
+type MemoKey struct {
+	patternIdx  int
+	groupIdx    int
+	currentSize int
 }
 
-func fastCountPossibleArrangements3(pattern string, groups *regexp.Regexp) int {
-	i := strings.Index(pattern, "?")
-	if i < 0 {
-		return aoc.Ifelse(groups.MatchString(pattern), 1, 0)
-	}
-	var result int
-	for _, o := range options {
-		result += fastCountPossibleArrangements3(newPattern(pattern, i, rune(o)), groups)
-	}
-	return result
-}
-
-func nDemages(n int) string {
-	var result string
-	for i := 0; i < n; i++ {
-		result += "#"
-	}
-	return result
-}
-
-func toRegexp(groups []int64) string {
-	// 1, 2 -> .*#.*##.*
-	const anyAmountOperational = "\\.*"
-	const atLeastOneOperational = "\\.+"
-	reStr := "^" + anyAmountOperational
-	for _, g := range groups {
-		reStr += nDemages((int)(g)) + atLeastOneOperational
-	}
-	i := strings.LastIndex(reStr, atLeastOneOperational)
-	reStr = reStr[:i] + anyAmountOperational + "$"
-	return reStr
-}
-
-func countPossibleArrangements3(pattern []State, groups []int64) int {
-	return fastCountPossibleArrangements3(toPatternString(pattern), regexp.MustCompile(toRegexp(groups)))
-}
-
-// -- alternative solution 3 - (Jan 8 2024)
-
-func couldBeValid(dc, uc, gs int) (could bool, precise bool) {
-	if dc > gs {
-		return false, true
-	}
-	if dc == gs {
-		return true, true
-	}
-	return (uc + dc) >= gs, false
-}
-
-func couldBeValid2(pattern []State, groups []int64) bool {
-	var curGroup int64
-	gn := len(groups)
-	gi := 0
-	for _, s := range pattern {
-		if s == Unknown {
-			return true // so far no logic for Unknown states
-		}
-		if s == Damaged {
-			curGroup++
-		} else if curGroup > 0 {
-			if (gn <= gi) || (groups[gi] != curGroup) {
-				return false
+func countArrangementsMemo(
+	pattern []State,
+	groups []int64,
+	patternIdx int,
+	groupIdx int,
+	currentSize int,
+	memo map[MemoKey]int,
+) int {
+	// Base case: reached end of pattern
+	if patternIdx == len(pattern) {
+		// Check if we've matched all groups exactly
+		if groupIdx == len(groups) {
+			// All groups matched
+			if currentSize == 0 {
+				return 1 // Valid arrangement
 			}
-			gi++
-			curGroup = 0
+			return 0 // Extra damaged springs
 		}
+		// If there's exactly one group left and it matches currentSize
+		if groupIdx == len(groups)-1 && int64(currentSize) == groups[groupIdx] {
+			return 1 // Valid arrangement
+		}
+		return 0 // Incomplete or invalid
 	}
-	if curGroup == 0 {
-		return gi == gn
-	}
-	return (gi+1 == gn) && (groups[gi] == curGroup)
-}
 
-// like 1st but with couldBeValid
-func countPossibleArrangements4Ext(pattern []State, groups []int64, dc, uc, gs int) int {
-	could, precise := couldBeValid(dc, uc, gs)
-	if !could {
-		return 0
+	// Check memo
+	key := MemoKey{patternIdx, groupIdx, currentSize}
+	if val, exists := memo[key]; exists {
+		return val
 	}
-	if precise {
-		// No need for further undefined parsing, the Damages count is set exact, all others are operational.
-		return aoc.Ifelse(isValid(pattern, groups), 1, 0)
-	}
-	if !couldBeValid2(pattern, groups) {
-		return 0
-	}
-	i := slices.Index(pattern, Unknown)
-	if i < 0 {
-		return aoc.Ifelse(isValid(pattern, groups), 1, 0)
-	}
+
+	state := pattern[patternIdx]
 	var result int
-	for _, o := range options {
-		newPattern := make([]State, len(pattern))
-		copy(newPattern, pattern)
-		newPattern[i] = o
-		ddc := aoc.Ifelse(o == Damaged, 1, 0)
-		result += countPossibleArrangements4Ext(newPattern, groups, dc+ddc, uc-ddc, gs)
+
+	if state == Operational {
+		// '.' - end current group if any
+		if currentSize > 0 {
+			// We were building a group, verify it matches
+			if groupIdx < len(groups) && int64(currentSize) == groups[groupIdx] {
+				// Group matches, move to next
+				result = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx+1, 0, memo)
+			} else {
+				// Group size mismatch, invalid
+				result = 0
+			}
+		} else {
+			// No group being built, continue
+			result = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, 0, memo)
+		}
+	} else if state == Damaged {
+		// '#' - extend current group
+		newSize := currentSize + 1
+		if groupIdx < len(groups) && int64(newSize) <= groups[groupIdx] {
+			// Group size still valid
+			result = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, newSize, memo)
+		} else {
+			// Group exceeded, invalid
+			result = 0
+		}
+	} else {
+		// '?' - try both possibilities
+		// Try as operational
+		resultOp := 0
+		if currentSize > 0 {
+			if groupIdx < len(groups) && int64(currentSize) == groups[groupIdx] {
+				resultOp = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx+1, 0, memo)
+			}
+		} else {
+			resultOp = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, 0, memo)
+		}
+
+		// Try as damaged
+		resultDam := 0
+		newSize := currentSize + 1
+		if groupIdx < len(groups) && int64(newSize) <= groups[groupIdx] {
+			resultDam = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, newSize, memo)
+		}
+
+		result = resultOp + resultDam
 	}
+
+	memo[key] = result
 	return result
 }
 
-const copiedForPart2 = 5
+func countPossibleArrangementsDP(pattern []State, groups []int64) int {
+	memo := make(map[MemoKey]int)
+	return countArrangementsMemo(pattern, groups, 0, 0, 0, memo)
+}
 
-func optimizePattern(pattern []State, groups []int64) []State {
-	longestGroup := 1
-	longestGroupCount := 0
-	for _, g := range groups {
-		gi := int(g)
-		if gi > longestGroup {
-			longestGroup = gi
-			longestGroupCount = 1
-		} else if longestGroup == gi {
-			longestGroupCount += 1
+// For Part 2 - unfold the pattern and groups
+func unfoldRecord(r Record) Record {
+	var unfoldedPattern []State
+	var unfoldedGroups []int64
+
+	for i := 0; i < 5; i++ {
+		unfoldedPattern = append(unfoldedPattern, r.record...)
+		if i < 4 {
+			unfoldedPattern = append(unfoldedPattern, Unknown)
 		}
+		unfoldedGroups = append(unfoldedGroups, r.damagedGroups...)
 	}
-	ps := "." + toPatternString(pattern) + "."
-	reStr := fmt.Sprintf("[\\.\\?][#\\?]{%d}[\\.\\?]", longestGroup)
-	re := regexp.MustCompile(reStr)
-	var result, tail string
-	for j := 0; j < longestGroupCount; j++ {
-		i := re.FindStringIndex(ps) // TODO - doesn't work here
-		if i == nil {
-			// too few options
-			return pattern
-		}
-		head := ps[:i[0]]
-		tail = ps[i[1]:]
-		result += head + "." + nDemages(longestGroup)
-		ps = "." + tail
-	}
-	if re.FindStringIndex(ps) != nil {
-		// too many options
-		return pattern
-	}
-	return []State(result + ps)
+
+	return Record{record: unfoldedPattern, damagedGroups: unfoldedGroups}
 }
 
-func countPossibleArrangements4(pattern []State, groups []int64) int {
-	var dc, uc int
-	for _, e := range pattern {
-		dc += aoc.Ifelse(e == Damaged, 1, 0)
-		uc += aoc.Ifelse(e == Unknown, 1, 0)
-	}
-	return countPossibleArrangements4Ext(pattern, groups, dc, uc, sum(groups)) // 6.3 sec (5 instead of 5!)
-}
-
-func countPossibleArrangementsI(pattern []State, groups []int64, mode int) int {
-	// 1 - 1st impl (no regex), fastest so far
-	// 2 - 2nd impl (lost)
-	// 3 - 3rd impl (with regex), slowest so far
-	// 4 - 4th impl (1st + couldBeValid), fastest so far
-	switch mode {
-	case 4:
-		return countPossibleArrangements4(pattern, groups) // 6.3 sec (5 instead of 5!)
-	case 1:
-		return countPossibleArrangements(pattern, groups) // 56.32 sec (3 instead of 5)
-	case 3:
-		return countPossibleArrangements3(pattern, groups) // 166.49s (3 instead of 5)
-	}
-	return countPossibleArrangements(pattern, groups)
-}
+//---------------------
 
 func (day Day12) Solve() aoc.Solution {
 	var part1, part2 int
@@ -284,13 +204,13 @@ func (day Day12) Solve() aoc.Solution {
 	// 12-2 - 21
 	records := parse("12") // lines: 1000 max chr in line: 20
 	for _, r := range records {
-		c1 := countPossibleArrangementsI(r.record, r.damagedGroups, 1)
+		c1 := countPossibleArrangements(r.record, r.damagedGroups)
 		part1 += c1
-		// c2 := countPossibleArrangements2(r.record, r.damagedGroups)
-		// part2 += c2
+		// Part 2
+		unfolded := unfoldRecord(r)
+		c2 := countPossibleArrangementsDP(unfolded.record, unfolded.damagedGroups)
+		part2 += c2
 	}
-	// TODO: fast enough for 5 repetitions of part2 but doesn't calculate properly the part 2
-	// TODO: direction - optimize the input pattern (replacing ? with deduced values)
 	// ie. "?###????????" - [3 2 1] x 5 -> may be formalized with .###. instead of ?###?
 	// ie. "?????.???.????#?." - [1 1 1 6] - x5 -> very long execution - also much be solvable in the same way
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
