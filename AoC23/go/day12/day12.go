@@ -1,7 +1,6 @@
 package day12
 
 import (
-	"slices"
 	"strconv"
 	"strings"
 
@@ -20,170 +19,141 @@ const (
 
 type Record struct {
 	record        []State
-	damagedGroups []int64
+	damagedGroups []int
 }
 
 func parse(file string) []Record {
 	var result []Record
 	for _, line := range aoc.ReadFile(file) {
-		recordGroups := strings.Split(line, " ")
-		var record []State
-		for _, re := range recordGroups[0] {
-			record = append(record, State(re))
+		parts := strings.Split(line, " ")
+		patternStr := parts[0]
+		groupsStr := strings.ReplaceAll(parts[1], ",", " ")
+
+		var pattern []State
+		for _, r := range patternStr {
+			pattern = append(pattern, State(r))
 		}
-		dg := aoc.ToSlice(strings.ReplaceAll(recordGroups[1], ",", " "))
-		result = append(result, Record{record: record, damagedGroups: dg})
+
+		// aoc.ToSlice returns []int64 in this codebase; convert to []int
+		groups64 := aoc.ToSlice(groupsStr)
+		groups := make([]int, 0, len(groups64))
+		for _, g := range groups64 {
+			groups = append(groups, int(g))
+		}
+
+		result = append(result, Record{record: pattern, damagedGroups: groups})
 	}
 	return result
 }
 
-func isValid(states []State, groups []int64) bool {
-	var curGroup int64
-	gn := len(groups)
+// isValid checks whether a fully specified pattern (no Unknowns) matches
+// the expected damaged groups sequence.
+func isValid(states []State, groups []int) bool {
+	cur := 0
 	gi := 0
-	for _, s := range states { // append(states, Operational) {
+	for _, s := range states {
 		if s == Damaged {
-			curGroup++
-		} else if curGroup > 0 {
-			if (gn <= gi) || (groups[gi] != curGroup) {
+			cur++
+		} else if cur > 0 {
+			if gi >= len(groups) || groups[gi] != cur {
 				return false
 			}
 			gi++
-			curGroup = 0
+			cur = 0
 		}
 	}
-	if curGroup == 0 {
-		return gi == gn
+	if cur == 0 {
+		return gi == len(groups)
 	}
-	return (gi+1 == gn) && (groups[gi] == curGroup)
+	// trailing damaged group
+	return gi+1 == len(groups) && groups[gi] == cur
 }
 
-var options = []State{Damaged, Operational}
-
-func countPossibleArrangements(pattern []State, groups []int64) int {
-	i := slices.Index(pattern, Unknown)
-	if i < 0 {
-		return aoc.Ifelse(isValid(pattern, groups), 1, 0)
-	}
-	var result int
-	for _, o := range options {
-		newPattern := make([]State, len(pattern))
-		copy(newPattern, pattern)
-		newPattern[i] = o
-		result += countPossibleArrangements(newPattern, groups)
-	}
-	return result
-}
-
-func toPatternString(pattern []State) string {
-	return string(pattern)
-}
-
-//---------------------
-
-// DynamicProgramming solution with memoization for Part 2
-// Avoids exponential branching by caching results
-
+// Dynamic programming memoized solution that counts valid replacements for Unknowns
+// so that damaged groups match `groups`.
 type MemoKey struct {
 	patternIdx  int
 	groupIdx    int
 	currentSize int
 }
 
-func countArrangementsMemo(
-	pattern []State,
-	groups []int64,
-	patternIdx int,
-	groupIdx int,
-	currentSize int,
-	memo map[MemoKey]int,
-) int {
+func countArrangementsMemo(pattern []State, groups []int, patternIdx, groupIdx, currentSize int, memo map[MemoKey]int) int {
 	// Base case: reached end of pattern
 	if patternIdx == len(pattern) {
-		// Check if we've matched all groups exactly
+		// Valid only if we've matched all groups and aren't mid-group
 		if groupIdx == len(groups) {
-			// All groups matched
 			if currentSize == 0 {
-				return 1 // Valid arrangement
+				return 1
 			}
-			return 0 // Extra damaged springs
+			return 0
 		}
-		// If there's exactly one group left and it matches currentSize
-		if groupIdx == len(groups)-1 && int64(currentSize) == groups[groupIdx] {
-			return 1 // Valid arrangement
+		// If there's exactly one remaining group and its size equals currentSize
+		if groupIdx == len(groups)-1 && groups[groupIdx] == currentSize {
+			return 1
 		}
-		return 0 // Incomplete or invalid
+		return 0
 	}
 
-	// Check memo
 	key := MemoKey{patternIdx, groupIdx, currentSize}
-	if val, exists := memo[key]; exists {
-		return val
+	if v, ok := memo[key]; ok {
+		return v
 	}
 
 	state := pattern[patternIdx]
-	var result int
+	res := 0
 
-	if state == Operational {
-		// '.' - end current group if any
+	switch state {
+	case Operational:
+		// Operational ends a group if we were building one
 		if currentSize > 0 {
-			// We were building a group, verify it matches
-			if groupIdx < len(groups) && int64(currentSize) == groups[groupIdx] {
-				// Group matches, move to next
-				result = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx+1, 0, memo)
+			// must match exactly the next expected group
+			if groupIdx < len(groups) && groups[groupIdx] == currentSize {
+				res = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx+1, 0, memo)
 			} else {
-				// Group size mismatch, invalid
-				result = 0
+				res = 0
 			}
 		} else {
-			// No group being built, continue
-			result = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, 0, memo)
+			res = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, 0, memo)
 		}
-	} else if state == Damaged {
-		// '#' - extend current group
+	case Damaged:
+		// extend current group
 		newSize := currentSize + 1
-		if groupIdx < len(groups) && int64(newSize) <= groups[groupIdx] {
-			// Group size still valid
-			result = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, newSize, memo)
+		if groupIdx < len(groups) && newSize <= groups[groupIdx] {
+			res = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, newSize, memo)
 		} else {
-			// Group exceeded, invalid
-			result = 0
+			res = 0
 		}
-	} else {
-		// '?' - try both possibilities
-		// Try as operational
-		resultOp := 0
+	case Unknown:
+		// try as operational
 		if currentSize > 0 {
-			if groupIdx < len(groups) && int64(currentSize) == groups[groupIdx] {
-				resultOp = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx+1, 0, memo)
+			if groupIdx < len(groups) && groups[groupIdx] == currentSize {
+				res += countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx+1, 0, memo)
 			}
 		} else {
-			resultOp = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, 0, memo)
+			res += countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, 0, memo)
 		}
-
-		// Try as damaged
-		resultDam := 0
+		// try as damaged
 		newSize := currentSize + 1
-		if groupIdx < len(groups) && int64(newSize) <= groups[groupIdx] {
-			resultDam = countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, newSize, memo)
+		if groupIdx < len(groups) && newSize <= groups[groupIdx] {
+			res += countArrangementsMemo(pattern, groups, patternIdx+1, groupIdx, newSize, memo)
 		}
-
-		result = resultOp + resultDam
 	}
 
-	memo[key] = result
-	return result
+	memo[key] = res
+	return res
 }
 
-func countPossibleArrangementsDP(pattern []State, groups []int64) int {
+// Public DP wrapper
+func countPossibleArrangementsDP(pattern []State, groups []int) int {
 	memo := make(map[MemoKey]int)
 	return countArrangementsMemo(pattern, groups, 0, 0, 0, memo)
 }
 
-// For Part 2 - unfold the pattern and groups
+// unfoldRecord repeats the pattern 5 times inserting an Unknown between blocks
+// and repeats the groups sequence 5 times.
 func unfoldRecord(r Record) Record {
 	var unfoldedPattern []State
-	var unfoldedGroups []int64
+	var unfoldedGroups []int
 
 	for i := 0; i < 5; i++ {
 		unfoldedPattern = append(unfoldedPattern, r.record...)
@@ -196,22 +166,17 @@ func unfoldRecord(r Record) Record {
 	return Record{record: unfoldedPattern, damagedGroups: unfoldedGroups}
 }
 
-//---------------------
-
 func (day Day12) Solve() aoc.Solution {
 	var part1, part2 int
-	// 12-1 - 6
-	// 12-2 - 21
 	records := parse("12") // lines: 1000 max chr in line: 20
 	for _, r := range records {
-		c1 := countPossibleArrangements(r.record, r.damagedGroups)
+		// Use the DP solver for both parts; it's fast and avoids exponential branching.
+		c1 := countPossibleArrangementsDP(r.record, r.damagedGroups)
 		part1 += c1
-		// Part 2
+
 		unfolded := unfoldRecord(r)
 		c2 := countPossibleArrangementsDP(unfolded.record, unfolded.damagedGroups)
 		part2 += c2
 	}
-	// ie. "?###????????" - [3 2 1] x 5 -> may be formalized with .###. instead of ?###?
-	// ie. "?????.???.????#?." - [1 1 1 6] - x5 -> very long execution - also much be solvable in the same way
 	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
 }
