@@ -14,7 +14,9 @@ type Point struct {
 	x, y int
 }
 
-const maxStepsStraight int = 3
+const maxStepsStraightPart1 int = 3
+const maxStepsStraightPart2 int = 10
+const minStepsStraightPart2 int = 4
 
 var Right = Point{x: 1, y: 0}
 var Left = Point{x: -1, y: 0}
@@ -30,13 +32,18 @@ func isIn(p Point) bool {
 	return p.x >= 0 && p.y >= 0 && p.x < xMax && p.y < yMax
 }
 
-func nextDirs(dir0 Point, canGoStraight bool) []Point {
+func nextDirs(dir0 Point, canGoStraight bool, canTurn bool) []Point {
 	i0 := slices.Index(Directions, dir0)
 	dby := func(di int) Point {
 		return Directions[(di+DirectionCount)%DirectionCount]
 	}
-	result := []Point{dir0, dby(i0 + 1), dby(i0 - 1)}
-	return aoc.Ifelse(canGoStraight, result, result[1:])
+	if canGoStraight && !canTurn {
+		return []Point{dir0}
+	}
+	if !canGoStraight && canTurn {
+		return []Point{dby(i0 + 1), dby(i0 - 1)}
+	}
+	return []Point{dir0, dby(i0 + 1), dby(i0 - 1)}
 }
 
 func next(p0 Point, d Point) Point {
@@ -44,9 +51,9 @@ func next(p0 Point, d Point) Point {
 }
 
 // returns points on the map (not directions)
-func nextMoves(p0 Point, dir0 Point, canGoStraight bool) []Point {
+func nextMoves(p0 Point, dir0 Point, canGoStraight bool, canTurn bool) []Point {
 	var result []Point
-	for _, di := range nextDirs(dir0, canGoStraight) {
+	for _, di := range nextDirs(dir0, canGoStraight, canTurn) {
 		p1 := next(p0, di)
 		if isIn(p1) {
 			result = append(result, p1)
@@ -106,18 +113,16 @@ func heatLossAt(p Point) int {
 	return int([]rune(m[p.y])[p.x] - '0')
 }
 
-func (d Day17) Solve() aoc.Solution {
-	var part1, part2 int
+func solvePart(maxSteps, minSteps int) int {
 	p0 := Point{x: 0, y: 0}
 	pq := &MinHeap{
-		&QueueStep{position: p0, direction: Right, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
-		&QueueStep{position: p0, direction: Down, sumHeatLoss: 0, remainingStraightSteps: maxStepsStraight},
+		&QueueStep{position: p0, direction: Right, sumHeatLoss: 0, remainingStraightSteps: maxSteps},
+		&QueueStep{position: p0, direction: Down, sumHeatLoss: 0, remainingStraightSteps: maxSteps},
 	}
 	heap.Init(pq)
 	end := Point{x: xMax - 1, y: yMax - 1}
 
 	// Key: position + direction + remainingStraightSteps
-	// To properly track visited states, we need to consider all three factors
 	visited := make(map[string]bool)
 
 	for pq.Len() > 0 {
@@ -133,15 +138,14 @@ func (d Day17) Solve() aoc.Solution {
 
 		// If we reached the end, we have the answer (first time is optimal due to priority queue)
 		if pi == end {
-			part1 = nqs.sumHeatLoss
-			break
+			return nqs.sumHeatLoss
 		}
-
-		p1List := nextMoves(pi, nqs.direction, nqs.remainingStraightSteps > 0)
-		for _, p1i := range p1List {
+		canTurn := nqs.remainingStraightSteps <= maxSteps-minSteps
+		nextDirsList := nextMoves(pi, nqs.direction, nqs.remainingStraightSteps > 0, canTurn)
+		for _, p1i := range nextDirsList {
 			shl := nqs.sumHeatLoss + heatLossAt(p1i)
 			newDir := direction(pi, p1i)
-			remainingStraightSteps := aoc.Ifelse(nqs.direction == newDir, nqs.remainingStraightSteps, maxStepsStraight) - 1
+			remainingStraightSteps := aoc.Ifelse(nqs.direction == newDir, nqs.remainingStraightSteps, maxSteps) - 1
 
 			stateKey := stateKeyFunc(p1i, newDir, remainingStraightSteps)
 			if !visited[stateKey] {
@@ -155,7 +159,13 @@ func (d Day17) Solve() aoc.Solution {
 		}
 	}
 
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return -1 // Should not reach here if input is valid
+}
+
+func (d Day17) Solve() aoc.Solution {
+	part1 := solvePart(maxStepsStraightPart1, 1)
+	part2 := solvePart(maxStepsStraightPart2, minStepsStraightPart2)
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }
 
 func stateKeyFunc(p Point, d Point, remaining int) string {
