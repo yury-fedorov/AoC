@@ -1,7 +1,6 @@
 package day20
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -153,9 +152,12 @@ func parse(file string) map[string]*ModuleProcessor {
 func (day Day20) Solve() aoc.Solution {
 	var part1, part2 int
 	var output []Pulse
+
+	// Part 1: replicate existing behavior (1000 button presses without resetting between presses)
 	m := parse("20")
-	for i := 0; i < 1000; i++ {
-		output = append(output, Pulse{ButtonModuleName, BroadcasterModuleName, false})
+	for range 1000 {
+		// press button once, wait until all pulses handled
+		output = append(output, Pulse{ButtonModuleName, BroadcasterModuleName, LowPulse})
 		for j := len(output) - 1; j < len(output); j++ {
 			nextPulse := output[j]
 			var processor, isTypedModule = m[nextPulse.to]
@@ -173,43 +175,40 @@ func (day Day20) Solve() aoc.Solution {
 	}
 	part1 = low * high
 
-	// Part 2
-	if false {
-		for index, p := range output {
+	// Part 2:
+	// Reset all modules to their default states, then press the button repeatedly,
+	// waiting for pulses to settle after each press, until a single low pulse is sent to "rx".
+	// Modules retain their state between presses (flip-flops/conjunction memories).
+	m2 := parse("20") // fresh modules/state
+	const MaxPresses = 1000000
+	found := false
+	for presses := 1; presses <= MaxPresses && !found; presses++ {
+		queue := []Pulse{{ButtonModuleName, BroadcasterModuleName, LowPulse}}
+		for i := 0; i < len(queue) && !found; i++ {
+			p := queue[i]
+			// If the pulse is targeted to rx directly, check it first
 			if p.to == "rx" && p.pulseType == LowPulse {
-				for i := 0; i < index; i++ {
-					if p.from == ButtonModuleName {
-						part2++
-					}
-				}
+				part2 = presses
+				found = true
 				break
 			}
-		}
-		if part2 == 0 {
-			// one was already executed is not enough
-			found := false
-			for part2 = 1001; !found; part2++ {
-				output = []Pulse{{ButtonModuleName, BroadcasterModuleName, false}}
-				for j := 0; j < len(output) && !found; j++ {
-					nextPulse := output[j]
-					var processor, isTypedModule = m[nextPulse.to]
-					if !isTypedModule {
-						continue
-					}
-					pulses := (*processor).process(nextPulse)
-					for _, p := range pulses {
-						if p.to == "rx" && p.pulseType == LowPulse {
-							found = true
-						}
-					}
-					output = append(output, pulses...)
+			processor, isTypedModule := m2[p.to]
+			if !isTypedModule {
+				// pulse goes to an output that's not a module (like rx), already checked above,
+				// so nothing to do.
+				continue
+			}
+			pulses := (*processor).process(p)
+			for _, np := range pulses {
+				if np.to == "rx" && np.pulseType == LowPulse {
+					part2 = presses
+					found = true
+					break
 				}
-				// 1905000000 - till no answer yet
-				if part2%1000000 == 0 {
-					fmt.Println(part2)
-				}
+				queue = append(queue, np)
 			}
 		}
 	}
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	// If not found within MaxPresses, part2 remains 0.
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }
