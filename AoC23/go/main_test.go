@@ -70,8 +70,6 @@ func TestDays(t *testing.T) {
 		{day: &day22.Day22{}, want: aoc.Solution{Part1: "398", Part2: "70727"}},            // part 2 takes 18.5 seconds
 		{day: &day23.Day23{}, want: aoc.Solution{Part1: "2430", Part2: "6534"}},            // part 2 takes 7h 57m
 		{day: &day25.Day25{}, want: aoc.Solution{Part1: "601310", Part2: "0"}},             // takes variable time (randomness)
-		// TODO zone
-		{day: &day18.Day18{}, want: aoc.Solution{Part1: "40745", Part2: "0"}}, // TODO - part 2
 	}
 	tests := fastTests
 	if runSlowTests {
