@@ -1,6 +1,7 @@
 package day24
 
 import (
+	"math"
 	"strconv"
 	"strings"
 
@@ -17,6 +18,13 @@ type Line2DCoefficients struct{ a, b, c float64 }
 
 // Input
 type PointShift struct{ point, shift Point }
+
+// Allow small floating-point tolerance
+const eps = 1e-6
+
+func equal(a, b float64) bool {
+	return math.Abs(a-b) < eps
+}
 
 func toLineCoefficients(ps PointShift) Line2DCoefficients {
 	x0 := ps.point.x
@@ -114,27 +122,17 @@ func canHitAll(hailstones []PointShift, rvx, rvy, rvz float64) bool {
 			return false
 		}
 
-		// Check if all coordinates align at time t
-		if dvx != 0 {
-			if h.point.x+h.shift.x*t != (t * rvx) {
-				// collision check: rock position + velocity*t = hailstone position + velocity*t
-				px := h.point.x + h.shift.x*t
-				if px != t*rvx {
-					return false
-				}
-			}
-		}
-		if dvy != 0 {
-			py := h.point.y + h.shift.y*t
-			if py != t*rvy {
-				return false
-			}
-		}
-		if dvz != 0 {
-			pz := h.point.z + h.shift.z*t
-			if pz != t*rvz {
-				return false
-			}
+		// Verify collision at time t
+		hx := h.point.x + h.shift.x*t
+		hy := h.point.y + h.shift.y*t
+		hz := h.point.z + h.shift.z*t
+
+		expectedRockX := rvx * t
+		expectedRockY := rvy * t
+		expectedRockZ := rvz * t
+
+		if !(equal(hx, expectedRockX) && equal(hy, expectedRockY) && equal(hz, expectedRockZ)) {
+			return false
 		}
 
 		// Calculate rock position at t=0
@@ -218,3 +216,117 @@ func (day Day24) Solve() aoc.Solution {
 	return aoc.Solution{Part1: strconv.FormatInt(part1, 10), Part2: strconv.FormatInt(part2, 10)}
 	// part2 613391294577878 -- too low
 }
+
+/* alternative version to explore
+
+import (
+	"math/big"
+)
+
+type Vector struct {
+	x, y, z *big.Rat
+}
+
+type Hailstone struct {
+	p, v Vector
+}
+
+func solvePart2(hailstones []Hailstone) int64 {
+	// Pick 3 hailstones that are non-parallel
+	h0, h1, h2 := hailstones[0], hailstones[1], hailstones[2]
+
+	// Build 6x6 matrix A and 6x1 vector B for A * X = B
+	// Unknowns X = [px, py, pz, vx, vy, vz]
+	A := make([][]*big.Rat, 6)
+	B := make([]*big.Rat, 6)
+	for i := range A {
+		A[i] = make([]*big.Rat, 6)
+		for j := range A[i] {
+			A[i][j] = big.NewRat(0, 1)
+		}
+		B[i] = big.NewRat(0, 1)
+	}
+
+	// Helper to add equations from pair (hA, hB)
+	addPair := func(rowOffset int, hA, hB Hailstone) {
+		// (vA - vB) x p_r + (pB - pA) x v_r = pB x vB - pA x vA
+		// Cross product expanded into 3 scalar equations (X, Y, Z components)
+
+		// Row 0 (X): (vAy - vBy)*pz - (vAz - vBz)*py + (pBz - pAz)*vy - (pBy - pAy)*vz
+		// ... maps coefficients to [px, py, pz, vx, vy, vz]
+
+		// Equation for X component
+		A[rowOffset+0][1] = sub(hA.v.z, hB.v.z) // py
+		A[rowOffset+0][2] = sub(hB.v.y, hA.v.y) // pz
+		A[rowOffset+0][4] = sub(hB.p.z, hA.p.z) // vy
+		A[rowOffset+0][5] = sub(hA.p.y, hB.p.y) // vz
+		B[rowOffset+0] = sub(
+			sub(mul(hB.p.y, hB.v.z), mul(hB.p.z, hB.v.y)),
+			sub(mul(hA.p.y, hA.v.z), mul(hA.p.z, hA.v.y)),
+		)
+
+		// Equation for Y component
+		A[rowOffset+1][0] = sub(hB.v.z, hA.v.z) // px
+		A[rowOffset+1][2] = sub(hA.v.x, hB.v.x) // pz
+		A[rowOffset+1][3] = sub(hA.p.z, hB.p.z) // vx
+		A[rowOffset+1][5] = sub(hB.p.x, hA.p.x) // vz
+		B[rowOffset+1] = sub(
+			sub(mul(hB.p.z, hB.v.x), mul(hB.p.x, hB.v.z)),
+			sub(mul(hA.p.z, hA.v.x), mul(hA.p.x, hA.v.z)),
+		)
+
+		// Equation for Z component
+		A[rowOffset+2][0] = sub(hA.v.y, hB.v.y) // px
+		A[rowOffset+2][1] = sub(hB.v.x, hA.v.x) // py
+		A[rowOffset+2][3] = sub(hB.p.y, hA.p.y) // vx
+		A[rowOffset+2][4] = sub(hA.p.x, hB.p.x) // vy
+		B[rowOffset+2] = sub(
+			sub(mul(hB.p.x, hB.v.y), mul(hB.p.y, hB.v.x)),
+			sub(mul(hA.p.x, hA.v.y), mul(hA.p.y, hA.v.x)),
+		)
+	}
+
+	addPair(0, h0, h1)
+	addPair(3, h0, h2)
+
+	// Solve system A * X = B via Gaussian Elimination
+	X := gaussianElimination(A, B)
+
+	// Sum px + py + pz (indices 0, 1, 2)
+	sum := new(big.Rat).Add(X[0], X[1])
+	sum.Add(sum, X[2])
+
+	res, _ := sum.Num().Quo(sum.Num(), sum.Denom()).Int64()
+	return res
+}
+
+// Helper arithmetic functions for big.Rat
+func add(a, b *big.Rat) *big.Rat { return new(big.Rat).Add(a, b) }
+func sub(a, b *big.Rat) *big.Rat { return new(big.Rat).Sub(a, b) }
+func mul(a, b *big.Rat) *big.Rat { return new(big.Rat).Mul(a, b) }
+func div(a, b *big.Rat) *big.Rat { return new(big.Rat).Quo(a, b) }
+
+func gaussianElimination(A [][]*big.Rat, B []*big.Rat) []*big.Rat {
+	n := len(B)
+	for i := 0; i < n; i++ {
+		// Pivot
+		pivot := A[i][i]
+		for j := i; j < n; j++ {
+			A[i][j] = div(A[i][j], pivot)
+		}
+		B[i] = div(B[i], pivot)
+
+		for k := 0; k < n; k++ {
+			if k != i {
+				factor := A[k][i]
+				for j := i; j < n; j++ {
+					A[k][j] = sub(A[k][j], mul(factor, A[i][j]))
+				}
+				B[k] = sub(B[k], mul(factor, B[i]))
+			}
+		}
+	}
+	return B
+}
+
+*/
