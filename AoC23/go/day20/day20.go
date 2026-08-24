@@ -149,6 +149,36 @@ func parse(file string) map[string]*ModuleProcessor {
 	return result
 }
 
+// GCD calculates the greatest common divisor
+func gcd(a, b int64) int64 {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+// LCM calculates the least common multiple
+func lcm(a, b int64) int64 {
+	return a * b / gcd(a, b)
+}
+
+// Find the parent module(s) that send pulses to rx
+func findRxParent(modules map[string]*ModuleProcessor) string {
+	for name, mp := range modules {
+		module := *mp
+		if conj, ok := module.(*Conjunction); ok {
+			for _, dest := range conj.to {
+				if dest == "rx" {
+					return name
+				}
+			}
+		}
+	}
+	return ""
+}
+
 func (day Day20) Solve() aoc.Solution {
 	var part1, part2 int
 	var output []Pulse
@@ -176,39 +206,84 @@ func (day Day20) Solve() aoc.Solution {
 	part1 = low * high
 
 	// Part 2:
-	// Reset all modules to their default states, then press the button repeatedly,
-	// waiting for pulses to settle after each press, until a single low pulse is sent to "rx".
-	// Modules retain their state between presses (flip-flops/conjunction memories).
+	// Find the module that sends to rx (typically a conjunction)
+	// Then find the cycles of all modules that feed into it
+	// The answer is the LCM of all cycles
 	m2 := parse("20") // fresh modules/state
-	const MaxPresses = 1000000
-	found := false
-	for presses := 1; presses <= MaxPresses && !found; presses++ {
-		queue := []Pulse{{ButtonModuleName, BroadcasterModuleName, LowPulse}}
-		for i := 0; i < len(queue) && !found; i++ {
-			p := queue[i]
-			// If the pulse is targeted to rx directly, check it first
-			if p.to == "rx" && p.pulseType == LowPulse {
-				part2 = presses
-				found = true
-				break
-			}
-			processor, isTypedModule := m2[p.to]
-			if !isTypedModule {
-				// pulse goes to an output that's not a module (like rx), already checked above,
-				// so nothing to do.
-				continue
-			}
-			pulses := (*processor).process(p)
-			for _, np := range pulses {
-				if np.to == "rx" && np.pulseType == LowPulse {
+
+	rxParent := findRxParent(m2)
+	if rxParent == "" {
+		// Fallback: just search for rx directly (shouldn't happen in standard input)
+		const MaxPresses = 10000000
+		found := false
+		for presses := 1; presses <= MaxPresses && !found; presses++ {
+			queue := []Pulse{{ButtonModuleName, BroadcasterModuleName, LowPulse}}
+			for i := 0; i < len(queue) && !found; i++ {
+				p := queue[i]
+				if p.to == "rx" && p.pulseType == LowPulse {
 					part2 = presses
 					found = true
 					break
 				}
-				queue = append(queue, np)
+				processor, isTypedModule := m2[p.to]
+				if !isTypedModule {
+					continue
+				}
+				pulses := (*processor).process(p)
+				for _, np := range pulses {
+					if np.to == "rx" && np.pulseType == LowPulse {
+						part2 = presses
+						found = true
+						break
+					}
+					queue = append(queue, np)
+				}
+			}
+		}
+	} else {
+		// Find the cycle length for each module that feeds into rxParent
+		rxParentModule := *m2[rxParent]
+		parentConj, ok := rxParentModule.(*Conjunction)
+		if !ok {
+			panic("rx parent is not a conjunction")
+		}
+
+		// Map from parent input name to the first press where it sends a low pulse
+		cycleLengths := make(map[string]int64)
+
+		const MaxPresses = 10000000
+		for presses := 1; presses <= MaxPresses; presses++ {
+			queue := []Pulse{{ButtonModuleName, BroadcasterModuleName, LowPulse}}
+			for i := 0; i < len(queue); i++ {
+				p := queue[i]
+
+				// Check if this pulse is from an input to rxParent
+				if p.to == rxParent && p.pulseType == HighPulse {
+					// This means rxParent will send low to rx on the next cycle
+					if _, seen := cycleLengths[p.from]; !seen {
+						cycleLengths[p.from] = int64(presses)
+					}
+				}
+
+				processor, isTypedModule := m2[p.to]
+				if !isTypedModule {
+					continue
+				}
+				pulses := (*processor).process(p)
+				queue = append(queue, pulses...)
+			}
+
+			// Once we've found cycles for all inputs, calculate LCM
+			if len(cycleLengths) == len(parentConj.recentPulse) {
+				result := int64(1)
+				for _, cycle := range cycleLengths {
+					result = lcm(result, cycle)
+				}
+				part2 = int(result)
+				break
 			}
 		}
 	}
-	// If not found within MaxPresses, part2 remains 0.
+
 	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }
