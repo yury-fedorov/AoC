@@ -9,7 +9,6 @@
 2. [Day20](https://adventofcode.com/2023/day/20#part2) - Pulse Propagation (**no code for part2**) - 20K
 3. [Day21 Part2](https://adventofcode.com/2023/day/21#part2) - expansion of map / long running (**no code for part 2**) - 13.5K
 4. [Day24 Part2](https://adventofcode.com/2023/day/24#part2) - Never Tell Me The Odds (**no code for part 2**) - 16K
-5. [Day25](https://adventofcode.com/2023/day/25) - Snowverload (slow) - 15K
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`

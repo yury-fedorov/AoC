@@ -67,16 +67,21 @@ func allLinks(input Input) []Link {
 }
 
 // given the starting point, returns all points you may arrive to
-func travel(input Input, start string, skip []Link) []string {
-	ok, path := travelWithBomb(input, start, skip, "")
+func travel(input Input, start string, skipSet map[string]bool) []string {
+	ok, path := travelWithBomb(input, start, skipSet, "")
 	if !ok {
 		panic("Not expected")
 	}
 	return path
 }
 
+// Convert link to string key for set lookup
+func linkKey(l Link) string {
+	return l.from + "|" + l.to
+}
+
 // given the starting point, check that travel doesn't pass a bomb
-func travelWithBomb(input Input, start string, skip []Link, bomb string) (bool, []string) {
+func travelWithBomb(input Input, start string, skipSet map[string]bool, bomb string) (bool, []string) {
 	toProcess := []string{start}
 	visited := make(map[string]bool)
 	var result []string
@@ -90,14 +95,13 @@ func travelWithBomb(input Input, start string, skip []Link, bomb string) (bool, 
 		toProcess = toProcess[1:]
 		next := allDirectLinks(input, cur)
 		for _, n := range next {
-			if slices.Contains(skip, createLink(n, cur)) {
+			if skipSet[linkKey(createLink(n, cur))] {
 				continue
 			}
 			if n == bomb {
 				return false, nil
 			}
-			_, seenAlready := visited[n]
-			if seenAlready {
+			if visited[n] {
 				continue
 			}
 			if slices.Contains(toProcess, n) {
@@ -109,39 +113,87 @@ func travelWithBomb(input Input, start string, skip []Link, bomb string) (bool, 
 	return true, result
 }
 
+// Calculate edge betweenness using BFS from random nodes
+func edgeBetweenness(input Input, sampleSize int) map[string]int {
+	edgeCount := make(map[string]int)
+	allNodes := make([]string, 0, len(input))
+	for node := range input {
+		allNodes = append(allNodes, node)
+	}
+
+	// Sample edges by running BFS from a few nodes and counting edge usage
+	for i := 0; i < sampleSize && i < len(allNodes); i++ {
+		start := allNodes[i]
+		toProcess := []string{start}
+		visited := make(map[string]bool)
+		parent := make(map[string][]string)
+		visited[start] = true
+
+		for len(toProcess) > 0 {
+			cur := toProcess[0]
+			toProcess = toProcess[1:]
+			next := allDirectLinks(input, cur)
+			for _, n := range next {
+				if !visited[n] {
+					visited[n] = true
+					parent[n] = append(parent[n], cur)
+					toProcess = append(toProcess, n)
+				}
+			}
+		}
+
+		// Backtrack and count edges
+		for _, node := range allNodes {
+			if visited[node] && node != start {
+				for _, p := range parent[node] {
+					edgeCount[linkKey(createLink(p, node))]++
+				}
+			}
+		}
+	}
+	return edgeCount
+}
+
 func answer1(input Input) int {
-	allLinks := allLinks(input)
-	slices.SortFunc(allLinks, func(a, b Link) int {
-		a1 := len(allDirectLinks(input, a.from))
-		a2 := len(allDirectLinks(input, a.to))
-		b1 := len(allDirectLinks(input, b.from))
-		b2 := len(allDirectLinks(input, b.to))
-		return cmp.Compare(min(a1, a2), min(b1, b2))
+	allLinksList := allLinks(input)
+
+	// Get high-betweenness edges as candidates
+	edgeFreq := edgeBetweenness(input, 10)
+
+	// Sort by frequency
+	slices.SortFunc(allLinksList, func(a, b Link) int {
+		return cmp.Compare(edgeFreq[linkKey(b)], edgeFreq[linkKey(a)])
 	})
-	allSize := len(allLinks)
-	firstComponent := allLinks[0].from
-	all := travel(input, firstComponent, nil)
+
+	allSize := len(allLinksList)
+	firstComponent := allLinksList[0].from
+	all := travel(input, firstComponent, make(map[string]bool))
 	totalNodes := len(all)
-	shortSize := allSize
-	for i := 0; i < shortSize; i++ {
-		link := allLinks[i]
-		for j := i + 1; j < shortSize; j++ {
+
+	// Only check top candidates (much smaller search space)
+	searchLimit := min(len(allLinksList), 100)
+
+	for i := range searchLimit {
+		link := allLinksList[i]
+		for j := i + 1; j < searchLimit; j++ {
 			for k := j + 1; k < allSize; k++ {
-				skip := []Link{link, allLinks[j], allLinks[k]}
-				ok, g1 := travelWithBomb(input, link.from, skip, link.to)
+				skipSet := make(map[string]bool)
+				skipSet[linkKey(link)] = true
+				skipSet[linkKey(allLinksList[j])] = true
+				skipSet[linkKey(allLinksList[k])] = true
+
+				ok, g1 := travelWithBomb(input, link.from, skipSet, link.to)
 				if !ok {
 					// bomb was crossed
 					continue
 				}
 				firstGroupCount := len(g1)
 				if firstGroupCount > 1 && firstGroupCount < totalNodes {
-					g2 := travel(input, link.to, skip)
+					g2 := travel(input, link.to, skipSet)
 					secondGroupCount := len(g2)
-					if firstGroupCount+secondGroupCount != totalNodes {
-						// something went wrong
-						continue
+					if firstGroupCount+secondGroupCount == totalNodes {
+						return firstGroupCount * secondGroupCount
 					}
-					return firstGroupCount * secondGroupCount
 				}
 			}
 		}
@@ -149,43 +201,9 @@ func answer1(input Input) int {
 	return -1
 }
 
-func findAllWays(input Input, from string, to string, path []string) [][]string {
-	next := allDirectLinks(input, from)
-	var result [][]string
-	for _, n := range next {
-		if slices.Contains(path, n) {
-			continue // loop found, skip this option
-		}
-		path1 := append(path, n)
-		if n == to {
-			// the end
-			result = append(result, path1)
-		} else {
-			// further research
-			result = append(result, findAllWays(input, n, to, path1)...)
-		}
-	}
-	return result
-}
-
-func countFrequency(input Input, all []string) map[string]int {
-	result := make(map[string]int)
-	for _, c := range all {
-		counter := len(input[c])
-		for _, v := range input {
-			if slices.Contains(v, c) {
-				counter++
-			}
-		}
-		result[c] = counter
-	}
-	return result
-}
-
 func (day Day25) Solve() aoc.Solution {
 	var part1, part2 int
-	input := parse("25-1") // 13, 1261 // TODO - example works but slow
+	input := parse("25")
 	part1 = answer1(input)
-	part1 = 0 // TODO - the real solution is prohibiting slow
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }
