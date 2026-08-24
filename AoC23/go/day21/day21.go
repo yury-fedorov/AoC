@@ -77,7 +77,7 @@ func (day Day21) Solve() aoc.Solution {
 
 	for idx, steps := range stepCounts {
 		pp := map[Point]bool{start: true}
-		for i := 0; i < steps; i++ {
+		for range steps {
 			pp1 := make(map[Point]bool)
 			for p0 := range maps.Keys(pp) {
 				for _, dp := range Moves {
@@ -100,12 +100,12 @@ func (day Day21) Solve() aoc.Solution {
 
 	// Using Lagrange interpolation or solving the system
 	a := (y0 - 2*y1 + y2) / 2
-	b := (y1 - y0 - 3*a) / 1
+	b := y1 - y0 - a
 	c := y0
 
 	// Target: 26501365 = 65 + 131 * n, where n = 202300
 	n := (26501365 - 65) / mapWidth
 	part2 = a*n*n + b*n + c
 
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)} // 613385230433078 -- too low
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }

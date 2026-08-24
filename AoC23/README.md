@@ -1,12 +1,11 @@
 # Advent of Code 2023 in Go
 
 ## Technological Stack & Conventions
-* Go 1.26 (as 1.21 is missing on https://github.com)
+* Go 1.26
 * [Google Go Style Guide](https://google.github.io/styleguide/go/guide)
 
 ## TODO
-1. [Day21 Part2](https://adventofcode.com/2023/day/21#part2) - expansion of map / long running (**no code for part 2**) - 13.5K
-2. [Day24 Part2](https://adventofcode.com/2023/day/24#part2) - Never Tell Me The Odds (**no code for part 2**) - 16K
+1. [Day24 Part2](https://adventofcode.com/2023/day/24#part2) - Never Tell Me The Odds (**no code for part 2**) - 16K
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
