@@ -82,7 +82,7 @@ func paths(path0 []Point, part aoc.Part) int {
 	n := len(path0)
 	last := path0[n-1]
 	nn := next(last, part)
-	twoBack := Point{} // path0 greater than 1 element is dominant
+	twoBack := Point{}
 	if n >= 2 {
 		twoBack = path0[n-2]
 	}
@@ -99,8 +99,126 @@ func paths(path0 []Point, part aoc.Part) int {
 	return result
 }
 
+// -- part 2: contract corridors into a weighted junction graph --
+//
+// The raw-grid DFS is exponential over every cell, including long straight
+// corridors. Contracting each corridor (straight runs and corners) into a
+// single weighted edge collapses the grid into a small graph of junctions
+// (branch points + start/end), making the longest-path search tractable.
+
+// A junction is any walkable cell whose walkable-neighbor count is not 2,
+// plus the start and end. Corridor cells (degree 2) are contracted away.
+func isJunction(p Point) bool {
+	if p == pStart || p == pEnd {
+		return true
+	}
+	deg := 0
+	for _, s := range shifts {
+		if at(shift(p, s)) != Forrest {
+			deg++
+		}
+	}
+	return deg != 2
+}
+
+type edge struct {
+	to     int
+	weight int
+}
+
+// walk follows the corridor from junction `from` in direction `dir` until it
+// reaches another junction, returning that junction and the step count.
+// Slopes are ignored (Part 2 rules: every cell is walkable both ways).
+func walk(from Point, dir Point) (Point, int) {
+	prev := from
+	cur := shift(from, dir)
+	steps := 1
+	for !isJunction(cur) {
+		var nxt Point
+		for _, s := range shifts {
+			cand := shift(cur, s)
+			if cand == prev {
+				continue
+			}
+			if at(cand) != Forrest {
+				nxt = cand
+				break
+			}
+		}
+		prev = cur
+		cur = nxt
+		steps++
+	}
+	return cur, steps
+}
+
+func buildJunctionGraph() map[int][]edge {
+	indexOf := make(map[Point]int)
+	var junctions []Point
+	add := func(p Point) {
+		if _, ok := indexOf[p]; !ok {
+			indexOf[p] = len(junctions)
+			junctions = append(junctions, p)
+		}
+	}
+	add(pStart)
+	add(pEnd)
+	for y := int16(0); y <= yMax; y++ {
+		for x := int16(0); x <= xMax; x++ {
+			p := Point{x, y}
+			if at(p) != Forrest && isJunction(p) {
+				add(p)
+			}
+		}
+	}
+	adj := make(map[int][]edge)
+	for _, jp := range junctions {
+		from := indexOf[jp]
+		for _, s := range shifts {
+			nb := shift(jp, s)
+			if at(nb) == Forrest {
+				continue
+			}
+			dest, weight := walk(jp, s)
+			adj[from] = append(adj[from], edge{to: indexOf[dest], weight: weight})
+		}
+	}
+	return adj
+}
+
+func longestPath(adj map[int][]edge, startIdx, endIdx int) int {
+	visited := make(map[int]bool)
+	var dfs func(int) int
+	dfs = func(node int) int {
+		if node == endIdx {
+			return 0
+		}
+		visited[node] = true
+		best := -1
+		for _, e := range adj[node] {
+			if visited[e.to] {
+				continue
+			}
+			if sub := dfs(e.to); sub >= 0 {
+				best = max(best, e.weight+sub)
+			}
+		}
+		visited[node] = false
+		return best
+	}
+	return dfs(startIdx)
+}
+
+func solutionPart2() int {
+	adj := buildJunctionGraph()
+	return longestPath(adj, 0, 1) // 0 = pStart, 1 = pEnd (added first)
+}
+
 func solution(part aoc.Part) int { return paths([]Point{pStart}, part) }
 
 func (day Day23) Solve() aoc.Solution {
-	return aoc.Solution{Part1: strconv.Itoa(solution(aoc.Part1)), Part2: strconv.Itoa(solution(aoc.Part2))}
+	return aoc.Solution{
+		Part1: strconv.Itoa(solution(aoc.Part1)),
+		Part2: strconv.Itoa(solutionPart2()),
+	}
 }
