@@ -1,6 +1,7 @@
 package day05
 
 import (
+	"math"
 	"strconv"
 	"strings"
 
@@ -21,8 +22,7 @@ type AlmanacSection struct {
 }
 
 type Almanac struct {
-	seeds []int64
-	// TODO - sort for quick transform() call usage based on binary search implemented in search.Search()
+	seeds    []int64
 	sections []AlmanacSection
 }
 
@@ -50,17 +50,14 @@ func parse(data []string) Almanac {
 	if len(section.name) != 0 {
 		sections = append(sections, section)
 	}
-	// TODO sort for every Section in sections based on binary search need to be used in transform()
 	return Almanac{seeds: seeds, sections: sections}
 }
 
+// transform maps a single value through one section (used for Part 1 points).
 func transform(start int64, section AlmanacSection) int64 {
-	// TODO instead of going one by one, binary search would speed up the execution from O(n) to O(log n)
 	for _, line := range section.mapping {
-		if start >= line.sourceRangeStart && start < (line.sourceRangeStart+line.rangeLength) {
-			// found the right transformation line
-			shift := line.destinationRangeStart - line.sourceRangeStart
-			return start + shift
+		if start >= line.sourceRangeStart && start < line.sourceRangeStart+line.rangeLength {
+			return start + (line.destinationRangeStart - line.sourceRangeStart)
 		}
 	}
 	return start
@@ -74,45 +71,77 @@ func seedToLocation(seed int64, almanac Almanac) int64 {
 	return result
 }
 
-func calcMin(almanac Almanac, startSeed int64, length int64, c chan int64) {
-	initialLowest := almanac.seeds[0]
-	result := initialLowest
-	for seed := startSeed; seed < (startSeed + length); seed++ {
-		result = min(result, seedToLocation(seed, almanac))
+// -- part 2: propagate intervals through the almanac maps --
+
+// Range is a half-open interval [lo, hi).
+type Range struct{ lo, hi int64 }
+
+// mapRange splits r against every mapping line of the section. The portion
+// overlapping a line's source range is shifted by (dest - src); the rest
+// passes through unchanged to be checked against later lines. Source ranges
+// in a section are disjoint, so each value is mapped at most once.
+func mapRange(r Range, section AlmanacSection) []Range {
+	var mapped []Range
+	unmapped := []Range{r}
+	for _, line := range section.mapping {
+		srcLo := line.sourceRangeStart
+		srcHi := line.sourceRangeStart + line.rangeLength
+		shift := line.destinationRangeStart - line.sourceRangeStart
+		var nextUnmapped []Range
+		for _, u := range unmapped {
+			if u.hi <= srcLo || u.lo >= srcHi {
+				nextUnmapped = append(nextUnmapped, u) // no overlap
+				continue
+			}
+			if u.lo < srcLo {
+				nextUnmapped = append(nextUnmapped, Range{u.lo, srcLo}) // before
+			}
+			mapped = append(mapped, Range{
+				max(u.lo, srcLo) + shift,
+				min(u.hi, srcHi) + shift,
+			})
+			if u.hi > srcHi {
+				nextUnmapped = append(nextUnmapped, Range{srcHi, u.hi}) // after
+			}
+		}
+		unmapped = nextUnmapped
 	}
-	c <- result
+	mapped = append(mapped, unmapped...) // untouched tail passes through
+	return mapped
+}
+
+func seedRangesToLocationRanges(seedRanges []Range, almanac Almanac) []Range {
+	cur := seedRanges
+	for _, section := range almanac.sections {
+		var next []Range
+		for _, r := range cur {
+			next = append(next, mapRange(r, section)...)
+		}
+		cur = next
+	}
+	return cur
 }
 
 func (d Day05) Solve() aoc.Solution {
-	var part1, part2 int
 	almanac := parse(aoc.ReadFile("05"))
-	initialLowest := almanac.seeds[0]
-	lowest := initialLowest
+
+	// Part 1: individual seeds.
+	var part1 int64 = math.MaxInt64
 	for _, seed := range almanac.seeds {
-		lowest = min(lowest, seedToLocation(seed, almanac))
+		part1 = min(part1, seedToLocation(seed, almanac))
 	}
-	part1 = int(lowest)
 
-	s2 := almanac.seeds
-	var count int
-	c := make(chan int64)
-	const Chunk int64 = 10_000
-	for i := 0; i < len(s2); i += 2 {
-		startSeed := s2[i]
-		length := s2[i+1]
-		for length > 0 {
-			curLength := min(length, Chunk)
-			go calcMin(almanac, startSeed, curLength, c)
-			count++
-			length -= curLength
-			startSeed += curLength
-		}
+	// Part 2: seeds come in (start, length) pairs -> intervals.
+	var seedRanges []Range
+	for i := 0; i+1 < len(almanac.seeds); i += 2 {
+		start := almanac.seeds[i]
+		seedRanges = append(seedRanges, Range{lo: start, hi: start + almanac.seeds[i+1]})
 	}
-	for i := 0; i < count; i++ {
-		curLowest := <-c
-		lowest = min(lowest, curLowest)
+	locRanges := seedRangesToLocationRanges(seedRanges, almanac)
+	var part2 int64 = math.MaxInt64
+	for _, r := range locRanges {
+		part2 = min(part2, r.lo)
 	}
-	part2 = int(lowest)
 
-	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(int(part1)), Part2: strconv.Itoa(int(part2))}
 }

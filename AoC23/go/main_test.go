@@ -44,6 +44,7 @@ func TestDays(t *testing.T) {
 		{day: &day02.Day02{}, want: aoc.Solution{Part1: "2283", Part2: "78669"}},
 		{day: &day03.Day03{}, want: aoc.Solution{Part1: "540212", Part2: "87605697"}},
 		{day: &day04.Day04{}, want: aoc.Solution{Part1: "21821", Part2: "5539496"}},
+		{day: &day05.Day05{}, want: aoc.Solution{Part1: "174137457", Part2: "1493866"}},
 		{day: &day06.Day06{}, want: aoc.Solution{Part1: "608902", Part2: "46173809"}},
 		{day: &day07.Day07{}, want: aoc.Solution{Part1: "253205868", Part2: "253907829"}},
 		{day: &day08.Day08{}, want: aoc.Solution{Part1: "21251", Part2: "11678319315857"}},
@@ -62,8 +63,6 @@ func TestDays(t *testing.T) {
 	}
 	// Slow tests and TODO zone.
 	slowTests := []Test{
-		// takes 8 minutes
-		{day: &day05.Day05{}, want: aoc.Solution{Part1: "174137457", Part2: "1493866"}},
 		{day: &day14.Day14{}, want: aoc.Solution{Part1: "109755", Part2: "90928"}},         // takes 4-5 secs
 		{day: &day21.Day21{}, want: aoc.Solution{Part1: "3699", Part2: "613391294577878"}}, // takes 16 seconds
 		{day: &day22.Day22{}, want: aoc.Solution{Part1: "398", Part2: "70727"}},            // part 2 takes 18.5 seconds
