@@ -28,7 +28,6 @@ const (
 )
 
 func parse(data []string) Network {
-	// AAA = (BBB, CCC)
 	var re = regexp.MustCompile(`([0-9A-Z]+) = \(([0-9A-Z]+), ([0-9A-Z]+)\)`)
 	var result Network
 	result.nodes = make(map[NodeName]Node)
@@ -44,25 +43,42 @@ func parse(data []string) Network {
 	return result
 }
 
-func isEnd(nodes []Node) bool {
-	for _, n := range nodes {
-		if !strings.HasSuffix(string(n.name), "Z") {
-			return false
-		}
-	}
-	return true
-}
-
 type Day08 struct{}
 
+// stepsToZ counts navigation steps from `start` until a node whose name ends
+// in 'Z' is reached. The navigation instructions repeat cyclically.
+func stepsToZ(n Network, start NodeName) int {
+	navLen := len(n.navigation)
+	cur := n.nodes[start]
+	steps := 0
+	for !strings.HasSuffix(string(cur.name), "Z") {
+		nav := n.navigation[steps%navLen]
+		cur = n.nodes[aoc.Ifelse(nav == 'L', cur.left, cur.right)]
+		steps++
+	}
+	return steps
+}
+
+func gcd(a, b int64) int64 {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
+}
+
+func lcm(a, b int64) int64 {
+	return a / gcd(a, b) * b // divide first to avoid overflow
+}
+
 func (d Day08) Solve() aoc.Solution {
-	var part1, part2 int
 	data := aoc.ReadFile("08")
 	n := parse(data)
+
+	// Part 1: single walk AAA -> ZZZ.
 	navIndex := 0
 	navIndexLength := len(n.navigation)
-	var curNode Node
-	curNode = n.nodes[StartNode]
+	curNode := n.nodes[StartNode]
+	var part1 int
 	for curNode.name != EndNode {
 		navInstruction := n.navigation[navIndex]
 		curNode = n.nodes[aoc.Ifelse(navInstruction == 'L', curNode.left, curNode.right)]
@@ -70,29 +86,20 @@ func (d Day08) Solve() aoc.Solution {
 		part1++
 	}
 
-	var curNodes []Node
+	// Part 2: every node ending in 'A' walks in parallel. Each reaches a 'Z'
+	// node periodically with first 'Z' at step == cycle length, so the first
+	// step where all ghosts are simultaneously on a 'Z' is the LCM of the
+	// individual cycle lengths.
+	var starts []NodeName
 	for name := range maps.Keys(n.nodes) {
 		if strings.HasSuffix(string(name), "A") {
-			curNodes = append(curNodes, n.nodes[name])
+			starts = append(starts, name)
 		}
 	}
-
-	// part 2 is a draft - to solve later
-	navIndex = 0
-	for !isEnd(curNodes) {
-		navInstruction := n.navigation[navIndex]
-		navIndex = (navIndex + 1) % navIndexLength
-		part2++
-		newVersion := curNodes
-		for i, cn := range curNodes {
-			newVersion[i] = n.nodes[aoc.Ifelse(navInstruction == 'L', cn.left, cn.right)]
-
-		}
-		curNodes = newVersion
-		// TODO - slow implementation, need to rewrite
-		part2 = 11678319315857
-		break
+	part2 := int64(1)
+	for _, s := range starts {
+		part2 = lcm(part2, int64(stepsToZ(n, s)))
 	}
 
-	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(int(part2))}
 }
