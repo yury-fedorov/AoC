@@ -1,10 +1,7 @@
 package day19
 
 import (
-	"maps"
 	"regexp"
-	"slices"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -31,57 +28,74 @@ func getPart(p Part, t string) int {
 	panic(t)
 }
 
-func toFunc(op string) func(a, b int) bool {
-	switch op {
-	case ">":
-		return func(a, b int) bool { return a > b }
-	case "<":
-		return func(a, b int) bool { return a < b }
-	}
-	panic(op)
-}
-
 type WorkflowName string
 
-const In WorkflowName = "in"
-const Next WorkflowName = ""
-const Accepted WorkflowName = "A"
-const Rejected WorkflowName = "R"
+const (
+	In       WorkflowName = "in"
+	Accepted WorkflowName = "A"
+	Rejected WorkflowName = "R"
+)
 
-type WorkflowStep func(p Part) WorkflowName
+type Rule struct {
+	varName string // "x" | "m" | "a" | "s"
+	op      string // "<" | ">"
+	value   int
+	dest    WorkflowName
+}
 
-type Workflow []WorkflowStep
+type WorkflowDef struct {
+	rules []Rule
+	final WorkflowName // destination when no rule matches
+}
 
 var rewf = regexp.MustCompile("(.+)\\{(.+)}")
 var rewfs = regexp.MustCompile("([xmas])([^0-9]+)([0-9]+):(.+)")
 
-func parseWorkflow(line string, wstats *WorkflowStats) (WorkflowName, Workflow) {
+func parseWorkflow(line string) (WorkflowName, WorkflowDef) {
 	// pv{a>1716:R,A}
 	match := rewf.FindStringSubmatch(line)
-	steps := strings.Split(match[2], ",")
-	var w Workflow
-	for _, s := range steps {
-		var ws WorkflowStep
-		// a>1716:R
-		match1 := rewfs.FindStringSubmatch(s)
-		if match1 == nil {
-			ws = func(Part) WorkflowName { return WorkflowName(s) }
-		} else {
-			v := match1[1]
-			op := match1[2]
-			var co = aoc.Atoi(match1[3])
-			dist := WorkflowName(match1[4])
-			ws = func(p Part) WorkflowName {
-				vv := getPart(p, v)
-				f := toFunc(op)
-				return aoc.Ifelse(f(vv, co), dist, Next)
-			}
-			(*wstats)[v] = append((*wstats)[v], co)
+	name := WorkflowName(match[1])
+	var def WorkflowDef
+	for _, s := range strings.Split(match[2], ",") {
+		m := rewfs.FindStringSubmatch(s)
+		if m == nil {
+			def.final = WorkflowName(s) // bare destination, e.g. "A"
+			continue
 		}
-		w = append(w, ws)
+		def.rules = append(def.rules, Rule{
+			varName: m[1],
+			op:      m[2],
+			value:   aoc.Atoi(m[3]),
+			dest:    WorkflowName(m[4]),
+		})
 	}
-	return WorkflowName(match[1]), w
+	return name, def
 }
+
+// runWorkflow evaluates one Part against the workflow graph.
+func runWorkflow(workflows map[WorkflowName]WorkflowDef, p Part) bool {
+	name := In
+	for {
+		w := workflows[name]
+		next := w.final
+		for _, rule := range w.rules {
+			v := getPart(p, rule.varName)
+			if (rule.op == "<" && v < rule.value) || (rule.op == ">" && v > rule.value) {
+				next = rule.dest
+				break
+			}
+		}
+		name = next
+		if name == Accepted {
+			return true
+		}
+		if name == Rejected {
+			return false
+		}
+	}
+}
+
+// -- part 1 input parsing --
 
 var rep = regexp.MustCompile("\\{(.+)}")
 
@@ -93,142 +107,118 @@ func parsePart(line string) Part {
 	// {x=787,m=2655,a=1222,s=2876}
 	match := rep.FindStringSubmatch(line)
 	sets := strings.Split(match[1], ",")
-	return Part{x: parseValue(sets[0]), m: parseValue(sets[1]), a: parseValue(sets[2]), s: parseValue(sets[3])}
-}
-
-func runWorkflow(workflows map[WorkflowName]Workflow, p Part) bool {
-	ws := workflows[In]
-	for {
-		for _, wsi := range ws {
-			wfn := wsi(p)
-			if wfn == Next {
-				continue
-			}
-			if wfn == Accepted {
-				return true
-			}
-			if wfn == Rejected {
-				return false
-			}
-			ws = workflows[wfn]
-			break
-		}
+	return Part{
+		x: parseValue(sets[0]),
+		m: parseValue(sets[1]),
+		a: parseValue(sets[2]),
+		s: parseValue(sets[3]),
 	}
 }
 
-// -- part 2 --
+// -- part 2: recursive range splitting through the workflow graph --
 
-// WorkflowStats contains borderlines mentioned in workflows conditions.
-type WorkflowStats map[string][]int
+type Range struct{ lo, hi int } // inclusive
 
-func uniqueOrdered(s []int) []int {
-	r := make(map[int]bool)
-	for _, v := range s {
-		r[v] = true
-	}
-	var result = slices.Collect(maps.Keys(r))
-	sort.Ints(result)
-	return result
+func (r Range) size() int { return max(0, r.hi-r.lo+1) }
+
+type Ranges struct {
+	x, m, a, s Range
 }
 
-const kMin = 1
-const kMax = 4000
-
-type Range struct {
-	a, b int
+func rangeAt(rs Ranges, v string) Range {
+	switch v {
+	case "x":
+		return rs.x
+	case "m":
+		return rs.m
+	case "a":
+		return rs.a
+	default:
+		return rs.s
+	}
 }
 
-func pointsToRanges(pp []int) []Range {
-	// kMin, kMax, all points in between -1, 0, 1
-	var result []Range
-	a := kMin
-	for _, p := range pp {
-		result = append(result, Range{a: a, b: p - 1})
-		result = append(result, Range{a: p, b: p})
-		a = p + 1
+func withRange(rs Ranges, v string, r Range) Ranges {
+	switch v {
+	case "x":
+		rs.x = r
+	case "m":
+		rs.m = r
+	case "a":
+		rs.a = r
+	default:
+		rs.s = r
 	}
-	result = append(result, Range{a: a, b: kMax})
-	return result
+	return rs
 }
 
-func rangeSize(r Range) int { return r.b - r.a + 1 }
-
-// Global variables to make it faster.
-var xr, mr, ar, sr []Range
-var isAccepted func(Part) bool
-
-func countAccepted(xi, mi, ai int) int {
-	var result int
-	if xi < 0 {
-		// go through x ranges
-		for xi = 0; xi < len(xr); xi++ {
-			result += countAccepted(xi, mi, ai)
-		}
-	} else if mi < 0 {
-		// go through m ranges
-		for mi = 0; mi < len(mr); mi++ {
-			result += countAccepted(xi, mi, ai)
-		}
-	} else if ai < 0 {
-		// go through a ranges
-		for ai = 0; ai < len(ar); ai++ {
-			result += countAccepted(xi, mi, ai)
-		}
-	} else {
-		// go through s ranges
-		x := xr[xi]
-		m := mr[mi]
-		a := ar[ai]
-		k := rangeSize(x) * rangeSize(m) * rangeSize(a)
-		for _, srv := range sr {
-			if isAccepted(Part{x: x.a, m: m.a, a: a.a, s: srv.a}) {
-				result += k * rangeSize(srv)
-			}
-		}
+// splitRange partitions r into the part satisfying (var op value) and the rest.
+// Both halves are clamped to [r.lo, r.hi] so they are exact sub-partitions.
+func splitRange(r Range, op string, value int) (matched, unmatched Range) {
+	switch op {
+	case "<":
+		matched = Range{r.lo, min(r.hi, value-1)}
+		unmatched = Range{max(r.lo, value), r.hi}
+	case ">":
+		matched = Range{max(r.lo, value+1), r.hi}
+		unmatched = Range{r.lo, min(r.hi, value)}
 	}
-	return result
+	return
+}
+
+func countAccepted(workflows map[WorkflowName]WorkflowDef, rs Ranges, name WorkflowName) int64 {
+	if rs.x.size() == 0 || rs.m.size() == 0 || rs.a.size() == 0 || rs.s.size() == 0 {
+		return 0
+	}
+	if name == Accepted {
+		return int64(rs.x.size()) * int64(rs.m.size()) * int64(rs.a.size()) * int64(rs.s.size())
+	}
+	if name == Rejected {
+		return 0
+	}
+	w := workflows[name]
+	var total int64
+	cur := rs
+	for _, rule := range w.rules {
+		matched, unmatched := splitRange(rangeAt(cur, rule.varName), rule.op, rule.value)
+		if matched.size() > 0 {
+			total += countAccepted(workflows, withRange(cur, rule.varName, matched), rule.dest)
+		}
+		if unmatched.size() == 0 {
+			return total // entire current range was consumed by this rule
+		}
+		cur = withRange(cur, rule.varName, unmatched)
+	}
+	total += countAccepted(workflows, cur, w.final)
+	return total
 }
 
 func (day Day19) Solve() aoc.Solution {
 	var part1, part2 int
 	data := aoc.ReadFile("19")
-	workflows := make(map[WorkflowName]Workflow)
+	workflows := make(map[WorkflowName]WorkflowDef)
 	var parts []Part
 	parsingWorkflows := true
-
-	var wstats = WorkflowStats{
-		"x": {},
-		"m": {},
-		"a": {},
-		"s": {},
-	}
 	for _, line := range data {
 		if len(line) == 0 {
 			parsingWorkflows = false
 			continue
 		}
 		if parsingWorkflows {
-			workflowName, workflow := parseWorkflow(line, &wstats)
-			workflows[workflowName] = workflow
+			name, def := parseWorkflow(line)
+			workflows[name] = def
 		} else {
 			parts = append(parts, parsePart(line))
 		}
 	}
 	for _, p := range parts {
-		isAccepted := runWorkflow(workflows, p)
-		if isAccepted {
+		if runWorkflow(workflows, p) {
 			part1 += p.x + p.m + p.a + p.s
 		}
 	}
-
-	// part 2
-	// Global variables' initialization.
-	xr = pointsToRanges(uniqueOrdered(wstats["x"]))
-	mr = pointsToRanges(uniqueOrdered(wstats["m"]))
-	ar = pointsToRanges(uniqueOrdered(wstats["a"]))
-	sr = pointsToRanges(uniqueOrdered(wstats["s"]))
-	isAccepted = func(p Part) bool { return runWorkflow(workflows, p) }
-	part2 = countAccepted(-1, -1, -1)
-
+	full := Ranges{
+		x: Range{1, 4000}, m: Range{1, 4000}, a: Range{1, 4000}, s: Range{1, 4000},
+	}
+	part2 = int(countAccepted(workflows, full, In))
 	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }
