@@ -250,7 +250,7 @@ func part2(m2 []Line) int {
 			// one single piece on corner at right and bottom
 			inRightBottom := isInCache[Point{ix + 1, iy + 1}]
 			if inRight && inBottom && inRightBottom {
-				// Controintuitive but indeed in the case of square of 5 x 5 dots,
+				// Counterintuitive but indeed in the case of square of 5 x 5 dots,
 				// split in 4 blocks (2 horizontally and 2 vertically).
 				// We need to get square of 25 (5*5) but summing up 4*3*3 we get 36
 				// We remove 4 borders between blocks (each of length 3) = 36 - 4*3 = 24
