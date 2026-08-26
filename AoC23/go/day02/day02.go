@@ -33,11 +33,11 @@ func parseGame(line string) game {
 	match := r1.FindStringSubmatch(line)
 	id := aoc.Atoi(match[1])
 	var extractions []extraction
-	gamesStr := strings.Split(match[2], ";")
-	for _, gameStr := range gamesStr {
+	gamesStr := strings.SplitSeq(match[2], ";")
+	for gameStr := range gamesStr {
 		e := make(extraction)
-		es := strings.Split(gameStr, ",")
-		for _, esi := range es {
+		es := strings.SplitSeq(gameStr, ",")
+		for esi := range es {
 			match = r2.FindStringSubmatch(esi)
 			e[color(match[2])] = aoc.Atoi(match[1])
 		}
