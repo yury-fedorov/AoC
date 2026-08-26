@@ -34,7 +34,6 @@ func (am *AbstractModule) moduleName() string { return am.name }
 
 const ButtonModuleName = "button"
 const BroadcasterModuleName = "broadcaster"
-const OutputModuleName = "output"
 
 type Button struct {
 	ModuleProcessor
