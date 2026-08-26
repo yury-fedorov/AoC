@@ -100,7 +100,7 @@ func (c *Conjunction) process(p Pulse) []Pulse {
 
 var input []string
 
-func initConjuctionMap(name string) map[string]bool {
+func initConjunctionMap(name string) map[string]bool {
 	var result = make(map[string]bool)
 	for _, line := range input {
 		a := strings.Split(line, " -> ")
@@ -123,7 +123,7 @@ func parseModule(line string) *ModuleProcessor {
 	if strings.HasPrefix(name, "&") {
 		// conjunction
 		n := name[1:]
-		mp = &Conjunction{AbstractModule{name: n, to: to}, initConjuctionMap(n)}
+		mp = &Conjunction{AbstractModule{name: n, to: to}, initConjunctionMap(n)}
 	} else if strings.HasPrefix(name, "%") {
 		// flip-flop
 		mp = &FlipFlop{AbstractModule{name: name[1:], to: to}, false} // they are initially off
