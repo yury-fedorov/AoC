@@ -2,6 +2,10 @@ FROM golang:latest
 
 ARG src=/usr/src/aoc
 
+# Alternative to pass the parameter through command line
+# ARG AOC_SLOW=
+# ENV AOC_SLOW=$AOC_SLOW
+
 COPY . $src
 
 WORKDIR $src/go
