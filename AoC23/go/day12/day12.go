@@ -46,29 +46,6 @@ func parse(file string) []Record {
 	return result
 }
 
-// isValid checks whether a fully specified pattern (no Unknowns) matches
-// the expected damaged groups sequence.
-func isValid(states []State, groups []int) bool {
-	cur := 0
-	gi := 0
-	for _, s := range states {
-		if s == Damaged {
-			cur++
-		} else if cur > 0 {
-			if gi >= len(groups) || groups[gi] != cur {
-				return false
-			}
-			gi++
-			cur = 0
-		}
-	}
-	if cur == 0 {
-		return gi == len(groups)
-	}
-	// trailing damaged group
-	return gi+1 == len(groups) && groups[gi] == cur
-}
-
 // Dynamic programming memoized solution that counts valid replacements for Unknowns
 // so that damaged groups match `groups`.
 type MemoKey struct {
