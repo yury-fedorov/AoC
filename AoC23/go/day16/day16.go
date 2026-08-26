@@ -125,14 +125,14 @@ func (day Day16) Solve() aoc.Solution {
 
 	part2 = part1
 	xMax, yMax := len(m[0]), len(m)
-	for x := 0; x < xMax; x++ {
+	for x := range xMax {
 		part2 = max(part2, inlight(m, Point{x: x, y: 0}, Down))
 		part2 = max(part2, inlight(m, Point{x: x, y: yMax - 1}, Up))
 	}
-	for y := 0; y < yMax; y++ {
+	for y := range yMax {
 		part2 = max(part2, inlight(m, Point{x: 0, y: y}, Right))
 		part2 = max(part2, inlight(m, Point{x: xMax - 1, y: y}, Left))
 	}
 
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }

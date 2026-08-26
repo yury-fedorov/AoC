@@ -102,5 +102,5 @@ func paths(path0 []Point, part aoc.Part) int {
 func solution(part aoc.Part) int { return paths([]Point{pStart}, part) }
 
 func (day Day23) Solve() aoc.Solution {
-	return aoc.Solution{strconv.Itoa(solution(aoc.Part1)), strconv.Itoa(solution(aoc.Part2))}
+	return aoc.Solution{Part1: strconv.Itoa(solution(aoc.Part1)), Part2: strconv.Itoa(solution(aoc.Part2))}
 }

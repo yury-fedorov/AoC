@@ -155,5 +155,5 @@ func (day Day12) Solve() aoc.Solution {
 		c2 := countPossibleArrangementsDP(unfolded.record, unfolded.damagedGroups)
 		part2 += c2
 	}
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }

@@ -81,8 +81,8 @@ func opposite(p Point) Point {
 
 func start(loop [][]Tile) Point {
 	xMax, yMax := xy(loop)
-	for y := 0; y < yMax; y++ {
-		for x := 0; x < xMax; x++ {
+	for y := range yMax {
+		for x := range xMax {
 			if at(loop, x, y) == Start {
 				return Point{x: x, y: y}
 			}
@@ -154,7 +154,7 @@ func countAdjCrossedBoarders(s []int, tiles []Tile, d Point) int {
 	head := 0
 	var result int
 	var tt [][]Tile
-	for i := 0; i < n; i++ {
+	for i := range n {
 		s1 := s[i]
 		if math.Abs(float64(s1-s0)) > 1.0 {
 			isStartEnd := min(s1, s0) == minPathStep && max(s1, s0) == maxPathStep
@@ -258,8 +258,8 @@ func solve(file string) (int, int) {
 	// clean from all not necessary tubes
 	candidates := make(map[Point]bool)
 	xMax, yMax := xy(loop)
-	for y := 0; y < yMax; y++ {
-		for x := 0; x < xMax; x++ {
+	for y := range yMax {
+		for x := range xMax {
 			p := Point{x: x, y: y}
 			_, found := path[p]
 			if !found {
@@ -298,5 +298,5 @@ func (d Day10) Solve() aoc.Solution {
 	testPart2("10-6", 8)
 	testPart2("10-7", 10)
 	part1, part2 := solve("10")
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }

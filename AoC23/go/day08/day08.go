@@ -94,5 +94,5 @@ func (d Day08) Solve() aoc.Solution {
 		break
 	}
 
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }

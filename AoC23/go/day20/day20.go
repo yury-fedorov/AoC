@@ -39,7 +39,7 @@ type Button struct {
 	ModuleProcessor
 }
 
-func (b *Button) process(p Pulse) []Pulse {
+func (b *Button) process(_ Pulse) []Pulse {
 	return []Pulse{{from: ButtonModuleName, to: BroadcasterModuleName, pulseType: LowPulse}}
 }
 

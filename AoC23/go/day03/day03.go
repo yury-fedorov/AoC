@@ -120,5 +120,5 @@ func (d Day03) Solve() aoc.Solution {
 	partNumberList := identifyPartNumbers(engine)
 	part1 = sumPartNumbers(partNumberList)
 	part2 = sumGearRatios(engine, partNumberList)
-	return aoc.Solution{strconv.Itoa(part1), strconv.Itoa(part2)}
+	return aoc.Solution{Part1: strconv.Itoa(part1), Part2: strconv.Itoa(part2)}
 }
