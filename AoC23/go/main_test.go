@@ -57,7 +57,7 @@ func TestDays(t *testing.T) {
 		{day: &day17.Day17{}, want: aoc.Solution{Part1: "1256", Part2: "1382"}},
 		{day: &day18.Day18{}, want: aoc.Solution{Part1: "40745", Part2: "90111113594927"}}, // takes 1 second
 		{day: &day20.Day20{}, want: aoc.Solution{Part1: "832957356", Part2: "240162699605221"}},
-		{day: &day24.Day24{}, want: aoc.Solution{Part1: "13910", Part2: "0"}},
+		{day: &day24.Day24{}, want: aoc.Solution{Part1: "13910", Part2: "618534564836937"}},
 	}
 	// Slow tests and TODO zone.
 	slowTests := []Test{

@@ -5,7 +5,6 @@
 * [Google Go Style Guide](https://google.github.io/styleguide/go/guide)
 
 ## TODO
-1. [Day24 Part2](https://adventofcode.com/2023/day/24#part2) - Never Tell Me The Odds (**no code for part 2**) - 16K
 
 ## Interesting Parts
 1. `Day03` - `aoc.Abs()` with generics for `int` and `int64`
